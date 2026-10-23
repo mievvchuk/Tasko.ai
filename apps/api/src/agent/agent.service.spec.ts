@@ -7,6 +7,12 @@ import type { AnalyticsService } from '../analytics/analytics.service.js';
 import { ForbiddenException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 
+function planResponse(content: string) {
+  return new Response(
+    JSON.stringify({ choices: [{ message: { role: 'assistant', content } }] }),
+  );
+}
+
 describe('AI through MCP', () => {
   const user = {
     id: randomUUID(),
@@ -199,23 +205,55 @@ describe('AI through MCP', () => {
     expect(body.tools).toBeUndefined();
     expect(body.tool_choice).toBeUndefined();
     expect(JSON.parse(body.messages[1].content)).toEqual(brief);
+    expect(body.response_format).toMatchObject({
+      type: 'json_schema',
+      json_schema: { name: 'project_plan', strict: true },
+    });
+  });
+
+  it('retries once when the model returns a broken plan', async () => {
+    const draft = {
+      milestones: [
+        {
+          title: 'Підготовка',
+          description: 'Погодити вимоги',
+          acceptanceCriteria: ['Вимоги погоджено'],
+          tasks: [
+            {
+              title: 'Уточнити вимоги',
+              description: 'Описати сценарії',
+              priority: 'MEDIUM',
+              acceptanceCriteria: ['Сценарії погоджено'],
+            },
+          ],
+        },
+      ],
+    };
+    const brokenJson = JSON.stringify(draft).slice(0, -3);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(planResponse(brokenJson))
+      .mockResolvedValueOnce(planResponse(JSON.stringify(draft)));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await new AgentService(
+      config,
+      mcp,
+      projects as unknown as ProjectsService,
+    ).generateProjectPlan({
+      title: 'Сайт',
+      description: null,
+      deadline: null,
+      instructions: '',
+    });
+    expect(result).toEqual(draft);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('rejects malformed AI plans rather than returning an unusable draft', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: { role: 'assistant', content: '{"milestones":[]}' },
-              },
-            ],
-          }),
-        ),
-      ),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(async () => planResponse('{"milestones":[]}'));
+    vi.stubGlobal('fetch', fetchMock);
     await expect(
       new AgentService(
         config,
@@ -228,6 +266,27 @@ describe('AI through MCP', () => {
         instructions: '',
       }),
     ).rejects.toMatchObject({ status: 502 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry the plan when the provider is throttled', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(async () => new Response('{}', { status: 429 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(
+      new AgentService(
+        config,
+        mcp,
+        projects as unknown as ProjectsService,
+      ).generateProjectPlan({
+        title: 'Сайт',
+        description: null,
+        deadline: null,
+        instructions: '',
+      }),
+    ).rejects.toMatchObject({ status: 429 });
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it('keeps project access checks inside MCP tools', async () => {
