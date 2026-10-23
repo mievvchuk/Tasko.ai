@@ -1,24 +1,18 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
+import type { ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
-import { FileDownload, FileUpload } from "../components/FileActions";
 import { Pagination, ResourceState } from "../components/ResourceState";
+import { priorityNames, taskStatusNames } from "../types";
+import type { Task, Project, ProjectMember, WorkSubmission } from "../types";
 import {
-  priorityNames,
-  taskStatusNames,
-  submissionStatusNames,
-} from "../types";
-import type {
-  Task,
-  Project,
-  ProjectMember,
-  WorkSubmission,
-  FileAttachment,
-} from "../types";
+  ErrorNotice,
+  SubmissionCard,
+  TaskSubmissionForm,
+} from "./TaskSubmissions";
 
 export function TaskDetailsPage() {
   const { taskId } = useParams();
@@ -26,6 +20,7 @@ export function TaskDetailsPage() {
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
   const task = useApi<Task>(`/tasks/${taskId}`);
+  // Проєкт, учасники й результати завантажуються лише після завдання, бо потрібен його projectId.
   const project = useApi<Project>(
     task.data ? `/projects/${task.data.projectId}` : null,
   );
@@ -37,11 +32,14 @@ export function TaskDetailsPage() {
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
   function refresh() {
     task.refresh();
     project.refresh();
     submissions.refresh();
   }
+
+  // Переводить завдання між «До виконання» і «У роботі».
   async function changeStatus(status: "TODO" | "IN_PROGRESS") {
     if (busy) return;
     setBusy(true);
@@ -58,6 +56,7 @@ export function TaskDetailsPage() {
       setBusy(false);
     }
   }
+
   if (!task.data || !project.data || !members.data)
     return (
       <ResourceState
@@ -69,34 +68,46 @@ export function TaskDetailsPage() {
         }}
       />
     );
-  const owner = user?.role === "ADMIN" || project.data.clientId === user?.id;
-  const closed = ["COMPLETED", "CANCELLED"].includes(project.data.status);
+
+  const currentTask = task.data;
+  const currentProject = project.data;
+  const owner = user?.role === "ADMIN" || currentProject.clientId === user?.id;
+  const closed = ["COMPLETED", "CANCELLED"].includes(currentProject.status);
+  const projectActive = currentProject.status === "ACTIVE";
+  const isAssignee = currentTask.assigneeId === user?.id;
+
+  // Редагувати можна, поки завдання не передано на перевірку й не завершено.
+  const canEdit =
+    owner && !closed && !["REVIEW", "DONE"].includes(currentTask.status);
   const canChangeStatus =
-    project.data.status === "ACTIVE" &&
-    ["TODO", "IN_PROGRESS"].includes(task.data.status) &&
-    (task.data.assigneeId === user?.id || user?.role === "ADMIN");
+    projectActive &&
+    ["TODO", "IN_PROGRESS"].includes(currentTask.status) &&
+    (isAssignee || user?.role === "ADMIN");
   const canSubmit =
-    project.data.status === "ACTIVE" &&
-    task.data.status === "IN_PROGRESS" &&
-    task.data.assigneeId === user?.id;
+    projectActive && currentTask.status === "IN_PROGRESS" && isAssignee;
+  const canReview = owner && !closed && currentTask.status === "REVIEW";
+
+  const assigneeName =
+    members.data.find((member) => member.userId === currentTask.assigneeId)
+      ?.user?.name || "Не призначено";
+  const nextStatus = currentTask.status === "TODO" ? "IN_PROGRESS" : "TODO";
+
   return (
     <>
-      <Link className="breadcrumb" to={`/projects/${project.data.id}`}>
-        ← {project.data.title}
+      <Link className="breadcrumb" to={`/projects/${currentProject.id}`}>
+        ← {currentProject.title}
       </Link>
       <div className="page-heading heading-with-action">
         <div>
           <span className="eyebrow">TASKO.AI / ЗАВДАННЯ</span>
-          <h1>{task.data.title}</h1>
+          <h1>{currentTask.title}</h1>
         </div>
         <div className="page-actions">
-          {owner &&
-            !closed &&
-            !["REVIEW", "DONE"].includes(task.data.status) && (
-              <Link className="button primary" to={`/tasks/${taskId}/edit`}>
-                Редагувати завдання
-              </Link>
-            )}
+          {canEdit && (
+            <Link className="button primary" to={`/tasks/${taskId}/edit`}>
+              Редагувати завдання
+            </Link>
+          )}
           <button className="button secondary" onClick={refresh}>
             Оновити дані
           </button>
@@ -104,65 +115,42 @@ export function TaskDetailsPage() {
       </div>
       <section className="data-panel project-overview">
         <p className="project-full-description">
-          {task.data.description || "Опис не додано."}
+          {currentTask.description || "Опис не додано."}
         </p>
         <dl className="project-facts">
-          <div>
-            <dt>Статус</dt>
-            <dd>{taskStatusNames[task.data.status]}</dd>
-          </div>
-          <div>
-            <dt>Пріоритет</dt>
-            <dd>{priorityNames[task.data.priority]}</dd>
-          </div>
-          <div>
-            <dt>Виконавець</dt>
-            <dd>
-              {members.data.find(
-                (member) => member.userId === task.data?.assigneeId,
-              )?.user?.name || "Не призначено"}
-            </dd>
-          </div>
-          <div>
-            <dt>Дедлайн</dt>
-            <dd>{formatDate(task.data.deadline, true)}</dd>
-          </div>
+          <Fact label="Статус">{taskStatusNames[currentTask.status]}</Fact>
+          <Fact label="Пріоритет">{priorityNames[currentTask.priority]}</Fact>
+          <Fact label="Виконавець">{assigneeName}</Fact>
+          <Fact label="Дедлайн">{formatDate(currentTask.deadline, true)}</Fact>
         </dl>
         {canChangeStatus && (
           <div className="page-actions section-gap">
             <button
               className="button primary"
               disabled={busy}
-              onClick={() => {
-                void changeStatus(
-                  task.data?.status === "TODO" ? "IN_PROGRESS" : "TODO",
-                );
-              }}
+              onClick={() => void changeStatus(nextStatus)}
             >
-              {task.data.status === "TODO"
+              {currentTask.status === "TODO"
                 ? "Почати виконання"
                 : "Повернути до плану"}
             </button>
           </div>
         )}
-        {project.data.status !== "ACTIVE" && !closed && (
+        {!projectActive && !closed && (
           <p className="form-note section-gap">
             Виконання й передавання результатів доступні після активації проєкту
             клієнтом.
           </p>
         )}
-        {error && (
-          <p className="notice error" role="alert">
-            {error}
-          </p>
-        )}
+        <ErrorNotice message={error} />
       </section>
       {canSubmit && (
         <section className="data-panel padded section-gap">
           <h2>Передати результат роботи</h2>
-          <SubmissionForm
-            task={task.data}
+          <TaskSubmissionForm
+            task={currentTask}
             onSubmitted={() => {
+              // Повертаємося на першу сторінку, де з'явиться новий результат.
               setParams({});
               refresh();
             }}
@@ -187,34 +175,12 @@ export function TaskDetailsPage() {
                 </p>
               )}
               {submissions.data.map((submission) => (
-                <article className="submission-card" key={submission.id}>
-                  <div className="record-heading">
-                    <strong>{submissionStatusNames[submission.status]}</strong>
-                    <time dateTime={submission.submittedAt}>
-                      {formatDate(submission.submittedAt, true)}
-                    </time>
-                  </div>
-                  <p className="preserve-lines">{submission.description}</p>
-                  {submission.files.map((file) => (
-                    <FileDownload key={file.id} file={file} />
-                  ))}
-                  {submission.feedback && (
-                    <div className="review-feedback">
-                      <strong>Відгук перевірки</strong>
-                      <p className="preserve-lines">{submission.feedback}</p>
-                      <small>{formatDate(submission.reviewedAt, true)}</small>
-                    </div>
-                  )}
-                  {owner &&
-                    !closed &&
-                    task.data?.status === "REVIEW" &&
-                    submission.status === "SUBMITTED" && (
-                      <ReviewForm
-                        submissionId={submission.id}
-                        onReviewed={refresh}
-                      />
-                    )}
-                </article>
+                <SubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                  canReview={canReview}
+                  onReviewed={refresh}
+                />
               ))}
             </div>
             <Pagination
@@ -229,156 +195,11 @@ export function TaskDetailsPage() {
   );
 }
 
-function SubmissionForm({
-  task,
-  onSubmitted,
-}: {
-  task: Task;
-  onSubmitted: () => void;
-}) {
-  const [description, setDescription] = useState("");
-  const [files, setFiles] = useState<FileAttachment[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy || uploading) return;
-    setError("");
-    if (!description.trim()) {
-      setError("Опишіть результат роботи.");
-      return;
-    }
-    setBusy(true);
-    try {
-      await request(`/tasks/${task.id}/submissions`, {
-        method: "POST",
-        body: {
-          description: description.trim(),
-          fileIds: files.map((file) => file.id),
-        },
-      });
-      onSubmitted();
-    } catch (error) {
-      setError(errorMessage(error));
-    } finally {
-      setBusy(false);
-    }
-  }
+function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <>
-      <p className="form-note">
-        За потреби спочатку завантажте файли (до 10). Після передавання завдання
-        перейде на перевірку.
-      </p>
-      <FileUpload
-        projectId={task.projectId}
-        disabled={busy || files.length >= 10}
-        onBusyChange={setUploading}
-        onUploaded={(file) => setFiles((previous) => [...previous, file])}
-      />
-      <ul className="record-list">
-        {files.map((file) => (
-          <li key={file.id}>
-            <FileDownload file={file} />
-            <button
-              className="text-button"
-              disabled={busy}
-              onClick={() =>
-                setFiles(files.filter((item) => item.id !== file.id))
-              }
-            >
-              Не додавати до результату
-            </button>
-          </li>
-        ))}
-      </ul>
-      <form className="work-form" onSubmit={submit}>
-        <label htmlFor="submission-description">Опис результату</label>
-        <textarea
-          id="submission-description"
-          required
-          maxLength={10000}
-          rows={5}
-          value={description}
-          disabled={busy}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-        {error && (
-          <p className="notice error" role="alert">
-            {error}
-          </p>
-        )}
-        <button className="button primary" disabled={busy || uploading}>
-          {busy ? "Передаємо…" : "Передати на перевірку"}
-        </button>
-      </form>
-    </>
-  );
-}
-
-function ReviewForm({
-  submissionId,
-  onReviewed,
-}: {
-  submissionId: string;
-  onReviewed: () => void;
-}) {
-  const [decision, setDecision] = useState("APPROVE");
-  const [feedback, setFeedback] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
-    setError("");
-    if (!feedback.trim()) {
-      setError("Додайте відгук до рішення.");
-      return;
-    }
-    setBusy(true);
-    try {
-      await request(`/submissions/${submissionId}/review`, {
-        method: "POST",
-        body: { decision, feedback: feedback.trim() },
-      });
-      onReviewed();
-    } catch (error) {
-      setError(errorMessage(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <form className="work-form review-form" onSubmit={submit}>
-      <fieldset disabled={busy} className="form-fields">
-        <label htmlFor={`decision-${submissionId}`}>Рішення</label>
-        <select
-          id={`decision-${submissionId}`}
-          value={decision}
-          onChange={(event) => setDecision(event.target.value)}
-        >
-          <option value="APPROVE">Прийняти роботу</option>
-          <option value="NEEDS_REVISION">Повернути на доопрацювання</option>
-        </select>
-        <label htmlFor={`feedback-${submissionId}`}>Відгук</label>
-        <textarea
-          id={`feedback-${submissionId}`}
-          rows={3}
-          required
-          maxLength={5000}
-          value={feedback}
-          onChange={(event) => setFeedback(event.target.value)}
-        />
-        {error && (
-          <p className="notice error" role="alert">
-            {error}
-          </p>
-        )}
-        <button className="button primary">
-          {busy ? "Зберігаємо…" : "Зберегти рішення"}
-        </button>
-      </fieldset>
-    </form>
+    <div>
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
   );
 }
