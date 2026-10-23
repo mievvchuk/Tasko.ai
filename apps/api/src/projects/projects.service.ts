@@ -20,6 +20,21 @@ import type {
 } from './projects.dto.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
 
+// Статуси, після яких проєкт або замовлення вважається закритим.
+const closedStatuses = ['COMPLETED', 'CANCELLED'];
+
+// Поля проєкту, які можна змінити через update.
+type ProjectChanges = {
+  title?: string;
+  description?: string;
+  deadline?: Date | null;
+  status?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  categoryId?: string;
+  updatedAt: Date;
+};
+
 export function validateBudget(budgetMin?: number, budgetMax?: number) {
   if (
     budgetMin !== undefined &&
@@ -34,6 +49,10 @@ export function validateBudget(budgetMin?: number, budgetMax?: number) {
 @Injectable()
 export class ProjectsService {
   constructor(@Inject(PrismaService) readonly prisma: PrismaService) {}
+
+  private get db() {
+    return this.prisma.client.orm.public;
+  }
 
   async requireAccess(user: CurrentUser, id: string) {
     const project = await this.prisma.client.orm.public.Project.where({
@@ -58,7 +77,7 @@ export class ProjectsService {
   }
 
   ensureWritable(project: { status: string }) {
-    if (['COMPLETED', 'CANCELLED'].includes(project.status))
+    if (closedStatuses.includes(project.status))
       throw new ConflictException('Проєкт уже закрито.');
   }
 
@@ -83,57 +102,50 @@ export class ProjectsService {
     };
   }
 
+  // Повертає сторінку проєктів, доступних користувачу, разом із прогресом.
   async list(user: CurrentUser, page: ProjectQueryDto) {
-    let query = this.prisma.client.orm.public.Project;
+    let query = this.db.Project;
     if (page.status) query = query.where({ status: page.status });
     if (user.role === 'CLIENT') query = query.where({ clientId: user.id });
     if (user.role === 'FREELANCER') {
-      const members = await this.prisma.client.orm.public.ProjectMember.where({
-        userId: user.id,
-      }).all();
-      if (!members.length) return [];
-      query = query.where((project) =>
-        project.id.in(members.map((member) => member.projectId)),
-      );
+      const projectIds = await this.findMemberProjectIds(user.id);
+      // Фрилансер бачить лише проєкти, у яких він є учасником.
+      if (!projectIds.length) return [];
+      query = query.where((project) => project.id.in(projectIds));
     }
+
     const projects = await query
       .orderBy((project) => project.createdAt.desc())
       .offset((page.page - 1) * page.limit)
       .limit(page.limit)
       .all();
     if (!projects.length) return [];
-    const tasks = await this.prisma.client.orm.public.Task.where((task) =>
-      task.projectId.in(projects.map((project) => project.id)),
-    )
-      .select('projectId', 'status')
-      .all();
-    return projects.map((project) => ({
-      ...project,
-      ...this.getProgress(
-        tasks.filter((task) => task.projectId === project.id),
-      ),
-    }));
+
+    const projectIds = projects.map((project) => project.id);
+    const tasks = await this.findTaskStatuses(projectIds);
+    return projects.map((project) => {
+      const projectTasks = tasks.filter(
+        (task) => task.projectId === project.id,
+      );
+      return { ...project, ...this.getProgress(projectTasks) };
+    });
   }
 
+  // Створює новий проєкт клієнта зі статусом PLANNING.
   async create(user: CurrentUser, data: CreateProjectDto) {
     if (user.role !== 'CLIENT')
       throw new ForbiddenException('Проєкти створює клієнт.');
     this.validateDeadline(data.deadline);
     validateBudget(data.budgetMin, data.budgetMax);
-    if (data.categoryId) {
-      const category =
-        await this.prisma.client.orm.public.ProjectCategory.where({
-          id: data.categoryId,
-        }).first();
-      if (!category) throw new BadRequestException('Категорію не знайдено.');
-    }
+    await this.ensureCategoryExists(data.categoryId);
+
     const now = new Date();
-    const project = await this.prisma.client.orm.public.Project.create({
+    const project = await this.db.Project.create({
       id: randomUUID(),
       clientId: user.id,
       title: data.title,
       description: data.description ?? null,
-      deadline: data.deadline ? new Date(data.deadline) : null,
+      deadline: this.toDateOrNull(data.deadline),
       budgetMin: data.budgetMin ?? null,
       budgetMax: data.budgetMax ?? null,
       categoryId: data.categoryId ?? null,
@@ -147,86 +159,115 @@ export class ProjectsService {
     return project;
   }
 
+  // Повертає проєкт із прогресом, навичками та категорією.
   async detail(user: CurrentUser, id: string) {
     const project = await this.requireAccess(user, id);
-    const tasks = await this.prisma.client.orm.public.Task.where({
-      projectId: id,
-    })
+    const tasks = await this.db.Task.where({ projectId: id })
       .select('status')
       .all();
     return {
       ...project,
       ...this.getProgress(tasks),
       skills: await this.getProjectSkills(id),
-      category: project.categoryId
-        ? await this.prisma.client.orm.public.ProjectCategory.where({
-            id: project.categoryId,
-          }).first()
-        : null,
+      category: await this.findCategory(project.categoryId),
     };
   }
 
+  // Змінює проєкт; доступно лише власнику або адміністратору.
   async update(user: CurrentUser, id: string, data: UpdateProjectDto) {
     const project = await this.requireOwner(user, id);
     this.ensureWritable(project);
     this.validateDeadline(data.deadline);
+    // Якщо передано лише одну межу бюджету, другу беремо зі збереженого проєкту.
     validateBudget(
       data.budgetMin ?? project.budgetMin ?? undefined,
       data.budgetMax ?? project.budgetMax ?? undefined,
     );
     if (data.deadline) {
-      const deadline = new Date(data.deadline);
-      const tasks = await this.prisma.client.orm.public.Task.where({
-        projectId: id,
-      })
-        .select('deadline')
-        .all();
-      if (tasks.some((task) => task.deadline && task.deadline > deadline)) {
-        throw new BadRequestException(
-          'Дедлайн проєкту не може бути раніше дедлайнів його завдань.',
-        );
-      }
+      await this.ensureDeadlineCoversTasks(id, new Date(data.deadline));
     }
     if (data.status === 'COMPLETED') {
-      const tasks = await this.prisma.client.orm.public.Task.where({
-        projectId: id,
-      })
-        .select('status')
-        .all();
-      const orders = await this.prisma.client.orm.public.Order.where({
-        projectId: id,
-      })
-        .select('status')
-        .all();
-      if (
-        tasks.some((task) => task.status !== 'DONE') ||
-        orders.some(
-          (order) => !['COMPLETED', 'CANCELLED'].includes(order.status),
-        )
-      )
-        throw new ConflictException(
-          'Спочатку завершіть завдання та замовлення.',
-        );
+      await this.ensureProjectCanBeCompleted(id);
     }
-    const updated = await this.prisma.client.orm.public.Project.where({
-      id,
-    }).update({
-      ...(data.title !== undefined ? { title: data.title } : {}),
-      ...(data.description !== undefined
-        ? { description: data.description }
-        : {}),
-      ...(data.deadline !== undefined
-        ? { deadline: data.deadline ? new Date(data.deadline) : null }
-        : {}),
-      ...(data.status !== undefined ? { status: data.status } : {}),
-      ...(data.budgetMin !== undefined ? { budgetMin: data.budgetMin } : {}),
-      ...(data.budgetMax !== undefined ? { budgetMax: data.budgetMax } : {}),
-      ...(data.categoryId !== undefined ? { categoryId: data.categoryId } : {}),
-      updatedAt: new Date(),
-    });
+
+    const updated = await this.db.Project.where({ id }).update(
+      this.buildProjectChanges(data),
+    );
     if (data.skillIds !== undefined)
       await this.replaceProjectSkills(id, data.skillIds);
     return updated;
+  }
+
+  private async findMemberProjectIds(userId: string) {
+    const members = await this.db.ProjectMember.where({ userId }).all();
+    return members.map((member) => member.projectId);
+  }
+
+  private findTaskStatuses(projectIds: string[]) {
+    return this.db.Task.where((task) => task.projectId.in(projectIds))
+      .select('projectId', 'status')
+      .all();
+  }
+
+  private async findCategory(categoryId?: string | null) {
+    if (!categoryId) return null;
+    return this.db.ProjectCategory.where({ id: categoryId }).first();
+  }
+
+  private async ensureCategoryExists(categoryId?: string) {
+    if (!categoryId) return;
+    const category = await this.findCategory(categoryId);
+    if (!category) throw new BadRequestException('Категорію не знайдено.');
+  }
+
+  private toDateOrNull(value?: string | null) {
+    return value ? new Date(value) : null;
+  }
+
+  // Новий дедлайн проєкту не може бути раніше за дедлайн будь-якого завдання.
+  private async ensureDeadlineCoversTasks(projectId: string, deadline: Date) {
+    const tasks = await this.db.Task.where({ projectId })
+      .select('deadline')
+      .all();
+    const hasLaterTask = tasks.some(
+      (task) => task.deadline && task.deadline > deadline,
+    );
+    if (hasLaterTask) {
+      throw new BadRequestException(
+        'Дедлайн проєкту не може бути раніше дедлайнів його завдань.',
+      );
+    }
+  }
+
+  // Завершити проєкт можна, лише коли всі завдання й замовлення закриті.
+  private async ensureProjectCanBeCompleted(projectId: string) {
+    const tasks = await this.db.Task.where({ projectId })
+      .select('status')
+      .all();
+    const orders = await this.db.Order.where({ projectId })
+      .select('status')
+      .all();
+    const hasOpenTasks = tasks.some((task) => task.status !== 'DONE');
+    const hasOpenOrders = orders.some(
+      (order) => !closedStatuses.includes(order.status),
+    );
+    if (hasOpenTasks || hasOpenOrders) {
+      throw new ConflictException('Спочатку завершіть завдання та замовлення.');
+    }
+  }
+
+  // Записуємо лише ті поля, які клієнт справді передав у запиті.
+  private buildProjectChanges(data: UpdateProjectDto) {
+    const changes: ProjectChanges = { updatedAt: new Date() };
+    if (data.title !== undefined) changes.title = data.title;
+    if (data.description !== undefined) changes.description = data.description;
+    if (data.deadline !== undefined)
+      changes.deadline = this.toDateOrNull(data.deadline);
+    if (data.status !== undefined) changes.status = data.status;
+    if (data.budgetMin !== undefined) changes.budgetMin = data.budgetMin;
+    if (data.budgetMax !== undefined) changes.budgetMax = data.budgetMax;
+    if (data.categoryId !== undefined) changes.categoryId = data.categoryId;
+    return changes;
   }
 
   private async replaceProjectSkills(projectId: string, skillIds: string[]) {
