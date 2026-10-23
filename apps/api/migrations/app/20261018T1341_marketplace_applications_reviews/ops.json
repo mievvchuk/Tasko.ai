@@ -1,0 +1,569 @@
+[
+  {
+    "id": "table.FreelancerReview",
+    "label": "Create table \"FreelancerReview\"",
+    "summary": "Creates table \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"FreelancerReview\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"FreelancerReview\"",
+        "sql": "CREATE TABLE \"public\".\"FreelancerReview\" (\n  \"clientId\" text NOT NULL,\n  \"comment\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"freelancerId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"projectId\" text NOT NULL,\n  \"rating\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"FreelancerReview\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.ProjectApplication",
+    "label": "Create table \"ProjectApplication\"",
+    "summary": "Creates table \"ProjectApplication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ProjectApplication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ProjectApplication\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ProjectApplication\"",
+        "sql": "CREATE TABLE \"public\".\"ProjectApplication\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"freelancerId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"message\" text NOT NULL,\n  \"projectId\" text NOT NULL,\n  \"proposedBudget\" int4 NOT NULL,\n  \"proposedDays\" int4 NOT NULL,\n  \"status\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ProjectApplication\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.FreelancerReview.FreelancerReview_projectId_freelancerId_key",
+    "label": "Add unique constraint on \"FreelancerReview\" (projectId, freelancerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "FreelancerReview_projectId_freelancerId_key",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"FreelancerReview_projectId_freelancerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_projectId_freelancerId_key",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"FreelancerReview_projectId_freelancerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"FreelancerReview\" ADD CONSTRAINT \"FreelancerReview_projectId_freelancerId_key\" UNIQUE (\"projectId\", \"freelancerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"FreelancerReview_projectId_freelancerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_projectId_freelancerId_key",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.ProjectApplication.ProjectApplication_projectId_freelancerId_key",
+    "label": "Add unique constraint on \"ProjectApplication\" (projectId, freelancerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "ProjectApplication_projectId_freelancerId_key",
+        "table": "ProjectApplication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"ProjectApplication_projectId_freelancerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProjectApplication_projectId_freelancerId_key",
+          "public",
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"ProjectApplication_projectId_freelancerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"ProjectApplication\" ADD CONSTRAINT \"ProjectApplication_projectId_freelancerId_key\" UNIQUE (\"projectId\", \"freelancerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"ProjectApplication_projectId_freelancerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProjectApplication_projectId_freelancerId_key",
+          "public",
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.FreelancerReview.FreelancerReview_clientId_idx_153a9a49",
+    "label": "Create index \"FreelancerReview_clientId_idx_153a9a49\" on \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "FreelancerReview_clientId_idx_153a9a49",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"FreelancerReview_clientId_idx_153a9a49\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview_clientId_idx_153a9a49\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"FreelancerReview_clientId_idx_153a9a49\"",
+        "sql": "CREATE INDEX \"FreelancerReview_clientId_idx_153a9a49\" ON \"public\".\"FreelancerReview\" (\"clientId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"FreelancerReview_clientId_idx_153a9a49\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview_clientId_idx_153a9a49\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.FreelancerReview.FreelancerReview_freelancerId_idx_c8137280",
+    "label": "Create index \"FreelancerReview_freelancerId_idx_c8137280\" on \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "FreelancerReview_freelancerId_idx_c8137280",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"FreelancerReview_freelancerId_idx_c8137280\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview_freelancerId_idx_c8137280\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"FreelancerReview_freelancerId_idx_c8137280\"",
+        "sql": "CREATE INDEX \"FreelancerReview_freelancerId_idx_c8137280\" ON \"public\".\"FreelancerReview\" (\"freelancerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"FreelancerReview_freelancerId_idx_c8137280\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview_freelancerId_idx_c8137280\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.FreelancerReview.FreelancerReview_projectId_idx_a96e4d92",
+    "label": "Create index \"FreelancerReview_projectId_idx_a96e4d92\" on \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "FreelancerReview_projectId_idx_a96e4d92",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"FreelancerReview_projectId_idx_a96e4d92\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview_projectId_idx_a96e4d92\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"FreelancerReview_projectId_idx_a96e4d92\"",
+        "sql": "CREATE INDEX \"FreelancerReview_projectId_idx_a96e4d92\" ON \"public\".\"FreelancerReview\" (\"projectId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"FreelancerReview_projectId_idx_a96e4d92\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FreelancerReview_projectId_idx_a96e4d92\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ProjectApplication.ProjectApplication_freelancerId_idx_c8137280",
+    "label": "Create index \"ProjectApplication_freelancerId_idx_c8137280\" on \"ProjectApplication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ProjectApplication_freelancerId_idx_c8137280",
+        "table": "ProjectApplication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ProjectApplication_freelancerId_idx_c8137280\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProjectApplication_freelancerId_idx_c8137280\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ProjectApplication_freelancerId_idx_c8137280\"",
+        "sql": "CREATE INDEX \"ProjectApplication_freelancerId_idx_c8137280\" ON \"public\".\"ProjectApplication\" (\"freelancerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ProjectApplication_freelancerId_idx_c8137280\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProjectApplication_freelancerId_idx_c8137280\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ProjectApplication.ProjectApplication_projectId_idx_a96e4d92",
+    "label": "Create index \"ProjectApplication_projectId_idx_a96e4d92\" on \"ProjectApplication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ProjectApplication_projectId_idx_a96e4d92",
+        "table": "ProjectApplication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ProjectApplication_projectId_idx_a96e4d92\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProjectApplication_projectId_idx_a96e4d92\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ProjectApplication_projectId_idx_a96e4d92\"",
+        "sql": "CREATE INDEX \"ProjectApplication_projectId_idx_a96e4d92\" ON \"public\".\"ProjectApplication\" (\"projectId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ProjectApplication_projectId_idx_a96e4d92\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProjectApplication_projectId_idx_a96e4d92\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.FreelancerReview.FreelancerReview_projectId_fkey",
+    "label": "Add foreign key \"FreelancerReview_projectId_fkey\" on \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "FreelancerReview_projectId_fkey",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"FreelancerReview_projectId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_projectId_fkey",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"FreelancerReview_projectId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"FreelancerReview\"\nADD CONSTRAINT \"FreelancerReview_projectId_fkey\"\nFOREIGN KEY (\"projectId\")\nREFERENCES \"public\".\"Project\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"FreelancerReview_projectId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_projectId_fkey",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.FreelancerReview.FreelancerReview_clientId_fkey",
+    "label": "Add foreign key \"FreelancerReview_clientId_fkey\" on \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "FreelancerReview_clientId_fkey",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"FreelancerReview_clientId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_clientId_fkey",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"FreelancerReview_clientId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"FreelancerReview\"\nADD CONSTRAINT \"FreelancerReview_clientId_fkey\"\nFOREIGN KEY (\"clientId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"FreelancerReview_clientId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_clientId_fkey",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.FreelancerReview.FreelancerReview_freelancerId_fkey",
+    "label": "Add foreign key \"FreelancerReview_freelancerId_fkey\" on \"FreelancerReview\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "FreelancerReview_freelancerId_fkey",
+        "table": "FreelancerReview"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"FreelancerReview_freelancerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_freelancerId_fkey",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"FreelancerReview_freelancerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"FreelancerReview\"\nADD CONSTRAINT \"FreelancerReview_freelancerId_fkey\"\nFOREIGN KEY (\"freelancerId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"FreelancerReview_freelancerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FreelancerReview_freelancerId_fkey",
+          "public",
+          "\"public\".\"FreelancerReview\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ProjectApplication.ProjectApplication_projectId_fkey",
+    "label": "Add foreign key \"ProjectApplication_projectId_fkey\" on \"ProjectApplication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ProjectApplication_projectId_fkey",
+        "table": "ProjectApplication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ProjectApplication_projectId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProjectApplication_projectId_fkey",
+          "public",
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ProjectApplication_projectId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ProjectApplication\"\nADD CONSTRAINT \"ProjectApplication_projectId_fkey\"\nFOREIGN KEY (\"projectId\")\nREFERENCES \"public\".\"Project\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ProjectApplication_projectId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProjectApplication_projectId_fkey",
+          "public",
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ProjectApplication.ProjectApplication_freelancerId_fkey",
+    "label": "Add foreign key \"ProjectApplication_freelancerId_fkey\" on \"ProjectApplication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ProjectApplication_freelancerId_fkey",
+        "table": "ProjectApplication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ProjectApplication_freelancerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProjectApplication_freelancerId_fkey",
+          "public",
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ProjectApplication_freelancerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ProjectApplication\"\nADD CONSTRAINT \"ProjectApplication_freelancerId_fkey\"\nFOREIGN KEY (\"freelancerId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ProjectApplication_freelancerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProjectApplication_freelancerId_fkey",
+          "public",
+          "\"public\".\"ProjectApplication\""
+        ]
+      }
+    ]
+  }
+]

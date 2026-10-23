@@ -1,0 +1,125 @@
+[
+  {
+    "id": "column.public.FileAttachment.submissionId",
+    "label": "Add column \"submissionId\" to \"FileAttachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "submissionId",
+        "table": "FileAttachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"submissionId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "FileAttachment",
+          "submissionId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"submissionId\"",
+        "sql": "ALTER TABLE \"public\".\"FileAttachment\" ADD COLUMN \"submissionId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"submissionId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "FileAttachment",
+          "submissionId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.FileAttachment.FileAttachment_submissionId_idx_89cd3f4e",
+    "label": "Create index \"FileAttachment_submissionId_idx_89cd3f4e\" on \"FileAttachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "FileAttachment_submissionId_idx_89cd3f4e",
+        "table": "FileAttachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"FileAttachment_submissionId_idx_89cd3f4e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FileAttachment_submissionId_idx_89cd3f4e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"FileAttachment_submissionId_idx_89cd3f4e\"",
+        "sql": "CREATE INDEX \"FileAttachment_submissionId_idx_89cd3f4e\" ON \"public\".\"FileAttachment\" (\"submissionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"FileAttachment_submissionId_idx_89cd3f4e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FileAttachment_submissionId_idx_89cd3f4e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.FileAttachment.FileAttachment_submissionId_fkey",
+    "label": "Add foreign key \"FileAttachment_submissionId_fkey\" on \"FileAttachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "FileAttachment_submissionId_fkey",
+        "table": "FileAttachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"FileAttachment_submissionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FileAttachment_submissionId_fkey",
+          "public",
+          "\"public\".\"FileAttachment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"FileAttachment_submissionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"FileAttachment\"\nADD CONSTRAINT \"FileAttachment_submissionId_fkey\"\nFOREIGN KEY (\"submissionId\")\nREFERENCES \"public\".\"WorkSubmission\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"FileAttachment_submissionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FileAttachment_submissionId_fkey",
+          "public",
+          "\"public\".\"FileAttachment\""
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#4f46e5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="preload"
+      href="/fonts/Manrope-Variable.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <script>
+      // Apply the saved theme before the first paint, including before React loads.
+      (() => {
+        let preference = "system";
+        try {
+          preference = localStorage.getItem("tasko.theme") || "system";
+        } catch {}
+        const theme =
+          preference === "dark" ||
+          (preference !== "light" &&
+            matchMedia("(prefers-color-scheme: dark)").matches)
+            ? "dark"
+            : "light";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
+    <meta
+      name="description"
+      content="Tasko.ai — простір для управління фриланс-проєктами."
+    />
+    <title>Tasko.ai — ваш робочий простір</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

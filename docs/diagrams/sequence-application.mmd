@@ -1,0 +1,16 @@
+sequenceDiagram
+  actor F as Фрилансер
+  participant UI as React
+  participant API as NestJS
+  participant DB as PostgreSQL
+  actor C as Клієнт
+  F->>UI: Заповнює заявку
+  UI->>API: POST /projects/:id/applications
+  API->>DB: Створює PENDING заявку
+  DB-->>API: Заявка
+  API-->>UI: 201 Created
+  C->>UI: Обирає кандидата
+  UI->>API: POST /applications/:id/accept
+  API->>DB: Транзакція вибору виконавця
+  DB-->>API: Учасника додано, проєкт ACTIVE
+  API-->>UI: Обраний виконавець

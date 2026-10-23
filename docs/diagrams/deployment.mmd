@@ -1,0 +1,14 @@
+flowchart TB
+  User[Пристрій користувача] --> Browser[Веббраузер]
+  subgraph Environment[Середовище виконання, платформу ще не обрано]
+    Web[Статичний React-застосунок]
+    API[NestJS API]
+    Storage[Сховище файлів]
+    DB[(PostgreSQL)]
+  end
+  Browser -->|HTTPS| Web
+  Browser -->|HTTPS REST + JWT| API
+  API -->|SQL| DB
+  API --> Storage
+  API -->|HTTPS| Model[API мовної моделі]
+  API -->|HTTPS| Email[Email API]

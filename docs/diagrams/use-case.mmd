@@ -1,0 +1,13 @@
+flowchart LR
+  Client([Клієнт]) --> Publish[Опублікувати проєкт]
+  Client --> Choose[Обрати фрилансера]
+  Client --> Manage[Керувати завданнями]
+  Client --> Accept[Прийняти результат]
+  Freelancer([Фрилансер]) --> Browse[Переглянути біржу]
+  Freelancer --> Apply[Подати заявку]
+  Freelancer --> Work[Виконати завдання]
+  Freelancer --> Submit[Передати результат]
+  Admin([Адміністратор]) --> Users[Керувати користувачами]
+  Admin --> Report[Переглянути та експортувати звіт]
+  Client --> Agent[Запитати AI-агента]
+  Freelancer --> Agent

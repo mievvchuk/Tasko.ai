@@ -1,0 +1,22 @@
+classDiagram
+  class User { +UUID id +string name +string email +UserRole role +UserStatus status }
+  class Project { +UUID id +string title +ProjectStatus status +Date deadline }
+  class ProjectApplication { +number proposedBudget +number proposedDays +ApplicationStatus status }
+  class ProjectMember { +Date joinedAt }
+  class Task { +string title +TaskStatus status +Priority priority +Date deadline }
+  class Order { +OrderStatus status }
+  class Message { +string content +Date createdAt }
+  class FileAttachment { +string fileName +string mimeType +number size }
+  class WorkSubmission { +string description +SubmissionStatus status }
+  class FreelancerReview { +number rating +string comment }
+  User "1" --> "many" Project : створює
+  User "1" --> "many" ProjectApplication : подає
+  Project "1" --> "many" ProjectApplication
+  Project "1" --> "many" ProjectMember
+  User "1" --> "many" ProjectMember
+  Project "1" --> "many" Task
+  Project "1" --> "many" Order
+  Project "1" --> "many" Message
+  Task "1" --> "many" WorkSubmission
+  WorkSubmission "1" --> "many" FileAttachment
+  Project "1" --> "many" FreelancerReview
