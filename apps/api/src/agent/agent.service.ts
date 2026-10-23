@@ -14,7 +14,17 @@ import type { CurrentUser } from '../users/users.service.js';
 import { McpService } from './mcp.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import { parseApplicationRanking } from './application-ranking.js';
-import { parseProjectPlan } from './project-plan.js';
+import { parseProjectPlan, projectPlanJsonSchema } from './project-plan.js';
+
+const maxPlanAttempts = 2;
+
+// Дані проєкту, які передаємо моделі для складання плану.
+interface PlanBrief {
+  title: string;
+  description: string | null;
+  deadline: Date | null;
+  instructions: string;
+}
 
 const completionSchema = z.object({
   choices: z
@@ -67,6 +77,7 @@ export class AgentService {
     messages: Record<string, unknown>[],
     tools: Record<string, unknown>[],
     maxTokens = 1500,
+    responseFormat?: Record<string, unknown>,
   ) {
     if (!this.status().configured)
       throw new ServiceUnavailableException(
@@ -92,6 +103,7 @@ export class AgentService {
           messages,
           ...(tools.length ? { tools, tool_choice: 'auto' } : {}),
           max_tokens: maxTokens,
+          ...(responseFormat ? { response_format: responseFormat } : {}),
         }),
         signal: AbortSignal.timeout(30000),
       });
@@ -204,13 +216,23 @@ export class AgentService {
     }
   }
 
-  async generateProjectPlan(brief: {
-    title: string;
-    description: string | null;
-    deadline: Date | null;
-    instructions: string;
-  }) {
-    const answer = await this.complete(
+  async generateProjectPlan(brief: PlanBrief) {
+    // Модель іноді повертає зламаний або неповний JSON, тому даємо їй ще одну спробу.
+    // Помилки самого провайдера (ліміт, недоступність) не повторюємо: їх кидає complete().
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= maxPlanAttempts; attempt++) {
+      const answer = await this.requestProjectPlan(brief);
+      try {
+        return parseProjectPlan(answer.content || '');
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError;
+  }
+
+  private requestProjectPlan(brief: PlanBrief) {
+    return this.complete(
       [
         {
           role: 'system',
@@ -221,8 +243,15 @@ export class AgentService {
       ],
       [],
       6000,
+      {
+        type: 'json_schema',
+        json_schema: {
+          name: 'project_plan',
+          strict: true,
+          schema: projectPlanJsonSchema,
+        },
+      },
     );
-    return parseProjectPlan(answer.content || '');
   }
 
   async rankApplications(user: CurrentUser, projectId: string) {
