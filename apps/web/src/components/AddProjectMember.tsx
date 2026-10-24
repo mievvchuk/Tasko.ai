@@ -79,6 +79,7 @@ export function AddProjectMember({
               ))}
             </select>
             <button className="button primary" disabled={busy || !userId}>
+              <i className="bi bi-plus-lg" aria-hidden="true"></i>
               {busy ? "Додаємо…" : "Додати до команди"}
             </button>
           </form>

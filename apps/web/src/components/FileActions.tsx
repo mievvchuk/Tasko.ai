@@ -70,6 +70,7 @@ export function FileUpload({
           void upload();
         }}
       >
+        <i className="bi bi-upload" aria-hidden="true"></i>
         {busy ? "Завантажуємо…" : "Завантажити файл"}
       </button>
       {error && (
@@ -105,6 +106,7 @@ export function FileDownload({ file }: { file: FileAttachment }) {
           void download();
         }}
       >
+        <i className="bi bi-download" aria-hidden="true"></i>
         {busy ? "Отримуємо файл…" : file.fileName}
       </button>
       <small>{Math.ceil(file.size / 1024)} КБ</small>

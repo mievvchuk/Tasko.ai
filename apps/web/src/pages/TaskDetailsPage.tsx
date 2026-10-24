@@ -105,10 +105,12 @@ export function TaskDetailsPage() {
         <div className="page-actions">
           {canEdit && (
             <Link className="button primary" to={`/tasks/${taskId}/edit`}>
+              <i className="bi bi-pencil" aria-hidden="true"></i>
               Редагувати завдання
             </Link>
           )}
           <button className="button secondary" onClick={refresh}>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
             Оновити дані
           </button>
         </div>

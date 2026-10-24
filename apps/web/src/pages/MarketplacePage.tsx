@@ -221,6 +221,7 @@ export function MarketplacePage() {
                   {formError && <p className="form-error">{formError}</p>}
                   <div className="page-actions">
                     <button className="button primary" disabled={submitting}>
+                      <i className="bi bi-send" aria-hidden="true"></i>
                       {submitting ? "Надсилаємо…" : "Надіслати заявку"}
                     </button>
                     <button

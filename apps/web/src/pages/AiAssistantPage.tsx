@@ -146,6 +146,7 @@ export function AiAssistantPage() {
                 className="button primary"
                 disabled={busy || !status.data.configured}
               >
+                <i className="bi bi-send" aria-hidden="true"></i>
                 {busy ? "Аналізуємо…" : "Надіслати запит"}
               </button>
               {busy && (

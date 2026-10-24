@@ -142,6 +142,7 @@ export function TaskSubmissionForm({
         />
         <ErrorNotice message={error} />
         <button className="button primary" disabled={busy || uploading}>
+          <i className="bi bi-send" aria-hidden="true"></i>
           {busy ? "Передаємо…" : "Передати на перевірку"}
         </button>
       </form>

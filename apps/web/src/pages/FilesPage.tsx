@@ -49,6 +49,7 @@ export function FilesPage() {
         <div className="panel-heading">
           <h2>Прикріплені файли</h2>
           <button className="button secondary" onClick={files.refresh}>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
             Оновити
           </button>
         </div>

@@ -79,6 +79,7 @@ export function TasksPage() {
                 className="button primary"
                 to={`/projects/${projectId}/tasks/new`}
               >
+                <i className="bi bi-plus-lg" aria-hidden="true"></i>
                 Створити завдання
               </Link>
             )}
@@ -122,6 +123,7 @@ export function TasksPage() {
               </select>
             </div>
             <button className="button secondary" onClick={tasks.refresh}>
+              <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
               Оновити
             </button>
           </div>
