@@ -3,6 +3,12 @@ import { formatDate } from "../format";
 import { priorityNames, taskStatusNames } from "../types";
 import type { ProjectMember, Task } from "../types";
 
+// Прострочене — це незавершене завдання, дедлайн якого вже минув.
+function isOverdue(task: Task) {
+  if (!task.deadline || task.status === "DONE") return false;
+  return new Date(task.deadline) < new Date();
+}
+
 export function TasksTable({
   tasks,
   members,
@@ -57,7 +63,23 @@ export function TasksTable({
                     {taskStatusNames[task.status]}
                   </span>
                 </td>
-                <td>{formatDate(task.deadline)}</td>
+                <td
+                  className={
+                    isOverdue(task) ? "deadline-cell overdue" : "deadline-cell"
+                  }
+                >
+                  {task.deadline && (
+                    <i
+                      className={
+                        isOverdue(task)
+                          ? "bi bi-clock-history"
+                          : "bi bi-calendar3"
+                      }
+                      aria-hidden="true"
+                    ></i>
+                  )}
+                  {formatDate(task.deadline)}
+                </td>
               </tr>
             ))}
           </tbody>
