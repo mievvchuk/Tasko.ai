@@ -31,6 +31,7 @@ export function WorkloadPage() {
           disabled={workload.loading}
           onClick={workload.refresh}
         >
+          <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
           Оновити дані
         </button>
       </div>

@@ -82,6 +82,7 @@ export function ProjectsPage() {
         <div className="page-actions">
           {user?.role === "CLIENT" && (
             <Link className="button primary" to="/projects/new">
+              <i className="bi bi-plus-lg" aria-hidden="true"></i>
               Створити проєкт
             </Link>
           )}
@@ -90,7 +91,8 @@ export function ProjectsPage() {
             onClick={refresh}
             disabled={loading}
           >
-            Оновити дані <span aria-hidden="true">↻</span>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            Оновити дані
           </button>
         </div>
       </div>
@@ -132,9 +134,7 @@ export function ProjectsPage() {
               <ProjectsTable projects={projects} />
             ) : (
               <div className="empty-state">
-                <span className="empty-symbol" aria-hidden="true">
-                  ▦
-                </span>
+                <i className="bi bi-inbox empty-symbol" aria-hidden="true"></i>
                 <h3>Проєктів не знайдено</h3>
                 <p>
                   {user?.role === "FREELANCER"

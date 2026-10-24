@@ -144,7 +144,10 @@ export function FreelancerProfileEditor() {
             onChange={(e) => setUrl(e.target.value)}
           />
         </label>
-        <button className="button secondary">Додати роботу</button>
+        <button className="button secondary">
+          <i className="bi bi-plus-lg" aria-hidden="true"></i>
+          Додати роботу
+        </button>
       </form>
       <div className="simple-list">
         {profile?.portfolio.map((item) => (
@@ -159,6 +162,7 @@ export function FreelancerProfileEditor() {
               className="button secondary"
               onClick={() => void remove(item.id)}
             >
+              <i className="bi bi-trash" aria-hidden="true"></i>
               Видалити
             </button>
           </article>

@@ -160,9 +160,7 @@ export function DashboardPage() {
               <ProjectsTable projects={data.projects} />
             ) : (
               <div className="empty-state">
-                <span className="empty-symbol" aria-hidden="true">
-                  ▦
-                </span>
+                <i className="bi bi-inbox empty-symbol" aria-hidden="true"></i>
                 <h3>Активних проєктів поки немає</h3>
                 <p>
                   Проєкти у плануванні та з іншими статусами доступні в

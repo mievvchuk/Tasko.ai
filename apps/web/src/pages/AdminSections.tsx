@@ -103,6 +103,7 @@ export function AdminReportSummary({ report }: { report: AdminReport }) {
             disabled={Boolean(exporting)}
             onClick={() => exportReport(format)}
           >
+            <i className="bi bi-download" aria-hidden="true"></i>
             {exporting === format ? "Готуємо…" : format.toUpperCase()}
           </button>
         ))}

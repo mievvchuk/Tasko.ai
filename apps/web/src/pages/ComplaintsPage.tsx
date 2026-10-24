@@ -85,7 +85,10 @@ export function ComplaintsPage() {
           />
         </label>
         {formError && <p className="form-error full-width">{formError}</p>}
-        <button className="button primary">Надіслати скаргу</button>
+        <button className="button primary">
+          <i className="bi bi-send" aria-hidden="true"></i>
+          Надіслати скаргу
+        </button>
       </form>
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (

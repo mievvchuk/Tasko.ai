@@ -118,6 +118,7 @@ function PlanTaskFields({
         disabled={!canRemove}
         onClick={onRemove}
       >
+        <i className="bi bi-trash" aria-hidden="true"></i>
         Прибрати завдання
       </button>
     </section>
@@ -198,6 +199,7 @@ export function PlanMilestoneFields({
           disabled={tasks.length >= maxTasksPerMilestone}
           onClick={addTask}
         >
+          <i className="bi bi-plus-lg" aria-hidden="true"></i>
           Додати завдання
         </button>
         <button
@@ -206,6 +208,7 @@ export function PlanMilestoneFields({
           disabled={!canRemove}
           onClick={onRemove}
         >
+          <i className="bi bi-trash" aria-hidden="true"></i>
           Прибрати етап
         </button>
       </div>

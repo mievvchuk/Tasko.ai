@@ -1,0 +1,942 @@
+/* =========================================================
+   Редизайн Tasko.ai — варіант A «Ясність»
+   Підключається ПІСЛЯ styles.css (див. main.tsx), тому
+   правила тут перекривають старі стилі з тими самими класами.
+   Кольори беремо з palette.css — тож темна тема працює сама.
+   ========================================================= */
+
+/* 1. Дизайн-токени: усі «магічні числа» в одному місці */
+:root {
+  --r-bg: var(--palette-f7f8fc);
+  --r-card: var(--surface);
+  --r-line: var(--border);
+  --r-ink: var(--palette-202437);
+  --r-muted: var(--muted);
+  --r-accent: var(--primary);
+  --r-accent-soft: var(--palette-f0eeff);
+  --r-radius: 18px;
+  --r-radius-sm: 10px;
+  --r-shadow: 0 18px 40px -24px rgba(52, 48, 91, 0.35);
+  --r-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 2. Верхня панель навігації (замість бічного меню) */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--palette-ffffffb3);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--r-line);
+}
+.topbar-inner {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 12px 40px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.topbar .brand {
+  font-size: 21px;
+}
+.topbar .brand-mark {
+  width: 30px;
+  height: 30px;
+  font-size: 24px;
+  border-radius: 9px;
+}
+.topbar-nav {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.topbar-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--palette-596077);
+  font-size: 13px;
+  font-weight: 550;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.topbar-nav a:hover {
+  text-decoration: none;
+  background: var(--palette-eceef5);
+  color: var(--r-ink);
+}
+.topbar-nav a.active {
+  background: var(--r-ink);
+  color: var(--r-card);
+  font-weight: 650;
+}
+.topbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.topbar-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: var(--r-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+/* Іконки Bootstrap Icons у меню: колір береться з тексту (currentColor) */
+.topbar-nav .bi,
+.topbar-logout .bi {
+  font-size: 15px;
+  line-height: 1;
+}
+.topbar-logout:hover {
+  color: var(--r-accent);
+}
+.badge-count {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--r-accent);
+  color: var(--on-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Панель має ширину до 1250px, і всі пункти з підписами в неї не вміщаються.
+   Тому на комп'ютері в меню лише іконки: підпис ховаємо візуально,
+   але скрінрідер його читає, а title показує назву при наведенні.
+   У мобільному меню (до 900px) підписи видно. */
+.topbar-logout .nav-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.topbar-logout .bi {
+  font-size: 18px;
+}
+@media (min-width: 901px) {
+  .topbar-nav .nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .topbar-nav a {
+    padding: 9px 11px;
+  }
+}
+
+/* 3. Заголовки сторінок */
+.page-heading h1 {
+  font-size: 34px;
+  font-weight: 740;
+  letter-spacing: -1.2px;
+}
+.page-heading p {
+  font-size: 15px;
+}
+
+/* 4. Кнопки: більше заокруглення + легкий «підйом» при наведенні */
+.button {
+  border-radius: var(--r-radius-sm);
+  transition:
+    transform 0.15s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -10px var(--r-accent);
+}
+.secondary:hover {
+  border-color: var(--palette-b4acf0);
+}
+
+/* 5. Картки-статистика на головній */
+.stat-card,
+.data-panel {
+  border-radius: var(--r-radius);
+}
+.stat-card {
+  transition:
+    transform 0.2s var(--r-ease),
+    box-shadow 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--r-shadow);
+}
+.stat-card > strong {
+  font-size: 36px;
+}
+.stat-note {
+  font-size: 12px;
+}
+/* «Найближчий дедлайн» — головний акцент сторінки */
+.deadline-card {
+  background: var(--r-accent);
+  border-color: var(--r-accent);
+}
+.deadline-card .stat-label,
+.deadline-card .stat-note,
+.deadline-card > strong {
+  color: var(--on-primary);
+}
+
+/* 6. Таблиця проєктів і списки */
+.projects-table td {
+  font-size: 13px;
+}
+.project-name-cell > strong {
+  font-size: 14px;
+}
+.projects-table tbody tr {
+  transition: background 0.15s;
+}
+.projects-table tbody tr:hover {
+  background: var(--r-bg);
+}
+.project-status {
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 11px;
+}
+.deadline-list li {
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+.deadline-list strong {
+  font-size: 14px;
+}
+.deadline-list li span:not(.deadline-dot),
+.deadline-list time {
+  font-size: 12px;
+}
+
+/* 7. Канбан-дошка */
+.kanban-column {
+  background: var(--palette-eff0f5);
+  outline: 2px dashed transparent;
+  transition:
+    background 0.2s,
+    outline-color 0.2s;
+}
+.kanban-column h2 span {
+  color: var(--palette-9a9eb0);
+  font-size: 13px;
+}
+/* колонка, над якою зараз тримають картку */
+.kanban-column.drop-target {
+  background: var(--r-accent-soft);
+  outline-color: var(--palette-a8a2ff);
+}
+.kanban-card {
+  border: 1px solid var(--r-line);
+  box-shadow: none;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+.kanban-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--r-shadow);
+}
+.kanban-card[draggable="true"] {
+  cursor: grab;
+}
+.kanban-card.dragging {
+  opacity: 0.4;
+}
+
+/* 8. Сторінка входу: одна колонка, картка по центру */
+.auth-main {
+  grid-template-columns: 1fr;
+  max-width: 460px;
+  gap: 28px;
+}
+.auth-intro {
+  order: 2;
+}
+.auth-intro .eyebrow,
+.auth-intro h1,
+.auth-intro > p {
+  display: none;
+}
+.workflow {
+  justify-content: center;
+  margin-top: 0;
+}
+.auth-card {
+  border-radius: 20px;
+  box-shadow: 0 24px 60px -30px rgba(52, 48, 91, 0.25);
+}
+
+/* 8а. Форми (вхід, реєстрація, відновлення пароля та інші форми .work-form) */
+.field input,
+.work-form input,
+.work-form select,
+.work-form textarea {
+  border-radius: var(--r-radius-sm);
+  border-color: var(--r-line);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.field input {
+  font-size: 14px;
+}
+/* У фокусі: фіолетова рамка і м'яке кільце замість стандартного контуру */
+.field input:focus,
+.work-form input:focus,
+.work-form select:focus,
+.work-form textarea:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
+}
+.field label,
+.role-selector legend {
+  font-size: 13px;
+}
+.field-hint {
+  font-size: 12px;
+}
+/* Кнопка «показати пароль»: іконка bi-eye / bi-eye-slash */
+.password-toggle {
+  border-radius: var(--r-radius-sm);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.password-toggle .bi {
+  font-size: 18px;
+  line-height: 1;
+}
+/* Вибір ролі під час реєстрації */
+.role-option {
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.role-option:hover {
+  border-color: var(--palette-b4acf0);
+}
+.role-option.selected {
+  background: var(--r-accent-soft);
+}
+.role-option strong {
+  font-size: 13px;
+}
+.role-option small {
+  font-size: 12px;
+}
+/* Повідомлення про успіх, помилку чи стан */
+.notice {
+  border-radius: var(--r-radius-sm);
+  font-size: 13px;
+}
+/* Картка входу та дрібні підписи навколо неї */
+.auth-card {
+  border-radius: var(--r-radius);
+}
+.card-kicker {
+  font-size: 12px;
+  letter-spacing: 1.4px;
+}
+.workflow b,
+.public-footer {
+  font-size: 12px;
+}
+
+/* 8б. Проєкти: заголовки, вкладки, таблиці, картки */
+/* Дрібний надпис над заголовком («TASKO.AI / ПРОЄКТ») і посилання «← назад» */
+.eyebrow,
+.page-heading .eyebrow {
+  font-size: 12px;
+  letter-spacing: 1.2px;
+}
+.breadcrumb {
+  color: var(--r-muted);
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.breadcrumb:hover {
+  color: var(--r-accent);
+  text-decoration: none;
+}
+.heading-with-action > .button,
+.page-actions .button {
+  font-size: 13px;
+}
+/* Розділи проєкту (Завдання, Повідомлення, Файли…) як вкладки:
+   спільна лінія знизу, у наведеного пункту — фіолетове підкреслення */
+.project-links {
+  flex-wrap: nowrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--r-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.project-links a {
+  flex-shrink: 0;
+  margin-bottom: -1px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--r-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.project-links a:hover {
+  color: var(--r-accent);
+  border-bottom-color: var(--r-accent);
+  text-decoration: none;
+}
+/* Таблиці проєктів і завдань */
+.projects-table th {
+  font-size: 12px;
+}
+.project-description summary,
+.task-count,
+.table-hint,
+.panel-heading p,
+.pagination > span,
+.pagination .button,
+.filter-field label,
+.marketplace-facts dt {
+  font-size: 12px;
+}
+.project-description p {
+  font-size: 13px;
+}
+.filter-field select {
+  border-radius: var(--r-radius-sm);
+  font-size: 13px;
+}
+/* Огляд проєкту */
+.project-facts dt {
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.project-facts dd {
+  font-size: 14px;
+  color: var(--r-ink);
+}
+/* Учасники проєкту: ім'я та пошта (тег small без цього був 10px) */
+.project-members li {
+  font-size: 13px;
+}
+.project-members small {
+  font-size: 12px;
+}
+/* Картки заявок, етапів, історії та редактор AI-плану */
+.application-card,
+.plan-milestone {
+  border-radius: var(--r-radius);
+  border-color: var(--r-line);
+  transition: box-shadow 0.2s;
+}
+.application-card:hover {
+  box-shadow: var(--r-shadow);
+}
+.plan-task,
+.list-card {
+  border-radius: var(--r-radius-sm);
+}
+/* Поля форми проєкту, фільтрів і короткої форми етапу */
+.project-form-panel input,
+.project-form-panel select,
+.project-form-panel textarea,
+.inline-form input {
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.project-form-panel input:focus,
+.project-form-panel select:focus,
+.project-form-panel textarea:focus,
+.inline-form input:focus,
+.filter-field select:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
+}
+/* Короткі форми в один рядок (.inline-form): фільтр біржі, новий етап,
+   робота в портфоліо, рішення щодо скарги. Раніше поля в них були
+   стандартними полями браузера без стилів. Підпис стоїть над полем. */
+.data-panel.inline-form {
+  padding: 20px 24px;
+}
+.inline-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--r-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.inline-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--r-line);
+  background: var(--r-card);
+  color: var(--r-ink);
+  font: inherit;
+}
+/* Чекбокс («Лише обране») — в один рядок із підписом */
+.inline-form .checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inline-form .checkbox-field input {
+  width: auto;
+  min-height: 0;
+  padding: 0;
+}
+/* Іконки на кнопках: трохи більші за текст, колір як у тексту */
+.button .bi,
+.text-button .bi {
+  font-size: 15px;
+  line-height: 1;
+}
+.text-button .bi {
+  margin-right: 6px;
+}
+
+/* 8в. Завдання: результати роботи, перевірка, пошук, навантаження */
+/* Картка результату роботи та картка користувача в адмінці */
+.submission-card,
+.user-card {
+  border-color: var(--r-line);
+  border-radius: var(--r-radius);
+  transition: box-shadow 0.2s;
+}
+.submission-card:hover {
+  box-shadow: var(--r-shadow);
+}
+/* Дата й підписи в заголовку запису (було 11px) */
+.record-heading time,
+.record-heading small {
+  font-size: 12px;
+}
+.review-feedback {
+  border-radius: var(--r-radius-sm);
+  border-left: 3px solid var(--r-accent);
+}
+/* Поля форми перевірки, пошуку завдань і відгуку */
+.review-form select,
+.review-form textarea,
+.task-search input {
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.review-form select:focus,
+.review-form textarea:focus,
+.task-search input:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
+}
+.review-form label,
+.link-button {
+  font-size: 13px;
+}
+.checkbox-field input {
+  accent-color: var(--r-accent);
+}
+/* Підписи карток статистики (на телефоні були 11px) */
+.stat-label {
+  font-size: 12px;
+}
+/* Дедлайн у таблиці завдань: іконка календаря, прострочений — червоним */
+.deadline-cell .bi {
+  margin-right: 6px;
+}
+.deadline-cell.overdue {
+  color: var(--palette-a13647);
+  font-weight: 650;
+}
+
+/* 8г. Спілкування: повідомлення, AI-агент, сповіщення, скарги */
+/* Повідомлення-«бульбашки»: чужі ліворуч, свої праворуч і фіолетові.
+   Один кут менш заокруглений — він «вказує» на автора. */
+.message {
+  max-width: 75%;
+  padding: 14px 18px;
+  border: 1px solid var(--r-line);
+  border-radius: 16px 16px 16px 4px;
+  background: var(--r-bg);
+}
+.message.own {
+  border-color: var(--palette-b4acf0);
+  border-radius: 16px 16px 4px 16px;
+  background: var(--r-accent-soft);
+}
+.message p {
+  margin-top: 8px;
+}
+.message .record-heading strong {
+  color: var(--r-ink);
+}
+/* AI-агент: кожна пара «запитання — відповідь» в окремій картці */
+.ai-exchange {
+  margin-top: 16px;
+  padding: 20px 22px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius);
+}
+.ai-exchange > h2 {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--r-muted);
+}
+.ai-answer pre,
+.ai-table-scroll {
+  border-radius: var(--r-radius-sm);
+}
+/* Сповіщення: непрочитане виділяємо фіолетовою смужкою зліва */
+.list-card.unread {
+  border-left-color: var(--r-accent);
+  background: var(--r-accent-soft);
+}
+.list-card small,
+.application-card > small {
+  font-size: 12px;
+}
+/* Форма скарги (вона сама є карткою .data-panel, тому їй потрібні відступи) */
+.data-panel.form-grid {
+  padding: 24px;
+}
+.form-grid label {
+  display: grid;
+  gap: 8px;
+  color: var(--r-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.form-grid input,
+.form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-card);
+  color: var(--r-ink);
+  font: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.form-grid textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.form-grid input:focus,
+.form-grid textarea:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
+}
+.form-grid > .button {
+  justify-self: start;
+}
+
+/* 8д. Біржа проєктів і профілі */
+/* Картка проєкту на біржі: як картки заявок — радіус і тінь при наведенні */
+.marketplace-card {
+  border-color: var(--r-line);
+  border-radius: var(--r-radius);
+  box-shadow: none;
+  transition:
+    transform 0.2s var(--r-ease),
+    box-shadow 0.2s;
+}
+.marketplace-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--r-shadow);
+}
+.marketplace-facts div {
+  border-radius: var(--r-radius-sm);
+}
+/* Мітки («бейджі») навичок і стану 2FA (було 10px) */
+.badge {
+  font-size: 12px;
+  font-weight: 650;
+}
+/* У списку навичок мітки стоять поруч, без відступу «до правого краю» */
+.skill-list .badge {
+  margin-left: 0;
+}
+.favorite-button {
+  color: var(--r-accent);
+}
+/* Поля форми заявки на біржі */
+.application-form input,
+.application-form textarea {
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.application-form input:focus,
+.application-form textarea:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
+}
+.application-form label {
+  font-size: 13px;
+}
+/* Профіль фрилансера: зведення, відгуки */
+.profile-summary {
+  border-radius: var(--r-radius);
+}
+.profile-summary span,
+.review-list span,
+.review-list small {
+  font-size: 12px;
+}
+/* Робочий простір і налаштування облікового запису */
+.account-panel,
+.welcome-panel {
+  border-radius: var(--r-radius);
+}
+.welcome-panel .card-kicker {
+  font-size: 12px;
+}
+.welcome-panel p,
+.section-heading p {
+  font-size: 13px;
+}
+.account-details dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.session-note {
+  font-size: 12px;
+}
+.theme-picker select {
+  border-radius: var(--r-radius-sm);
+}
+
+/* 8е. Файли, замовлення, додавання учасника */
+/* Блок завантаження файлу: пунктирна рамка й фон, як «зона для файлу» */
+.file-upload {
+  border-color: var(--palette-b4acf0);
+  border-radius: var(--r-radius);
+  background: var(--r-bg);
+  transition: border-color 0.15s;
+}
+.file-upload:hover {
+  border-color: var(--r-accent);
+}
+/* Розмір файлу поруч із назвою (було 11px) */
+.file-item small {
+  font-size: 12px;
+}
+/* Назва файлу — кнопка завантаження; іконка bi-download перед назвою */
+.file-item .text-button {
+  font-weight: 600;
+}
+/* Вибір фрилансера, якого додаємо до команди */
+.member-form select {
+  border-color: var(--r-line);
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.member-form select:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
+}
+.member-form label {
+  font-size: 13px;
+}
+
+/* 8є. Адміністрування */
+/* Кнопки експорту звіту (JSON, CSV, XLSX, PDF) */
+.export-actions {
+  gap: 10px;
+}
+.export-actions strong {
+  font-size: 13px;
+  color: var(--r-muted);
+}
+/* Картка користувача: заголовок і поля ролі/стану */
+.user-card h3 {
+  color: var(--r-ink);
+}
+.user-controls label {
+  font-size: 13px;
+}
+/* Картки скарг у панелі модерації: відступ від країв панелі */
+.projects-panel > .application-card {
+  margin: 0 24px 24px;
+}
+/* Кольори статусів скарг і заявок. Раніше для них не було класів,
+   тож «пігулки» були сірими. Беремо ті самі кольори, що в інших статусах:
+   очікує — жовтий, вирішено/прийнято — зелений, відхилено — червоний. */
+.status-OPEN,
+.status-PENDING {
+  color: var(--palette-a17627);
+  background: var(--palette-fff5de);
+}
+.status-RESOLVED,
+.status-ACCEPTED {
+  color: var(--palette-328267);
+  background: var(--palette-edf8f2);
+}
+.status-REJECTED {
+  color: var(--palette-9e5b63);
+  background: var(--palette-fcf0f2);
+}
+
+/* 8ж. Стани: завантаження, помилка, порожній список, сторінка 404 */
+/* Завантаження: напис і кругле «колесо» */
+.page-loading {
+  font-size: 14px;
+  color: var(--r-muted);
+}
+.loader {
+  border-color: var(--r-accent-soft);
+  border-top-color: var(--r-accent);
+}
+/* Помилка завантаження: іконка bi-exclamation-triangle зліва від тексту */
+.load-error {
+  border-radius: var(--r-radius);
+}
+.load-error > .bi {
+  flex-shrink: 0;
+  font-size: 22px;
+  color: var(--palette-965563);
+}
+.load-error > div {
+  flex: 1;
+  min-width: 0;
+}
+.load-error strong {
+  font-size: 14px;
+}
+.load-error p {
+  font-size: 13px;
+}
+/* Порожній список: іконка bi-inbox замість символу ▦ */
+.empty-symbol {
+  display: inline-block;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--palette-b4acf0);
+}
+.empty-state h3 {
+  font-size: 15px;
+  color: var(--r-ink);
+}
+.empty-state p {
+  font-size: 13px;
+}
+/* Сторінка «Сторінку не знайдено» (404) — по центру */
+.not-found {
+  max-width: 520px;
+  margin: 48px auto 0;
+  text-align: center;
+}
+.not-found .bi {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 40px;
+  color: var(--palette-b4acf0);
+}
+.not-found p {
+  margin-bottom: 20px;
+  color: var(--r-muted);
+}
+
+/* 9. Мікроанімації */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+.page-content > * {
+  animation: rise 0.45s var(--r-ease) both;
+}
+.project-progress,
+.status-progress {
+  transform-origin: left;
+  animation: grow 0.9s var(--r-ease) both;
+}
+
+/* людям, яким анімації заважають, — вимикаємо */
+@media (prefers-reduced-motion: reduce) {
+  .page-content > *,
+  .project-progress,
+  .status-progress {
+    animation: none;
+  }
+}
+
+/* 10. Мобільна версія: меню ховається під кнопку ☰ */
+@media (max-width: 900px) {
+  .topbar-inner {
+    padding: 12px 20px;
+    flex-wrap: wrap;
+  }
+  .topbar .menu-toggle {
+    display: inline-flex;
+  }
+  .topbar-nav {
+    display: none;
+    order: 3;
+    width: 100%;
+    flex-direction: column;
+  }
+  .topbar-nav.open {
+    display: flex;
+  }
+  .topbar-actions .role-label {
+    display: none;
+  }
+}

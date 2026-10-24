@@ -65,6 +65,7 @@ export function OrdersPage() {
               void save();
             }}
           >
+            <i className="bi bi-plus-lg" aria-hidden="true"></i>
             Створити замовлення
           </button>
         )}
@@ -73,6 +74,7 @@ export function OrdersPage() {
         <div className="panel-heading">
           <h2>Замовлення проєкту</h2>
           <button className="button secondary" onClick={orders.refresh}>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
             Оновити
           </button>
         </div>
