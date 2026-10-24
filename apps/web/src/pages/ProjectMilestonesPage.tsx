@@ -104,7 +104,10 @@ export function ProjectMilestonesPage() {
               onChange={(e) => setAmount(e.target.value)}
             />
           </label>
-          <button className="button primary">Додати етап</button>
+          <button className="button primary">
+            <i className="bi bi-plus-lg" aria-hidden="true"></i>
+            Додати етап
+          </button>
         </form>
       )}
       <section className="application-list">

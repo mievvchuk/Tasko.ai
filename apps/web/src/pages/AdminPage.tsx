@@ -73,6 +73,7 @@ export function AdminPage() {
         <div className="panel-heading">
           <h2>Користувачі</h2>
           <button className="button secondary" onClick={refreshAll}>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
             Оновити дані
           </button>
         </div>

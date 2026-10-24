@@ -94,6 +94,7 @@ function ProjectMessages({ project }: { project: Project }) {
             members.refresh();
           }}
         >
+          <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
           Оновити повідомлення
         </button>
       </div>
@@ -164,6 +165,7 @@ function ProjectMessages({ project }: { project: Project }) {
               </p>
             )}
             <button className="button primary" disabled={busy}>
+              <i className="bi bi-send" aria-hidden="true"></i>
               {busy ? "Надсилаємо…" : "Надіслати повідомлення"}
             </button>
           </form>

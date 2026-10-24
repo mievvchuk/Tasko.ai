@@ -123,7 +123,11 @@ export function App() {
           <Route
             path="*"
             element={
-              <section className="account-panel">
+              <section className="account-panel not-found">
+                <i
+                  className="bi bi-exclamation-triangle"
+                  aria-hidden="true"
+                ></i>
                 <h1>Сторінку не знайдено</h1>
                 <p>Перевірте адресу або поверніться до робочого простору.</p>
                 <Link className="button primary" to="/">
