@@ -416,6 +416,15 @@ table {
   transform: translateY(-3px);
   box-shadow: var(--r-shadow);
 }
+/* Картки — посилання на відфільтрований список (напр. прострочені завдання) */
+a.stat-card {
+  color: inherit;
+  text-decoration: none;
+}
+a.stat-card:focus-visible {
+  outline: 3px solid var(--ds-primary);
+  outline-offset: 2px;
+}
 .stat-card > strong {
   font-size: 36px;
 }
@@ -457,6 +466,21 @@ table {
 }
 .deadline-list strong {
   font-size: 14px;
+}
+/* Скільки днів лишилося — праворуч у рядку дедлайну */
+.deadline-list .days-left {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.deadline-list .days-left.overdue {
+  background: var(--palette-fff4f4);
+  color: var(--ds-danger);
 }
 .deadline-list li span:not(.deadline-dot),
 .deadline-list time {
@@ -522,7 +546,12 @@ table {
   background: var(--palette-d88583);
 }
 
-/* 7. Канбан-дошка */
+/* 7. Канбан-дошка: стовпців стільки, скільки колонок у проєкті; зайві — прокруткою вбік */
+.kanban-board {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(250px, 1fr);
+}
 .kanban-column {
   border-top: 4px solid var(--r-line);
   border-radius: var(--r-radius);
@@ -546,10 +575,60 @@ table {
 }
 .kanban-column h2 {
   align-items: center;
+  gap: 8px;
   font-size: 15px;
 }
+.kanban-title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Власна колонка — етап «У процесі», тому та сама смужка, але світліша */
+.kanban-column.custom {
+  border-top-color: var(--palette-a8a2ff);
+}
+.kanban-remove {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--r-radius-sm);
+  background: none;
+  color: var(--r-muted);
+  cursor: pointer;
+}
+.kanban-remove:hover {
+  background: var(--palette-fff4f4);
+  color: var(--ds-danger);
+}
+/* Форма нової колонки внизу останньої колонки «У процесі» */
+.kanban-add {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--palette-b4acf0);
+}
+.kanban-add label {
+  color: var(--r-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.kanban-add input {
+  padding: 8px 10px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-card);
+  color: var(--r-ink);
+  font: inherit;
+  font-size: 13px;
+}
+.kanban-add .button {
+  justify-content: center;
+  padding: 7px 10px;
+  font-size: 13px;
+}
 /* Кількість карток у колонці — «пігулка» */
-.kanban-column h2 span {
+.kanban-count {
   min-width: 24px;
   padding: 2px 8px;
   border-radius: 999px;
@@ -2653,5 +2732,69 @@ input.visually-hidden {
   }
   .preview-column:nth-child(3) {
     display: none;
+  }
+}
+
+/* 14. Форми проєкту й завдання: розділи, навички-«пігулки», кнопка збереження завжди видна */
+.form-section-title {
+  margin: 10px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--r-line);
+  color: var(--r-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+/* Перший розділ — без лінії зверху */
+.form-fields > .form-section-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.skill-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+}
+.skill-picker legend {
+  width: 100%;
+  margin-bottom: 10px;
+}
+/* Чекбокс навички виглядає як «пігулка», вибрана — фіолетова */
+.project-form-panel .skill-picker label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--r-line);
+  border-radius: 999px;
+  background: var(--r-card);
+  font-size: 13px;
+  cursor: pointer;
+}
+.project-form-panel .skill-picker label:has(input:checked) {
+  border-color: var(--ds-primary);
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+  font-weight: 650;
+}
+.project-form-panel .skill-picker input {
+  width: auto;
+  margin: 0;
+}
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 8px -4px 0;
+  padding: 14px 4px;
+  border-top: 1px solid var(--r-line);
+  background: var(--r-card);
+}
+@media (max-width: 600px) {
+  /* На телефоні над нижньою навігацією */
+  .form-actions {
+    bottom: 64px;
   }
 }

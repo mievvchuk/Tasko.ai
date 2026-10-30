@@ -51,3 +51,18 @@ export function toDateTimeInput(value: string | null) {
   const pad = (number: number) => String(number).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
+
+// Скільки календарних днів до дедлайну: 0 — сьогодні, від'ємне — прострочено
+export function daysLeft(deadline: string, now = new Date()) {
+  const day = (date: Date) =>
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  return Math.round((day(new Date(deadline)) - day(now)) / 86_400_000);
+}
+
+export function deadlineLabel(deadline: string, now = new Date()) {
+  const days = daysLeft(deadline, now);
+  if (days < 0) return trNow("Прострочено на {0} дн.", -days);
+  if (days === 0) return trNow("Сьогодні");
+  if (days === 1) return trNow("Завтра");
+  return trNow("Через {0} дн.", days);
+}

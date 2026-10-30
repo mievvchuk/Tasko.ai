@@ -12,6 +12,10 @@
       "model": "AuthSession",
       "namespace": "public"
     },
+    "BoardColumn": {
+      "model": "BoardColumn",
+      "namespace": "public"
+    },
     "Complaint": {
       "model": "Complaint",
       "namespace": "public"
@@ -305,6 +309,99 @@
               },
               "namespaceId": "public",
               "table": "AuthSession"
+            }
+          },
+          "BoardColumn": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "position": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "projectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "project": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "projectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Project",
+                  "namespace": "public"
+                }
+              },
+              "tasks": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "columnId"
+                  ]
+                },
+                "to": {
+                  "model": "Task",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "position": {
+                  "column": "position"
+                },
+                "projectId": {
+                  "column": "projectId"
+                },
+                "title": {
+                  "column": "title"
+                }
+              },
+              "namespaceId": "public",
+              "table": "BoardColumn"
             }
           },
           "Complaint": {
@@ -1685,6 +1782,21 @@
                   "namespace": "public"
                 }
               },
+              "boardColumns": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "projectId"
+                  ]
+                },
+                "to": {
+                  "model": "BoardColumn",
+                  "namespace": "public"
+                }
+              },
               "category": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -2512,6 +2624,13 @@
                   "kind": "scalar"
                 }
               },
+              "columnId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2593,6 +2712,22 @@
                   "namespace": "public"
                 }
               },
+              "column": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "columnId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "BoardColumn",
+                  "namespace": "public"
+                }
+              },
               "notifications": {
                 "cardinality": "1:N",
                 "on": {
@@ -2629,6 +2764,9 @@
               "fields": {
                 "assigneeId": {
                   "column": "assigneeId"
+                },
+                "columnId": {
+                  "column": "columnId"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -3435,6 +3573,83 @@
                 ]
               },
               "uniques": []
+            },
+            "BoardColumn": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "position": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "projectId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "BoardColumn_projectId_idx_a96e4d92"
+                  },
+                  "source": {
+                    "columns": [
+                      "projectId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BoardColumn"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Project"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "projectId"
+                  ],
+                  "name": "BoardColumn_projectId_idx_a96e4d92",
+                  "prefix": "BoardColumn_projectId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "projectId",
+                    "position"
+                  ]
+                }
+              ]
             },
             "Complaint": {
               "columns": {
@@ -5298,6 +5513,11 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "columnId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "dataType": "pg/timestamptz",
@@ -5386,6 +5606,25 @@
                     "namespaceId": "public",
                     "tableName": "User"
                   }
+                },
+                {
+                  "index": {
+                    "name": "Task_columnId_idx_728f084b"
+                  },
+                  "source": {
+                    "columns": [
+                      "columnId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Task"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BoardColumn"
+                  }
                 }
               ],
               "indexes": [
@@ -5395,6 +5634,14 @@
                   ],
                   "name": "Task_assigneeId_idx_fd12ae38",
                   "prefix": "Task_assigneeId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "columnId"
+                  ],
+                  "name": "Task_columnId_idx_728f084b",
+                  "prefix": "Task_columnId_idx",
                   "unique": false
                 },
                 {
@@ -5653,10 +5900,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "734b1b50f61d2d75260e6c886fbd441cfe63e456ee5406f63679e2846b0f5942"
+    "storageHash": "5d76149811f7c7a74dd59835f0bff27e565335afc1c6fd677386a7e87d67503f"
   },
   "execution": {
-    "executionHash": "1f9feac30f9726873aa5700c783a713cbbe1b56acdf7f0816d1fa66bb2a11fd3",
+    "executionHash": "b1f416eee504bbb2e59a30db119556ad237daeaeed853101e2e55c1da09d616f",
     "mutations": {
       "defaults": [
         {
@@ -5677,6 +5924,17 @@
           },
           "ref": {
             "entry": "AuthSession",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "BoardColumn",
             "field": "id",
             "namespace": "public"
           }

@@ -736,6 +736,31 @@ export const enText: Record<string, string> = {
   "Без ризику": "No risk",
   "Дедлайн наближається": "Deadline approaching",
 
+  // Дедлайни на головній
+  "Прострочено на {0} дн.": "{0} d overdue",
+  Сьогодні: "Today",
+  Завтра: "Tomorrow",
+  "Через {0} дн.": "In {0} d",
+
+  // Власні колонки канбану
+  "Видалити колонку «{0}»? Її завдання повернуться в «У процесі».":
+    "Delete the “{0}” column? Its tasks will go back to “In progress”.",
+  "Перетягніть свою картку в іншу колонку або виберіть колонку у списку на картці.":
+    "Drag your card to another column or pick a column from the list on the card.",
+  "Видалити колонку {0}": "Delete column {0}",
+  "Видалити колонку": "Delete column",
+  "Перетягніть сюди картку": "Drop a card here",
+  "Колонка завдання {0}": "Column for task {0}",
+  "Новий етап роботи": "New work stage",
+  "Наприклад, Тестування": "For example, Testing",
+  "Додати колонку": "Add column",
+
+  // Розділи форм
+  "Про проєкт": "About the project",
+  "Терміни й бюджет": "Deadline and budget",
+  "Про завдання": "About the task",
+  "Хто і коли": "Who and when",
+
   // Вітальна сторінка
   "Навігація вітальної сторінки": "Welcome page navigation",
   Можливості: "Features",

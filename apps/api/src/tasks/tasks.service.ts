@@ -16,6 +16,8 @@ import type {
   UpdateTaskDto,
 } from './tasks.dto.js';
 
+const maxBoardColumns = 5;
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -135,7 +137,12 @@ export class TasksService {
     });
   }
 
-  async status(user: CurrentUser, id: string, status: 'TODO' | 'IN_PROGRESS') {
+  async status(
+    user: CurrentUser,
+    id: string,
+    status: 'TODO' | 'IN_PROGRESS',
+    columnId?: string,
+  ) {
     const task = await this.find(user, id);
     const project = await this.projects.requireAccess(user, task.projectId);
     if (project.status !== 'ACTIVE')
@@ -146,11 +153,18 @@ export class TasksService {
       throw new ForbiddenException('Статус змінює призначений виконавець.');
     if (!['TODO', 'IN_PROGRESS'].includes(task.status))
       throw new ConflictException('Завдання вже здане або завершене.');
+    // Власні колонки — етапи всередині «У процесі», тож лише для IN_PROGRESS
+    if (columnId) {
+      const column = await this.db.BoardColumn.where({ id: columnId }).first();
+      if (status !== 'IN_PROGRESS' || column?.projectId !== task.projectId)
+        throw new BadRequestException('Колонку не знайдено в цьому проєкті.');
+    }
     const updated = await this.db.Task.where({
       id,
       status: task.status,
     }).update({
       status,
+      columnId: columnId ?? null,
       updatedAt: new Date(),
     });
     await this.projects.logActivity(
@@ -160,6 +174,50 @@ export class TasksService {
       `Статус завдання «${task.title}» змінено на ${status}.`,
     );
     return updated;
+  }
+
+  // Власні колонки канбану проєкту в порядку додавання
+  async columns(user: CurrentUser, projectId: string) {
+    await this.projects.requireAccess(user, projectId);
+    return this.db.BoardColumn.where({ projectId })
+      .orderBy((column) => column.position.asc())
+      .all();
+  }
+
+  async addColumn(user: CurrentUser, projectId: string, title: string) {
+    this.projects.ensureWritable(
+      await this.projects.requireOwner(user, projectId),
+    );
+    const columns = await this.columns(user, projectId);
+    if (columns.length >= maxBoardColumns)
+      throw new ConflictException(
+        `Можна додати не більше ${maxBoardColumns} колонок.`,
+      );
+    return this.db.BoardColumn.create({
+      id: randomUUID(),
+      projectId,
+      title,
+      position: Math.max(0, ...columns.map((column) => column.position)) + 1,
+      createdAt: new Date(),
+    });
+  }
+
+  // Завдання з видаленої колонки повертаються у звичайну «У процесі»
+  async deleteColumn(user: CurrentUser, columnId: string) {
+    const column = await this.db.BoardColumn.where({ id: columnId }).first();
+    if (!column) throw new NotFoundException('Колонку не знайдено.');
+    this.projects.ensureWritable(
+      await this.projects.requireOwner(user, column.projectId),
+    );
+    return this.projects.prisma.client.transaction(async (tx) => {
+      const tasks = await tx.orm.public.Task.where({ columnId }).all();
+      for (const task of tasks)
+        await tx.orm.public.Task.where({ id: task.id }).update({
+          columnId: null,
+        });
+      await tx.orm.public.BoardColumn.where({ id: columnId }).delete();
+      return { id: columnId };
+    });
   }
 
   async orders(user: CurrentUser, projectId: string, page: PageDto) {

@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'734b1b50f61d2d75260e6c886fbd441cfe63e456ee5406f63679e2846b0f5942'>;
+  StorageHashBase<'5d76149811f7c7a74dd59835f0bff27e565335afc1c6fd677386a7e87d67503f'>;
 export type ExecutionHash =
-  ExecutionHashBase<'1f9feac30f9726873aa5700c783a713cbbe1b56acdf7f0816d1fa66bb2a11fd3'>;
+  ExecutionHashBase<'b1f416eee504bbb2e59a30db119556ad237daeaeed853101e2e55c1da09d616f'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -251,6 +251,13 @@ export type FieldOutputTypes = {
       readonly userAgent: CodecTypes['pg/text@1']['output'] | null;
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
+    readonly BoardColumn: {
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly position: CodecTypes['pg/int4@1']['output'];
+      readonly projectId: CodecTypes['pg/text@1']['output'];
+      readonly title: CodecTypes['pg/text@1']['output'];
+    };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -411,6 +418,7 @@ export type FieldOutputTypes = {
     };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['output'] | null;
+      readonly columnId: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'] | null;
@@ -467,6 +475,13 @@ export type FieldInputTypes = {
       readonly userAgent: CodecTypes['pg/text@1']['input'] | null;
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
+    readonly BoardColumn: {
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly position: CodecTypes['pg/int4@1']['input'];
+      readonly projectId: CodecTypes['pg/text@1']['input'];
+      readonly title: CodecTypes['pg/text@1']['input'];
+    };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -627,6 +642,7 @@ export type FieldInputTypes = {
     };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['input'] | null;
+      readonly columnId: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'] | null;
@@ -682,6 +698,13 @@ export type StorageColumnTypes = {
       readonly revokedAt: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly userAgent: CodecTypes['pg/text@1']['output'] | null;
       readonly userId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BoardColumn: {
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly position: CodecTypes['pg/int4@1']['output'];
+      readonly projectId: CodecTypes['pg/text@1']['output'];
+      readonly title: CodecTypes['pg/text@1']['output'];
     };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['output'] | null;
@@ -843,6 +866,7 @@ export type StorageColumnTypes = {
     };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['output'] | null;
+      readonly columnId: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'] | null;
@@ -898,6 +922,13 @@ export type StorageColumnInputTypes = {
       readonly revokedAt: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly userAgent: CodecTypes['pg/text@1']['input'] | null;
       readonly userId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BoardColumn: {
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly position: CodecTypes['pg/int4@1']['input'];
+      readonly projectId: CodecTypes['pg/text@1']['input'];
+      readonly title: CodecTypes['pg/text@1']['input'];
     };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['input'] | null;
@@ -1059,6 +1090,7 @@ export type StorageColumnInputTypes = {
     };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['input'] | null;
+      readonly columnId: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'] | null;
@@ -1119,6 +1151,16 @@ export namespace Models {
     userId: CodecTypes['pg/text@1']['output'];
     user: public_User;
     readonly [RelationKeys]?: 'user';
+  };
+  export type public_BoardColumn = {
+    createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    position: CodecTypes['pg/int4@1']['output'];
+    projectId: CodecTypes['pg/text@1']['output'];
+    title: CodecTypes['pg/text@1']['output'];
+    project: public_Project;
+    tasks: public_Task[];
+    readonly [RelationKeys]?: 'project' | 'tasks';
   };
   export type public_Complaint = {
     adminNote: CodecTypes['pg/text@1']['output'] | null;
@@ -1268,6 +1310,7 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     activityLogs: public_ActivityLog[];
     applications: public_ProjectApplication[];
+    boardColumns: public_BoardColumn[];
     category: public_ProjectCategory | null;
     client: public_User;
     complaints: public_Complaint[];
@@ -1283,6 +1326,7 @@ export namespace Models {
     readonly [RelationKeys]?:
       | 'activityLogs'
       | 'applications'
+      | 'boardColumns'
       | 'category'
       | 'client'
       | 'complaints'
@@ -1362,6 +1406,7 @@ export namespace Models {
   };
   export type public_Task = {
     assigneeId: CodecTypes['pg/text@1']['output'] | null;
+    columnId: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
     description: CodecTypes['pg/text@1']['output'] | null;
@@ -1372,9 +1417,10 @@ export namespace Models {
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     assignee: public_User | null;
+    column: public_BoardColumn | null;
     notifications: public_Notification[];
     project: public_Project;
-    readonly [RelationKeys]?: 'assignee' | 'notifications' | 'project';
+    readonly [RelationKeys]?: 'assignee' | 'column' | 'notifications' | 'project';
   };
   export type public_User = {
     avatarUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -1452,6 +1498,7 @@ export declare const models: {
   public: {
     ActivityLog: Models.public_ActivityLog;
     AuthSession: Models.public_AuthSession;
+    BoardColumn: Models.public_BoardColumn;
     Complaint: Models.public_Complaint;
     EmailVerificationToken: Models.public_EmailVerificationToken;
     FavoriteProject: Models.public_FavoriteProject;
@@ -1644,6 +1691,65 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly BoardColumn: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly position: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly projectId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly title: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['projectId', 'position'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'BoardColumn_projectId_idx_a96e4d92';
+                  readonly prefix: 'BoardColumn_projectId_idx';
+                  readonly columns: readonly ['projectId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'BoardColumn';
+                    readonly columns: readonly ['projectId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Project';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -3164,6 +3270,12 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly columnId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -3230,6 +3342,12 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'Task_columnId_idx_728f084b';
+                  readonly prefix: 'Task_columnId_idx';
+                  readonly columns: readonly ['columnId'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'Task_projectId_idx_a96e4d92';
                   readonly prefix: 'Task_projectId_idx';
                   readonly columns: readonly ['projectId'];
@@ -3258,6 +3376,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Task';
+                    readonly columns: readonly ['columnId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'BoardColumn';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -3487,6 +3617,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AuthSession';
     };
+    readonly BoardColumn: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BoardColumn';
+    };
     readonly Complaint: { readonly namespace: 'public' & NamespaceId; readonly model: 'Complaint' };
     readonly EmailVerificationToken: {
       readonly namespace: 'public' & NamespaceId;
@@ -3687,6 +3821,66 @@ type ContractBase = Omit<
                 readonly revokedAt: { readonly column: 'revokedAt' };
                 readonly userAgent: { readonly column: 'userAgent' };
                 readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly BoardColumn: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly position: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly projectId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly project: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Project';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['projectId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly tasks: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Task' };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['columnId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'BoardColumn';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly position: { readonly column: 'position' };
+                readonly projectId: { readonly column: 'projectId' };
+                readonly title: { readonly column: 'title' };
               };
             };
           };
@@ -4585,6 +4779,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['projectId'];
                 };
               };
+              readonly boardColumns: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BoardColumn';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['projectId'];
+                };
+              };
               readonly category: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5129,6 +5334,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly columnId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -5185,6 +5394,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly column: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BoardColumn';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['columnId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly notifications: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5214,6 +5435,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly assigneeId: { readonly column: 'assigneeId' };
+                readonly columnId: { readonly column: 'columnId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deadline: { readonly column: 'deadline' };
                 readonly description: { readonly column: 'description' };
@@ -5663,6 +5885,14 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'AuthSession';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BoardColumn';
             readonly field: 'id';
             readonly namespace: 'public';
           };
