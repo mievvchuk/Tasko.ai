@@ -29,7 +29,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: WEB_ORIGIN
-        value: https://tasko-ai-web.onrender.com
+        value: https://taskoai.pp.ua
       - key: AI_BASE_URL
         value: https://api.groq.com/openai/v1
       - key: OPENAI_MODEL
