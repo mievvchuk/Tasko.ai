@@ -600,32 +600,38 @@ a.stat-card:focus-visible {
   background: var(--palette-fff4f4);
   color: var(--ds-danger);
 }
-/* Форма нової колонки внизу останньої колонки «У процесі» */
+/* Форма нової колонки над дошкою: назва, місце, кнопка — в один рядок */
 .kanban-add {
   display: grid;
-  gap: 6px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--palette-b4acf0);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  max-width: 720px;
+  margin-bottom: 16px;
 }
 .kanban-add label {
+  grid-column: 1 / -1;
   color: var(--r-muted);
   font-size: 12px;
   font-weight: 600;
 }
-.kanban-add input {
+.kanban-add input,
+.kanban-add select {
+  min-height: 40px;
   padding: 8px 10px;
   border: 1px solid var(--r-line);
   border-radius: var(--r-radius-sm);
   background: var(--r-card);
   color: var(--r-ink);
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
 }
 .kanban-add .button {
   justify-content: center;
-  padding: 7px 10px;
-  font-size: 13px;
+  white-space: nowrap;
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 14px;
 }
 /* Кількість карток у колонці — «пігулка» */
 .kanban-count {
@@ -667,14 +673,38 @@ a.stat-card:focus-visible {
   transform: translateY(-1px);
   box-shadow: var(--r-shadow);
 }
-.kanban-card[draggable="true"] {
+/* Мишею картку тягнуть цілком; поки тягнуть — вона над усім і без анімації */
+.kanban-card.movable {
   cursor: grab;
-}
-.kanban-card[draggable="true"]:active {
-  cursor: grabbing;
+  user-select: none;
 }
 .kanban-card.dragging {
-  opacity: 0.4;
+  position: relative;
+  z-index: 30;
+  box-shadow: var(--r-shadow);
+  cursor: grabbing;
+  transition: none;
+  opacity: 0.92;
+}
+.kanban-board.is-dragging {
+  scroll-snap-type: none;
+}
+/* «Ручка»: на сенсорному екрані тягнуть лише за неї, тому вона велика і не прокручує сторінку */
+.kanban-grip {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -6px -8px 0 0;
+  border-radius: var(--r-radius-sm);
+  color: var(--r-muted);
+  touch-action: none;
+  cursor: grab;
+}
+.kanban-grip:hover {
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
 }
 /* Назва завдання і «ручка» для перетягування праворуч */
 .kanban-card-title {
@@ -693,9 +723,7 @@ a.stat-card:focus-visible {
   color: var(--r-accent);
 }
 .kanban-card-title .bi {
-  flex-shrink: 0;
-  color: var(--r-muted);
-  font-size: 16px;
+  font-size: 18px;
 }
 /* Опис — не більше двох рядків, щоб картки були однакової висоти */
 .kanban-card small {
@@ -739,6 +767,27 @@ a.stat-card:focus-visible {
 .kanban-deadline.overdue {
   color: var(--palette-a13647);
   font-weight: 650;
+}
+/* На телефоні колонка — майже на всю ширину, дошка гортається по колонці */
+@media (max-width: 600px) {
+  .kanban-board {
+    grid-auto-columns: 84vw;
+    gap: 12px;
+    margin: 0 -16px;
+    padding: 0 16px 12px;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 16px;
+  }
+  .kanban-column {
+    min-height: 260px;
+    scroll-snap-align: start;
+  }
+  .kanban-add {
+    grid-template-columns: 1fr 1fr;
+  }
+  .kanban-add input {
+    grid-column: 1 / -1;
+  }
 }
 /* Список статусу (для зміни з клавіатури) — компактний */
 .kanban-card select {
@@ -2231,6 +2280,116 @@ input.visually-hidden {
   /* На телефоні в кнопці акаунта лише аватар і стрілка; ім'я — у самому меню */
   .account-name {
     display: none;
+  }
+}
+/* Телефон: вужчі поля сторінки, менший заголовок і відступ під ним */
+@media (max-width: 600px) {
+  .page-content {
+    padding: 20px 16px calc(96px + env(safe-area-inset-bottom));
+  }
+  .page-heading {
+    margin-bottom: 20px;
+  }
+  .page-heading h1 {
+    font-size: 26px;
+  }
+  .page-heading p {
+    font-size: 14px;
+  }
+}
+/* Телефон: таблиці проєктів і завдань стають картками — назва зверху,
+   решта клітинок по дві в рядок, без прокрутки вбік */
+@media (max-width: 600px) {
+  .table-hint {
+    display: none;
+  }
+  .projects-table,
+  .projects-table.tasks-table {
+    display: block;
+    min-width: 0;
+  }
+  .projects-table thead {
+    display: none;
+  }
+  .projects-table tbody {
+    display: grid;
+  }
+  .projects-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--r-line);
+  }
+  .projects-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .projects-table td,
+  .projects-table.tasks-table td {
+    padding: 0;
+    border: 0;
+    font-size: 13px;
+  }
+  .projects-table td:first-child {
+    grid-column: 1 / -1;
+  }
+  .page-actions .button {
+    padding: 10px 14px;
+  }
+}
+/* На сенсорному екрані клавіш Enter/Shift+Enter немає — підказку ховаємо */
+@media (pointer: coarse) {
+  .ai-hint {
+    display: none;
+  }
+}
+/* Телефон: логотип, тема, мова, аватар і ☰ — в один рядок; меню розгортається під ним */
+@media (max-width: 600px) {
+  .topbar-inner {
+    gap: 6px;
+    padding: 8px 16px;
+  }
+  .topbar .brand {
+    font-size: 19px;
+  }
+  .topbar .brand-mark {
+    width: 28px;
+    height: 28px;
+    font-size: 21px;
+    border-radius: 8px;
+  }
+  .topbar-actions {
+    order: 1;
+    gap: 6px;
+  }
+  .topbar .menu-toggle {
+    order: 2;
+  }
+  .topbar .menu-toggle,
+  .topbar .language-button {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 13px;
+  }
+  .topbar .theme-picker select {
+    max-width: 104px;
+    height: 36px;
+    padding: 0 4px 0 8px;
+    font-size: 12px;
+  }
+  .topbar .account-button {
+    padding: 2px;
+  }
+  .topbar .account-button .bi {
+    display: none;
+  }
+  .topbar-nav a {
+    padding: 12px 14px;
+    font-size: 15px;
   }
 }
 

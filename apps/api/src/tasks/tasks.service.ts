@@ -16,7 +16,7 @@ import type {
   UpdateTaskDto,
 } from './tasks.dto.js';
 
-const maxBoardColumns = 5;
+const maxBoardColumns = 8;
 
 @Injectable()
 export class TasksService {
@@ -149,14 +149,18 @@ export class TasksService {
       throw new ConflictException(
         'Працювати із завданнями можна лише в активному проєкті.',
       );
-    if (task.assigneeId !== user.id && user.role !== 'ADMIN')
-      throw new ForbiddenException('Статус змінює призначений виконавець.');
+    // Картку пересуває виконавець або власник проєкту (напр. з беклогу в роботу)
+    const isOwner = user.role === 'ADMIN' || project.clientId === user.id;
+    if (task.assigneeId !== user.id && !isOwner)
+      throw new ForbiddenException(
+        'Статус змінює виконавець або власник проєкту.',
+      );
     if (!['TODO', 'IN_PROGRESS'].includes(task.status))
       throw new ConflictException('Завдання вже здане або завершене.');
-    // Власні колонки — етапи всередині «У процесі», тож лише для IN_PROGRESS
+    // Власна колонка — етап «До виконання» або «У процесі»; статус має збігатися
     if (columnId) {
       const column = await this.db.BoardColumn.where({ id: columnId }).first();
-      if (status !== 'IN_PROGRESS' || column?.projectId !== task.projectId)
+      if (column?.status !== status || column.projectId !== task.projectId)
         throw new BadRequestException('Колонку не знайдено в цьому проєкті.');
     }
     const updated = await this.db.Task.where({
@@ -184,7 +188,12 @@ export class TasksService {
       .all();
   }
 
-  async addColumn(user: CurrentUser, projectId: string, title: string) {
+  async addColumn(
+    user: CurrentUser,
+    projectId: string,
+    title: string,
+    status: 'TODO' | 'IN_PROGRESS' = 'IN_PROGRESS',
+  ) {
     this.projects.ensureWritable(
       await this.projects.requireOwner(user, projectId),
     );
@@ -197,12 +206,13 @@ export class TasksService {
       id: randomUUID(),
       projectId,
       title,
+      status,
       position: Math.max(0, ...columns.map((column) => column.position)) + 1,
       createdAt: new Date(),
     });
   }
 
-  // Завдання з видаленої колонки повертаються у звичайну «У процесі»
+  // Завдання з видаленої колонки повертаються у звичайну колонку свого статусу
   async deleteColumn(user: CurrentUser, columnId: string) {
     const column = await this.db.BoardColumn.where({ id: columnId }).first();
     if (!column) throw new NotFoundException('Колонку не знайдено.');
