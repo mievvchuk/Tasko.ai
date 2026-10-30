@@ -15,7 +15,7 @@ const config = {
 };
 
 describe('SMTP mail transport', () => {
-  it('uses TLS and puts only the verification token into the configured app link', async () => {
+  it('uses TLS and puts only the reset token into the configured app link', async () => {
     const sendMail = vi.fn(
       async (_message: { text: string; html: string }) => ({
         accepted: ['user@example.com'],
@@ -26,10 +26,7 @@ describe('SMTP mail transport', () => {
       sendMail,
       close,
     } as unknown as ReturnType<typeof nodemailer.createTransport>);
-    await new MailService(config).sendVerification(
-      'user@example.com',
-      'test-token',
-    );
+    await new MailService(config).sendReset('user@example.com', 'test-token');
     expect(nodemailer.createTransport).toHaveBeenCalledWith(
       expect.objectContaining({
         host: 'smtp.gmail.com',
@@ -44,16 +41,16 @@ describe('SMTP mail transport', () => {
         to: 'user@example.com',
         from: 'sender@gmail.com',
         text: expect.stringContaining(
-          'http://localhost:5173/verify-email?token=test-token',
+          'http://localhost:5173/reset-password?token=test-token',
         ),
-        html: expect.stringContaining('Підтвердити пошту'),
+        html: expect.stringContaining('Встановити новий пароль'),
       }),
     );
     expect(sendMail.mock.calls[0][0].text).not.toContain(config.smtpPassword);
     expect(sendMail.mock.calls[0][0].html).toContain(
-      'href="http://localhost:5173/verify-email?token=test-token"',
+      'href="http://localhost:5173/reset-password?token=test-token"',
     );
-    expect(sendMail.mock.calls[0][0].html).toContain('24 години');
+    expect(sendMail.mock.calls[0][0].html).toContain('30 хвилин');
     expect(sendMail.mock.calls[0][0].html).not.toContain(config.smtpPassword);
     expect(close).toHaveBeenCalled();
   });
@@ -92,7 +89,7 @@ describe('SMTP mail transport', () => {
       close,
     } as unknown as ReturnType<typeof nodemailer.createTransport>);
     await expect(
-      new MailService(config).sendVerification('user@example.com', 'token'),
+      new MailService(config).sendReset('user@example.com', 'token'),
     ).rejects.toMatchObject({ status: 503 });
     await expect(
       new MailService(config).sendReset('user@example.com', 'token'),

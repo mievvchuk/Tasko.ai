@@ -12,7 +12,6 @@ import {
   UsersController,
 } from '../users/users.controller.js';
 import { MailService } from './mail.service.js';
-import { EmailVerificationService } from './email-verification.service.js';
 import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
 
 @Module({
@@ -41,7 +40,6 @@ import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
     AuthService,
     JwtAuthGuard,
     MailService,
-    EmailVerificationService,
     AuthEmailRateLimitGuard,
   ],
   exports: [UsersService, AuthService, JwtAuthGuard, JwtModule],

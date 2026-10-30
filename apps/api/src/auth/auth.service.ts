@@ -32,7 +32,6 @@ import type {
 import { hashPassword, verifyPassword } from './password.js';
 import { createTotpSecret, createTotpUri, verifyTotp } from './totp.js';
 import { MailService } from './mail.service.js';
-import { EmailVerificationService } from './email-verification.service.js';
 
 interface LoginMetadata {
   userAgent?: string;
@@ -52,21 +51,14 @@ export class AuthService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(MailService) private readonly mail: MailService,
-    @Inject(EmailVerificationService)
-    private readonly verification: EmailVerificationService,
   ) {}
 
   private get db() {
     return this.prisma.client.orm.public;
   }
 
-  // Реєструє користувача; за потреби надсилає лист підтвердження пошти.
+  // Реєструє користувача; пошту не підтверджуємо, тож вхід доступний одразу.
   async register(data: RegisterDto) {
-    const verificationRequired = this.config.emailVerificationRequired;
-    if (verificationRequired && !this.mail.configured())
-      throw new ServiceUnavailableException(
-        'Надсилання листів підтвердження ще не налаштовано.',
-      );
     if (await this.users.findByEmail(data.email))
       throw new ConflictException(duplicateEmailMessage);
 
@@ -76,17 +68,9 @@ export class AuthService {
         email: data.email,
         role: data.role,
         passwordHash: await hashPassword(data.password),
-        emailVerifiedAt: verificationRequired ? null : new Date(),
+        emailVerifiedAt: new Date(),
       });
-      if (!verificationRequired) {
-        return { ...this.publicUser(user), requiresEmailVerification: false };
-      }
-      const emailSent = await this.trySendVerification(user);
-      return {
-        ...this.publicUser(user),
-        requiresEmailVerification: true,
-        emailSent,
-      };
+      return this.publicUser(user);
     } catch (error) {
       // 23505 — інший запит встиг зареєструвати цю пошту одночасно з нами.
       if (hasDatabaseCode(error, '23505'))
@@ -101,10 +85,6 @@ export class AuthService {
     if (!user || !(await verifyPassword(data.password, user.passwordHash)))
       throw new UnauthorizedException('Неправильна пошта або пароль.');
     this.ensureActive(user);
-    if (user.emailVerifiedAt === null)
-      throw new ForbiddenException(
-        'Спочатку підтвердьте електронну пошту. Ви можете повторно надіслати лист підтвердження.',
-      );
 
     if (user.twoFactorEnabled) {
       // Без коду просимо клієнт показати поле для коду 2FA.
@@ -137,8 +117,6 @@ export class AuthService {
     const user = await this.users.findById(id);
     if (!user) throw new UnauthorizedException('Користувача не знайдено.');
     this.ensureActive(user);
-    if (user.emailVerifiedAt === null)
-      throw new ForbiddenException('Спочатку підтвердьте електронну пошту.');
     return { ...this.publicUser(user), sessionId };
   }
 
@@ -291,23 +269,6 @@ export class AuthService {
     return { message: 'Пароль відновлено. Увійдіть із новим паролем.' };
   }
 
-  // Повторно надсилає лист підтвердження пошти.
-  // Відповідь однакова для будь-якої пошти, щоб не розкривати акаунти.
-  async resendVerification(email: string) {
-    if (!this.mail.configured())
-      throw new ServiceUnavailableException(
-        'Надсилання листів SMTP ще не налаштовано.',
-      );
-    const user = await this.users.findByEmail(email);
-    if (user?.emailVerifiedAt === null && user.status === 'ACTIVE') {
-      await this.trySendVerification(user);
-    }
-    return {
-      message:
-        'Якщо ця пошта очікує підтвердження, на неї надіслано лист. Повторне надсилання доступне не частіше ніж раз на хвилину.',
-    };
-  }
-
   private ensureActive(user: { status: string }) {
     if (user.status !== 'ACTIVE')
       throw new ForbiddenException('Обліковий запис заблоковано.');
@@ -350,17 +311,6 @@ export class AuthService {
       if (session.id !== keepSessionId && !session.revokedAt) {
         await this.markSessionRevoked(session.id);
       }
-    }
-  }
-
-  // Повертає false, якщо лист зараз не вдалося надіслати; інші помилки прокидаємо далі.
-  private async trySendVerification(user: { id: string; email: string }) {
-    try {
-      await this.verification.issue(user);
-      return true;
-    } catch (error) {
-      if (!(error instanceof ServiceUnavailableException)) throw error;
-      return false;
     }
   }
 

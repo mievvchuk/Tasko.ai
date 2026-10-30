@@ -29,7 +29,6 @@ import { ProjectMilestonesPage } from "./pages/ProjectMilestonesPage";
 import { ProjectActivityPage } from "./pages/ProjectActivityPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { ProjectPlanPage } from "./pages/ProjectPlanPage";
-import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
 import { useLanguage } from "./i18n";
 function ProtectedRoute() {
@@ -77,7 +76,6 @@ export function App() {
   return (
     <Routes>
       <Route element={<AuthLayout />}>
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
       </Route>
       <Route element={<GuestRoute />}>
         <Route element={<AuthLayout />}>
