@@ -1,3 +1,4 @@
+import { trNow } from "./i18n.en.ts";
 export const tokenKey = "tasko.accessToken";
 export const sessionEndedEvent = "tasko:session-ended";
 
@@ -32,7 +33,7 @@ export function getToken() {
 
 export function errorMessage(error: unknown) {
   if (error instanceof ApiError) return error.message;
-  return "Не вдалося виконати дію. Спробуйте ще раз.";
+  return trNow("Не вдалося виконати дію. Спробуйте ще раз.");
 }
 
 export async function request<T>(
@@ -74,7 +75,9 @@ export async function request<T>(
     if (options.signal?.aborted) throw error;
     throw new ApiError(
       0,
-      "Сервер недоступний або не відповідає. Перевірте з’єднання та спробуйте ще раз.",
+      trNow(
+        "Сервер недоступний або не відповідає. Перевірте з’єднання та спробуйте ще раз.",
+      ),
     );
   }
 
@@ -87,17 +90,18 @@ export async function request<T>(
   } catch {
     throw new ApiError(
       response.ok ? 502 : response.status,
-      "Сервер повернув некоректну відповідь. Спробуйте пізніше.",
+      trNow("Сервер повернув некоректну відповідь. Спробуйте пізніше."),
     );
   }
 
   if (!response.ok) {
-    let message = "Не вдалося виконати запит. Спробуйте пізніше.";
+    let message = trNow("Не вдалося виконати запит. Спробуйте пізніше.");
     if (response.status === 400)
-      message = "Перевірте введені дані та спробуйте ще раз.";
+      message = trNow("Перевірте введені дані та спробуйте ще раз.");
     if (response.status === 401)
-      message = "Потрібно увійти до облікового запису.";
-    if (response.status === 403) message = "У вас немає доступу до цієї дії.";
+      message = trNow("Потрібно увійти до облікового запису.");
+    if (response.status === 403)
+      message = trNow("У вас немає доступу до цієї дії.");
     if (
       data &&
       typeof data === "object" &&
@@ -105,7 +109,7 @@ export async function request<T>(
       typeof data.message === "string" &&
       /[А-Яа-яІіЇїЄєҐґ]/.test(data.message)
     ) {
-      message = data.message;
+      message = trNow(data.message);
     }
     if (
       authenticated &&

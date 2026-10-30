@@ -14,7 +14,7 @@ import { UserAvatar } from "./UserAvatar";
 // Логіка (ролі, сповіщення, вихід) залишилась такою самою.
 export function Layout() {
   const { user, logout } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, t, tr } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   // Відкрите чи закрите меню облікового запису (клік по аватару)
   const [accountOpen, setAccountOpen] = useState(false);
@@ -102,12 +102,12 @@ export function Layout() {
             </NavLink>
             <NavLink to="/notifications" onClick={close}>
               <i className="bi bi-bell" aria-hidden="true"></i>
-              <span className="nav-label">Сповіщення</span>
+              <span className="nav-label">{tr("Сповіщення")}</span>
               {unread > 0 && <span className="badge-count">{unread}</span>}
             </NavLink>
             <NavLink to="/complaints" onClick={close}>
               <i className="bi bi-flag" aria-hidden="true"></i>
-              <span className="nav-label">Скарги</span>
+              <span className="nav-label">{tr("Скарги")}</span>
             </NavLink>
             {user.role === "ADMIN" && (
               <NavLink to="/admin" onClick={close}>

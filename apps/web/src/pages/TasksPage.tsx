@@ -9,7 +9,9 @@ import { TaskSearchFilters } from "../components/TaskSearchFilters";
 import { priorityNames, taskStatusNames } from "../types";
 import type { Project, ProjectMember, Task } from "../types";
 
+import { useLanguage } from "../i18n";
 export function TasksPage() {
+  const { tr } = useLanguage();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const projectId = params.get("project") || "";
@@ -50,8 +52,12 @@ export function TasksPage() {
   return (
     <>
       <div className="page-heading">
-        <h1>Завдання</h1>
-        <p>Оберіть проєкт, щоб переглянути та організувати роботу команди.</p>
+        <h1>{tr("Завдання")}</h1>
+        <p>
+          {tr(
+            "Оберіть проєкт, щоб переглянути та організувати роботу команди.",
+          )}
+        </p>
       </div>
       <ProjectPicker
         value={projectId}
@@ -71,7 +77,7 @@ export function TasksPage() {
           <div className="panel-heading">
             <div>
               <h2>{project.data.title}</h2>
-              <Link to={`/projects/${projectId}`}>До проєкту</Link>
+              <Link to={`/projects/${projectId}`}>{tr("До проєкту")}</Link>
             </div>
             {canCreate && (
               <Link
@@ -79,7 +85,8 @@ export function TasksPage() {
                 to={`/projects/${projectId}/tasks/new`}
               >
                 <i className="bi bi-plus-lg" aria-hidden="true"></i>
-                Створити завдання
+
+                {tr("Створити завдання")}
               </Link>
             )}
           </div>
@@ -92,38 +99,39 @@ export function TasksPage() {
               onChange={change}
             />
             <div className="filter-field">
-              <label htmlFor="list-task-status">Статус</label>
+              <label htmlFor="list-task-status">{tr("Статус")}</label>
               <select
                 id="list-task-status"
                 value={status}
                 onChange={(event) => change("status", event.target.value)}
               >
-                <option value="">Усі статуси</option>
+                <option value="">{tr("Усі статуси")}</option>
                 {Object.entries(taskStatusNames).map(([value, label]) => (
                   <option key={value} value={value}>
-                    {label}
+                    {tr(label)}
                   </option>
                 ))}
               </select>
             </div>
             <div className="filter-field">
-              <label htmlFor="list-task-priority">Пріоритет</label>
+              <label htmlFor="list-task-priority">{tr("Пріоритет")}</label>
               <select
                 id="list-task-priority"
                 value={priority}
                 onChange={(event) => change("priority", event.target.value)}
               >
-                <option value="">Усі пріоритети</option>
+                <option value="">{tr("Усі пріоритети")}</option>
                 {Object.entries(priorityNames).map(([value, label]) => (
                   <option key={value} value={value}>
-                    {label}
+                    {tr(label)}
                   </option>
                 ))}
               </select>
             </div>
             <button className="button secondary" onClick={tasks.refresh}>
               <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-              Оновити
+
+              {tr("Оновити")}
             </button>
           </div>
           <ResourceState

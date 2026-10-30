@@ -14,7 +14,9 @@ import {
   TaskSubmissionForm,
 } from "./TaskSubmissions";
 
+import { useLanguage } from "../i18n";
 export function TaskDetailsPage() {
+  const { tr } = useLanguage();
   const { taskId } = useParams();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
@@ -89,7 +91,7 @@ export function TaskDetailsPage() {
 
   const assigneeName =
     members.data.find((member) => member.userId === currentTask.assigneeId)
-      ?.user?.name || "Не призначено";
+      ?.user?.name || tr("Не призначено");
   const nextStatus = currentTask.status === "TODO" ? "IN_PROGRESS" : "TODO";
 
   return (
@@ -105,24 +107,32 @@ export function TaskDetailsPage() {
           {canEdit && (
             <Link className="button primary" to={`/tasks/${taskId}/edit`}>
               <i className="bi bi-pencil" aria-hidden="true"></i>
-              Редагувати завдання
+
+              {tr("Редагувати завдання")}
             </Link>
           )}
           <button className="button secondary" onClick={refresh}>
             <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-            Оновити дані
+
+            {tr("Оновити дані")}
           </button>
         </div>
       </div>
       <section className="data-panel project-overview">
         <p className="project-full-description">
-          {currentTask.description || "Опис не додано."}
+          {currentTask.description || tr("Опис не додано.")}
         </p>
         <dl className="project-facts">
-          <Fact label="Статус">{taskStatusNames[currentTask.status]}</Fact>
-          <Fact label="Пріоритет">{priorityNames[currentTask.priority]}</Fact>
-          <Fact label="Виконавець">{assigneeName}</Fact>
-          <Fact label="Дедлайн">{formatDate(currentTask.deadline, true)}</Fact>
+          <Fact label={tr("Статус")}>
+            {tr(taskStatusNames[currentTask.status])}
+          </Fact>
+          <Fact label={tr("Пріоритет")}>
+            {tr(priorityNames[currentTask.priority])}
+          </Fact>
+          <Fact label={tr("Виконавець")}>{assigneeName}</Fact>
+          <Fact label={tr("Дедлайн")}>
+            {formatDate(currentTask.deadline, true)}
+          </Fact>
         </dl>
         {canChangeStatus && (
           <div className="page-actions section-gap">
@@ -132,22 +142,23 @@ export function TaskDetailsPage() {
               onClick={() => void changeStatus(nextStatus)}
             >
               {currentTask.status === "TODO"
-                ? "Почати виконання"
-                : "Повернути до плану"}
+                ? tr("Почати виконання")
+                : tr("Повернути до плану")}
             </button>
           </div>
         )}
         {!projectActive && !closed && (
           <p className="form-note section-gap">
-            Виконання й передавання результатів доступні після активації проєкту
-            клієнтом.
+            {tr(
+              "Виконання й передавання результатів доступні після активації проєкту клієнтом.",
+            )}
           </p>
         )}
         <ErrorNotice message={error} />
       </section>
       {canSubmit && (
         <section className="data-panel padded section-gap">
-          <h2>Передати результат роботи</h2>
+          <h2>{tr("Передати результат роботи")}</h2>
           <TaskSubmissionForm
             task={currentTask}
             onSubmitted={() => {
@@ -160,7 +171,7 @@ export function TaskDetailsPage() {
       )}
       <section className="data-panel section-gap">
         <div className="panel-heading">
-          <h2>Результати та перевірки</h2>
+          <h2>{tr("Результати та перевірки")}</h2>
         </div>
         <ResourceState
           loading={submissions.loading}
@@ -172,7 +183,7 @@ export function TaskDetailsPage() {
             <div className="padded">
               {!submissions.data.length && (
                 <p className="form-note">
-                  Результатів на цій сторінці ще немає.
+                  {tr("Результатів на цій сторінці ще немає.")}
                 </p>
               )}
               {submissions.data.map((submission) => (

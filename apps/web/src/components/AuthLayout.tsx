@@ -3,7 +3,7 @@ import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "./ThemePicker";
 
 export function AuthLayout() {
-  const { t } = useLanguage();
+  const { t, tr } = useLanguage();
   return (
     <div className="auth-shell">
       <header className="public-header">
@@ -25,7 +25,7 @@ export function AuthLayout() {
           <span className="eyebrow">{t("workspace")}</span>
           <h1>{t("introTitle")}</h1>
           <p>{t("introText")}</p>
-          <div className="workflow" aria-label="Робочий процес">
+          <div className="workflow" aria-label={tr("Робочий процес")}>
             <span>
               <b>01</b> {t("plan")}
             </span>

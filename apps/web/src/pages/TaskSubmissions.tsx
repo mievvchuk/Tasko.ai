@@ -7,6 +7,7 @@ import { FileDownload, FileUpload } from "../components/FileActions";
 import { submissionStatusNames } from "../types";
 import type { Task, WorkSubmission, FileAttachment } from "../types";
 
+import { useLanguage } from "../i18n";
 const maxSubmissionFiles = 10;
 
 export function ErrorNotice({ message }: { message: string }) {
@@ -27,10 +28,11 @@ export function SubmissionCard({
   canReview: boolean;
   onReviewed: () => void;
 }) {
+  const { tr } = useLanguage();
   return (
     <article className="submission-card">
       <div className="record-heading">
-        <strong>{submissionStatusNames[submission.status]}</strong>
+        <strong>{tr(submissionStatusNames[submission.status])}</strong>
         <time dateTime={submission.submittedAt}>
           {formatDate(submission.submittedAt, true)}
         </time>
@@ -41,7 +43,7 @@ export function SubmissionCard({
       ))}
       {submission.feedback && (
         <div className="review-feedback">
-          <strong>Відгук перевірки</strong>
+          <strong>{tr("Відгук перевірки")}</strong>
           <p className="preserve-lines">{submission.feedback}</p>
           <small>{formatDate(submission.reviewedAt, true)}</small>
         </div>
@@ -64,6 +66,7 @@ export function TaskSubmissionForm({
   task: Task;
   onSubmitted: () => void;
 }) {
+  const { tr } = useLanguage();
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -75,7 +78,7 @@ export function TaskSubmissionForm({
     if (busy || uploading) return;
     setError("");
     if (!description.trim()) {
-      setError("Опишіть результат роботи.");
+      setError(tr("Опишіть результат роботи."));
       return;
     }
     setBusy(true);
@@ -106,8 +109,9 @@ export function TaskSubmissionForm({
   return (
     <>
       <p className="form-note">
-        За потреби спочатку завантажте файли (до 10). Після передавання завдання
-        перейде на перевірку.
+        {tr(
+          "За потреби спочатку завантажте файли (до 10). Після передавання завдання перейде на перевірку.",
+        )}
       </p>
       <FileUpload
         projectId={task.projectId}
@@ -124,13 +128,13 @@ export function TaskSubmissionForm({
               disabled={busy}
               onClick={() => removeFile(file.id)}
             >
-              Не додавати до результату
+              {tr("Не додавати до результату")}
             </button>
           </li>
         ))}
       </ul>
       <form className="work-form" onSubmit={submit}>
-        <label htmlFor="submission-description">Опис результату</label>
+        <label htmlFor="submission-description">{tr("Опис результату")}</label>
         <textarea
           id="submission-description"
           required
@@ -143,7 +147,7 @@ export function TaskSubmissionForm({
         <ErrorNotice message={error} />
         <button className="button primary" disabled={busy || uploading}>
           <i className="bi bi-send" aria-hidden="true"></i>
-          {busy ? "Передаємо…" : "Передати на перевірку"}
+          {busy ? tr("Передаємо…") : tr("Передати на перевірку")}
         </button>
       </form>
     </>
@@ -158,6 +162,7 @@ function SubmissionReviewForm({
   submissionId: string;
   onReviewed: () => void;
 }) {
+  const { tr } = useLanguage();
   const [decision, setDecision] = useState("APPROVE");
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
@@ -168,7 +173,7 @@ function SubmissionReviewForm({
     if (busy) return;
     setError("");
     if (!feedback.trim()) {
-      setError("Додайте відгук до рішення.");
+      setError(tr("Додайте відгук до рішення."));
       return;
     }
     setBusy(true);
@@ -188,16 +193,18 @@ function SubmissionReviewForm({
   return (
     <form className="work-form review-form" onSubmit={submit}>
       <fieldset disabled={busy} className="form-fields">
-        <label htmlFor={`decision-${submissionId}`}>Рішення</label>
+        <label htmlFor={`decision-${submissionId}`}>{tr("Рішення")}</label>
         <select
           id={`decision-${submissionId}`}
           value={decision}
           onChange={(event) => setDecision(event.target.value)}
         >
-          <option value="APPROVE">Прийняти роботу</option>
-          <option value="NEEDS_REVISION">Повернути на доопрацювання</option>
+          <option value="APPROVE">{tr("Прийняти роботу")}</option>
+          <option value="NEEDS_REVISION">
+            {tr("Повернути на доопрацювання")}
+          </option>
         </select>
-        <label htmlFor={`feedback-${submissionId}`}>Відгук</label>
+        <label htmlFor={`feedback-${submissionId}`}>{tr("Відгук")}</label>
         <textarea
           id={`feedback-${submissionId}`}
           rows={3}
@@ -208,7 +215,7 @@ function SubmissionReviewForm({
         />
         <ErrorNotice message={error} />
         <button className="button primary">
-          {busy ? "Зберігаємо…" : "Зберегти рішення"}
+          {busy ? tr("Зберігаємо…") : tr("Зберегти рішення")}
         </button>
       </fieldset>
     </form>

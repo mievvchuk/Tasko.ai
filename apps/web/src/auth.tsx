@@ -10,6 +10,7 @@ import {
 } from "./api";
 import type { LoginResponse, User } from "./types";
 
+import { useLanguage } from "./i18n";
 interface AuthState {
   user: User | null;
   loading: boolean;
@@ -25,6 +26,7 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { tr } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [connectionError, setConnectionError] = useState("");
@@ -39,7 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.removeItem(tokenKey);
     } catch {
       setNotice(
-        "Доступ до сховища браузера обмежено. Закрийте цю вкладку, щоб завершити сеанс.",
+        tr(
+          "Доступ до сховища браузера обмежено. Закрийте цю вкладку, щоб завершити сеанс.",
+        ),
       );
     }
     setUser(null);
@@ -68,7 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ) {
           logout();
           setNotice(
-            "Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз.",
+            tr(
+              "Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз.",
+            ),
           );
         } else {
           setConnectionError(errorMessage(error));
@@ -89,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     function endSession() {
       logout();
       setNotice(
-        "Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз.",
+        tr("Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз."),
       );
     }
     window.addEventListener(sessionEndedEvent, endSession);
@@ -104,14 +110,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (response.requiresTwoFactor) return false;
     if (!response.accessToken || !response.user) {
-      throw new ApiError(502, "Сервер не повернув дані для входу.");
+      throw new ApiError(502, tr("Сервер не повернув дані для входу."));
     }
     try {
       sessionStorage.setItem(tokenKey, response.accessToken);
     } catch {
       throw new ApiError(
         0,
-        "Дозвольте збереження даних для цього сайту в налаштуваннях браузера.",
+        tr(
+          "Дозвольте збереження даних для цього сайту в налаштуваннях браузера.",
+        ),
       );
     }
     setNotice("");

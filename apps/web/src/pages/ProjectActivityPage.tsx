@@ -4,7 +4,9 @@ import { formatDate } from "../format";
 import type { ActivityLog } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
 export function ProjectActivityPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { data, error, loading, refresh } = useApi<ActivityLog[]>(
     id ? `/projects/${id}/activity?limit=50` : null,
@@ -12,10 +14,10 @@ export function ProjectActivityPage() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading">
-        <h1>Історія активності</h1>
+        <h1>{tr("Історія активності")}</h1>
       </div>
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (
@@ -25,7 +27,7 @@ export function ProjectActivityPage() {
               <div>
                 <strong>{item.message}</strong>
                 <small>
-                  {item.actor?.name || "Система"} ·{" "}
+                  {item.actor?.name || tr("Система")} ·{" "}
                   {formatDate(item.createdAt, true)}
                 </small>
               </div>
@@ -33,7 +35,7 @@ export function ProjectActivityPage() {
           ))}
           {!data?.length && (
             <div className="empty-state">
-              <h3>Подій ще немає</h3>
+              <h3>{tr("Подій ще немає")}</h3>
             </div>
           )}
         </section>

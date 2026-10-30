@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { translate } from "./i18n.en";
+import type { Language } from "./i18n.en";
 
 const uk = {
   language: "EN",
@@ -168,12 +170,13 @@ const en: Record<keyof typeof uk, string> = {
   missingResetToken: "The reset token is missing from the link.",
 };
 
-type Language = "uk" | "en";
 type TranslationKey = keyof typeof uk;
 
 interface LanguageContextValue {
   language: Language;
   t: (key: TranslationKey) => string;
+  // Переклад за українським текстом (як у gettext): tr("Сторінка {0}", page)
+  tr: (text: string, ...args: (string | number)[]) => string;
   toggleLanguage: () => void;
 }
 
@@ -188,8 +191,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  // Мову в <html lang> ставимо ще під час рендеру: з неї читають trNow() і
+  // formatDate() у дочірніх компонентах, які малюються одразу після цього
+  document.documentElement.lang = language;
   useEffect(() => {
-    document.documentElement.lang = language;
     try {
       localStorage.setItem("tasko.language", language);
     } catch {
@@ -203,6 +208,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       value={{
         language,
         t: (key) => dictionary[key],
+        tr: (text, ...args) => translate(language, text, args),
         toggleLanguage: () =>
           setLanguage((current) => (current === "uk" ? "en" : "uk")),
       }}

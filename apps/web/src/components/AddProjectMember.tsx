@@ -5,6 +5,7 @@ import { useApi } from "../useApi";
 import type { ProjectMember } from "../types";
 import { Pagination, ResourceState } from "./ResourceState";
 
+import { useLanguage } from "../i18n";
 export function AddProjectMember({
   projectId,
   members,
@@ -14,6 +15,7 @@ export function AddProjectMember({
   members: ProjectMember[];
   onAdded: () => void;
 }) {
+  const { tr } = useLanguage();
   const [page, setPage] = useState(1);
   const [userId, setUserId] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,7 +41,7 @@ export function AddProjectMember({
         body: { userId },
       });
       setUserId("");
-      setMessage("Фрилансера додано до команди.");
+      setMessage(tr("Фрилансера додано до команди."));
       onAdded();
     } catch (error) {
       setError(errorMessage(error));
@@ -51,9 +53,9 @@ export function AddProjectMember({
   return (
     <div className="padded">
       <p className="form-note">
-        Основного виконавця обрано через заявку. За потреби додайте інших
-        фрилансерів для окремих завдань: вони отримають доступ до даних цього
-        проєкту.
+        {tr(
+          "Основного виконавця обрано через заявку. За потреби додайте інших фрилансерів для окремих завдань: вони отримають доступ до даних цього проєкту.",
+        )}
       </p>
       <ResourceState
         loading={directory.loading}
@@ -63,7 +65,9 @@ export function AddProjectMember({
       {directory.data && (
         <>
           <form className="member-form" onSubmit={add}>
-            <label htmlFor="new-project-member">Додатковий виконавець</label>
+            <label htmlFor="new-project-member">
+              {tr("Додатковий виконавець")}
+            </label>
             <select
               id="new-project-member"
               required
@@ -71,7 +75,7 @@ export function AddProjectMember({
               disabled={busy}
               onChange={(event) => setUserId(event.target.value)}
             >
-              <option value="">Оберіть фрилансера</option>
+              <option value="">{tr("Оберіть фрилансера")}</option>
               {available.map((person) => (
                 <option key={person.id} value={person.id}>
                   {person.name} — {person.email}
@@ -80,12 +84,12 @@ export function AddProjectMember({
             </select>
             <button className="button primary" disabled={busy || !userId}>
               <i className="bi bi-plus-lg" aria-hidden="true"></i>
-              {busy ? "Додаємо…" : "Додати до команди"}
+              {busy ? tr("Додаємо…") : tr("Додати до команди")}
             </button>
           </form>
           {!available.length && (
             <p className="form-note">
-              На цій сторінці немає інших активних фрилансерів.
+              {tr("На цій сторінці немає інших активних фрилансерів.")}
             </p>
           )}
           <Pagination

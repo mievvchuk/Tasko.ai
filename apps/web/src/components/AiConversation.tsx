@@ -6,6 +6,7 @@ import { aiName, aiToolNames, useAiChat } from "../aiChat";
 import type { AiAttachment } from "../aiChat";
 import type { UserRole } from "../types";
 
+import { useLanguage } from "../i18n";
 const MarkdownAnswer = lazy(() => import("./MarkdownAnswer"));
 
 // Ті самі ліміти, що й на сервері (agent/attachments.ts)
@@ -44,6 +45,7 @@ const thinkingSteps = [
 ];
 
 function Thinking() {
+  const { tr } = useLanguage();
   const [step, setStep] = useState(0);
   useEffect(() => {
     const timer = setInterval(
@@ -58,10 +60,12 @@ function Thinking() {
       <span className="ai-avatar" aria-hidden="true">
         <i className="bi bi-stars"></i>
       </span>
-      <span className="visually-hidden">{aiName} аналізує дані</span>
+      <span className="visually-hidden">
+        {tr(aiName)} {tr("аналізує дані")}
+      </span>
       <span className="ai-bubble bot" aria-hidden="true">
         <span key={step} className="ai-thinking-text">
-          {thinkingSteps[step]}
+          {tr(thinkingSteps[step])}
         </span>
         <span className="ai-dots">
           <span>.</span>
@@ -83,6 +87,7 @@ export function AiConversation({
   context?: string;
   configured: boolean;
 }) {
+  const { tr } = useLanguage();
   const { user } = useAuth();
   const { exchanges, busy, error, send, cancel } = useAiChat();
   const [message, setMessage] = useState("");
@@ -97,7 +102,7 @@ export function AiConversation({
   async function ask(question: string) {
     setLocalError("");
     if (!question.trim()) {
-      setLocalError("Напишіть запитання.");
+      setLocalError(tr("Напишіть запитання."));
       return;
     }
     if (await send(question.trim(), context, files)) {
@@ -112,11 +117,11 @@ export function AiConversation({
     if (!chosen.length) return;
     setLocalError("");
     if (files.length + chosen.length > maxFiles) {
-      setLocalError(`Можна прикріпити до ${maxFiles} файлів.`);
+      setLocalError(tr("Можна прикріпити до {0} файлів.", maxFiles));
       return;
     }
     if (chosen.some((file) => file.size > maxFileSize)) {
-      setLocalError("Кожен файл має бути до 5 МБ.");
+      setLocalError(tr("Кожен файл має бути до 5 МБ."));
       return;
     }
     const body = new FormData();
@@ -155,8 +160,10 @@ export function AiConversation({
               <i className="bi bi-stars"></i>
             </span>
             <div>
-              <strong>Привіт! Я {aiName}.</strong>
-              <p>Запитайте про проєкти, завдання чи дедлайни.</p>
+              <strong>
+                {tr("Привіт! Я")} {tr(aiName)}.
+              </strong>
+              <p>{tr("Запитайте про проєкти, завдання чи дедлайни.")}</p>
             </div>
           </div>
         )}
@@ -166,10 +173,10 @@ export function AiConversation({
             className={item.offTopic ? "ai-exchange off-topic" : "ai-exchange"}
           >
             <div className="ai-bubble user">
-              <h2 className="visually-hidden">Ваше запитання</h2>
+              <h2 className="visually-hidden">{tr("Ваше запитання")}</h2>
               <p className="preserve-lines ai-question">{item.question}</p>
               {item.files && item.files.length > 0 && (
-                <ul className="ai-files" aria-label="Прикріплені файли">
+                <ul className="ai-files" aria-label={tr("Прикріплені файли")}>
                   {item.files.map((name) => (
                     <li key={name}>
                       <i className="bi bi-paperclip" aria-hidden="true"></i>
@@ -185,16 +192,18 @@ export function AiConversation({
               </span>
               <div className="ai-bubble bot">
                 <h2 className="ai-reply-name">
-                  {item.offTopic ? "Поза темою системи" : aiName}
+                  {item.offTopic ? tr("Поза темою системи") : tr(aiName)}
                 </h2>
-                <Suspense fallback={<p role="status">Форматуємо відповідь…</p>}>
+                <Suspense
+                  fallback={<p role="status">{tr("Форматуємо відповідь…")}</p>}
+                >
                   <MarkdownAnswer>{item.answer}</MarkdownAnswer>
                 </Suspense>
                 {item.toolsUsed.length > 0 && (
                   <p className="ai-sources">
                     <i className="bi bi-database" aria-hidden="true"></i>
                     {[...new Set(item.toolsUsed)]
-                      .map((name) => aiToolNames[name] || "Дані проєкту")
+                      .map((name) => tr(aiToolNames[name] || "Дані проєкту"))
                       .join(", ")}
                   </p>
                 )}
@@ -206,34 +215,36 @@ export function AiConversation({
       </div>
       {!exchanges.length && !busy && user && configured && (
         <div className="ai-suggestions">
-          <p className="form-note">Спробуйте запитати</p>
-          {suggestions[user.role].map((text) => (
-            <button
-              key={text}
-              type="button"
-              className="ai-chip"
-              onClick={() => void ask(text)}
-            >
-              <span>{text}</span>
-              <i className="bi bi-arrow-up-right" aria-hidden="true"></i>
-            </button>
-          ))}
+          <p className="form-note">{tr("Спробуйте запитати")}</p>
+          {suggestions[user.role]
+            .map((text) => tr(text))
+            .map((text) => (
+              <button
+                key={text}
+                type="button"
+                className="ai-chip"
+                onClick={() => void ask(text)}
+              >
+                <span>{text}</span>
+                <i className="bi bi-arrow-up-right" aria-hidden="true"></i>
+              </button>
+            ))}
         </div>
       )}
       <form className="work-form ai-form" onSubmit={submit}>
         <label htmlFor={inputId} className="visually-hidden">
-          Запитання до Ади
+          {tr("Запитання до Ади")}
         </label>
         {files.length > 0 && (
-          <ul className="ai-files" aria-label="Файли до запитання">
+          <ul className="ai-files" aria-label={tr("Файли до запитання")}>
             {files.map((file, index) => (
               <li key={`${file.name}-${index}`}>
                 <i className="bi bi-file-earmark-text" aria-hidden="true"></i>
                 {file.name}
-                {file.truncated && <small>обрізано</small>}
+                {file.truncated && <small>{tr("обрізано")}</small>}
                 <button
                   type="button"
-                  aria-label={`Прибрати файл ${file.name}`}
+                  aria-label={tr("Прибрати файл {0}", file.name)}
                   disabled={busy}
                   onClick={() =>
                     setFiles((current) => current.filter((_, i) => i !== index))
@@ -251,7 +262,7 @@ export function AiConversation({
             rows={2}
             required
             maxLength={1800}
-            placeholder="Напишіть повідомлення…"
+            placeholder={tr("Напишіть повідомлення…")}
             value={message}
             disabled={busy || !configured}
             onChange={(event) => setMessage(event.target.value)}
@@ -262,19 +273,23 @@ export function AiConversation({
               type="button"
               className="ai-icon-button"
               disabled={locked || files.length >= maxFiles}
-              aria-label="Прикріпити файл"
-              title="Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3"
+              aria-label={tr("Прикріпити файл")}
+              title={tr(
+                "Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3",
+              )}
               onClick={() => fileInput.current?.click()}
             >
               <i className="bi bi-paperclip" aria-hidden="true"></i>
             </button>
-            <span className="ai-hint">Enter — надіслати, Shift+Enter — новий рядок</span>
+            <span className="ai-hint">
+              {tr("Enter — надіслати, Shift+Enter — новий рядок")}
+            </span>
             {busy ? (
               <button
                 type="button"
                 className="ai-send"
-                aria-label="Скасувати запит"
-                title="Скасувати запит"
+                aria-label={tr("Скасувати запит")}
+                title={tr("Скасувати запит")}
                 onClick={cancel}
               >
                 <i className="bi bi-stop-fill" aria-hidden="true"></i>
@@ -283,8 +298,8 @@ export function AiConversation({
               <button
                 className="ai-send"
                 disabled={locked || !message.trim()}
-                aria-label="Надіслати запит"
-                title="Надіслати запит"
+                aria-label={tr("Надіслати запит")}
+                title={tr("Надіслати запит")}
               >
                 <i className="bi bi-arrow-up" aria-hidden="true"></i>
               </button>
@@ -303,7 +318,7 @@ export function AiConversation({
         />
         {reading && (
           <p role="status" className="form-note">
-            Читаємо файл…
+            {tr("Читаємо файл…")}
           </p>
         )}
         {(localError || error) && (

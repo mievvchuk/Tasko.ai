@@ -7,7 +7,9 @@ import { useApi } from "../useApi";
 import { PasswordInput } from "./PasswordInput";
 import { ResourceState } from "./ResourceState";
 
+import { useLanguage } from "../i18n";
 export function SecuritySettings({ user }: { user: User }) {
+  const { tr } = useLanguage();
   const sessions = useApi<AuthSession[]>("/auth/sessions");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -27,7 +29,7 @@ export function SecuritySettings({ user }: { user: User }) {
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (newPassword !== confirmation) {
-      setError("Нові паролі не збігаються.");
+      setError(tr("Нові паролі не збігаються."));
       return;
     }
     await run(async () => {
@@ -85,7 +87,7 @@ export function SecuritySettings({ user }: { user: User }) {
     await run(async () => {
       await request(`/auth/sessions/${id}`, { method: "DELETE" });
       sessions.refresh();
-      setMessage("Сеанс завершено.");
+      setMessage(tr("Сеанс завершено."));
     });
   }
 
@@ -117,36 +119,36 @@ export function SecuritySettings({ user }: { user: User }) {
         className="account-panel security-card"
         aria-labelledby="security-title"
       >
-        <h2 id="security-title">Безпека</h2>
+        <h2 id="security-title">{tr("Безпека")}</h2>
         <div className="security-section">
-          <h3>Зміна пароля</h3>
+          <h3>{tr("Зміна пароля")}</h3>
           <p className="form-note">
-            Після зміни інші активні сеанси завершаться.
+            {tr("Після зміни інші активні сеанси завершаться.")}
           </p>
           <form onSubmit={changePassword} className="security-form">
             <PasswordInput
               id="current-password"
-              label="Поточний пароль"
+              label={tr("Поточний пароль")}
               value={currentPassword}
               onChange={setCurrentPassword}
               autoComplete="current-password"
             />
             <PasswordInput
               id="profile-new-password"
-              label="Новий пароль"
+              label={tr("Новий пароль")}
               value={newPassword}
               onChange={setNewPassword}
               autoComplete="new-password"
             />
             <PasswordInput
               id="profile-new-password-confirmation"
-              label="Повторіть новий пароль"
+              label={tr("Повторіть новий пароль")}
               value={confirmation}
               onChange={setConfirmation}
               autoComplete="new-password"
             />
             <button className="button primary" disabled={submitting}>
-              Змінити пароль
+              {tr("Змінити пароль")}
             </button>
           </form>
         </div>
@@ -154,11 +156,13 @@ export function SecuritySettings({ user }: { user: User }) {
         <div className="security-section">
           <div className="security-row">
             <div>
-              <h3>Двофакторний вхід</h3>
+              <h3>{tr("Двофакторний вхід")}</h3>
               <p className="form-note">
-                Статус:{" "}
-                <strong>{twoFactorEnabled ? "Увімкнено" : "Вимкнено"}</strong> ·
-                код із Google Authenticator або іншого TOTP-застосунку
+                {tr("Статус:")}{" "}
+                <strong>
+                  {twoFactorEnabled ? tr("Увімкнено") : tr("Вимкнено")}
+                </strong>{" "}
+                {tr("· код із Google Authenticator або іншого TOTP-застосунку")}
               </p>
             </div>
             {!twoFactorEnabled && !setup && (
@@ -167,18 +171,20 @@ export function SecuritySettings({ user }: { user: User }) {
                 onClick={beginTwoFactor}
                 disabled={submitting}
               >
-                Увімкнути 2FA
+                {tr("Увімкнути 2FA")}
               </button>
             )}
           </div>
           {setup && (
             <form onSubmit={enableTwoFactor} className="two-factor-setup">
-              <img src={setup.qrCode} alt="QR-код для налаштування 2FA" />
+              <img src={setup.qrCode} alt={tr("QR-код для налаштування 2FA")} />
               <div>
-                <p>Відскануйте QR-код або введіть секрет вручну:</p>
+                <p>{tr("Відскануйте QR-код або введіть секрет вручну:")}</p>
                 <code>{setup.secret}</code>
                 <div className="field compact-field">
-                  <label htmlFor="enable-2fa-code">Код із застосунку</label>
+                  <label htmlFor="enable-2fa-code">
+                    {tr("Код із застосунку")}
+                  </label>
                   <input
                     id="enable-2fa-code"
                     inputMode="numeric"
@@ -194,7 +200,7 @@ export function SecuritySettings({ user }: { user: User }) {
                   />
                 </div>
                 <button className="button primary" disabled={submitting}>
-                  Підтвердити 2FA
+                  {tr("Підтвердити 2FA")}
                 </button>
               </div>
             </form>
@@ -206,13 +212,15 @@ export function SecuritySettings({ user }: { user: User }) {
             >
               <PasswordInput
                 id="disable-2fa-password"
-                label="Пароль"
+                label={tr("Пароль")}
                 value={disablePassword}
                 onChange={setDisablePassword}
                 autoComplete="current-password"
               />
               <div className="field">
-                <label htmlFor="disable-2fa-code">Код із застосунку</label>
+                <label htmlFor="disable-2fa-code">
+                  {tr("Код із застосунку")}
+                </label>
                 <input
                   id="disable-2fa-code"
                   inputMode="numeric"
@@ -228,15 +236,17 @@ export function SecuritySettings({ user }: { user: User }) {
                 />
               </div>
               <button className="button secondary" disabled={submitting}>
-                Вимкнути 2FA
+                {tr("Вимкнути 2FA")}
               </button>
             </form>
           )}
         </div>
 
         <div className="security-section">
-          <h3>Активні сеанси</h3>
-          <p className="form-note">Пристрої, на яких зараз виконано вхід.</p>
+          <h3>{tr("Активні сеанси")}</h3>
+          <p className="form-note">
+            {tr("Пристрої, на яких зараз виконано вхід.")}
+          </p>
           <ResourceState
             loading={sessions.loading}
             error={sessions.error}
@@ -251,13 +261,15 @@ export function SecuritySettings({ user }: { user: User }) {
                   </span>
                   <div>
                     <strong>
-                      {session.current ? "Поточний сеанс" : "Інший пристрій"}
+                      {session.current
+                        ? tr("Поточний сеанс")
+                        : tr("Інший пристрій")}
                     </strong>
                     <span title={session.userAgent ?? undefined}>
                       {describeDevice(session.userAgent)}
                     </span>
                     <small>
-                      {session.ipAddress || "IP невідомий"} ·{" "}
+                      {session.ipAddress || tr("IP невідомий")} ·{" "}
                       {formatDate(session.createdAt, true)}
                     </small>
                   </div>
@@ -267,7 +279,7 @@ export function SecuritySettings({ user }: { user: User }) {
                       onClick={() => revokeSession(session.id)}
                       disabled={submitting}
                     >
-                      Завершити
+                      {tr("Завершити")}
                     </button>
                   )}
                 </li>

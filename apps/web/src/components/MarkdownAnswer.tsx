@@ -1,3 +1,4 @@
+import { trNow } from "../i18n.en.ts";
 import Markdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -20,7 +21,7 @@ const components: Components = {
     <div
       className="ai-table-scroll"
       role="region"
-      aria-label="Таблиця відповіді агента"
+      aria-label={trNow("Таблиця відповіді агента")}
       tabIndex={0}
     >
       <table>{children}</table>

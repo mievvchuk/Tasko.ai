@@ -17,6 +17,8 @@ import type {
   Complaint,
 } from "../types";
 
+import { useLanguage } from "../i18n";
+import { uiLocale } from "../i18n.en";
 type AccountStatus = AdminUser["status"];
 type ReportFormat = "json" | "csv" | "xlsx" | "pdf";
 
@@ -35,11 +37,12 @@ type ComplaintWithDetails = Complaint & {
 };
 
 export function RoleOptions() {
+  const { tr } = useLanguage();
   return (
     <>
       {Object.entries(roleNames).map(([value, label]) => (
         <option key={value} value={value}>
-          {label}
+          {tr(label)}
         </option>
       ))}
     </>
@@ -47,16 +50,18 @@ export function RoleOptions() {
 }
 
 export function AccountStatusOptions() {
+  const { tr } = useLanguage();
   return (
     <>
-      <option value="ACTIVE">{accountStatusNames.ACTIVE}</option>
-      <option value="BLOCKED">{accountStatusNames.BLOCKED}</option>
+      <option value="ACTIVE">{tr(accountStatusNames.ACTIVE)}</option>
+      <option value="BLOCKED">{tr(accountStatusNames.BLOCKED)}</option>
     </>
   );
 }
 
 // Загальні показники системи та кнопки експорту звіту.
 export function AdminReportSummary({ report }: { report: AdminReport }) {
+  const { tr } = useLanguage();
   const [exporting, setExporting] = useState("");
   const [exportError, setExportError] = useState("");
 
@@ -76,10 +81,18 @@ export function AdminReportSummary({ report }: { report: AdminReport }) {
   }
 
   const stats = [
-    ["Користувачі", report.users, `заблоковано: ${report.blockedUsers}`],
-    ["Проєкти", report.projects, `активні: ${report.activeProjects}`],
-    ["Завдання", report.tasks, `завершено: ${report.tasksByStatus.DONE}`],
-    ["Прострочені", report.overdueTasks, "завдань після дедлайну"],
+    [
+      tr("Користувачі"),
+      report.users,
+      tr("заблоковано: {0}", report.blockedUsers),
+    ],
+    [tr("Проєкти"), report.projects, tr("активні: {0}", report.activeProjects)],
+    [
+      tr("Завдання"),
+      report.tasks,
+      tr("завершено: {0}", report.tasksByStatus.DONE),
+    ],
+    [tr("Прострочені"), report.overdueTasks, tr("завдань після дедлайну")],
   ] as const;
 
   return (
@@ -95,52 +108,52 @@ export function AdminReportSummary({ report }: { report: AdminReport }) {
       </div>
       <div className="chart-grid">
         <ColumnChart
-          title="Нові за останні 6 місяців"
+          title={tr("Нові за останні 6 місяців")}
           labels={report.growth.map(({ month }) => monthLabel(month))}
           series={[
             {
-              name: "Користувачі",
+              name: tr("Користувачі"),
               tone: "primary",
               values: report.growth.map((row) => row.users),
             },
             {
-              name: "Проєкти",
+              name: tr("Проєкти"),
               tone: "accent",
               values: report.growth.map((row) => row.projects),
             },
           ]}
         />
         <BarChart
-          title="Користувачі за ролями"
+          title={tr("Користувачі за ролями")}
           items={(Object.keys(roleNames) as UserRole[]).map((role) => ({
-            label: roleNames[role],
+            label: tr(roleNames[role]),
             value: report.usersByRole[role],
             tone: roleTones[role],
           }))}
         />
         <BarChart
-          title="Проєкти за статусами"
+          title={tr("Проєкти за статусами")}
           items={(Object.keys(projectStatusNames) as ProjectStatus[]).map(
             (status) => ({
-              label: projectStatusNames[status],
+              label: tr(projectStatusNames[status]),
               value: report.projectsByStatus[status],
               tone: projectTones[status],
             }),
           )}
         />
         <BarChart
-          title="Завдання за статусами"
+          title={tr("Завдання за статусами")}
           items={(Object.keys(taskStatusNames) as TaskStatus[]).map(
             (status) => ({
-              label: taskStatusNames[status],
+              label: tr(taskStatusNames[status]),
               value: report.tasksByStatus[status],
               tone: taskTones[status],
             }),
           )}
         />
       </div>
-      <div className="export-actions" aria-label="Експорт звіту">
-        <strong>Завантажити звіт:</strong>
+      <div className="export-actions" aria-label={tr("Експорт звіту")}>
+        <strong>{tr("Завантажити звіт:")}</strong>
         {reportFormats.map((format) => (
           <button
             key={format}
@@ -149,7 +162,7 @@ export function AdminReportSummary({ report }: { report: AdminReport }) {
             onClick={() => exportReport(format)}
           >
             <i className="bi bi-download" aria-hidden="true"></i>
-            {exporting === format ? "Готуємо…" : format.toUpperCase()}
+            {exporting === format ? tr("Готуємо…") : format.toUpperCase()}
           </button>
         ))}
       </div>
@@ -184,12 +197,13 @@ const projectTones: Record<ProjectStatus, ChartTone> = {
 
 // «2026-10» → «жовт.»
 function monthLabel(month: string) {
-  return new Date(`${month}-01T00:00:00`).toLocaleDateString("uk-UA", {
+  return new Date(`${month}-01T00:00:00`).toLocaleDateString(uiLocale(), {
     month: "short",
   });
 }
 
 export function AdminComplaints() {
+  const { tr } = useLanguage();
   const complaints = useApi<ComplaintWithDetails[]>(
     "/admin/complaints?limit=50",
   );
@@ -202,7 +216,7 @@ export function AdminComplaints() {
     try {
       await request(`/admin/complaints/${id}`, {
         method: "PATCH",
-        body: { status, adminNote: notes[id] || "Рішення адміністратора" },
+        body: { status, adminNote: notes[id] || tr("Рішення адміністратора") },
       });
       complaints.refresh();
     } catch (e) {
@@ -218,8 +232,8 @@ export function AdminComplaints() {
     <section className="data-panel projects-panel">
       <div className="panel-heading">
         <div>
-          <h2>Модерація скарг</h2>
-          <p>Рішення не блокує користувача автоматично.</p>
+          <h2>{tr("Модерація скарг")}</h2>
+          <p>{tr("Рішення не блокує користувача автоматично.")}</p>
         </div>
       </div>
       {error && <p className="form-error padded">{error}</p>}
@@ -238,13 +252,13 @@ export function AdminComplaints() {
           </div>
           <p>{item.description}</p>
           <small>
-            Автор: {item.reporter?.name || item.id} · Ціль:{" "}
-            {item.targetUser?.name || item.project?.title || "не вказано"}
+            {tr("Автор:")} {item.reporter?.name || item.id} {tr("· Ціль:")}{" "}
+            {item.targetUser?.name || item.project?.title || tr("не вказано")}
           </small>
           {item.status === "OPEN" && (
             <div className="inline-form">
               <label>
-                Коментар рішення
+                {tr("Коментар рішення")}
                 <input
                   value={notes[item.id] || ""}
                   onChange={(e) => changeNote(item.id, e.target.value)}
@@ -254,13 +268,13 @@ export function AdminComplaints() {
                 className="button primary"
                 onClick={() => void decide(item.id, "RESOLVED")}
               >
-                Вирішено
+                {tr("Вирішено")}
               </button>
               <button
                 className="button secondary"
                 onClick={() => void decide(item.id, "REJECTED")}
               >
-                Відхилити
+                {tr("Відхилити")}
               </button>
             </div>
           )}
@@ -280,6 +294,7 @@ export function AdminUserCard({
   self: boolean;
   onSaved: () => void;
 }) {
+  const { tr } = useLanguage();
   const [role, setRole] = useState<UserRole>(user.role);
   const [status, setStatus] = useState(user.status);
   const [busy, setBusy] = useState(false);
@@ -310,20 +325,24 @@ export function AdminUserCard({
         <div>
           <h3>
             {user.name}
-            {self && " (ви)"}
+            {self && tr(" (ви)")}
           </h3>
           <p>{user.email}</p>
-          <small>Зареєстровано: {formatDate(user.createdAt)}</small>
+          <small>
+            {tr("Зареєстровано:")} {formatDate(user.createdAt)}
+          </small>
         </div>
         <span className={`project-status status-${user.status}`}>
-          {accountStatusNames[user.status]}
+          {tr(accountStatusNames[user.status])}
         </span>
       </div>
       <form onSubmit={save} className="work-form">
         {/* Власний обліковий запис адміністратор змінювати не може. */}
         <fieldset disabled={busy || self} className="user-controls">
           <div>
-            <label htmlFor={`user-role-${user.id}`}>Роль користувача</label>
+            <label htmlFor={`user-role-${user.id}`}>
+              {tr("Роль користувача")}
+            </label>
             <select
               id={`user-role-${user.id}`}
               value={role}
@@ -333,7 +352,9 @@ export function AdminUserCard({
             </select>
           </div>
           <div>
-            <label htmlFor={`user-status-${user.id}`}>Стан користувача</label>
+            <label htmlFor={`user-status-${user.id}`}>
+              {tr("Стан користувача")}
+            </label>
             <select
               id={`user-status-${user.id}`}
               value={status}
@@ -345,12 +366,12 @@ export function AdminUserCard({
             </select>
           </div>
           <button className="button secondary" disabled={unchanged}>
-            {busy ? "Зберігаємо…" : "Зберегти користувача"}
+            {busy ? tr("Зберігаємо…") : tr("Зберегти користувача")}
           </button>
         </fieldset>
         {self && (
           <p className="form-note">
-            Змінити власну роль або заблокувати себе не можна.
+            {tr("Змінити власну роль або заблокувати себе не можна.")}
           </p>
         )}
         {error && (

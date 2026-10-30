@@ -5,12 +5,14 @@ import { formatDate } from "../format";
 import type { Complaint } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
 const statusNames = {
   OPEN: "Очікує розгляду",
   RESOLVED: "Вирішено",
   REJECTED: "Відхилено",
 };
 export function ComplaintsPage() {
+  const { tr } = useLanguage();
   const { data, error, loading, refresh } = useApi<Complaint[]>(
     "/complaints?limit=50",
   );
@@ -42,31 +44,32 @@ export function ComplaintsPage() {
   return (
     <>
       <div className="page-heading">
-        <h1>Скарги</h1>
+        <h1>{tr("Скарги")}</h1>
         <p>
-          Опишіть проблему для адміністратора. Вкажіть UUID користувача або
-          проєкту.
+          {tr(
+            "Опишіть проблему для адміністратора. Вкажіть UUID користувача або проєкту.",
+          )}
         </p>
       </div>
       <form className="data-panel form-grid" onSubmit={(e) => void submit(e)}>
         <label>
-          UUID користувача
+          {tr("UUID користувача")}
           <input
             value={targetUserId}
             onChange={(e) => setTargetUserId(e.target.value)}
-            placeholder="Необов’язково"
+            placeholder={tr("Необов’язково")}
           />
         </label>
         <label>
-          UUID проєкту
+          {tr("UUID проєкту")}
           <input
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
-            placeholder="Необов’язково"
+            placeholder={tr("Необов’язково")}
           />
         </label>
         <label>
-          Причина
+          {tr("Причина")}
           <input
             required
             minLength={3}
@@ -75,7 +78,7 @@ export function ComplaintsPage() {
           />
         </label>
         <label className="full-width">
-          Опис
+          {tr("Опис")}
           <textarea
             required
             minLength={10}
@@ -86,7 +89,8 @@ export function ComplaintsPage() {
         {formError && <p className="form-error full-width">{formError}</p>}
         <button className="button primary">
           <i className="bi bi-send" aria-hidden="true"></i>
-          Надіслати скаргу
+
+          {tr("Надіслати скаргу")}
         </button>
       </form>
       <ResourceState loading={loading} error={error} onRetry={refresh} />
@@ -97,14 +101,15 @@ export function ComplaintsPage() {
               <div className="application-person">
                 <h2>{item.reason}</h2>
                 <span className={`project-status status-${item.status}`}>
-                  {statusNames[item.status]}
+                  {tr(statusNames[item.status])}
                 </span>
               </div>
               <p>{item.description}</p>
               <small>{formatDate(item.createdAt, true)}</small>
               {item.adminNote && (
                 <p>
-                  <strong>Відповідь адміністратора:</strong> {item.adminNote}
+                  <strong>{tr("Відповідь адміністратора:")}</strong>{" "}
+                  {item.adminNote}
                 </p>
               )}
             </article>

@@ -14,7 +14,9 @@ import {
   RoleOptions,
 } from "./AdminSections";
 
+import { useLanguage } from "../i18n";
 export function AdminPage() {
+  const { tr } = useLanguage();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const isAdmin = user?.role === "ADMIN";
@@ -60,16 +62,16 @@ export function AdminPage() {
   if (!user || !isAdmin)
     return (
       <section className="account-panel">
-        <h1>Доступ заборонено</h1>
-        <p>Ця сторінка доступна лише адміністратору.</p>
+        <h1>{tr("Доступ заборонено")}</h1>
+        <p>{tr("Ця сторінка доступна лише адміністратору.")}</p>
       </section>
     );
 
   return (
     <>
       <div className="page-heading">
-        <h1>Панель адміністратора</h1>
-        <p>Статистика всієї платформи, облікові записи та скарги.</p>
+        <h1>{tr("Панель адміністратора")}</h1>
+        <p>{tr("Статистика всієї платформи, облікові записи та скарги.")}</p>
       </div>
       <ResourceState
         loading={report.loading}
@@ -79,15 +81,16 @@ export function AdminPage() {
       {report.data && <AdminReportSummary report={report.data} />}
       <section className="data-panel">
         <div className="panel-heading">
-          <h2>Користувачі</h2>
+          <h2>{tr("Користувачі")}</h2>
           <button className="button secondary" onClick={refreshAll}>
             <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-            Оновити дані
+
+            {tr("Оновити дані")}
           </button>
         </div>
         <div className="task-filters padded">
           <form className="task-search" onSubmit={submitSearch}>
-            <label htmlFor="admin-user-search">Пошук користувача</label>
+            <label htmlFor="admin-user-search">{tr("Пошук користувача")}</label>
             <div>
               <input
                 key={search}
@@ -96,32 +99,34 @@ export function AdminPage() {
                 type="search"
                 maxLength={100}
                 defaultValue={search}
-                placeholder="Ім'я або email"
+                placeholder={tr("Ім'я або email")}
               />
               <button className="button secondary" type="submit">
-                Знайти
+                {tr("Знайти")}
               </button>
             </div>
           </form>
           <div className="filter-field">
-            <label htmlFor="admin-role-filter">Роль</label>
+            <label htmlFor="admin-role-filter">{tr("Роль")}</label>
             <select
               id="admin-role-filter"
               value={role}
               onChange={(event) => changeFilter("role", event.target.value)}
             >
-              <option value="">Усі ролі</option>
+              <option value="">{tr("Усі ролі")}</option>
               <RoleOptions />
             </select>
           </div>
           <div className="filter-field">
-            <label htmlFor="admin-status-filter">Стан облікового запису</label>
+            <label htmlFor="admin-status-filter">
+              {tr("Стан облікового запису")}
+            </label>
             <select
               id="admin-status-filter"
               value={status}
               onChange={(event) => changeFilter("status", event.target.value)}
             >
-              <option value="">Усі стани</option>
+              <option value="">{tr("Усі стани")}</option>
               <AccountStatusOptions />
             </select>
           </div>
@@ -137,8 +142,8 @@ export function AdminPage() {
               {!users.data.length && (
                 <p className="form-note">
                   {search || role || status
-                    ? "За цими умовами користувачів не знайдено."
-                    : "На цій сторінці користувачів не знайдено."}
+                    ? tr("За цими умовами користувачів не знайдено.")
+                    : tr("На цій сторінці користувачів не знайдено.")}
                 </p>
               )}
               {users.data.map((person) => (

@@ -5,6 +5,7 @@ import { ResourceState } from "../components/ResourceState";
 import { priorityNames, taskStatusNames } from "../types";
 import type { FreelancerWorkload } from "../types";
 
+import { useLanguage } from "../i18n";
 const riskNames = {
   NONE: "Без ризику",
   OVERDUE: "Прострочено",
@@ -13,6 +14,7 @@ const riskNames = {
 };
 
 export function WorkloadPage() {
+  const { tr } = useLanguage();
   const workload = useApi<FreelancerWorkload[]>("/analytics/workload");
   const people = workload.data || [];
 
@@ -20,9 +22,11 @@ export function WorkloadPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <h1>Завантаженість виконавців</h1>
+          <h1>{tr("Завантаженість виконавців")}</h1>
           <p>
-            Незавершені завдання, пріоритети та строки у доступних вам проєктах.
+            {tr(
+              "Незавершені завдання, пріоритети та строки у доступних вам проєктах.",
+            )}
           </p>
         </div>
         <button
@@ -31,7 +35,8 @@ export function WorkloadPage() {
           onClick={workload.refresh}
         >
           <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-          Оновити дані
+
+          {tr("Оновити дані")}
         </button>
       </div>
       <ResourceState
@@ -43,23 +48,23 @@ export function WorkloadPage() {
         <>
           <div className="stats-grid">
             <article className="stat-card">
-              <span className="stat-label">Виконавці</span>
+              <span className="stat-label">{tr("Виконавці")}</span>
               <strong>{people.length}</strong>
             </article>
             <article className="stat-card">
-              <span className="stat-label">Незавершені завдання</span>
+              <span className="stat-label">{tr("Незавершені завдання")}</span>
               <strong>
                 {people.reduce((sum, person) => sum + person.activeTasks, 0)}
               </strong>
             </article>
             <article className="stat-card">
-              <span className="stat-label">Прострочені</span>
+              <span className="stat-label">{tr("Прострочені")}</span>
               <strong>
                 {people.reduce((sum, person) => sum + person.overdueTasks, 0)}
               </strong>
             </article>
             <article className="stat-card">
-              <span className="stat-label">Високий пріоритет</span>
+              <span className="stat-label">{tr("Високий пріоритет")}</span>
               <strong>
                 {people.reduce(
                   (sum, person) => sum + person.highPriorityTasks,
@@ -69,16 +74,19 @@ export function WorkloadPage() {
             </article>
           </div>
           <p className="form-note">
-            Показники враховують лише доступні вам дані. Вони не розкривають
-            роботу фрилансера у чужих приватних проєктах.
+            {tr(
+              "Показники враховують лише доступні вам дані. Вони не розкривають роботу фрилансера у чужих приватних проєктах.",
+            )}
           </p>
           {!people.length && (
             <section className="data-panel empty-state">
-              <h2>Виконавців поки немає</h2>
+              <h2>{tr("Виконавців поки немає")}</h2>
               <p>
-                Додайте команду до проєкту, щоб переглядати розподіл роботи.
+                {tr(
+                  "Додайте команду до проєкту, щоб переглядати розподіл роботи.",
+                )}
               </p>
-              <Link to="/projects">Переглянути проєкти</Link>
+              <Link to="/projects">{tr("Переглянути проєкти")}</Link>
             </section>
           )}
           {people.map((person, index) => (
@@ -94,34 +102,38 @@ export function WorkloadPage() {
                         {person.user.name}
                       </Link>
                     ) : (
-                      "Користувач недоступний"
+                      tr("Користувач недоступний")
                     )}
                   </h2>
                   <p>
-                    Незавершені: {person.activeTasks} · Прострочені:{" "}
-                    {person.overdueTasks} · Високий пріоритет:{" "}
-                    {person.highPriorityTasks}
+                    {tr("Незавершені:")} {person.activeTasks}{" "}
+                    {tr("· Прострочені:")} {person.overdueTasks}{" "}
+                    {tr("· Високий пріоритет:")} {person.highPriorityTasks}
                   </p>
                 </div>
                 <span>
-                  Перший дедлайн: {formatDate(person.nearestDeadline, true)}
+                  {tr("Перший дедлайн:")}{" "}
+                  {formatDate(person.nearestDeadline, true)}
                 </span>
               </div>
               {person.tasks.length ? (
                 <div
                   className="table-scroll"
                   role="region"
-                  aria-label={`Завдання ${person.user?.name || "виконавця"}`}
+                  aria-label={tr(
+                    "Завдання {0}",
+                    person.user?.name || "виконавця",
+                  )}
                   tabIndex={0}
                 >
                   <table className="projects-table tasks-table">
                     <thead>
                       <tr>
-                        <th scope="col">Завдання</th>
-                        <th scope="col">Пріоритет</th>
-                        <th scope="col">Статус</th>
-                        <th scope="col">Дедлайн</th>
-                        <th scope="col">Увага</th>
+                        <th scope="col">{tr("Завдання")}</th>
+                        <th scope="col">{tr("Пріоритет")}</th>
+                        <th scope="col">{tr("Статус")}</th>
+                        <th scope="col">{tr("Дедлайн")}</th>
+                        <th scope="col">{tr("Увага")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -130,17 +142,19 @@ export function WorkloadPage() {
                           <td>
                             <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                           </td>
-                          <td>{priorityNames[task.priority]}</td>
-                          <td>{taskStatusNames[task.status]}</td>
+                          <td>{tr(priorityNames[task.priority])}</td>
+                          <td>{tr(taskStatusNames[task.status])}</td>
                           <td>{formatDate(task.deadline, true)}</td>
-                          <td>{riskNames[task.risk]}</td>
+                          <td>{tr(riskNames[task.risk])}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <p className="padded form-note">Незавершених завдань немає.</p>
+                <p className="padded form-note">
+                  {tr("Незавершених завдань немає.")}
+                </p>
               )}
             </section>
           ))}

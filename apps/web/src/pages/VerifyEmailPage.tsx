@@ -6,7 +6,7 @@ import { useLanguage } from "../i18n";
 export function VerifyEmailPage() {
   const [params] = useSearchParams();
   const location = useLocation();
-  const { language } = useLanguage();
+  const { language, tr } = useLanguage();
   const uk = language === "uk";
   // Keep the token in memory and remove it from the address bar and referrers.
   const [token] = useState(() => params.get("token") || "");
@@ -78,23 +78,29 @@ export function VerifyEmailPage() {
     <section className="auth-card" aria-labelledby="verify-title">
       <span className="card-kicker">TASKO.AI</span>
       <h2 id="verify-title">
-        {uk ? "Підтвердження пошти" : "Verify your email"}
+        {uk ? tr("Підтвердження пошти") : "Verify your email"}
       </h2>
       {!verified && (
         <p className="card-description">
           {token
             ? uk
-              ? "Натисніть кнопку, щоб підтвердити, що ця пошта належить вам."
+              ? tr(
+                  "Натисніть кнопку, щоб підтвердити, що ця пошта належить вам.",
+                )
               : "Confirm that this email address belongs to you."
             : uk
-              ? "Відкрийте лист Tasko.ai та перейдіть за посиланням. Воно діє 24 години. Перевірте також папку «Спам»."
+              ? tr(
+                  "Відкрийте лист Tasko.ai та перейдіть за посиланням. Воно діє 24 години. Перевірте також папку «Спам».",
+                )
               : "Open the Tasko.ai email and follow the link within 24 hours. Check your spam folder too."}
         </p>
       )}
       {registration?.emailSent === false && !message && (
         <p className="notice error" role="alert">
           {uk
-            ? "Акаунт створено, але лист не вдалося надіслати. Спробуйте повторне надсилання нижче."
+            ? tr(
+                "Акаунт створено, але лист не вдалося надіслати. Спробуйте повторне надсилання нижче.",
+              )
             : "Your account was created, but delivery failed. Try sending the email again below."}
         </p>
       )}
@@ -116,10 +122,10 @@ export function VerifyEmailPage() {
         >
           {busy
             ? uk
-              ? "Перевіряємо…"
+              ? tr("Перевіряємо…")
               : "Verifying…"
             : uk
-              ? "Підтвердити пошту"
+              ? tr("Підтвердити пошту")
               : "Verify email"}
         </button>
       )}
@@ -133,7 +139,7 @@ export function VerifyEmailPage() {
           aria-busy={busy}
         >
           <label htmlFor="verification-email">
-            {uk ? "Електронна пошта" : "Email address"}
+            {uk ? tr("Електронна пошта") : "Email address"}
           </label>
           <input
             id="verification-email"
@@ -149,13 +155,13 @@ export function VerifyEmailPage() {
             {remaining
               ? `${uk ? "Повторити через" : "Try again in"} ${remaining} ${uk ? "с" : "s"}`
               : uk
-                ? "Надіслати лист повторно"
+                ? tr("Надіслати лист повторно")
                 : "Resend verification email"}
           </button>
         </form>
       )}
       <p className="auth-switch">
-        <Link to="/login">{uk ? "Перейти до входу" : "Go to sign in"}</Link>
+        <Link to="/login">{uk ? tr("Перейти до входу") : "Go to sign in"}</Link>
       </p>
     </section>
   );
