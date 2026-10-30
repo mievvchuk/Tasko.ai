@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { errorMessage, request } from "../api";
-import { formatDate } from "../format";
+import { deadlineLabel, formatDate } from "../format";
 import { LoadError } from "../components/LoadError";
 import { ProjectsTable } from "../components/ProjectsTable";
 import { useAuth } from "../auth";
@@ -116,7 +116,7 @@ export function DashboardPage() {
       {!loading && !error && data && (
         <>
           <section className="stats-grid" aria-label={tr("Статистика")}>
-            <article className="stat-card">
+            <Link className="stat-card" to="/projects?status=ACTIVE">
               <span className="stat-label">{tr("Активні проєкти")}</span>
               <strong data-testid="active-projects">
                 {data.summary.activeProjects}
@@ -124,22 +124,22 @@ export function DashboardPage() {
               <span className="stat-note">
                 {tr("Із")} {data.summary.projects} {tr("доступних проєктів")}
               </span>
-            </article>
-            <article className="stat-card">
+            </Link>
+            <Link className="stat-card" to="/tasks">
               <span className="stat-label">{tr("Усі завдання")}</span>
               <strong data-testid="total-tasks">{data.summary.tasks}</strong>
               <span className="stat-note">
                 {tr("Завершено:")} {data.summary.completedTasks}
               </span>
-            </article>
-            <article className="stat-card">
+            </Link>
+            <Link className="stat-card" to="/tasks?status=IN_PROGRESS">
               <span className="stat-label">{tr("У процесі")}</span>
               <strong data-testid="in-progress-tasks">
                 {data.summary.tasksByStatus.IN_PROGRESS}
               </strong>
               <span className="stat-note">{tr("Завдання у виконанні")}</span>
-            </article>
-            <article className="stat-card deadline-card">
+            </Link>
+            <Link className="stat-card deadline-card" to="/tasks?overdue=true">
               <span className="stat-label">{tr("Найближчий дедлайн")}</span>
               <strong className="stat-date">
                 {data.summary.nearestDeadline
@@ -149,39 +149,60 @@ export function DashboardPage() {
               <span className="stat-note">
                 {tr("Прострочених завдань:")} {data.summary.overdueTasks}
               </span>
-            </article>
-          </section>
-          <section
-            className="data-panel"
-            aria-labelledby="active-projects-title"
-          >
-            <div className="panel-heading">
-              <div>
-                <h2 id="active-projects-title">{tr("Активні проєкти")}</h2>
-                <p>{tr("Останні активні проєкти, до яких ви маєте доступ")}</p>
-              </div>
-              <Link className="text-link" to="/projects">
-                {tr("Усі проєкти")} <span aria-hidden="true">↗</span>
-              </Link>
-            </div>
-            {data.projects.length ? (
-              <ProjectsTable projects={data.projects} />
-            ) : (
-              <div className="empty-state">
-                <i className="bi bi-inbox empty-symbol" aria-hidden="true"></i>
-                <h3>{tr("Активних проєктів поки немає")}</h3>
-                <p>
-                  {tr(
-                    "Проєкти у плануванні та з іншими статусами доступні в загальному списку.",
-                  )}
-                </p>
-                <Link to="/projects" className="text-link">
-                  {tr("Переглянути проєкти →")}
-                </Link>
-              </div>
-            )}
+            </Link>
           </section>
           <div className="dashboard-bottom">
+            <section className="data-panel" aria-labelledby="deadlines-title">
+              <div className="panel-heading">
+                <div>
+                  <h2 id="deadlines-title">{tr("Дедлайни завдань")}</h2>
+                  <p>
+                    {tr("Першими показано найраніші, включно з простроченими")}
+                  </p>
+                </div>
+              </div>
+              {data.deadlines.length ? (
+                <ul className="deadline-list">
+                  {data.deadlines.slice(0, 5).map((task) => (
+                    <li key={task.id}>
+                      <span
+                        className={
+                          task.risk === "OVERDUE"
+                            ? "deadline-dot overdue"
+                            : "deadline-dot"
+                        }
+                        aria-hidden="true"
+                      />
+                      <div>
+                        <strong>
+                          <Link to={`/tasks/${task.id}`}>{task.title}</Link>
+                        </strong>
+                        <span>{tr(taskStatusNames[task.status])}</span>
+                        <time dateTime={task.deadline}>
+                          {formatDate(task.deadline, true)}
+                        </time>
+                      </div>
+                      <span
+                        className={
+                          task.risk === "OVERDUE"
+                            ? "days-left overdue"
+                            : "days-left"
+                        }
+                      >
+                        {deadlineLabel(task.deadline)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="empty-state compact">
+                  <h3>{tr("Дедлайнів немає")}</h3>
+                  <p>
+                    {tr("Немає незавершених завдань із визначеним терміном.")}
+                  </p>
+                </div>
+              )}
+            </section>
             <section
               className="data-panel"
               aria-labelledby="task-statuses-title"
@@ -222,56 +243,37 @@ export function DashboardPage() {
                 </div>
               )}
             </section>
-            <section className="data-panel" aria-labelledby="deadlines-title">
-              <div className="panel-heading">
-                <div>
-                  <h2 id="deadlines-title">{tr("Дедлайни завдань")}</h2>
-                  <p>
-                    {tr("Першими показано найраніші, включно з простроченими")}
-                  </p>
-                </div>
-              </div>
-              {data.deadlines.length ? (
-                <ul className="deadline-list">
-                  {data.deadlines.slice(0, 5).map((task) => (
-                    <li key={task.id}>
-                      <span
-                        className={
-                          task.risk === "OVERDUE"
-                            ? "deadline-dot overdue"
-                            : "deadline-dot"
-                        }
-                        aria-hidden="true"
-                      />
-                      <div>
-                        <strong>
-                          <Link to={`/tasks/${task.id}`}>{task.title}</Link>
-                        </strong>
-                        <span>
-                          {tr(taskStatusNames[task.status])} ·{" "}
-                          {task.risk === "OVERDUE"
-                            ? tr("Прострочено")
-                            : formatDate(task.deadline, true)}
-                        </span>
-                        {task.risk === "OVERDUE" && (
-                          <time dateTime={task.deadline}>
-                            {formatDate(task.deadline, true)}
-                          </time>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="empty-state compact">
-                  <h3>{tr("Дедлайнів немає")}</h3>
-                  <p>
-                    {tr("Немає незавершених завдань із визначеним терміном.")}
-                  </p>
-                </div>
-              )}
-            </section>
           </div>
+          <section
+            className="data-panel"
+            aria-labelledby="active-projects-title"
+          >
+            <div className="panel-heading">
+              <div>
+                <h2 id="active-projects-title">{tr("Активні проєкти")}</h2>
+                <p>{tr("Останні активні проєкти, до яких ви маєте доступ")}</p>
+              </div>
+              <Link className="text-link" to="/projects">
+                {tr("Усі проєкти")} <span aria-hidden="true">↗</span>
+              </Link>
+            </div>
+            {data.projects.length ? (
+              <ProjectsTable projects={data.projects} />
+            ) : (
+              <div className="empty-state">
+                <i className="bi bi-inbox empty-symbol" aria-hidden="true"></i>
+                <h3>{tr("Активних проєктів поки немає")}</h3>
+                <p>
+                  {tr(
+                    "Проєкти у плануванні та з іншими статусами доступні в загальному списку.",
+                  )}
+                </p>
+                <Link to="/projects" className="text-link">
+                  {tr("Переглянути проєкти →")}
+                </Link>
+              </div>
+            )}
+          </section>
         </>
       )}
     </>

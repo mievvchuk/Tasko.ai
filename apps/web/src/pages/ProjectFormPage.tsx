@@ -180,6 +180,7 @@ function ProjectForm({ project }: { project: Project | null }) {
       <section className="data-panel project-form-panel">
         <form onSubmit={submit} aria-busy={submitting}>
           <fieldset className="form-fields" disabled={submitting}>
+            <h2 className="form-section-title">{tr("Про проєкт")}</h2>
             <label htmlFor="project-title">
               {tr("Назва проєкту")}
               <input
@@ -201,6 +202,7 @@ function ProjectForm({ project }: { project: Project | null }) {
                 maxLength={10000}
               />
             </div>
+            <h2 className="form-section-title">{tr("Терміни й бюджет")}</h2>
             <label htmlFor="project-deadline">
               {tr("Дедлайн")}
               <input
@@ -264,7 +266,9 @@ function ProjectForm({ project }: { project: Project | null }) {
               </select>
             </label>
             <fieldset className="skill-picker">
-              <legend>{tr("Потрібні навички")}</legend>
+              <legend className="form-section-title">
+                {tr("Потрібні навички")}
+              </legend>
               {skills.data?.map((skill) => (
                 <label key={skill.id}>
                   <input
@@ -319,7 +323,7 @@ function ProjectForm({ project }: { project: Project | null }) {
                 {error}
               </p>
             )}
-            <div className="page-actions">
+            <div className="page-actions form-actions">
               <button className="button primary" type="submit">
                 {submitting ? tr("Зберігаємо…") : tr("Зберегти проєкт")}
               </button>

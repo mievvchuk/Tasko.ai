@@ -45,6 +45,22 @@ export class TaskStatusDto {
   @ApiProperty({ enum: ['TODO', 'IN_PROGRESS'] })
   @IsIn(['TODO', 'IN_PROGRESS'])
   status: 'TODO' | 'IN_PROGRESS';
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Власна колонка канбану (лише для IN_PROGRESS)',
+  })
+  @IsOptional()
+  @IsUUID()
+  columnId?: string;
+}
+export class BoardColumnDto {
+  @ApiProperty({ minLength: 2, maxLength: 40, example: 'Тестування' })
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(2, 40)
+  title: string;
 }
 export class TaskQueryDto extends PageDto {
   @ApiPropertyOptional({

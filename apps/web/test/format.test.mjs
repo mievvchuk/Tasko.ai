@@ -26,3 +26,21 @@ test("unknown or missing user agents get a neutral label", () => {
   assert.equal(describeDevice(null), "Невідомий браузер");
   assert.equal(describeDevice("curl/8.0"), "Невідомий браузер");
 });
+
+test("deadline label counts calendar days, not hours", async () => {
+  const { daysLeft, deadlineLabel } = await import("../src/format.ts");
+  const now = new Date(2026, 9, 30, 23, 30);
+  assert.equal(daysLeft(new Date(2026, 9, 31, 0, 10).toISOString(), now), 1);
+  assert.equal(
+    deadlineLabel(new Date(2026, 9, 30, 8).toISOString(), now),
+    "Сьогодні",
+  );
+  assert.equal(
+    deadlineLabel(new Date(2026, 10, 2).toISOString(), now),
+    "Через 3 дн.",
+  );
+  assert.equal(
+    deadlineLabel(new Date(2026, 9, 28).toISOString(), now),
+    "Прострочено на 2 дн.",
+  );
+});
