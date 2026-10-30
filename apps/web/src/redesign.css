@@ -2357,3 +2357,301 @@ input.visually-hidden {
   font-size: 12px;
   text-align: center;
 }
+
+/* 13. Вітальна сторінка для гостей (pages/WelcomePage.tsx) */
+.welcome {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--r-bg);
+}
+.welcome main {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.welcome-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+}
+.welcome-header nav {
+  align-items: center;
+  gap: 22px;
+}
+.welcome-header nav > a:last-child {
+  padding: 9px 16px;
+  border-radius: var(--r-radius-sm);
+  background: var(--ds-primary);
+  color: var(--on-primary);
+  font-weight: 650;
+}
+.welcome-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 56px;
+  padding: 72px 0 64px;
+}
+.welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--palette-b4acf0);
+  border-radius: 999px;
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+  font-size: 13px;
+  font-weight: 650;
+}
+.welcome-hero h1 {
+  margin: 18px 0 16px;
+  color: var(--r-ink);
+  font-size: clamp(34px, 4.6vw, 54px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -1.4px;
+}
+.welcome-hero p {
+  max-width: 540px;
+  color: var(--r-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+.welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.welcome-actions .button {
+  padding: 13px 22px;
+  font-size: 15px;
+}
+/* Ілюстрація: міні-канбан і бульбашка Ади */
+.welcome-preview {
+  position: relative;
+  padding: 22px;
+  border: 1px solid var(--r-line);
+  border-radius: 18px;
+  background: var(--r-card);
+  box-shadow: var(--r-shadow);
+}
+.preview-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.preview-column {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--r-radius);
+  background: var(--r-bg);
+}
+.preview-column > span {
+  color: var(--r-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.preview-card {
+  padding: 10px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-card);
+  color: var(--r-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.preview-card i {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--palette-dedbff);
+}
+.preview-column:nth-child(2) .preview-card i {
+  background: var(--ds-primary);
+}
+.preview-column:nth-child(3) .preview-card i {
+  background: var(--palette-328267);
+}
+.preview-ada {
+  position: absolute;
+  right: -18px;
+  bottom: -26px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 300px;
+  padding: 12px 14px;
+  border: 1px solid var(--r-line);
+  border-radius: 14px;
+  background: var(--r-card);
+  box-shadow: var(--r-shadow);
+  animation: rise 0.6s 0.3s var(--r-ease) both;
+}
+.preview-ada p {
+  margin: 0;
+  color: var(--r-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.preview-ada b {
+  display: block;
+  color: var(--r-accent);
+}
+.welcome-section {
+  padding: 56px 0;
+  /* Якорі з шапки не ховають заголовок під липкою шапкою */
+  scroll-margin-top: 80px;
+}
+.welcome-section h2,
+.welcome-cta h2 {
+  margin: 0;
+  color: var(--r-ink);
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  text-align: center;
+}
+.welcome-lead {
+  margin: 10px auto 0;
+  color: var(--r-muted);
+  font-size: 16px;
+  text-align: center;
+}
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+.welcome-features article,
+.welcome-roles article {
+  padding: 22px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius);
+  background: var(--r-card);
+  transition:
+    border-color 0.2s,
+    transform 0.2s var(--r-ease);
+}
+.welcome-features article:hover {
+  border-color: var(--palette-b4acf0);
+  transform: translateY(-2px);
+}
+.welcome-features .bi,
+.welcome-roles article > .bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-radius);
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+  font-size: 19px;
+}
+.welcome-features h3,
+.welcome-roles h3,
+.welcome-steps h3 {
+  margin: 14px 0 6px;
+  color: var(--r-ink);
+  font-size: 16px;
+  font-weight: 700;
+}
+.welcome-features p,
+.welcome-steps p {
+  margin: 0;
+  color: var(--r-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.welcome-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.welcome-steps li {
+  padding: 22px;
+  border-top: 3px solid var(--ds-primary);
+  border-radius: 0;
+  background: var(--r-card);
+}
+.welcome-steps b {
+  color: var(--r-accent);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.welcome-roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+.welcome-roles ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--r-ink);
+  font-size: 14px;
+}
+.welcome-roles li .bi {
+  margin-right: 8px;
+  color: var(--palette-328267);
+}
+.welcome-cta {
+  margin: 24px 0 64px;
+  padding: 44px 24px;
+  border-radius: 18px;
+  background: var(--nav-bg);
+  text-align: center;
+}
+.welcome-cta h2 {
+  color: #fff;
+}
+.welcome-cta p {
+  margin: 10px 0 22px;
+  color: var(--nav-text);
+}
+@media (max-width: 900px) {
+  .welcome-hero {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding-top: 40px;
+  }
+  .preview-ada {
+    right: 8px;
+  }
+}
+@media (max-width: 600px) {
+  .welcome main {
+    padding: 0 16px;
+  }
+  /* На телефоні в шапці лишаємо мову, тему й вхід */
+  .welcome-header nav > a[href^="#"] {
+    display: none;
+  }
+  .welcome-header nav {
+    gap: 10px;
+  }
+  .welcome-header .theme-picker-label {
+    display: none;
+  }
+  .preview-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .preview-column:nth-child(3) {
+    display: none;
+  }
+}
