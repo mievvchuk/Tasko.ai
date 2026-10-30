@@ -1,4 +1,11 @@
-import { Link, Navigate, Outlet, Route, Routes } from "react-router";
+import {
+  Link,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router";
 import { useAuth } from "./auth";
 import { AuthLayout } from "./components/AuthLayout";
 import { Layout } from "./components/Layout";
@@ -21,6 +28,7 @@ import { MarketplacePage } from "./pages/MarketplacePage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { WelcomePage } from "./pages/WelcomePage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { WorkloadPage } from "./pages/WorkloadPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
@@ -33,7 +41,10 @@ import { ProjectPlanPage } from "./pages/ProjectPlanPage";
 import { useLanguage } from "./i18n";
 function ProtectedRoute() {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
+  // Гість, що відкрив головну, бачить вітальну сторінку; інші адреси ведуть на вхід
+  const { pathname } = useLocation();
+  if (!user)
+    return <Navigate to={pathname === "/" ? "/welcome" : "/login"} replace />;
   return <Outlet />;
 }
 
@@ -75,9 +86,8 @@ export function App() {
 
   return (
     <Routes>
-      <Route element={<AuthLayout />}>
-      </Route>
       <Route element={<GuestRoute />}>
+        <Route path="/welcome" element={<WelcomePage />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
