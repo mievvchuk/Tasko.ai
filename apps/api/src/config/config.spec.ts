@@ -6,18 +6,12 @@ const valid = {
 };
 
 describe('configuration', () => {
-  it('requires complete SMTP configuration when verification is enabled', () => {
-    expect(() =>
-      readConfig({ ...valid, EMAIL_VERIFICATION_REQUIRED: 'true' }),
-    ).toThrow('SMTP_HOST');
+  it('requires complete SMTP configuration', () => {
     expect(() => readConfig({ ...valid, SMTP_HOST: 'smtp.gmail.com' })).toThrow(
       'SMTP_USER',
     );
-    expect(() =>
-      readConfig({ ...valid, EMAIL_VERIFICATION_REQUIRED: 'invalid' }),
-    ).toThrow('EMAIL_VERIFICATION_REQUIRED');
   });
-  it('defaults to Gmail TLS port and requires verification when SMTP is configured', () => {
+  it('defaults to Gmail TLS port when SMTP is configured', () => {
     const config = readConfig({
       ...valid,
       SMTP_HOST: 'smtp.gmail.com',
@@ -26,7 +20,6 @@ describe('configuration', () => {
     });
     expect(config.smtpPort).toBe(465);
     expect(config.emailFrom).toBe('sender@gmail.com');
-    expect(config.emailVerificationRequired).toBe(true);
   });
   it('accepts PostgreSQL and uses the default port', () => {
     expect(readConfig(valid).port).toBe(3000);

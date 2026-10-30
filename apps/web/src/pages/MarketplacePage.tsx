@@ -9,7 +9,9 @@ import { useApi } from "../useApi";
 import { applicationStatusNames } from "../types";
 import type { MarketplaceProject } from "../types";
 
+import { useLanguage } from "../i18n";
 export function MarketplacePage() {
+  const { tr } = useLanguage();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
@@ -80,16 +82,16 @@ export function MarketplacePage() {
   return (
     <>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / БІРЖА</span>
-        <h1>Відкриті проєкти</h1>
+        <h1>{tr("Відкриті проєкти")}</h1>
         <p>
-          Оберіть проєкт, запропонуйте бюджет і строк виконання. Після вибору
-          клієнтом проєкт з’явиться у вашому робочому просторі.
+          {tr(
+            "Оберіть проєкт, запропонуйте бюджет і строк виконання. Після вибору клієнтом проєкт з’явиться у вашому робочому просторі.",
+          )}
         </p>
       </div>
       <section className="data-panel inline-form">
         <label>
-          Пошук
+          {tr("Пошук")}
           <input
             value={search}
             onChange={(event) => {
@@ -100,7 +102,7 @@ export function MarketplacePage() {
                 : next.delete("search");
               setParams(next);
             }}
-            placeholder="Назва або опис"
+            placeholder={tr("Назва або опис")}
           />
         </label>
         <label className="checkbox-field">
@@ -115,53 +117,62 @@ export function MarketplacePage() {
               setParams(next);
             }}
           />{" "}
-          Лише обране
+          {tr("Лише обране")}
         </label>
       </section>
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (
-        <section className="marketplace-grid" aria-label="Відкриті проєкти">
+        <section
+          className="marketplace-grid"
+          aria-label={tr("Відкриті проєкти")}
+        >
           {data?.map((project) => (
             <article className="marketplace-card" key={project.id}>
               <div className="marketplace-card-heading">
                 <div>
                   <span className="project-status status-PLANNING">
-                    Пошук виконавця
+                    {tr("Пошук виконавця")}
                   </span>
                   <h2>{project.title}</h2>
                 </div>
                 <time>{formatDate(project.deadline)}</time>
               </div>
-              <p>{project.description || "Клієнт не додав опис."}</p>
+              <p>{project.description || tr("Клієнт не додав опис.")}</p>
               <button
                 className="favorite-button"
                 aria-label={
-                  project.isFavorite ? "Видалити з обраного" : "Додати в обране"
+                  project.isFavorite
+                    ? tr("Видалити з обраного")
+                    : tr("Додати в обране")
                 }
                 onClick={() => void toggleFavorite(project)}
               >
-                {project.isFavorite ? "★ В обраному" : "☆ До обраного"}
+                {project.isFavorite ? tr("★ В обраному") : tr("☆ До обраного")}
               </button>
               <dl className="marketplace-facts">
                 <div>
-                  <dt>Клієнт</dt>
-                  <dd>{project.client?.name || "Клієнт"}</dd>
+                  <dt>{tr("Клієнт")}</dt>
+                  <dd>{project.client?.name || tr("Клієнт")}</dd>
                 </div>
                 <div>
-                  <dt>Опубліковано</dt>
+                  <dt>{tr("Опубліковано")}</dt>
                   <dd>{formatDate(project.createdAt)}</dd>
                 </div>
                 <div>
-                  <dt>Бюджет</dt>
+                  <dt>{tr("Бюджет")}</dt>
                   <dd>
                     {project.budgetMin !== null || project.budgetMax !== null
-                      ? `${project.budgetMin ?? 0}–${project.budgetMax ?? "необмежено"} грн`
-                      : "Не вказано"}
+                      ? tr(
+                          "{0}–{1} грн",
+                          project.budgetMin ?? 0,
+                          project.budgetMax ?? "необмежено",
+                        )
+                      : tr("Не вказано")}
                   </dd>
                 </div>
                 <div>
-                  <dt>Категорія</dt>
-                  <dd>{project.category?.name || "Без категорії"}</dd>
+                  <dt>{tr("Категорія")}</dt>
+                  <dd>{project.category?.name || tr("Без категорії")}</dd>
                 </div>
               </dl>
               {!!project.skills.length && (
@@ -175,8 +186,8 @@ export function MarketplacePage() {
               )}
               {project.applicationStatus ? (
                 <p className="application-notice">
-                  Статус заявки:{" "}
-                  {applicationStatusNames[project.applicationStatus]}
+                  {tr("Статус заявки:")}{" "}
+                  {tr(applicationStatusNames[project.applicationStatus])}
                 </p>
               ) : selectedId === project.id ? (
                 <form
@@ -184,19 +195,21 @@ export function MarketplacePage() {
                   onSubmit={(event) => void submit(event, project.id)}
                 >
                   <label>
-                    Супровідне повідомлення
+                    {tr("Супровідне повідомлення")}
                     <textarea
                       value={message}
                       minLength={10}
                       maxLength={2000}
                       required
                       onChange={(event) => setMessage(event.target.value)}
-                      placeholder="Коротко опишіть досвід і спосіб виконання"
+                      placeholder={tr(
+                        "Коротко опишіть досвід і спосіб виконання",
+                      )}
                     />
                   </label>
                   <div className="form-row">
                     <label>
-                      Бюджет, грн
+                      {tr("Бюджет, грн")}
                       <input
                         type="number"
                         min="1"
@@ -207,7 +220,7 @@ export function MarketplacePage() {
                       />
                     </label>
                     <label>
-                      Строк, днів
+                      {tr("Строк, днів")}
                       <input
                         type="number"
                         min="1"
@@ -221,14 +234,15 @@ export function MarketplacePage() {
                   {formError && <p className="form-error">{formError}</p>}
                   <div className="page-actions">
                     <button className="button primary" disabled={submitting}>
-                      {submitting ? "Надсилаємо…" : "Надіслати заявку"}
+                      <i className="bi bi-send" aria-hidden="true"></i>
+                      {submitting ? tr("Надсилаємо…") : tr("Надіслати заявку")}
                     </button>
                     <button
                       type="button"
                       className="button secondary"
                       onClick={() => setSelectedId(null)}
                     >
-                      Скасувати
+                      {tr("Скасувати")}
                     </button>
                   </div>
                 </form>
@@ -237,15 +251,17 @@ export function MarketplacePage() {
                   className="button primary"
                   onClick={() => openForm(project.id)}
                 >
-                  Залишити заявку
+                  {tr("Залишити заявку")}
                 </button>
               )}
             </article>
           ))}
           {!data?.length && (
             <div className="empty-state marketplace-empty">
-              <h3>Відкритих проєктів поки немає</h3>
-              <p>Нові пропозиції клієнтів з’являться на цій сторінці.</p>
+              <h3>{tr("Відкритих проєктів поки немає")}</h3>
+              <p>
+                {tr("Нові пропозиції клієнтів з’являться на цій сторінці.")}
+              </p>
             </div>
           )}
         </section>

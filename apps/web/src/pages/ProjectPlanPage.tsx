@@ -12,6 +12,7 @@ import {
   type PlanTask,
 } from "./ProjectPlanFields";
 
+import { useLanguage } from "../i18n";
 type BusyAction = "generate" | "apply";
 
 export function ProjectPlanPage() {
@@ -21,6 +22,7 @@ export function ProjectPlanPage() {
 }
 
 function ProjectPlanEditor() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
   const project = useApi<Project>(id ? `/projects/${id}` : null);
@@ -148,11 +150,10 @@ function ProjectPlanEditor() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ПЛАНУВАННЯ</span>
-        <h1>AI-план проєкту</h1>
+        <h1>{tr("AI-план проєкту")}</h1>
         <p>{project.data?.title}</p>
       </div>
       <ResourceState
@@ -165,31 +166,35 @@ function ProjectPlanEditor() {
       />
       {project.data && !owner && (
         <p role="alert" className="notice error">
-          Планування доступне власнику проєкту та адміністратору.
+          {tr("Планування доступне власнику проєкту та адміністратору.")}
         </p>
       )}
       {owner && !writable && (
-        <p className="notice">Проєкт закрито. Додавати план уже не можна.</p>
+        <p className="notice">
+          {tr("Проєкт закрито. Додавати план уже не можна.")}
+        </p>
       )}
       {owner && writable && (
         <>
           <section className="data-panel padded plan-intro">
-            <h2>Від опису до конкретних кроків</h2>
+            <h2>{tr("Від опису до конкретних кроків")}</h2>
             <p>
-              AI використає назву й опис цього проєкту та запропонує етапи,
-              завдання і критерії приймання. Перевірте та відредагуйте чернетку
-              перед додаванням.
+              {tr(
+                "AI використає назву й опис цього проєкту та запропонує етапи, завдання і критерії приймання. Перевірте та відредагуйте чернетку перед додаванням.",
+              )}
             </p>
             <p className="form-note">
-              Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0
-              грн. Призначити виконавців і строки завдань можна у формах їх
-              редагування після збереження.
+              {tr(
+                "Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0 грн. Призначити виконавців і строки завдань можна у формах їх редагування після збереження.",
+              )}
             </p>
             {!provider.loading &&
               provider.data &&
               !provider.data.configured && (
                 <p role="alert" className="notice error">
-                  AI-провайдер ще не підключений. Зверніться до адміністратора.
+                  {tr(
+                    "AI-провайдер ще не підключений. Зверніться до адміністратора.",
+                  )}
                 </p>
               )}
             <form
@@ -200,7 +205,7 @@ function ProjectPlanEditor() {
               }}
             >
               <label htmlFor="plan-instructions">
-                Побажання до плану (необов’язково)
+                {tr("Побажання до плану (необов’язково)")}
               </label>
               <textarea
                 id="plan-instructions"
@@ -209,21 +214,23 @@ function ProjectPlanEditor() {
                 maxLength={3000}
                 rows={3}
                 disabled={editingLocked}
-                placeholder="Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP."
+                placeholder={tr(
+                  "Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP.",
+                )}
               />
               <button
                 className="button primary"
                 disabled={editingLocked || !provider.data?.configured}
               >
-                {generateButtonLabel(busy, plan !== null)}
+                {tr(generateButtonLabel(busy, plan !== null))}
               </button>
             </form>
           </section>
           {busy && (
             <p role="status" className="notice">
               {busy === "generate"
-                ? "AI готує чернетку. Це може тривати до 30 секунд."
-                : "Додаємо підтверджений план…"}
+                ? tr("AI готує чернетку. Це може тривати до 30 секунд.")
+                : tr("Додаємо підтверджений план…")}
             </p>
           )}
           {error && (
@@ -241,15 +248,19 @@ function ProjectPlanEditor() {
               }}
             >
               <div className="plan-summary">
-                <strong>Чернетка для перевірки</strong>
-                <span>Етапів: {plan.milestones.length}</span>
-                <span>Завдань: {countTasks(plan)}</span>
+                <strong>{tr("Чернетка для перевірки")}</strong>
+                <span>
+                  {tr("Етапів:")} {plan.milestones.length}
+                </span>
+                <span>
+                  {tr("Завдань:")} {countTasks(plan)}
+                </span>
               </div>
               {saveAttempted && !busy && (
                 <p className="notice">
-                  Статус збереження невідомий. Повторіть підтвердження —
-                  повторний запит не створить дублікати. Редагування цієї
-                  чернетки заблоковано до отримання результату.
+                  {tr(
+                    "Статус збереження невідомий. Повторіть підтвердження — повторний запит не створить дублікати. Редагування цієї чернетки заблоковано до отримання результату.",
+                  )}
                 </p>
               )}
               {plan.milestones.map((milestone, index) => (
@@ -268,11 +279,12 @@ function ProjectPlanEditor() {
               ))}
               <div className="plan-actions">
                 <button className="button primary" disabled={Boolean(busy)}>
-                  {applyButtonLabel(busy, saveAttempted)}
+                  {tr(applyButtonLabel(busy, saveAttempted))}
                 </button>
                 <p className="form-note">
-                  Після підтвердження буде створено всі етапи та завдання цієї
-                  чернетки.
+                  {tr(
+                    "Після підтвердження буде створено всі етапи та завдання цієї чернетки.",
+                  )}
                 </p>
               </div>
             </form>
@@ -284,19 +296,24 @@ function ProjectPlanEditor() {
 }
 
 function PlanSavedPanel({ projectId }: { projectId?: string }) {
+  const { tr } = useLanguage();
   return (
     <section className="data-panel padded" role="status">
-      <h2>План додано до проєкту</h2>
-      <p>Етапи та завдання збережено разом із критеріями приймання в описах.</p>
+      <h2>{tr("План додано до проєкту")}</h2>
+      <p>
+        {tr(
+          "Етапи та завдання збережено разом із критеріями приймання в описах.",
+        )}
+      </p>
       <div className="plan-actions">
         <Link className="button primary" to={`/projects/${projectId}/board`}>
-          Відкрити Kanban
+          {tr("Відкрити Kanban")}
         </Link>
         <Link
           className="button secondary"
           to={`/projects/${projectId}/milestones`}
         >
-          Переглянути етапи
+          {tr("Переглянути етапи")}
         </Link>
       </div>
     </section>

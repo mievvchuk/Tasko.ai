@@ -7,9 +7,11 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
-import { UsersController } from '../users/users.controller.js';
+import {
+  AvatarsController,
+  UsersController,
+} from '../users/users.controller.js';
 import { MailService } from './mail.service.js';
-import { EmailVerificationService } from './email-verification.service.js';
 import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
 
 @Module({
@@ -32,13 +34,12 @@ import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
       }),
     }),
   ],
-  controllers: [AuthController, UsersController],
+  controllers: [AuthController, UsersController, AvatarsController],
   providers: [
     UsersService,
     AuthService,
     JwtAuthGuard,
     MailService,
-    EmailVerificationService,
     AuthEmailRateLimitGuard,
   ],
   exports: [UsersService, AuthService, JwtAuthGuard, JwtModule],

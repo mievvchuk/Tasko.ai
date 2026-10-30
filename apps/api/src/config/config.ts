@@ -16,7 +16,6 @@ export interface AppConfig {
   smtpPort?: number;
   smtpUser?: string;
   smtpPassword?: string;
-  emailVerificationRequired?: boolean;
 }
 
 export function loadEnvironment() {
@@ -55,18 +54,8 @@ export function readConfig(env: NodeJS.ProcessEnv): AppConfig {
   const smtpPort = Number(env.SMTP_PORT || 465);
   if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535)
     throw new Error('SMTP_PORT має бути коректним номером порту.');
-  if (
-    env.EMAIL_VERIFICATION_REQUIRED &&
-    !['true', 'false'].includes(env.EMAIL_VERIFICATION_REQUIRED)
-  )
-    throw new Error('EMAIL_VERIFICATION_REQUIRED має бути true або false.');
-  const emailVerificationRequired = env.EMAIL_VERIFICATION_REQUIRED
-    ? env.EMAIL_VERIFICATION_REQUIRED === 'true'
-    : Boolean(smtpHost);
   if (smtpHost && (!env.SMTP_USER || !env.SMTP_PASSWORD))
     throw new Error('Заповніть SMTP_USER та SMTP_PASSWORD.');
-  if (emailVerificationRequired && !smtpHost)
-    throw new Error('Для підтвердження пошти налаштуйте SMTP_HOST.');
   const webOrigin = env.WEB_ORIGIN ?? 'http://localhost:5173';
   if (
     !URL.canParse(webOrigin) ||
@@ -89,7 +78,6 @@ export function readConfig(env: NodeJS.ProcessEnv): AppConfig {
     smtpPort,
     smtpUser: env.SMTP_USER,
     smtpPassword: env.SMTP_PASSWORD,
-    emailVerificationRequired,
   };
 }
 

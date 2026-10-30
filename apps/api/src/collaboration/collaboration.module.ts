@@ -10,5 +10,6 @@ import { FilesService } from './files.service.js';
   imports: [AuthModule, ProjectsModule, TasksModule],
   controllers: [CollaborationController],
   providers: [CollaborationService, FilesService],
+  exports: [CollaborationService],
 })
 export class CollaborationModule {}

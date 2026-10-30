@@ -2,12 +2,19 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { PrismaService } from '../prisma/prisma.service.js';
+import type { UploadedFile } from '../collaboration/files.service.js';
+import { avatarFilePattern, avatarMime, validateAvatar } from './avatar.js';
 import type {
   CreatePortfolioItemDto,
+  UpdateAccountDto,
   UpdateFreelancerProfileDto,
   UpdatePortfolioItemDto,
 } from './users.dto.js';
@@ -19,15 +26,114 @@ export interface PublicUser {
   email: string;
   role: UserRole;
   twoFactorEnabled: boolean;
+  avatarUrl?: string | null;
+  createdAt?: Date;
 }
 
 export interface CurrentUser extends PublicUser {
   sessionId: string;
 }
 
+// Дані користувача, які можна віддати клієнту (без хешу пароля, секрету 2FA тощо)
+export function toPublicUser(user: {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  twoFactorEnabled: boolean;
+  avatarUrl: string | null;
+  createdAt: Date;
+}): PublicUser {
+  if (!['CLIENT', 'FREELANCER', 'ADMIN'].includes(user.role))
+    throw new ForbiddenException('Роль користувача некоректна.');
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role as UserRole,
+    twoFactorEnabled: user.twoFactorEnabled,
+    avatarUrl: user.avatarUrl,
+    createdAt: user.createdAt,
+  };
+}
+
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+  // Фото профілів лежать окремо від файлів проєктів: storage/avatars
+  private readonly avatarDirectory = fileURLToPath(
+    new URL('../../storage/avatars/', import.meta.url),
+  );
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+
+  private async requireUser(id: string) {
+    const user = await this.findById(id);
+    if (!user) throw new NotFoundException('Користувача не знайдено.');
+    return user;
+  }
+
+  async updateAccount(user: CurrentUser, data: UpdateAccountDto) {
+    await this.requireUser(user.id);
+    const updated = await this.prisma.client.orm.public.User.where({
+      id: user.id,
+    }).update({ name: data.name, updatedAt: new Date() });
+    return toPublicUser(updated!);
+  }
+
+  // Зберігає файл фото на диску, а в БД записує лише посилання на нього
+  async setAvatar(user: CurrentUser, file: UploadedFile | undefined) {
+    const format = validateAvatar(file);
+    const current = await this.requireUser(user.id);
+    const fileName = `${randomUUID()}.${format.extension}`;
+    await mkdir(this.avatarDirectory, { recursive: true });
+    await writeFile(join(this.avatarDirectory, fileName), file!.buffer, {
+      flag: 'wx',
+    });
+    let updated;
+    try {
+      updated = await this.prisma.client.orm.public.User.where({
+        id: user.id,
+      }).update({ avatarUrl: `/avatars/${fileName}`, updatedAt: new Date() });
+    } catch (error) {
+      await this.removeAvatarFile(`/avatars/${fileName}`);
+      throw error;
+    }
+    await this.removeAvatarFile(current.avatarUrl);
+    return toPublicUser(updated!);
+  }
+
+  async removeAvatar(user: CurrentUser) {
+    const current = await this.requireUser(user.id);
+    const updated = await this.prisma.client.orm.public.User.where({
+      id: user.id,
+    }).update({ avatarUrl: null, updatedAt: new Date() });
+    await this.removeAvatarFile(current.avatarUrl);
+    return toPublicUser(updated!);
+  }
+
+  // Шлях до файлу фото для публічної віддачі; ім'я перевіряємо, щоб не вийти за межі папки
+  async avatarFile(fileName: string) {
+    const mime = avatarMime(fileName);
+    if (!avatarFilePattern.test(fileName) || !mime)
+      throw new NotFoundException('Фото не знайдено.');
+    const path = join(this.avatarDirectory, fileName);
+    try {
+      await stat(path);
+    } catch {
+      throw new NotFoundException('Фото не знайдено.');
+    }
+    return { path, mime };
+  }
+
+  private async removeAvatarFile(avatarUrl: string | null) {
+    const fileName = avatarUrl?.replace(/^\/avatars\//, '');
+    if (!fileName || !avatarFilePattern.test(fileName)) return;
+    try {
+      await unlink(join(this.avatarDirectory, fileName));
+    } catch {
+      this.logger.warn('Не вдалося видалити старе фото профілю.');
+    }
+  }
 
   findByEmail(email: string) {
     return this.prisma.client.orm.public.User.where({ email }).first();

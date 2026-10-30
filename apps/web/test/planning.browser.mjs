@@ -185,8 +185,11 @@ try {
     document.activeElement?.blur();
     window.scrollTo(0, 0);
   });
+  // На вузькому екрані меню верхньої панелі сховане, доки не натиснуть ☰.
   await work.waitForFunction(
-    () => document.querySelector(".sidebar").getBoundingClientRect().right <= 1,
+    () =>
+      getComputedStyle(document.querySelector("#main-navigation")).display ===
+      "none",
   );
   assert.ok(
     await work.evaluate(

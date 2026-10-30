@@ -32,6 +32,49 @@ export const projectPlanSchema = z
 
 export type ProjectPlan = z.infer<typeof projectPlanSchema>;
 
+// JSON Schema для режиму structured output провайдера: модель зобов'язана
+// повернути саме таку структуру. Обмеження довжин і кількостей перевіряє zod вище.
+const criteriaJsonSchema = { type: 'array', items: { type: 'string' } };
+export const projectPlanJsonSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['milestones'],
+  properties: {
+    milestones: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['title', 'description', 'acceptanceCriteria', 'tasks'],
+        properties: {
+          title: { type: 'string' },
+          description: { type: 'string' },
+          acceptanceCriteria: criteriaJsonSchema,
+          tasks: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              required: [
+                'title',
+                'description',
+                'priority',
+                'acceptanceCriteria',
+              ],
+              properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+                priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
+                acceptanceCriteria: criteriaJsonSchema,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export function parseProjectPlan(content: string): ProjectPlan {
   try {
     return projectPlanSchema.parse(

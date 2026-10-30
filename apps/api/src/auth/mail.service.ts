@@ -64,9 +64,6 @@ export class MailService {
     }
   }
 
-  sendVerification(email: string, token: string) {
-    return this.send(email, 'verification', '/verify-email', token);
-  }
   sendReset(email: string, token: string) {
     return this.send(email, 'reset', '/reset-password', token);
   }

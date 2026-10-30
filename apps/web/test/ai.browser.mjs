@@ -27,7 +27,7 @@ try {
   await page.getByTestId("active-projects").waitFor();
   await page.goto(base + "/ai?project=" + fixture.projectId);
   await page
-    .getByLabel("Запитання до AI", { exact: true })
+    .getByLabel("Запитання до Ади", { exact: true })
     .fill(
       "Використай get_project_summary для цього проєкту. Напиши його точну назву, статус і відсоток виконання.",
     );

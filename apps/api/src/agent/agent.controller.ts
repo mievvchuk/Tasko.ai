@@ -10,9 +10,12 @@ import {
   Post,
   Req,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Request, Response } from 'express';
 import { Actor } from '../auth/current-user.decorator.js';
@@ -22,6 +25,12 @@ import { ApplyPlanDto, ChatDto, GeneratePlanDto } from './agent.dto.js';
 import { ProjectPlanningService } from './project-planning.service.js';
 import { AgentService } from './agent.service.js';
 import { McpService } from './mcp.service.js';
+import type { UploadedFile as UploadedFileData } from '../collaboration/files.service.js';
+import {
+  extractAttachments,
+  maxAttachmentFiles,
+  maxAttachmentSize,
+} from './attachments.js';
 
 @ApiTags('AI and MCP')
 @ApiBearerAuth()
@@ -41,7 +50,33 @@ export class AgentController {
     @Actor() user: CurrentUser,
     @Body() data: ChatDto,
   ) {
-    return this.agent.chat(user, data.message);
+    return this.agent.chat(user, data.message, data.history, data.attachments);
+  }
+  // Витягує текст із TXT/PDF/DOCX для AI-чату; самі файли ніде не зберігаються
+  @Post('agent/attachments')
+  @HttpCode(200)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: { type: 'array', items: { type: 'string', format: 'binary' } },
+      },
+      required: ['files'],
+    },
+  })
+  @UseInterceptors(
+    FilesInterceptor('files', maxAttachmentFiles, {
+      defParamCharset: 'utf8',
+      limits: {
+        fileSize: maxAttachmentSize,
+        files: maxAttachmentFiles,
+        fields: 0,
+      },
+    }),
+  )
+  attachments(@UploadedFiles() files: UploadedFileData[] | undefined) {
+    return extractAttachments(files);
   }
   @Post('projects/:id/applications/ai-rank')
   @HttpCode(200)

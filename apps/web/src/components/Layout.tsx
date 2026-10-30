@@ -6,176 +6,207 @@ import { roleNames } from "../types";
 import { useApi } from "../useApi";
 import type { Notification } from "../types";
 import { ThemePicker } from "./ThemePicker";
+import { AiChatProvider } from "../aiChat";
+import { AiDrawer } from "./AiDrawer";
+import { UserAvatar } from "./UserAvatar";
 
+// Редизайн: на комп'ютері .topbar показано як темну бічну панель, на телефоні — як верхню (див. redesign.css).
+// Логіка (ролі, сповіщення, вихід) залишилась такою самою.
 export function Layout() {
   const { user, logout } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, t, tr } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  // Відкрите чи закрите меню облікового запису (клік по аватару)
+  const [accountOpen, setAccountOpen] = useState(false);
   const notifications = useApi<{ items: Notification[]; unreadCount: number }>(
     "/notifications?limit=1",
   );
   if (!user) return null;
+
+  const close = () => {
+    setMenuOpen(false);
+    setAccountOpen(false);
+  };
+  const roleLabel =
+    language === "uk"
+      ? roleNames[user.role]
+      : t(
+          user.role === "CLIENT"
+            ? "client"
+            : user.role === "FREELANCER"
+              ? "freelancer"
+              : "admin",
+        );
+  const unread = notifications.data?.unreadCount ?? 0;
+  const projectsLabel =
+    user.role === "FREELANCER"
+      ? t("workProjects")
+      : user.role === "ADMIN"
+        ? t("projects")
+        : t("myProjects");
 
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
         {t("skipContent")}
       </a>
-      <aside
-        className={menuOpen ? "sidebar open" : "sidebar"}
-        id="main-navigation"
-      >
-        <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
-          <span className="brand-mark" aria-hidden="true">
-            t
-          </span>
-          Tasko<span className="brand-ai">.ai</span>
-        </Link>
-        <p className="nav-caption">{t("workspaceCaption")}</p>
-        <nav aria-label={t("navigation")}>
-          <NavLink to="/" end onClick={() => setMenuOpen(false)}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              aria-hidden="true"
-            >
-              <rect x="3" y="3" width="7" height="7" rx="1.5" />
-              <rect x="14" y="3" width="7" height="7" rx="1.5" />
-              <rect x="3" y="14" width="7" height="7" rx="1.5" />
-              <rect x="14" y="14" width="7" height="7" rx="1.5" />
-            </svg>
-            {t("main")}
-          </NavLink>
-          <NavLink to="/projects" onClick={() => setMenuOpen(false)}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              aria-hidden="true"
-            >
-              <path d="M3 6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
-            </svg>
-            {user.role === "FREELANCER"
-              ? t("workProjects")
-              : user.role === "ADMIN"
-                ? t("projects")
-                : t("myProjects")}
-          </NavLink>
-          {user.role === "FREELANCER" && (
-            <NavLink to="/marketplace" onClick={() => setMenuOpen(false)}>
-              {t("findWork")}
+      <header className="topbar">
+        <div className="topbar-inner">
+          <Link className="brand" to="/" onClick={close}>
+            <span className="brand-mark" aria-hidden="true">
+              t
+            </span>
+            Tasko<span className="brand-ai">.ai</span>
+          </Link>
+          <button
+            type="button"
+            className="menu-toggle"
+            aria-label={menuOpen ? t("closeNavigation") : t("openNavigation")}
+            aria-expanded={menuOpen}
+            aria-controls="main-navigation"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            ☰
+          </button>
+          <nav
+            id="main-navigation"
+            aria-label={t("navigation")}
+            className={menuOpen ? "topbar-nav open" : "topbar-nav"}
+          >
+            {/* На комп'ютері підпис .nav-label розгортається при наведенні (див. redesign.css) */}
+            <NavLink to="/" end onClick={close}>
+              <i className="bi bi-grid" aria-hidden="true"></i>
+              <span className="nav-label">{t("main")}</span>
             </NavLink>
-          )}
-          <NavLink to="/tasks" onClick={() => setMenuOpen(false)}>
-            {t("tasks")}
-          </NavLink>
-          <NavLink to="/workload" onClick={() => setMenuOpen(false)}>
-            {t("workload")}
-          </NavLink>
-          <NavLink to="/messages" onClick={() => setMenuOpen(false)}>
-            {t("messages")}
-          </NavLink>
-          <NavLink to="/ai" onClick={() => setMenuOpen(false)}>
-            {t("agent")}
-          </NavLink>
-          <NavLink to="/notifications" onClick={() => setMenuOpen(false)}>
-            Сповіщення{" "}
-            {notifications.data?.unreadCount
-              ? `(${notifications.data.unreadCount})`
-              : ""}
-          </NavLink>
-          <NavLink to="/complaints" onClick={() => setMenuOpen(false)}>
-            Скарги
-          </NavLink>
-          {user.role === "ADMIN" && (
-            <NavLink to="/admin" onClick={() => setMenuOpen(false)}>
-              {t("administration")}
+            <NavLink to="/projects" onClick={close}>
+              <i className="bi bi-folder" aria-hidden="true"></i>
+              <span className="nav-label">{projectsLabel}</span>
             </NavLink>
-          )}
-          <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 22v-2a8 8 0 0 1 16 0v2" />
-            </svg>
-            {t("profile")}
-          </NavLink>
-        </nav>
-        <div className="sidebar-bottom">
-          <span className="avatar" aria-hidden="true">
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-          <div>
-            <strong>{user.name}</strong>
-            <small>
-              {language === "uk"
-                ? roleNames[user.role]
-                : t(
-                    user.role === "CLIENT"
-                      ? "client"
-                      : user.role === "FREELANCER"
-                        ? "freelancer"
-                        : "admin",
-                  )}
-            </small>
-          </div>
-        </div>
-        <button type="button" className="logout-button" onClick={logout}>
-          {t("logout")} <span aria-hidden="true">↗</span>
-        </button>
-      </aside>
-      {menuOpen && (
-        <button
-          className="menu-backdrop"
-          aria-label={t("closeMenu")}
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-      <div className="app-body">
-        <header className="app-header">
-          <div className="header-heading">
-            <button
-              type="button"
-              className="menu-toggle"
-              aria-label={menuOpen ? t("closeNavigation") : t("openNavigation")}
-              aria-expanded={menuOpen}
-              aria-controls="main-navigation"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              ☰
-            </button>
-            <span>{t("myWorkspace")}</span>
-          </div>
-          <div className="header-user">
+            {user.role === "FREELANCER" && (
+              <NavLink to="/marketplace" onClick={close}>
+                <i className="bi bi-search" aria-hidden="true"></i>
+                <span className="nav-label">{t("findWork")}</span>
+              </NavLink>
+            )}
+            <NavLink to="/tasks" onClick={close}>
+              <i className="bi bi-check2-square" aria-hidden="true"></i>
+              <span className="nav-label">{t("tasks")}</span>
+            </NavLink>
+            <NavLink to="/workload" onClick={close}>
+              <i className="bi bi-bar-chart" aria-hidden="true"></i>
+              <span className="nav-label">{t("workload")}</span>
+            </NavLink>
+            <NavLink to="/messages" onClick={close}>
+              <i className="bi bi-chat-dots" aria-hidden="true"></i>
+              <span className="nav-label">{t("messages")}</span>
+            </NavLink>
+            <NavLink to="/notifications" onClick={close}>
+              <i className="bi bi-bell" aria-hidden="true"></i>
+              <span className="nav-label">{tr("Сповіщення")}</span>
+              {unread > 0 && <span className="badge-count">{unread}</span>}
+            </NavLink>
+            <NavLink to="/complaints" onClick={close}>
+              <i className="bi bi-flag" aria-hidden="true"></i>
+              <span className="nav-label">{tr("Скарги")}</span>
+            </NavLink>
+            {user.role === "ADMIN" && (
+              <NavLink to="/admin" onClick={close}>
+                <i className="bi bi-shield-lock" aria-hidden="true"></i>
+                <span className="nav-label">{t("administration")}</span>
+              </NavLink>
+            )}
+            <NavLink to="/profile" onClick={close}>
+              <i className="bi bi-person" aria-hidden="true"></i>
+              <span className="nav-label">{t("profile")}</span>
+            </NavLink>
+          </nav>
+          <div className="topbar-actions">
             <ThemePicker />
             <LanguageButton />
-            <span className="status-dot" aria-hidden="true" />
-            {language === "uk"
-              ? roleNames[user.role]
-              : t(
-                  user.role === "CLIENT"
-                    ? "client"
-                    : user.role === "FREELANCER"
-                      ? "freelancer"
-                      : "admin",
-                )}
-            <span className="avatar small" aria-hidden="true">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
+            <div
+              className="account-menu"
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setAccountOpen(false);
+              }}
+            >
+              <button
+                type="button"
+                className="account-button"
+                aria-label={t("accountMenu")}
+                aria-expanded={accountOpen}
+                aria-controls="account-dropdown"
+                onClick={() => setAccountOpen(!accountOpen)}
+              >
+                <UserAvatar
+                  name={user.name}
+                  avatarUrl={user.avatarUrl}
+                  size="small"
+                />
+                <span className="account-name">{user.name}</span>
+                <i className="bi bi-chevron-down" aria-hidden="true"></i>
+              </button>
+              {accountOpen && (
+                <>
+                  {/* Прозора підкладка на весь екран: клік поза меню закриває його */}
+                  <div
+                    className="account-backdrop"
+                    aria-hidden="true"
+                    onClick={() => setAccountOpen(false)}
+                  />
+                  <div className="account-dropdown" id="account-dropdown">
+                    <div className="account-info">
+                      <strong>{user.name}</strong>
+                      <small>{user.email}</small>
+                      <small>{roleLabel}</small>
+                    </div>
+                    <Link to="/profile" onClick={close}>
+                      <i className="bi bi-person" aria-hidden="true"></i>
+                      {t("myProfile")}
+                    </Link>
+                    <button
+                      type="button"
+                      className="account-logout"
+                      onClick={logout}
+                    >
+                      <i
+                        className="bi bi-box-arrow-right"
+                        aria-hidden="true"
+                      ></i>
+                      {t("logout")}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </header>
+        </div>
+      </header>
+      {/* Розмова з AI спільна для сторінки /ai і бічної панелі */}
+      <AiChatProvider>
         <main className="page-content" id="main-content" tabIndex={-1}>
           <Outlet />
         </main>
-      </div>
+        <AiDrawer />
+      </AiChatProvider>
+      {/* Нижня панель для телефону (як у мобільному UI kit); на комп'ютері схована */}
+      <nav className="bottom-nav" aria-label={t("navigation")}>
+        <NavLink to="/" end onClick={close}>
+          <i className="bi bi-house" aria-hidden="true"></i>
+          {t("main")}
+        </NavLink>
+        <NavLink to="/projects" onClick={close}>
+          <i className="bi bi-folder" aria-hidden="true"></i>
+          {projectsLabel}
+        </NavLink>
+        <NavLink to="/messages" onClick={close}>
+          <i className="bi bi-chat-dots" aria-hidden="true"></i>
+          {t("messages")}
+        </NavLink>
+        <NavLink to="/profile" onClick={close}>
+          <i className="bi bi-person" aria-hidden="true"></i>
+          {t("profile")}
+        </NavLink>
+      </nav>
     </div>
   );
 }
