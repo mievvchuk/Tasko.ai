@@ -77,7 +77,7 @@ export class TasksController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() data: BoardColumnDto,
   ) {
-    return this.tasks.addColumn(user, id, data.title);
+    return this.tasks.addColumn(user, id, data.title, data.status);
   }
   @Delete('columns/:id') deleteColumn(
     @Actor() user: CurrentUser,

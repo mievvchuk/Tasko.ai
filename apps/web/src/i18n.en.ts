@@ -743,16 +743,20 @@ export const enText: Record<string, string> = {
   "Через {0} дн.": "In {0} d",
 
   // Власні колонки канбану
-  "Видалити колонку «{0}»? Її завдання повернуться в «У процесі».":
-    "Delete the “{0}” column? Its tasks will go back to “In progress”.",
-  "Перетягніть свою картку в іншу колонку або виберіть колонку у списку на картці.":
-    "Drag your card to another column or pick a column from the list on the card.",
+  "Видалити колонку «{0}»? Її завдання повернуться в «{1}».":
+    "Delete the “{0}” column? Its tasks will go back to “{1}”.",
+  "Перетягніть картку за ручку в іншу колонку або виберіть колонку у списку на картці.":
+    "Drag a card by its handle to another column or pick a column from the list on the card.",
   "Видалити колонку {0}": "Delete column {0}",
   "Видалити колонку": "Delete column",
   "Перетягніть сюди картку": "Drop a card here",
+  "Перетягніть картку": "Drag the card",
   "Колонка завдання {0}": "Column for task {0}",
-  "Новий етап роботи": "New work stage",
-  "Наприклад, Тестування": "For example, Testing",
+  "Нова колонка": "New column",
+  "Наприклад, Беклог або Тестування": "For example, Backlog or Testing",
+  "Де розмістити колонку": "Where to place the column",
+  "Перед «До виконання»": "Before “To do”",
+  "Після «У процесі»": "After “In progress”",
   "Додати колонку": "Add column",
 
   // Розділи форм
