@@ -54,13 +54,15 @@ function Thinking() {
   }, []);
   // Скрінрідер чує один статус, а не кожну зміну фрази
   return (
-    <div className="ai-thinking" role="status">
-      <span className="ai-thinking-avatar" aria-hidden="true">
+    <div className="ai-reply ai-thinking" role="status">
+      <span className="ai-avatar" aria-hidden="true">
         <i className="bi bi-stars"></i>
       </span>
       <span className="visually-hidden">{aiName} аналізує дані</span>
-      <span aria-hidden="true" key={step} className="ai-thinking-text">
-        {thinkingSteps[step]}
+      <span className="ai-bubble bot" aria-hidden="true">
+        <span key={step} className="ai-thinking-text">
+          {thinkingSteps[step]}
+        </span>
         <span className="ai-dots">
           <span>.</span>
           <span>.</span>
@@ -137,9 +139,9 @@ export function AiConversation({
     event.preventDefault();
     if (!locked) void ask(message);
   }
-  // У панелі Enter надсилає, Shift+Enter — новий рядок (як у месенджерах)
+  // Enter надсилає, Shift+Enter — новий рядок (як у месенджерах)
   function handleKey(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (variant !== "panel" || event.key !== "Enter" || event.shiftKey) return;
+    if (event.key !== "Enter" || event.shiftKey) return;
     event.preventDefault();
     if (!locked) void ask(message);
   }
@@ -147,68 +149,81 @@ export function AiConversation({
   return (
     <div className={`ai-conversation ${variant}`}>
       <div className="ai-history" aria-live="polite">
+        {!exchanges.length && !busy && variant === "panel" && (
+          <div className="ai-welcome">
+            <span className="ai-avatar" aria-hidden="true">
+              <i className="bi bi-stars"></i>
+            </span>
+            <div>
+              <strong>Привіт! Я {aiName}.</strong>
+              <p>Запитайте про проєкти, завдання чи дедлайни.</p>
+            </div>
+          </div>
+        )}
         {exchanges.map((item, index) => (
           <article
             key={index}
             className={item.offTopic ? "ai-exchange off-topic" : "ai-exchange"}
           >
-            <h2>Ваше запитання</h2>
-            <p className="preserve-lines ai-question">{item.question}</p>
-            {item.files && item.files.length > 0 && (
-              <ul className="ai-files" aria-label="Прикріплені файли">
-                {item.files.map((name) => (
-                  <li key={name}>
-                    <i className="bi bi-paperclip" aria-hidden="true"></i>
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <h2>{item.offTopic ? "Поза темою системи" : `${aiName} відповідає`}</h2>
-            <Suspense fallback={<p role="status">Форматуємо відповідь…</p>}>
-              <MarkdownAnswer>{item.answer}</MarkdownAnswer>
-            </Suspense>
-            {item.toolsUsed.length > 0 && (
-              <p className="form-note">
-                Джерела даних:{" "}
-                {[...new Set(item.toolsUsed)]
-                  .map((name) => aiToolNames[name] || "Дані проєкту")
-                  .join(", ")}
-              </p>
-            )}
+            <div className="ai-bubble user">
+              <h2 className="visually-hidden">Ваше запитання</h2>
+              <p className="preserve-lines ai-question">{item.question}</p>
+              {item.files && item.files.length > 0 && (
+                <ul className="ai-files" aria-label="Прикріплені файли">
+                  {item.files.map((name) => (
+                    <li key={name}>
+                      <i className="bi bi-paperclip" aria-hidden="true"></i>
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="ai-reply">
+              <span className="ai-avatar" aria-hidden="true">
+                <i className="bi bi-stars"></i>
+              </span>
+              <div className="ai-bubble bot">
+                <h2 className="ai-reply-name">
+                  {item.offTopic ? "Поза темою системи" : aiName}
+                </h2>
+                <Suspense fallback={<p role="status">Форматуємо відповідь…</p>}>
+                  <MarkdownAnswer>{item.answer}</MarkdownAnswer>
+                </Suspense>
+                {item.toolsUsed.length > 0 && (
+                  <p className="ai-sources">
+                    <i className="bi bi-database" aria-hidden="true"></i>
+                    {[...new Set(item.toolsUsed)]
+                      .map((name) => aiToolNames[name] || "Дані проєкту")
+                      .join(", ")}
+                  </p>
+                )}
+              </div>
+            </div>
           </article>
         ))}
         {busy && <Thinking />}
       </div>
       {!exchanges.length && !busy && user && configured && (
         <div className="ai-suggestions">
-          <p className="form-note">Спробуйте запитати:</p>
+          <p className="form-note">Спробуйте запитати</p>
           {suggestions[user.role].map((text) => (
             <button
               key={text}
               type="button"
               className="ai-chip"
-              disabled={busy}
               onClick={() => void ask(text)}
             >
-              {text}
+              <span>{text}</span>
+              <i className="bi bi-arrow-up-right" aria-hidden="true"></i>
             </button>
           ))}
         </div>
       )}
       <form className="work-form ai-form" onSubmit={submit}>
-        <label htmlFor={inputId}>Запитання до Ади</label>
-        <textarea
-          id={inputId}
-          rows={variant === "panel" ? 3 : 4}
-          required
-          maxLength={1800}
-          placeholder="Які завдання варто виконати першими?"
-          value={message}
-          disabled={busy || !configured}
-          onChange={(event) => setMessage(event.target.value)}
-          onKeyDown={handleKey}
-        />
+        <label htmlFor={inputId} className="visually-hidden">
+          Запитання до Ади
+        </label>
         {files.length > 0 && (
           <ul className="ai-files" aria-label="Файли до запитання">
             {files.map((file, index) => (
@@ -230,6 +245,52 @@ export function AiConversation({
             ))}
           </ul>
         )}
+        <div className="ai-composer">
+          <textarea
+            id={inputId}
+            rows={2}
+            required
+            maxLength={1800}
+            placeholder="Напишіть повідомлення…"
+            value={message}
+            disabled={busy || !configured}
+            onChange={(event) => setMessage(event.target.value)}
+            onKeyDown={handleKey}
+          />
+          <div className="ai-composer-bar">
+            <button
+              type="button"
+              className="ai-icon-button"
+              disabled={locked || files.length >= maxFiles}
+              aria-label="Прикріпити файл"
+              title="Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3"
+              onClick={() => fileInput.current?.click()}
+            >
+              <i className="bi bi-paperclip" aria-hidden="true"></i>
+            </button>
+            <span className="ai-hint">Enter — надіслати, Shift+Enter — новий рядок</span>
+            {busy ? (
+              <button
+                type="button"
+                className="ai-send"
+                aria-label="Скасувати запит"
+                title="Скасувати запит"
+                onClick={cancel}
+              >
+                <i className="bi bi-stop-fill" aria-hidden="true"></i>
+              </button>
+            ) : (
+              <button
+                className="ai-send"
+                disabled={locked || !message.trim()}
+                aria-label="Надіслати запит"
+                title="Надіслати запит"
+              >
+                <i className="bi bi-arrow-up" aria-hidden="true"></i>
+              </button>
+            )}
+          </div>
+        </div>
         <input
           ref={fileInput}
           id={`ai-files-${variant}`}
@@ -250,27 +311,6 @@ export function AiConversation({
             {localError || error}
           </p>
         )}
-        <div className="page-actions">
-          <button className="button primary" disabled={locked}>
-            <i className="bi bi-send" aria-hidden="true"></i>
-            {busy ? "Аналізуємо…" : "Надіслати запит"}
-          </button>
-          <button
-            type="button"
-            className="button secondary"
-            disabled={locked || files.length >= maxFiles}
-            title="TXT, PDF або DOCX, до 5 МБ, не більше 3 файлів"
-            onClick={() => fileInput.current?.click()}
-          >
-            <i className="bi bi-paperclip" aria-hidden="true"></i>
-            Прикріпити файл
-          </button>
-          {busy && (
-            <button type="button" className="button secondary" onClick={cancel}>
-              Скасувати запит
-            </button>
-          )}
-        </div>
       </form>
     </div>
   );
