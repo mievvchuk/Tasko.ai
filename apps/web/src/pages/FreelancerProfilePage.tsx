@@ -1,5 +1,6 @@
 import { useParams } from "react-router";
 import { ResourceState } from "../components/ResourceState";
+import { UserAvatar } from "../components/UserAvatar";
 import { formatDate } from "../format";
 import type { FreelancerProfile } from "../types";
 import { useApi } from "../useApi";
@@ -18,8 +19,14 @@ export function FreelancerProfilePage() {
       {!loading && !error && data && (
         <>
           <div className="page-heading">
-            <span className="eyebrow">TASKO.AI / ФРИЛАНСЕР</span>
-            <h1>{data.name}</h1>
+            <div className="person-heading">
+              <UserAvatar
+                name={data.name}
+                avatarUrl={data.avatarUrl}
+                size="xl"
+              />
+              <h1>{data.name}</h1>
+            </div>
             <p>Профіль виконавця та відгуки клієнтів.</p>
             <p>{data.profile.bio || "Фрилансер ще не додав опис."}</p>
             <p className="skill-list">

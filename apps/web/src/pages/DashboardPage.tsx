@@ -58,7 +58,6 @@ export function DashboardPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / ГОЛОВНА</span>
           <h1>Головна панель</h1>
           <p>Ваші проєкти, завдання та терміни виконання — перед очима.</p>
         </div>

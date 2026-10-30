@@ -69,7 +69,6 @@ export function ProjectsPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / ПРОЄКТИ</span>
           <h1>
             {user?.role === "ADMIN"
               ? "Проєкти"

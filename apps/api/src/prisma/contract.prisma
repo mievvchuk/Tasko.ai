@@ -12,6 +12,8 @@ model User {
   status    String   // ACTIVE, BLOCKED
   twoFactorSecret String?
   twoFactorEnabled Boolean @default(false)
+  // Лише посилання на фото профілю (напр. /avatars/<uuid>.jpg); сам файл — у storage/avatars
+  avatarUrl String?
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
 

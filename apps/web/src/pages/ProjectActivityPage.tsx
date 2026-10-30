@@ -15,7 +15,6 @@ export function ProjectActivityPage() {
         ← До проєкту
       </Link>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ІСТОРІЯ</span>
         <h1>Історія активності</h1>
       </div>
       <ResourceState loading={loading} error={error} onRetry={refresh} />

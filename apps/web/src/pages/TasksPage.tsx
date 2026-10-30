@@ -50,7 +50,6 @@ export function TasksPage() {
   return (
     <>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ЗАВДАННЯ</span>
         <h1>Завдання</h1>
         <p>Оберіть проєкт, щоб переглянути та організувати роботу команди.</p>
       </div>

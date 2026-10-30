@@ -18,6 +18,8 @@ interface AuthState {
   login: (email: string, password: string, code?: string) => Promise<boolean>;
   logout: () => void;
   retry: () => void;
+  // Оновлює дані користувача після зміни імені чи фото на сторінці профілю
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -127,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         retry: () => setAttempt((value) => value + 1),
+        updateUser: setUser,
       }}
     >
       {children}

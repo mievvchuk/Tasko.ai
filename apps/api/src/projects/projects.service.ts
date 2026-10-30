@@ -375,7 +375,7 @@ export class ProjectsService {
       role: 'FREELANCER',
       status: 'ACTIVE',
     })
-      .select('id', 'name', 'email')
+      .select('id', 'name', 'email', 'avatarUrl')
       .orderBy((person) => person.name.asc())
       .offset((page.page - 1) * page.limit)
       .limit(page.limit)
@@ -658,7 +658,7 @@ export class ProjectsService {
 
   async freelancerProfile(_user: CurrentUser, id: string) {
     const freelancer = await this.prisma.client.orm.public.User.where({ id })
-      .select('id', 'name', 'email', 'role', 'status', 'createdAt')
+      .select('id', 'name', 'email', 'role', 'status', 'avatarUrl', 'createdAt')
       .first();
     if (!freelancer || freelancer.role !== 'FREELANCER')
       throw new NotFoundException('Фрилансера не знайдено.');

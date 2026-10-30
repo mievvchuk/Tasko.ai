@@ -5,19 +5,102 @@
    Кольори беремо з palette.css — тож темна тема працює сама.
    ========================================================= */
 
-/* 1. Дизайн-токени: усі «магічні числа» в одному місці */
+/* 1. Дизайн-токени: усі «магічні числа» в одному місці.
+   Перші п'ять — кольори дизайн-системи (DESIGN-SYSTEM.md, розділ 01).
+   Самі значення для світлої й темної теми лежать у palette.css. */
 :root {
-  --r-bg: var(--palette-f7f8fc);
+  --ds-primary: var(--palette-5146dc);
+  --ds-secondary: var(--palette-71768b);
+  --ds-accent: var(--palette-e0a742);
+  --ds-background: var(--palette-f7f8fc);
+  --ds-text: var(--palette-202437);
+  --ds-danger: var(--palette-a13647);
+  --r-bg: var(--ds-background);
   --r-card: var(--surface);
   --r-line: var(--border);
-  --r-ink: var(--palette-202437);
-  --r-muted: var(--muted);
-  --r-accent: var(--primary);
+  --r-ink: var(--ds-text);
+  --r-muted: var(--ds-secondary);
+  --r-accent: var(--ds-primary);
   --r-accent-soft: var(--palette-f0eeff);
-  --r-radius: 18px;
-  --r-radius-sm: 10px;
-  --r-shadow: 0 18px 40px -24px rgba(52, 48, 91, 0.35);
+  --r-radius: 10px;
+  --r-radius-sm: 6px;
+  --r-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.35);
   --r-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 1а. Типографіка дизайн-системи (розділ 02): H1 · H2 · H3 · Body · Caption */
+/* H1 задано в розділі 3 «Заголовки сторінок» */
+body {
+  font-size: 14px;
+}
+.data-panel h2,
+.page-heading h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.data-panel h3 {
+  font-size: 16px;
+  font-weight: 650;
+}
+.form-note,
+.stat-note {
+  font-size: 12px;
+}
+
+/* 1б. Компоненти дизайн-системи (розділ 03) */
+/* Недоступна кнопка — сірий фон і приглушений текст, а не просто прозорість */
+.button:disabled {
+  border-color: transparent;
+  background: var(--palette-e3e6ef);
+  color: var(--ds-secondary);
+  box-shadow: none;
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
+}
+.secondary {
+  color: var(--ds-text);
+}
+/* Поля: світла рамка, синє підсвічування у фокусі, червона рамка при помилці.
+   :user-invalid спрацьовує лише після того, як людина щось ввела */
+.work-form input,
+.work-form select,
+.work-form textarea,
+.project-picker > select {
+  border-radius: var(--r-radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.work-form input:focus,
+.work-form select:focus,
+.work-form textarea:focus {
+  border-color: var(--ds-primary);
+  box-shadow: 0 0 0 3px var(--palette-f0eeff);
+}
+.work-form input:user-invalid,
+.work-form textarea:user-invalid {
+  border-color: var(--ds-danger);
+  box-shadow: 0 0 0 3px var(--palette-fff4f4);
+}
+.form-error {
+  color: var(--ds-danger);
+}
+/* Чекбокси — синього кольору дизайн-системи */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ds-primary);
+}
+/* Аватар — помаранчевий Accent з ініціалами, як у мобільному UI kit */
+.avatar {
+  background: var(--ds-accent);
+  color: var(--palette-202437);
+  font-weight: 700;
+}
+:root[data-theme="dark"] .avatar {
+  color: var(--on-primary);
 }
 
 /* 2. Верхня панель навігації (замість бічного меню) */
@@ -72,9 +155,10 @@
   background: var(--palette-eceef5);
   color: var(--r-ink);
 }
+/* Активний пункт — м'який синій фон і синій текст (як вкладка «Головна» в UI kit) */
 .topbar-nav a.active {
-  background: var(--r-ink);
-  color: var(--r-card);
+  background: var(--r-accent-soft);
+  color: var(--ds-primary);
   font-weight: 650;
 }
 .topbar-actions {
@@ -84,24 +168,111 @@
   gap: 10px;
   flex-shrink: 0;
 }
-.topbar-logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: none;
-  color: var(--r-muted);
-  font-size: 12px;
-  cursor: pointer;
-}
 /* Іконки Bootstrap Icons у меню: колір береться з тексту (currentColor) */
-.topbar-nav .bi,
-.topbar-logout .bi {
+.topbar-nav .bi {
   font-size: 15px;
   line-height: 1;
 }
-.topbar-logout:hover {
-  color: var(--r-accent);
+/* Меню облікового запису: кнопка з аватаром і список із «Вийти» */
+.account-menu {
+  position: relative;
+}
+.account-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--r-line);
+  border-radius: 999px;
+  background: var(--r-card);
+  color: var(--r-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.account-button:hover,
+.account-button[aria-expanded="true"] {
+  border-color: var(--r-accent);
+}
+.account-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-button .bi {
+  font-size: 12px;
+  color: var(--r-muted);
+}
+/* Прозора підкладка: ловить клік поза меню й закриває його */
+.account-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 31;
+  display: grid;
+  gap: 4px;
+  min-width: 250px;
+  padding: 8px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-card);
+  box-shadow: var(--r-shadow);
+  animation: rise 0.15s var(--r-ease) both;
+}
+.account-info {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid var(--r-line);
+  margin-bottom: 4px;
+}
+.account-info strong {
+  color: var(--r-ink);
+  font-size: 14px;
+}
+.account-info small {
+  color: var(--r-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.account-dropdown a,
+.account-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--r-ink);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.account-dropdown a:hover {
+  background: var(--r-bg);
+  text-decoration: none;
+}
+/* «Вийти» — червоним, щоб його було легко знайти */
+.account-logout {
+  color: var(--palette-a13647);
+  font-weight: 600;
+}
+.account-logout:hover {
+  background: var(--palette-fff4f4);
+}
+.account-dropdown .bi {
+  font-size: 16px;
 }
 .badge-count {
   margin-left: 6px;
@@ -113,40 +284,103 @@
   font-weight: 700;
 }
 
-/* Панель має ширину до 1250px, і всі пункти з підписами в неї не вміщаються.
-   Тому на комп'ютері в меню лише іконки: підпис ховаємо візуально,
-   але скрінрідер його читає, а title показує назву при наведенні.
-   У мобільному меню (до 900px) підписи видно. */
-.topbar-logout .nav-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-.topbar-logout .bi {
-  font-size: 18px;
-}
+/* Варіант C «Фокус»: на комп'ютері .topbar стає темною бічною панеллю зліва
+   з підписами пунктів. Розмітка та сама, змінено лише CSS.
+   До 900px лишається верхня панель з меню ☰ (див. кінець файлу). */
 @media (min-width: 901px) {
-  .topbar-nav .nav-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  .app-shell {
+    padding-left: 232px;
+  }
+  .topbar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 232px;
+    background: var(--nav-bg);
+    border: 0;
+    backdrop-filter: none;
+  }
+  .topbar-inner {
+    height: 100%;
+    max-width: none;
+    padding: 20px 14px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  .topbar .brand {
+    padding: 0 8px;
+    color: #fff;
+  }
+  .topbar .brand-ai {
+    color: var(--nav-text);
+  }
+  .topbar-nav {
+    flex-direction: column;
+    overflow: hidden auto;
   }
   .topbar-nav a {
-    padding: 9px 11px;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--r-radius-sm);
+    color: var(--nav-text);
   }
+  .topbar-nav a:hover {
+    background: var(--nav-hover);
+    color: #fff;
+  }
+  .topbar-nav a.active {
+    background: var(--nav-active);
+    color: #fff;
+  }
+  .topbar-actions {
+    margin: auto 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--nav-line);
+    flex-wrap: wrap;
+  }
+  .topbar .theme-picker {
+    color: var(--nav-text);
+  }
+  .topbar .theme-picker select,
+  .topbar .language-button,
+  .topbar .account-button {
+    background: transparent;
+    border-color: var(--nav-line);
+    color: #fff;
+  }
+  .topbar .account-button {
+    width: 100%;
+  }
+  .topbar .account-button .bi {
+    margin-left: auto;
+    color: var(--nav-text);
+  }
+  .topbar .theme-picker option {
+    color: var(--ds-text);
+    background: var(--surface);
+  }
+  /* Меню акаунта внизу панелі — відкривається вгору */
+  .account-menu {
+    width: 100%;
+  }
+  .account-dropdown {
+    top: auto;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: auto;
+  }
+}
+/* Цифри однакової ширини — стовпці чисел у картках і таблицях не «стрибають» */
+.stat-card > strong,
+table {
+  font-variant-numeric: tabular-nums;
 }
 
 /* 3. Заголовки сторінок */
 .page-heading h1 {
-  font-size: 34px;
-  font-weight: 740;
-  letter-spacing: -1.2px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
 }
 .page-heading p {
   font-size: 15px;
@@ -229,22 +463,118 @@
   font-size: 12px;
 }
 
+/* 6а. Головна панель: «Завдання за статусом» і «Дедлайни завдань» */
+/* Смуги розподілу завдань — товщі й насиченіших кольорів */
+.task-status-list {
+  gap: 18px;
+}
+.task-status-row > div {
+  font-size: 13px;
+  color: var(--r-muted);
+}
+.task-status-row strong {
+  color: var(--r-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.status-progress {
+  height: 14px;
+  border-radius: 999px;
+  background: var(--palette-efedf8);
+}
+/* webkit і moz — окремими правилами, бо браузер відкидає чужий псевдоелемент */
+.status-progress::-webkit-progress-bar {
+  border-radius: 999px;
+}
+.status-progress::-webkit-progress-value {
+  border-radius: 999px;
+}
+.status-progress::-moz-progress-bar {
+  border-radius: 999px;
+}
+.progress-TODO {
+  --progress-color: var(--palette-6e7488);
+}
+.progress-IN_PROGRESS {
+  --progress-color: var(--palette-5146dc);
+}
+.progress-REVIEW {
+  --progress-color: var(--palette-e0a742);
+}
+.progress-DONE {
+  --progress-color: var(--palette-3a8467);
+}
+/* Дедлайни: більші й яскравіші крапки, більша назва завдання */
+.deadline-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  background: var(--r-accent);
+}
+.deadline-dot.overdue {
+  background: var(--palette-a13647);
+}
+/* У темній темі зелений і червоний стають пастельними — беремо насиченіші */
+:root[data-theme="dark"] .progress-DONE {
+  --progress-color: var(--palette-69b797);
+}
+:root[data-theme="dark"] .deadline-dot.overdue {
+  background: var(--palette-d88583);
+}
+
 /* 7. Канбан-дошка */
 .kanban-column {
+  border-top: 4px solid var(--r-line);
+  border-radius: var(--r-radius);
   background: var(--palette-eff0f5);
   outline: 2px dashed transparent;
+  outline-offset: -2px;
   transition:
     background 0.2s,
-    outline-color 0.2s;
+    outline-color 0.2s,
+    opacity 0.2s;
 }
+/* Кольорова смужка зверху: у кожного статусу свій колір */
+.kanban-column.column-IN_PROGRESS {
+  border-top-color: var(--r-accent);
+}
+.kanban-column.column-REVIEW {
+  border-top-color: var(--palette-a17627);
+}
+.kanban-column.column-DONE {
+  border-top-color: var(--palette-328267);
+}
+.kanban-column h2 {
+  align-items: center;
+  font-size: 15px;
+}
+/* Кількість карток у колонці — «пігулка» */
 .kanban-column h2 span {
-  color: var(--palette-9a9eb0);
-  font-size: 13px;
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--r-card);
+  color: var(--r-muted);
+  font-size: 12px;
+  text-align: center;
 }
-/* колонка, над якою зараз тримають картку */
+/* Колонка, над якою зараз тримають картку */
 .kanban-column.drop-target {
   background: var(--r-accent-soft);
   outline-color: var(--palette-a8a2ff);
+}
+/* Під час перетягування колонки, куди кинути не можна, бліднуть */
+.kanban-column.locked {
+  opacity: 0.45;
+}
+.kanban-empty {
+  margin: 16px 0 0;
+  padding: 18px;
+  border: 1px dashed var(--palette-b4acf0);
+  border-radius: var(--r-radius-sm);
+  color: var(--r-muted);
+  font-size: 13px;
+  text-align: center;
 }
 .kanban-card {
   border: 1px solid var(--r-line);
@@ -261,8 +591,91 @@
 .kanban-card[draggable="true"] {
   cursor: grab;
 }
+.kanban-card[draggable="true"]:active {
+  cursor: grabbing;
+}
 .kanban-card.dragging {
   opacity: 0.4;
+}
+/* Назва завдання і «ручка» для перетягування праворуч */
+.kanban-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.kanban-card-title a {
+  color: var(--r-ink);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.kanban-card-title a:hover {
+  color: var(--r-accent);
+}
+.kanban-card-title .bi {
+  flex-shrink: 0;
+  color: var(--r-muted);
+  font-size: 16px;
+}
+/* Опис — не більше двох рядків, щоб картки були однакової висоти */
+.kanban-card small {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* Пріоритет і дедлайн у нижній частині картки */
+.kanban-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.priority {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--r-bg);
+  color: var(--r-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.priority-MEDIUM {
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+}
+.priority-HIGH {
+  background: var(--palette-fcf0f2);
+  color: var(--palette-9e5b63);
+}
+.kanban-deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--r-muted);
+  font-size: 12px;
+}
+.kanban-deadline.overdue {
+  color: var(--palette-a13647);
+  font-weight: 650;
+}
+/* Список статусу (для зміни з клавіатури) — компактний */
+.kanban-card select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-card);
+  color: var(--r-ink);
+  font: inherit;
+  font-size: 13px;
+}
+.kanban-card select:focus {
+  border-color: var(--r-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--r-accent-soft);
 }
 
 /* 8. Сторінка входу: одна колонка, картка по центру */
@@ -285,7 +698,7 @@
 }
 .auth-card {
   border-radius: 20px;
-  box-shadow: 0 24px 60px -30px rgba(52, 48, 91, 0.25);
+  box-shadow: 0 24px 60px -30px rgba(15, 23, 42, 0.25);
 }
 
 /* 8а. Форми (вхід, реєстрація, відновлення пароля та інші форми .work-form) */
@@ -367,7 +780,7 @@
 }
 
 /* 8б. Проєкти: заголовки, вкладки, таблиці, картки */
-/* Дрібний надпис над заголовком («TASKO.AI / ПРОЄКТ») і посилання «← назад» */
+/* Посилання «← назад» над заголовком */
 .eyebrow,
 .page-heading .eyebrow {
   font-size: 12px;
@@ -623,6 +1036,316 @@
 .ai-table-scroll {
   border-radius: var(--r-radius-sm);
 }
+/* Відмова «поза темою» — приглушена картка з бурштиновою смужкою */
+.ai-exchange.off-topic {
+  border-left: 4px solid var(--palette-e0a742);
+  background: var(--r-bg);
+}
+/* Підказки-запитання: «таблетки», що надсилають питання одним кліком */
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 4px;
+}
+.ai-suggestions .form-note {
+  width: 100%;
+  margin: 0;
+}
+.ai-chip {
+  padding: 8px 14px;
+  border: 1px solid var(--palette-b4acf0);
+  border-radius: 999px;
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s var(--r-ease);
+}
+.ai-chip:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--r-accent);
+}
+.ai-chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.ai-form {
+  margin-top: 18px;
+}
+/* «Ада думає…»: фраза змінюється з легкою появою, три крапки «дихають» */
+.ai-thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 18px;
+  border: 1px dashed var(--palette-b4acf0);
+  border-radius: var(--r-radius);
+  background: var(--r-accent-soft);
+  color: var(--r-accent);
+  font-weight: 600;
+}
+.ai-thinking-avatar,
+.ai-intro-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ds-primary);
+  color: var(--on-primary);
+}
+.ai-thinking-avatar {
+  animation: ai-pulse 1.6s ease-in-out infinite;
+}
+.ai-thinking-text {
+  animation: rise 0.3s var(--r-ease) both;
+}
+.ai-dots span {
+  animation: ai-dot 1.2s infinite;
+}
+.ai-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.ai-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes ai-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@keyframes ai-pulse {
+  50% {
+    box-shadow: 0 0 0 6px var(--palette-dedbff);
+  }
+}
+/* Сторінка /ai: коротке знайомство з Адою замість довгого блоку-пояснення */
+.ai-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.ai-intro-avatar {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+}
+.ai-intro strong {
+  display: block;
+  color: var(--r-ink);
+  font-size: 16px;
+}
+.ai-intro p {
+  margin: 2px 0 0;
+  color: var(--r-muted);
+  font-size: 13px;
+}
+/* Порожнє поле чату після надсилання — не помилка, тож без червоної рамки */
+.ai-form textarea:user-invalid {
+  border-color: var(--r-line);
+  box-shadow: none;
+}
+.ai-exchange .ai-files {
+  margin-bottom: 14px;
+}
+/* Прикріплені до запитання файли — «таблетки» з іконкою та кнопкою ×.
+   Рядок flex, тож довгі назви переносяться і не розпирають панель */
+.ai-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ai-files li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--r-line);
+  border-radius: 999px;
+  background: var(--r-bg);
+  color: var(--r-ink);
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.ai-files small {
+  color: var(--palette-a17627);
+  font-size: 12px;
+}
+.ai-files button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--r-muted);
+  cursor: pointer;
+}
+.ai-files button:hover {
+  background: var(--palette-fff4f4);
+  color: var(--ds-danger);
+}
+
+/* 8д. Плаваюча кнопка AI і бічна панель з розмовою */
+.ai-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--r-accent);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: var(--r-shadow);
+  cursor: pointer;
+  transition: transform 0.2s var(--r-ease);
+}
+.ai-fab .bi {
+  font-size: 18px;
+}
+.ai-fab:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.ai-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.ai-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100vw);
+  background: var(--r-card);
+  border-left: 1px solid var(--r-line);
+  box-shadow: var(--r-shadow);
+  animation: ai-slide 0.3s var(--r-ease) both;
+}
+.ai-drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--r-line);
+}
+.ai-drawer-head div {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.ai-drawer-head strong {
+  color: var(--r-ink);
+  font-size: 16px;
+}
+.ai-drawer-head small {
+  color: var(--r-muted);
+  font-size: 12px;
+}
+.ai-drawer-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-radius-sm);
+  background: var(--r-accent);
+  color: var(--on-primary);
+  font-size: 18px;
+}
+/* Квадратна кнопка-іконка (панель AI, «змінити ім'я» в профілі) */
+.ai-drawer-action,
+.icon-action {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: transparent;
+  color: var(--r-muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+.ai-drawer-action:hover,
+.icon-action:hover {
+  color: var(--r-accent);
+  border-color: var(--r-accent);
+}
+.ai-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 18px 18px;
+}
+/* У вузькій панелі картки розмови компактніші */
+.ai-conversation.panel .ai-exchange {
+  padding: 14px 16px;
+}
+.ai-conversation.panel .ai-answer {
+  font-size: 14px;
+}
+/* Таблиці у вузькій панелі: дрібніший шрифт, слова не ламаються по літерах */
+.ai-conversation.panel .ai-answer table {
+  font-size: 12px;
+}
+.ai-conversation.panel .ai-answer th {
+  white-space: nowrap;
+}
+.ai-conversation.panel .ai-form {
+  position: sticky;
+  bottom: -18px;
+  padding: 12px 0 18px;
+  background: var(--r-card);
+}
+@keyframes ai-slide {
+  from {
+    transform: translateX(100%);
+  }
+}
+/* На телефоні: кругла кнопка без підпису, панель на весь екран */
+@media (max-width: 600px) {
+  .ai-fab {
+    right: 16px;
+    bottom: 16px;
+    padding: 14px;
+  }
+  .ai-fab-label {
+    display: none;
+  }
+  .ai-drawer-backdrop {
+    background: var(--palette-5146dc17);
+  }
+}
 /* Сповіщення: непрочитане виділяємо фіолетовою смужкою зліва */
 .list-card.unread {
   border-left-color: var(--r-accent);
@@ -644,6 +1367,7 @@
   font-weight: 600;
 }
 .form-grid input,
+.form-grid select,
 .form-grid textarea {
   width: 100%;
   min-width: 0;
@@ -662,6 +1386,7 @@
   resize: vertical;
 }
 .form-grid input:focus,
+.form-grid select:focus,
 .form-grid textarea:focus {
   border-color: var(--r-accent);
   outline: none;
@@ -884,6 +1609,329 @@
   color: var(--r-muted);
 }
 
+/* 8е. Сторінка «Мій профіль» */
+/* Приховано візуально, але доступно скрінрідеру (поле вибору файлу фото) */
+/* input.… — щоб перебити ширину й відступи з .work-form input (інакше сторінка
+   отримує горизонтальну прокрутку через приховане поле файлу) */
+.visually-hidden,
+input.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Аватари круглі, як у дизайн-системі; фото заповнює коло без спотворень */
+.avatar,
+.avatar.small,
+.avatar.large {
+  border-radius: 50%;
+}
+.avatar.photo {
+  object-fit: cover;
+  background: var(--r-bg);
+}
+.avatar.xl {
+  width: 128px;
+  height: 128px;
+  font-size: 48px;
+  box-shadow:
+    0 0 0 4px var(--r-card),
+    0 0 0 6px var(--r-line);
+}
+/* Публічний профіль фрилансера: фото поруч з іменем у заголовку */
+.person-heading {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+.person-heading h1 {
+  margin: 0;
+}
+.person-heading .avatar.xl {
+  width: 88px;
+  height: 88px;
+  font-size: 34px;
+}
+.profile-hero {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px 36px;
+  padding: 32px;
+}
+.profile-photo {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 14px;
+  text-align: center;
+}
+.profile-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.profile-photo-actions .button {
+  min-height: 38px;
+  padding: 8px 14px;
+}
+.profile-info {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+  min-width: 0;
+}
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-name-row h2 {
+  margin: 0;
+  color: var(--r-ink);
+  font-size: 28px;
+  letter-spacing: -0.4px;
+  overflow-wrap: anywhere;
+}
+.profile-name-form {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+.profile-name-form label {
+  color: var(--r-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.profile-name-form div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.profile-name-form input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius-sm);
+  background: var(--r-card);
+  color: var(--r-ink);
+  font: inherit;
+}
+.profile-name-form input:focus {
+  border-color: var(--ds-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--palette-f0eeff);
+}
+.role-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--r-accent-soft);
+  color: var(--ds-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.profile-facts {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 0;
+}
+.profile-facts div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.profile-facts dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 170px;
+  color: var(--r-muted);
+  font-size: 13px;
+}
+.profile-facts dd {
+  margin: 0;
+  color: var(--r-ink);
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.profile-public-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.profile-info .notice {
+  margin: 0;
+}
+/* Статистика — рядок плиток на всю ширину картки */
+.profile-stats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--r-line);
+  list-style: none;
+}
+.profile-stats li {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: var(--r-radius-sm);
+  background: var(--r-bg);
+}
+.profile-stats strong {
+  color: var(--r-ink);
+  font-size: 24px;
+}
+.profile-stats span {
+  color: var(--r-muted);
+  font-size: 12px;
+}
+/* Деталі профілю — рядки з тонкими лініями, значення притиснуті праворуч */
+.profile-facts {
+  width: 100%;
+  gap: 0;
+}
+.profile-facts div {
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--r-line);
+}
+.profile-facts dd {
+  text-align: right;
+}
+/* Плитки статистики: число й підпис по центру */
+.profile-stats li {
+  justify-items: center;
+  text-align: center;
+}
+/* Профіль фрилансера: поля зі світлою заливкою, чипи навичок, портфоліо */
+.account-panel .form-grid input,
+.account-panel .form-grid select,
+.account-panel .form-grid textarea,
+.account-panel .inline-form input,
+.security-card input {
+  background: var(--r-bg);
+}
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.skill-chips li {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--r-accent-soft);
+  color: var(--ds-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.account-panel > h3 {
+  margin: 28px 0 14px;
+  padding-top: 24px;
+  border-top: 1px solid var(--r-line);
+  font-size: 18px;
+}
+.portfolio-list .list-card {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  padding: 12px 0;
+}
+/* Небезпечна дія (видалити, завершити сеанс) — червоний текст на білій кнопці */
+.button.danger-outline {
+  color: var(--ds-danger);
+}
+.button.danger-outline:hover {
+  border-color: var(--ds-danger);
+  background: var(--palette-fff4f4);
+}
+/* «Безпека»: одна картка, секції розділені лініями */
+.security-card > h2 {
+  margin-bottom: 4px;
+  font-size: 20px;
+}
+.security-section {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--r-line);
+}
+.security-section:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.security-section h3 {
+  margin: 0 0 4px;
+  color: var(--r-ink);
+  font-size: 16px;
+}
+.security-section > .form-note {
+  margin: 0 0 14px;
+}
+.security-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.security-row .form-note {
+  margin: 0;
+}
+.security-row strong {
+  color: var(--r-ink);
+}
+.session-list li {
+  justify-content: flex-start;
+}
+.session-list li > div {
+  flex: 1;
+  min-width: 0;
+}
+.session-list .session-icon {
+  display: grid;
+  margin: 0;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--r-accent-soft);
+  color: var(--ds-primary);
+  font-size: 18px;
+}
+@media (max-width: 700px) {
+  .profile-hero {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+  .profile-info {
+    justify-items: center;
+    text-align: center;
+  }
+  .profile-facts div {
+    justify-content: center;
+  }
+  .profile-facts dt {
+    min-width: 0;
+  }
+  .profile-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* 9. Мікроанімації */
 @keyframes rise {
   from {
@@ -913,8 +1961,18 @@
 @media (prefers-reduced-motion: reduce) {
   .page-content > *,
   .project-progress,
-  .status-progress {
+  .status-progress,
+  .account-dropdown,
+  .ai-drawer {
     animation: none;
+  }
+  .ai-fab,
+  .ai-chip {
+    transition: none;
+  }
+  /* Назва пункту меню з'являється одразу, без плавного розгортання */
+  .topbar-nav .nav-label {
+    transition: none;
   }
 }
 
@@ -936,7 +1994,211 @@
   .topbar-nav.open {
     display: flex;
   }
-  .topbar-actions .role-label {
+  /* На телефоні в кнопці акаунта лише аватар і стрілка; ім'я — у самому меню */
+  .account-name {
     display: none;
   }
+}
+
+/* 11. Нижня панель навігації на телефоні (мобільний UI kit, розділ 04):
+   чотири головні розділи, активний — синій з крапкою над іконкою */
+.bottom-nav {
+  display: none;
+}
+@media (max-width: 600px) {
+  .bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--r-line);
+    background: var(--palette-ffffffbd);
+    backdrop-filter: blur(14px);
+  }
+  .bottom-nav a {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 8px 2px 4px;
+    color: var(--ds-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .bottom-nav .bi {
+    font-size: 18px;
+  }
+  .bottom-nav a.active {
+    color: var(--ds-primary);
+  }
+  .bottom-nav a.active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ds-primary);
+  }
+  /* Контент і кнопка AI не ховаються під панеллю */
+  .page-content {
+    padding-bottom: 96px;
+  }
+  .ai-fab {
+    bottom: 84px;
+  }
+}
+
+/* 12. Діаграми панелі адміністратора (components/Charts.tsx) */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+.chart-card {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--r-line);
+  border-radius: var(--r-radius);
+  background: var(--r-card);
+}
+.chart-card figcaption {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  color: var(--r-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.chart-card figcaption span {
+  color: var(--r-muted);
+  font-variant-numeric: tabular-nums;
+}
+.bar-chart {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bar-chart li {
+  display: grid;
+  grid-template-columns: minmax(90px, 34%) 1fr 36px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.bar-label {
+  color: var(--r-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--palette-eceef5);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: inherit;
+  transition: width 0.5s var(--r-ease);
+}
+.bar-value {
+  text-align: right;
+  color: var(--r-ink);
+  font-variant-numeric: tabular-nums;
+}
+/* Кольори рядів діаграм */
+.tone-primary.bar-fill,
+.tone-primary.column,
+.legend-dot.tone-primary {
+  background: var(--ds-primary);
+}
+.tone-accent.bar-fill,
+.tone-accent.column,
+.legend-dot.tone-accent {
+  background: var(--ds-accent);
+}
+.tone-success.bar-fill,
+.tone-success.column,
+.legend-dot.tone-success {
+  background: var(--palette-328267);
+}
+.tone-danger.bar-fill,
+.tone-danger.column,
+.legend-dot.tone-danger {
+  background: var(--ds-danger);
+}
+.tone-muted.bar-fill,
+.tone-muted.column,
+.legend-dot.tone-muted {
+  background: var(--ds-secondary);
+}
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin: -6px 0 12px;
+  color: var(--r-muted);
+  font-size: 12px;
+}
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+}
+.column-chart {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.column-chart li {
+  display: grid;
+  gap: 6px;
+}
+.columns {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: 130px;
+  border-bottom: 1px solid var(--r-line);
+}
+.column {
+  position: relative;
+  width: min(16px, 40%);
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s var(--r-ease);
+}
+.column em {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 2px;
+  color: var(--r-muted);
+  font-size: 11px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.column-label {
+  color: var(--r-muted);
+  font-size: 12px;
+  text-align: center;
 }

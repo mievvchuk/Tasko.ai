@@ -767,7 +767,79 @@ try {
         .set('Accept', 'application/json, text/event-stream')
         .send({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
       assert.equal(mcpResponse.status, 200, JSON.stringify(mcpResponse.body));
-      assert.equal(mcpResponse.body.result.tools.length, 5);
+      assert.equal(mcpResponse.body.result.tools.length, 14);
+      checks++;
+      // Матеріали до AI-чату: текст витягується, підробка відхиляється, без токена — 401
+      const material = await api
+        .post('/agent/attachments')
+        .set('Authorization', `Bearer ${freelancer.token}`)
+        .attach(
+          'files',
+          Buffer.from('Вимоги: лендінг і форма заявки'),
+          'ТЗ.txt',
+        );
+      assert.equal(material.status, 200, JSON.stringify(material.body));
+      assert.deepEqual(material.body, [
+        {
+          name: 'ТЗ.txt',
+          text: 'Вимоги: лендінг і форма заявки',
+          truncated: false,
+        },
+      ]);
+      const fakePdf = await api
+        .post('/agent/attachments')
+        .set('Authorization', `Bearer ${freelancer.token}`)
+        .attach('files', Buffer.from('<html>'), 'spec.pdf');
+      assert.equal(fakePdf.status, 400);
+      const anonymous = await api
+        .post('/agent/attachments')
+        .attach('files', Buffer.from('текст'), 'a.txt');
+      assert.equal(anonymous.status, 401);
+      checks++;
+      // Фото профілю: у БД лише посилання, файл віддається без токена, підробка не проходить
+      const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]);
+      const avatar = await api
+        .post('/profile/avatar')
+        .set('Authorization', `Bearer ${freelancer.token}`)
+        .attach('file', png, 'photo.png');
+      assert.equal(avatar.status, 201, JSON.stringify(avatar.body));
+      assert.match(avatar.body.avatarUrl, /^\/avatars\/[a-f0-9-]{36}\.png$/);
+      checks++;
+      const me = await call('get', '/auth/me', 200, freelancer.token);
+      assert.equal(me.avatarUrl, avatar.body.avatarUrl);
+      const photo = await api.get(avatar.body.avatarUrl);
+      assert.equal(photo.status, 200);
+      assert.equal(photo.headers['content-type'], 'image/png');
+      assert.equal(photo.headers['x-content-type-options'], 'nosniff');
+      checks++;
+      const fake = await api
+        .post('/profile/avatar')
+        .set('Authorization', `Bearer ${freelancer.token}`)
+        .attach('file', Buffer.from('<svg onload=alert(1)>'), 'photo.png');
+      assert.equal(fake.status, 400);
+      checks++;
+      await call('get', '/avatars/..%2F..%2F.env', 404);
+      const renamed = await call(
+        'patch',
+        '/profile/account',
+        200,
+        freelancer.token,
+        {
+          name: '  Нове Імʼя  ',
+        },
+      );
+      assert.equal(renamed.name, 'Нове Імʼя');
+      await call('patch', '/profile/account', 400, freelancer.token, {
+        name: ' ',
+      });
+      const removed = await call(
+        'delete',
+        '/profile/avatar',
+        200,
+        freelancer.token,
+      );
+      assert.equal(removed.avatarUrl, null);
+      assert.equal((await api.get(avatar.body.avatarUrl)).status, 404);
       checks++;
       const otherProject = await call(
         'post',
