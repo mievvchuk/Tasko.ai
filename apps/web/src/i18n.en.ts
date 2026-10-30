@@ -736,6 +736,68 @@ export const enText: Record<string, string> = {
   "Без ризику": "No risk",
   "Дедлайн наближається": "Deadline approaching",
 
+  // Вітальна сторінка
+  "Навігація вітальної сторінки": "Welcome page navigation",
+  Можливості: "Features",
+  "Як це працює": "How it works",
+  "Фриланс-проєкти з AI-помічницею": "Freelance projects with an AI assistant",
+  "Від ідеї до прийнятого результату — в одному місці":
+    "From idea to accepted result — all in one place",
+  "Tasko.ai поєднує біржу проєктів, канбан-дошку, етапи й перевірку робіт. А Ада, AI-помічниця, допомагає не пропустити жодного дедлайну.":
+    "Tasko.ai brings together a project marketplace, a kanban board, milestones and work reviews. And Ada, the AI assistant, helps you never miss a deadline.",
+  "Почати безкоштовно": "Get started for free",
+  Увійти: "Sign in",
+  "«Кошик і оплата» здається через 2 дні. Почніть з нього.":
+    "“Cart and payment” is due in 2 days. Start with it.",
+  "Макет головної": "Home page mockup",
+  "Тексти сторінок": "Page copy",
+  "Кошик і оплата": "Cart and payment",
+  Прототип: "Prototype",
+  Логотип: "Logo",
+  "Усе для роботи над проєктом": "Everything to run a project",
+  "Від публікації задачі до відгуку — без таблиць і чатів збоку.":
+    "From posting a task to the review — no side spreadsheets or chats.",
+  "Проєкти й канбан-дошка": "Projects and kanban board",
+  "Завдання, пріоритети й дедлайни. Перетягуйте картки між стовпцями й бачте прогрес кожного проєкту.":
+    "Tasks, priorities and deadlines. Drag cards between columns and see each project's progress.",
+  "Біржа й заявки": "Marketplace and applications",
+  "Клієнт публікує проєкт, фрилансери пропонують бюджет і строк, а клієнт обирає найкращу заявку.":
+    "The client posts a project, freelancers propose a budget and timeline, and the client picks the best offer.",
+  "Ада — AI-помічниця": "Ada, the AI assistant",
+  "Підкаже, що робити першим, знайде ризики й дедлайни та відповість на питання про ваші проєкти.":
+    "Tells you what to do first, spots risks and deadlines, and answers questions about your projects.",
+  "З опису проєкту AI пропонує етапи, завдання й критерії приймання. Ви лише перевіряєте й зберігаєте.":
+    "From the project description, AI suggests milestones, tasks and acceptance criteria. You just review and save.",
+  "Етапи та результати": "Milestones and results",
+  "Здача роботи з файлами, перевірка клієнтом, повернення на доопрацювання й відгуки після завершення.":
+    "Submitting work with files, client review, returns for rework and reviews after completion.",
+  "Аналітика й завантаженість": "Analytics and workload",
+  "Хто з команди перевантажений, які завдання прострочені та як рухається робота по всій платформі.":
+    "Who on the team is overloaded, which tasks are overdue and how work is moving across the platform.",
+  "Опублікуйте проєкт": "Post a project",
+  "Опишіть задачу, бюджет і дедлайн — проєкт з’явиться на біржі.":
+    "Describe the task, budget and deadline — the project appears on the marketplace.",
+  "Оберіть виконавця": "Choose a freelancer",
+  "Порівняйте заявки, рейтинг і досвід фрилансерів або попросіть AI допомогти.":
+    "Compare applications, ratings and experience, or ask AI to help.",
+  "Прийміть результат": "Accept the result",
+  "Стежте за прогресом, перевіряйте роботу й залиште відгук після завершення.":
+    "Track progress, review the work and leave a review when it's done.",
+  "Для клієнтів": "For clients",
+  "Публікація проєктів і вибір виконавця":
+    "Post projects and choose a freelancer",
+  "Канбан, етапи й умовна оплата": "Kanban, milestones and conditional payment",
+  "Перевірка результатів і відгуки": "Result reviews and feedback",
+  "Для фрилансерів": "For freelancers",
+  "Біржа відкритих проєктів і заявки":
+    "Open project marketplace and applications",
+  "Профіль із навичками й портфоліо": "Profile with skills and portfolio",
+  "Ада підкаже пріоритети на день": "Ada suggests your priorities for the day",
+  "Готові спробувати?": "Ready to try it?",
+  "Створіть акаунт клієнта або фрилансера — це займе хвилину.":
+    "Create a client or freelancer account — it takes a minute.",
+  "Створити акаунт": "Create account",
+
   // Статуси, ролі, пріоритети (types.ts)
   "Очікує рішення": "Pending",
   Прийнято: "Accepted",
