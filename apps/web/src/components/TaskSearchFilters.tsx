@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import type { ProjectMember } from "../types";
 
+import { useLanguage } from "../i18n";
 export function TaskSearchFilters({
   search,
   assigneeId,
@@ -14,6 +15,7 @@ export function TaskSearchFilters({
   members: ProjectMember[];
   onChange: (name: string, value: string) => void;
 }) {
+  const { tr } = useLanguage();
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -23,7 +25,7 @@ export function TaskSearchFilters({
   return (
     <>
       <form className="task-search" onSubmit={submit}>
-        <label htmlFor="task-search">Пошук за назвою</label>
+        <label htmlFor="task-search">{tr("Пошук за назвою")}</label>
         <div>
           <input
             key={search}
@@ -32,24 +34,24 @@ export function TaskSearchFilters({
             type="search"
             maxLength={200}
             defaultValue={search}
-            placeholder="Введіть частину назви"
+            placeholder={tr("Введіть частину назви")}
           />
           <button className="button secondary" type="submit">
-            Знайти
+            {tr("Знайти")}
           </button>
         </div>
       </form>
       <div className="filter-field">
-        <label htmlFor="task-assignee-filter">Виконавець</label>
+        <label htmlFor="task-assignee-filter">{tr("Виконавець")}</label>
         <select
           id="task-assignee-filter"
           value={assigneeId}
           onChange={(event) => onChange("assigneeId", event.target.value)}
         >
-          <option value="">Усі виконавці</option>
+          <option value="">{tr("Усі виконавці")}</option>
           {members.map((member) => (
             <option key={member.userId} value={member.userId}>
-              {member.user?.name || "Учасник недоступний"}
+              {member.user?.name || tr("Учасник недоступний")}
             </option>
           ))}
         </select>
@@ -63,7 +65,8 @@ export function TaskSearchFilters({
             onChange("overdue", event.target.checked ? "true" : "")
           }
         />
-        Лише прострочені
+
+        {tr("Лише прострочені")}
       </label>
     </>
   );

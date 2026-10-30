@@ -8,9 +8,11 @@ import { ProjectsTable } from "../components/ProjectsTable";
 import { projectStatusNames } from "../types";
 import type { Project } from "../types";
 
+import { useLanguage } from "../i18n";
 const pageSize = 10;
 
 export function ProjectsPage() {
+  const { tr } = useLanguage();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
@@ -69,20 +71,21 @@ export function ProjectsPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / ПРОЄКТИ</span>
           <h1>
             {user?.role === "ADMIN"
-              ? "Проєкти"
+              ? tr("Проєкти")
               : user?.role === "FREELANCER"
-                ? "Робочі проєкти"
-                : "Мої проєкти"}
+                ? tr("Робочі проєкти")
+                : tr("Мої проєкти")}
           </h1>
-          <p>Доступні вам проєкти, їхній стан і прогрес виконання.</p>
+          <p>{tr("Доступні вам проєкти, їхній стан і прогрес виконання.")}</p>
         </div>
         <div className="page-actions">
           {user?.role === "CLIENT" && (
             <Link className="button primary" to="/projects/new">
-              Створити проєкт
+              <i className="bi bi-plus-lg" aria-hidden="true"></i>
+
+              {tr("Створити проєкт")}
             </Link>
           )}
           <button
@@ -90,7 +93,9 @@ export function ProjectsPage() {
             onClick={refresh}
             disabled={loading}
           >
-            Оновити дані <span aria-hidden="true">↻</span>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+
+            {tr("Оновити дані")}
           </button>
         </div>
       </div>
@@ -100,20 +105,20 @@ export function ProjectsPage() {
       >
         <div className="panel-heading project-toolbar">
           <div>
-            <h2 id="projects-title">Список проєктів</h2>
-            <p>Від нових до раніше створених</p>
+            <h2 id="projects-title">{tr("Список проєктів")}</h2>
+            <p>{tr("Від нових до раніше створених")}</p>
           </div>
           <div className="filter-field">
-            <label htmlFor="project-status">Статус проєкту</label>
+            <label htmlFor="project-status">{tr("Статус проєкту")}</label>
             <select
               id="project-status"
               value={status}
               onChange={(event) => changeStatus(event.target.value)}
             >
-              <option value="">Усі статуси</option>
+              <option value="">{tr("Усі статуси")}</option>
               {Object.entries(projectStatusNames).map(([value, label]) => (
                 <option key={value} value={value}>
-                  {label}
+                  {tr(label)}
                 </option>
               ))}
             </select>
@@ -122,7 +127,8 @@ export function ProjectsPage() {
         {loading && (
           <div className="page-loading" role="status">
             <span className="loader" />
-            Завантажуємо проєкти…
+
+            {tr("Завантажуємо проєкти…")}
           </div>
         )}
         {!loading && error && <LoadError message={error} onRetry={refresh} />}
@@ -132,28 +138,30 @@ export function ProjectsPage() {
               <ProjectsTable projects={projects} />
             ) : (
               <div className="empty-state">
-                <span className="empty-symbol" aria-hidden="true">
-                  ▦
-                </span>
-                <h3>Проєктів не знайдено</h3>
+                <i className="bi bi-inbox empty-symbol" aria-hidden="true"></i>
+                <h3>{tr("Проєктів не знайдено")}</h3>
                 <p>
                   {user?.role === "FREELANCER"
-                    ? "Тут відображатимуться проєкти, до яких вас додасть клієнт."
-                    : "На цій сторінці немає доступних проєктів із вибраним статусом."}
+                    ? tr(
+                        "Тут відображатимуться проєкти, до яких вас додасть клієнт.",
+                      )
+                    : tr(
+                        "На цій сторінці немає доступних проєктів із вибраним статусом.",
+                      )}
                 </p>
                 {status && (
                   <button
                     className="button secondary"
                     onClick={() => changeStatus("")}
                   >
-                    Скинути фільтр
+                    {tr("Скинути фільтр")}
                   </button>
                 )}
               </div>
             )}
-            <nav className="pagination" aria-label="Сторінки проєктів">
+            <nav className="pagination" aria-label={tr("Сторінки проєктів")}>
               <span>
-                Сторінка {page} · Показано: {projects.length}
+                {tr("Сторінка")} {page} {tr("· Показано:")} {projects.length}
               </span>
               <div>
                 <button
@@ -161,14 +169,14 @@ export function ProjectsPage() {
                   disabled={page === 1}
                   onClick={() => changePage(page - 1)}
                 >
-                  ← Попередня
+                  {tr("← Попередня")}
                 </button>
                 <button
                   className="button secondary"
                   disabled={projects.length < pageSize || page === 10000}
                   onClick={() => changePage(page + 1)}
                 >
-                  Наступна →
+                  {tr("Наступна →")}
                 </button>
               </div>
             </nav>

@@ -30,26 +30,16 @@ export function RegisterPage() {
     }
     setSubmitting(true);
     try {
-      const result = await request<{
-        requiresEmailVerification?: boolean;
-        emailSent?: boolean;
-      }>("/auth/register", {
+      await request("/auth/register", {
         method: "POST",
         body: { name: name.trim(), email: email.trim(), password, role },
         auth: false,
         timeoutMs: 45000,
       });
-      await navigate(
-        result.requiresEmailVerification ? "/verify-email" : "/login",
-        {
-          replace: true,
-          state: {
-            registered: true,
-            email: email.trim(),
-            emailSent: result.emailSent,
-          },
-        },
-      );
+      await navigate("/login", {
+        replace: true,
+        state: { registered: true, email: email.trim() },
+      });
     } catch (error) {
       setError(errorMessage(error));
     } finally {

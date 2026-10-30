@@ -1,10 +1,13 @@
 import { useParams } from "react-router";
 import { ResourceState } from "../components/ResourceState";
+import { UserAvatar } from "../components/UserAvatar";
 import { formatDate } from "../format";
 import type { FreelancerProfile } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
 export function FreelancerProfilePage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { data, error, loading, refresh } = useApi<FreelancerProfile>(
     id ? `/freelancers/${id}/profile` : null,
@@ -12,16 +15,22 @@ export function FreelancerProfilePage() {
   return (
     <>
       <button className="link-button breadcrumb" onClick={() => history.back()}>
-        ← Назад
+        {tr("← Назад")}
       </button>
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && data && (
         <>
           <div className="page-heading">
-            <span className="eyebrow">TASKO.AI / ФРИЛАНСЕР</span>
-            <h1>{data.name}</h1>
-            <p>Профіль виконавця та відгуки клієнтів.</p>
-            <p>{data.profile.bio || "Фрилансер ще не додав опис."}</p>
+            <div className="person-heading">
+              <UserAvatar
+                name={data.name}
+                avatarUrl={data.avatarUrl}
+                size="xl"
+              />
+              <h1>{data.name}</h1>
+            </div>
+            <p>{tr("Профіль виконавця та відгуки клієнтів.")}</p>
+            <p>{data.profile.bio || tr("Фрилансер ще не додав опис.")}</p>
             <p className="skill-list">
               {data.skills.map((skill) => (
                 <span className="badge" key={skill.id}>
@@ -33,31 +42,31 @@ export function FreelancerProfilePage() {
           <section className="profile-summary data-panel">
             <div>
               <strong>{data.averageRating ?? "—"}</strong>
-              <span>Середній рейтинг із 5</span>
+              <span>{tr("Середній рейтинг із 5")}</span>
             </div>
             <div>
               <strong>{data.completedProjects}</strong>
-              <span>Завершено проєктів</span>
+              <span>{tr("Завершено проєктів")}</span>
             </div>
             <div>
               <strong>{data.averageCompletionDays ?? "—"}</strong>
-              <span>Середній строк у днях</span>
+              <span>{tr("Середній строк у днях")}</span>
             </div>
             <div>
               <strong>{data.reviewCount}</strong>
-              <span>Відгуків</span>
+              <span>{tr("Відгуків")}</span>
             </div>
             <div>
               <strong>
                 {data.profile.hourlyRate
-                  ? `${data.profile.hourlyRate} грн`
+                  ? tr("{0} грн", data.profile.hourlyRate)
                   : "—"}
               </strong>
-              <span>Ставка за годину</span>
+              <span>{tr("Ставка за годину")}</span>
             </div>
             <div>
               <strong>{data.activeWorkload}</strong>
-              <span>Активних завдань</span>
+              <span>{tr("Активних завдань")}</span>
             </div>
             <div>
               <strong>
@@ -65,12 +74,12 @@ export function FreelancerProfilePage() {
                   ? `${data.onTimePercentage}%`
                   : "—"}
               </strong>
-              <span>Виконано вчасно</span>
+              <span>{tr("Виконано вчасно")}</span>
             </div>
           </section>
           <section className="data-panel projects-panel">
             <div className="panel-heading">
-              <h2>Портфоліо</h2>
+              <h2>{tr("Портфоліо")}</h2>
             </div>
             <div className="simple-list">
               {data.portfolio.map((item) => (
@@ -86,13 +95,13 @@ export function FreelancerProfilePage() {
             </div>
             {!data.portfolio.length && (
               <div className="empty-state">
-                <p>Робіт у портфоліо ще немає.</p>
+                <p>{tr("Робіт у портфоліо ще немає.")}</p>
               </div>
             )}
           </section>
           <section className="data-panel projects-panel">
             <div className="panel-heading">
-              <h2>Відгуки клієнтів</h2>
+              <h2>{tr("Відгуки клієнтів")}</h2>
             </div>
             {data.reviews.length ? (
               <ul className="review-list">
@@ -103,11 +112,11 @@ export function FreelancerProfilePage() {
                         {"★".repeat(review.rating)}
                         {"☆".repeat(5 - review.rating)}
                       </strong>
-                      <span>{review.client?.name || "Клієнт"}</span>
+                      <span>{review.client?.name || tr("Клієнт")}</span>
                     </div>
-                    <p>{review.comment || "Клієнт не додав коментар."}</p>
+                    <p>{review.comment || tr("Клієнт не додав коментар.")}</p>
                     <small>
-                      {review.project?.title || "Завершений проєкт"} ·{" "}
+                      {review.project?.title || tr("Завершений проєкт")} ·{" "}
                       {formatDate(review.createdAt)}
                     </small>
                   </li>
@@ -115,8 +124,8 @@ export function FreelancerProfilePage() {
               </ul>
             ) : (
               <div className="empty-state">
-                <h3>Відгуків ще немає</h3>
-                <p>Перший відгук з’явиться після завершення проєкту.</p>
+                <h3>{tr("Відгуків ще немає")}</h3>
+                <p>{tr("Перший відгук з’явиться після завершення проєкту.")}</p>
               </div>
             )}
           </section>

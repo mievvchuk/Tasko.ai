@@ -7,7 +7,10 @@ import { applicationStatusNames } from "../types";
 import type { ProjectApplication } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
+import { uiLocale } from "../i18n.en";
 export function ProjectApplicationsPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
@@ -52,13 +55,14 @@ export function ProjectApplicationsPage() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ВІДГУКИ НА ПРОЄКТ</span>
-        <h1>Заявки фрилансерів</h1>
+        <h1>{tr("Заявки фрилансерів")}</h1>
         <p>
-          Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.
+          {tr(
+            "Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.",
+          )}
         </p>
       </div>
       <button
@@ -66,7 +70,7 @@ export function ProjectApplicationsPage() {
         disabled={ranking || !data?.length}
         onClick={() => void rank()}
       >
-        {ranking ? "AI аналізує…" : "Порівняти заявки через AI"}
+        {ranking ? tr("AI аналізує…") : tr("Порівняти заявки через AI")}
       </button>
       {actionError && <p className="form-error">{actionError}</p>}
       <ResourceState loading={loading} error={error} onRetry={refresh} />
@@ -82,54 +86,62 @@ export function ProjectApplicationsPage() {
                     <span
                       className={`project-status status-${application.status}`}
                     >
-                      {applicationStatusNames[application.status]}
+                      {tr(applicationStatusNames[application.status])}
                     </span>
                   </div>
                   <Link to={`/freelancers/${application.freelancerId}`}>
-                    Переглянути профіль
+                    {tr("Переглянути профіль")}
                   </Link>
                 </div>
                 <p>{application.message}</p>
                 {application.aiScore !== null && (
                   <p className="ai-ranking">
-                    <strong>AI-оцінка: {application.aiScore}/100</strong>
+                    <strong>
+                      {tr("AI-оцінка:")} {application.aiScore}/100
+                    </strong>
                     <br />
                     {application.aiReason}
                   </p>
                 )}
                 <dl className="marketplace-facts application-stats">
                   <div>
-                    <dt>Запропонований бюджет</dt>
+                    <dt>{tr("Запропонований бюджет")}</dt>
                     <dd>
-                      {application.proposedBudget.toLocaleString("uk-UA")} грн
+                      {application.proposedBudget.toLocaleString(uiLocale())}{" "}
+                      {tr("грн")}
                     </dd>
                   </div>
                   <div>
-                    <dt>Строк</dt>
-                    <dd>{application.proposedDays} днів</dd>
+                    <dt>{tr("Строк")}</dt>
+                    <dd>
+                      {application.proposedDays} {tr("днів")}
+                    </dd>
                   </div>
                   <div>
-                    <dt>Рейтинг</dt>
+                    <dt>{tr("Рейтинг")}</dt>
                     <dd>
                       {application.freelancer.averageRating
                         ? `${application.freelancer.averageRating} / 5`
-                        : "Ще немає"}
+                        : tr("Ще немає")}
                     </dd>
                   </div>
                   <div>
-                    <dt>Завершено проєктів</dt>
+                    <dt>{tr("Завершено проєктів")}</dt>
                     <dd>{application.freelancer.completedProjects}</dd>
                   </div>
                   <div>
-                    <dt>Середній строк</dt>
+                    <dt>{tr("Середній строк")}</dt>
                     <dd>
                       {application.freelancer.averageCompletionDays
-                        ? `${application.freelancer.averageCompletionDays} днів`
-                        : "Ще немає даних"}
+                        ? tr(
+                            "{0} днів",
+                            application.freelancer.averageCompletionDays,
+                          )
+                        : tr("Ще немає даних")}
                     </dd>
                   </div>
                   <div>
-                    <dt>Заявка надіслана</dt>
+                    <dt>{tr("Заявка надіслана")}</dt>
                     <dd>{formatDate(application.createdAt, true)}</dd>
                   </div>
                 </dl>
@@ -140,17 +152,19 @@ export function ProjectApplicationsPage() {
                     onClick={() => void accept(application.id)}
                   >
                     {acceptingId === application.id
-                      ? "Обираємо…"
-                      : "Обрати виконавця"}
+                      ? tr("Обираємо…")
+                      : tr("Обрати виконавця")}
                   </button>
                 )}
               </article>
             ))}
           {!data?.length && (
             <div className="empty-state data-panel">
-              <h3>Заявок ще немає</h3>
+              <h3>{tr("Заявок ще немає")}</h3>
               <p>
-                Фрилансери побачать проєкт на біржі та зможуть відгукнутися.
+                {tr(
+                  "Фрилансери побачать проєкт на біржі та зможуть відгукнутися.",
+                )}
               </p>
             </div>
           )}

@@ -82,6 +82,13 @@ export class AnalyticsService {
   }
   async deadlines(user: CurrentUser) {
     const tasks = await this.visibleTasks(user);
+    // Назва проєкту поруч з ID — щоб AI-агент і UI могли показати її людині
+    const titles = new Map(
+      (await this.visibleProjects(user)).map((project) => [
+        project.id,
+        project.title,
+      ]),
+    );
     return tasks
       .filter((task) => task.deadline && task.status !== 'DONE')
       .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())
@@ -89,6 +96,7 @@ export class AnalyticsService {
       .map((task) => ({
         id: task.id,
         projectId: task.projectId,
+        projectTitle: titles.get(task.projectId) ?? null,
         title: task.title,
         deadline: task.deadline,
         status: task.status,

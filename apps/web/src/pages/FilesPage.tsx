@@ -5,7 +5,9 @@ import { FileDownload, FileUpload } from "../components/FileActions";
 import { Pagination, ResourceState } from "../components/ResourceState";
 import type { FileAttachment, Project } from "../types";
 
+import { useLanguage } from "../i18n";
 export function FilesPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
@@ -25,10 +27,10 @@ export function FilesPage() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading">
-        <h1>Файли проєкту</h1>
+        <h1>{tr("Файли проєкту")}</h1>
         <p>{project.data.title}</p>
       </div>
       <section className="data-panel padded">
@@ -43,13 +45,15 @@ export function FilesPage() {
         )}
         {closed && (
           <p className="form-note">
-            Проєкт закрито. Файли доступні для завантаження.
+            {tr("Проєкт закрито. Файли доступні для завантаження.")}
           </p>
         )}
         <div className="panel-heading">
-          <h2>Прикріплені файли</h2>
+          <h2>{tr("Прикріплені файли")}</h2>
           <button className="button secondary" onClick={files.refresh}>
-            Оновити
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+
+            {tr("Оновити")}
           </button>
         </div>
         <ResourceState
@@ -60,7 +64,9 @@ export function FilesPage() {
         {files.data && (
           <>
             {!files.data.length && (
-              <p className="empty-state">На цій сторінці файлів немає.</p>
+              <p className="empty-state">
+                {tr("На цій сторінці файлів немає.")}
+              </p>
             )}
             <ul className="record-list">
               {files.data.map((file) => (
@@ -68,7 +74,8 @@ export function FilesPage() {
                   <FileDownload file={file} />
                   <p className="form-note">
                     {formatDate(file.uploadedAt || null, true)}
-                    {file.submissionId && " · Прикріплено до результату роботи"}
+                    {file.submissionId &&
+                      tr(" · Прикріплено до результату роботи")}
                   </p>
                 </li>
               ))}

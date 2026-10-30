@@ -9,6 +9,6 @@ import { MilestonesService } from './milestones.service.js';
   imports: [AuthModule],
   controllers: [ProjectsController, MilestonesController],
   providers: [ProjectsService, MilestonesService],
-  exports: [ProjectsService],
+  exports: [ProjectsService, MilestonesService],
 })
 export class ProjectsModule {}

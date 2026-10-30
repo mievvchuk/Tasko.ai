@@ -6,6 +6,9 @@ export interface User {
   email: string;
   role: UserRole;
   twoFactorEnabled: boolean;
+  // Посилання на фото профілю відносно API (напр. /avatars/<uuid>.jpg)
+  avatarUrl?: string | null;
+  createdAt?: string;
 }
 
 export interface LoginResponse {
@@ -283,6 +286,10 @@ export interface AdminReport {
   tasks: number;
   overdueTasks: number;
   tasksByStatus: Record<TaskStatus, number>;
+  usersByRole: Record<UserRole, number>;
+  projectsByStatus: Record<ProjectStatus, number>;
+  // month — «2026-10»
+  growth: { month: string; users: number; projects: number }[];
 }
 
 export const priorityNames = {

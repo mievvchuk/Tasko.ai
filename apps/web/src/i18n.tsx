@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { translate } from "./i18n.en";
+import type { Language } from "./i18n.en";
 
 const uk = {
   language: "EN",
@@ -22,7 +24,6 @@ const uk = {
   loggingIn: "Входимо…",
   signIn: "Увійти",
   forgotPassword: "Забули пароль?",
-  verifyEmailLink: "Підтвердити пошту / надіслати лист повторно",
   noAccount: "Ще не маєте облікового запису?",
   createAccount: "Зареєструватися",
   registered: "Обліковий запис створено. Увійдіть, щоб розпочати роботу.",
@@ -51,10 +52,11 @@ const uk = {
   tasks: "Завдання",
   workload: "Завантаженість",
   messages: "Повідомлення",
-  agent: "AI-агент",
   administration: "Адміністрування",
   profile: "Профіль",
   logout: "Вийти з облікового запису",
+  accountMenu: "Меню облікового запису",
+  myProfile: "Мій профіль",
   myWorkspace: "Мій робочий простір",
   openNavigation: "Відкрити навігацію",
   closeNavigation: "Закрити навігацію",
@@ -104,7 +106,6 @@ const en: Record<keyof typeof uk, string> = {
   loggingIn: "Signing in…",
   signIn: "Sign in",
   forgotPassword: "Forgot your password?",
-  verifyEmailLink: "Verify email / resend verification",
   noAccount: "Do not have an account yet?",
   createAccount: "Register",
   registered: "Your account was created. Sign in to start working.",
@@ -133,10 +134,11 @@ const en: Record<keyof typeof uk, string> = {
   tasks: "Tasks",
   workload: "Workload",
   messages: "Messages",
-  agent: "AI agent",
   administration: "Administration",
   profile: "Profile",
   logout: "Sign out",
+  accountMenu: "Account menu",
+  myProfile: "My profile",
   myWorkspace: "My workspace",
   openNavigation: "Open navigation",
   closeNavigation: "Close navigation",
@@ -166,12 +168,13 @@ const en: Record<keyof typeof uk, string> = {
   missingResetToken: "The reset token is missing from the link.",
 };
 
-type Language = "uk" | "en";
 type TranslationKey = keyof typeof uk;
 
 interface LanguageContextValue {
   language: Language;
   t: (key: TranslationKey) => string;
+  // Переклад за українським текстом (як у gettext): tr("Сторінка {0}", page)
+  tr: (text: string, ...args: (string | number)[]) => string;
   toggleLanguage: () => void;
 }
 
@@ -186,8 +189,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  // Мову в <html lang> ставимо ще під час рендеру: з неї читають trNow() і
+  // formatDate() у дочірніх компонентах, які малюються одразу після цього
+  document.documentElement.lang = language;
   useEffect(() => {
-    document.documentElement.lang = language;
     try {
       localStorage.setItem("tasko.language", language);
     } catch {
@@ -201,6 +206,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       value={{
         language,
         t: (key) => dictionary[key],
+        tr: (text, ...args) => translate(language, text, args),
         toggleLanguage: () =>
           setLanguage((current) => (current === "uk" ? "en" : "uk")),
       }}

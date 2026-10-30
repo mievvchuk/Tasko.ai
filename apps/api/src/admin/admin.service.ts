@@ -8,6 +8,8 @@ import {
 import ExcelJS from 'exceljs';
 import pdfMake from 'pdfmake';
 import { fileURLToPath } from 'node:url';
+import { or } from '@prisma/orm-postgres/orm-client';
+import { projectStatuses } from '../projects/projects.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import type { UpdateUserDto, UserQueryDto } from './admin.dto.js';
@@ -25,6 +27,13 @@ export class AdminService {
     let query = this.prisma.client.orm.public.User;
     if (filters.role) query = query.where({ role: filters.role });
     if (filters.status) query = query.where({ status: filters.status });
+    if (filters.search?.trim()) {
+      // Символи LIKE у введеному тексті шукаємо буквально.
+      const search = `%${filters.search.trim().replace(/[\\%_]/g, '\\$&')}%`;
+      query = query.where((person) =>
+        or(person.name.ilike(search), person.email.ilike(search)),
+      );
+    }
     return query
       .select('id', 'name', 'email', 'role', 'status', 'createdAt')
       .orderBy((person) => person.createdAt.desc())
@@ -68,9 +77,12 @@ export class AdminService {
     const users = await this.prisma.client.orm.public.User.select(
       'role',
       'status',
+      'createdAt',
     ).all();
-    const projects =
-      await this.prisma.client.orm.public.Project.select('status').all();
+    const projects = await this.prisma.client.orm.public.Project.select(
+      'status',
+      'createdAt',
+    ).all();
     const tasks = await this.prisma.client.orm.public.Task.select(
       'status',
       'deadline',
@@ -96,6 +108,17 @@ export class AdminService {
           tasks.filter((task) => task.status === status).length,
         ]),
       ),
+      usersByRole: countBy(['CLIENT', 'FREELANCER', 'ADMIN'], users, 'role'),
+      projectsByStatus: countBy(projectStatuses, projects, 'status'),
+      // Нові користувачі й проєкти за останні 6 місяців (для діаграми)
+      growth: lastMonths(6).map((month) => ({
+        month,
+        users: users.filter((person) => monthOf(person.createdAt) === month)
+          .length,
+        projects: projects.filter(
+          (project) => monthOf(project.createdAt) === month,
+        ).length,
+      })),
     };
   }
 
@@ -215,10 +238,39 @@ export class AdminService {
       },
       { label: 'Завдання: на перевірці', value: report.tasksByStatus.REVIEW },
       { label: 'Завдання: завершено', value: report.tasksByStatus.DONE },
+      { label: 'Замовники', value: report.usersByRole.CLIENT },
+      { label: 'Фрилансери', value: report.usersByRole.FREELANCER },
+      { label: 'Адміністратори', value: report.usersByRole.ADMIN },
     ];
   }
 
   private csvValue(value: string) {
     return `"${value.replaceAll('"', '""')}"`;
   }
+}
+
+function countBy<K extends string, T extends Record<F, unknown>, F extends string>(
+  keys: readonly K[],
+  rows: T[],
+  field: F,
+) {
+  return Object.fromEntries(
+    keys.map((key) => [key, rows.filter((row) => row[field] === key).length]),
+  ) as Record<K, number>;
+}
+
+// «2026-10» — місяць дати за UTC
+function monthOf(date: Date) {
+  return date.toISOString().slice(0, 7);
+}
+
+// Останні n місяців, від найстарішого до поточного
+export function lastMonths(n: number, now = new Date()) {
+  return Array.from({ length: n }, (_, index) =>
+    monthOf(
+      new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (n - 1 - index), 1),
+      ),
+    ),
+  );
 }

@@ -79,13 +79,6 @@ export class ResetPasswordDto {
   newPassword: string;
 }
 
-export class VerifyEmailDto {
-  @ApiProperty()
-  @IsString()
-  @Matches(/^[A-Za-z0-9_-]{43}$/)
-  token: string;
-}
-
 export class RegisterDto extends LoginDto {
   @ApiProperty({ example: 'Іван', minLength: 2, maxLength: 100 })
   @Transform(({ value }: { value: unknown }) =>

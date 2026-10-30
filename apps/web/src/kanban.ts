@@ -15,3 +15,9 @@ export function groupTasksByStatus(tasks: Task[]) {
     ]),
   ) as Record<TaskStatus, Task[]>;
 }
+
+// Прострочене — це незавершене завдання, дедлайн якого вже минув.
+export function isOverdue(task: Task) {
+  if (!task.deadline || task.status === "DONE") return false;
+  return new Date(task.deadline) < new Date();
+}

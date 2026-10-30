@@ -4,7 +4,9 @@ import { formatDate } from "../format";
 import type { Notification } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
 export function NotificationsPage() {
+  const { tr } = useLanguage();
   const { data, error, loading, refresh } = useApi<{
     items: Notification[];
     unreadCount: number;
@@ -24,12 +26,11 @@ export function NotificationsPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / СПОВІЩЕННЯ</span>
-          <h1>Сповіщення</h1>
-          <p>Події ваших проєктів і завдань.</p>
+          <h1>{tr("Сповіщення")}</h1>
+          <p>{tr("Події ваших проєктів і завдань.")}</p>
         </div>
         <button className="button secondary" onClick={() => void mark()}>
-          Прочитати всі
+          {tr("Прочитати всі")}
         </button>
       </div>
       <ResourceState loading={loading} error={error} onRetry={refresh} />
@@ -50,7 +51,7 @@ export function NotificationsPage() {
                     className="button secondary"
                     onClick={() => void mark(item.id)}
                   >
-                    Позначити прочитаним
+                    {tr("Позначити прочитаним")}
                   </button>
                 )}
               </article>
@@ -58,7 +59,7 @@ export function NotificationsPage() {
           </div>
           {!data?.items.length && (
             <div className="empty-state">
-              <h3>Сповіщень немає</h3>
+              <h3>{tr("Сповіщень немає")}</h3>
             </div>
           )}
         </section>

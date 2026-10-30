@@ -413,3 +413,15 @@ production-збірка та перевірка Prettier змінених фай
   Gmail, пароль застосунку та `EMAIL_VERIFICATION_REQUIRED=true`, потім
   перезапустити API. Готовий зразок є в README та `.env.example`.
 
+
+## Вилучення підтвердження пошти — 30.10.2026
+
+- За рішенням викладача підтвердження пошти прибрано: після реєстрації вхід
+  доступний одразу. Видалено `EmailVerificationService`, маршрути
+  `/auth/verify-email` і `/auth/resend-verification`, лист підтвердження,
+  параметр `EMAIL_VERIFICATION_REQUIRED`, сторінку `/verify-email` і посилання
+  на неї на сторінці входу.
+- Акаунти, створені раніше без підтвердження (`emailVerifiedAt=null`), тепер
+  також можуть увійти. Поле `emailVerifiedAt` і таблицю
+  `EmailVerificationToken` у БД залишено, щоб не потрібна була нова міграція.
+- SMTP використовується лише для листів відновлення пароля.
