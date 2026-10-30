@@ -1,19 +1,6 @@
-export type AuthEmailKind = 'verification' | 'reset';
+export type AuthEmailKind = 'reset';
 
 const content = {
-  verification: {
-    subject: 'Підтвердження пошти Tasko.ai',
-    preheader: 'Ще один крок — підтвердьте свою електронну пошту.',
-    label: 'ПІДТВЕРДЖЕННЯ ПОШТИ',
-    title: 'Вітаємо в Tasko.ai!',
-    description:
-      'Підтвердьте свою електронну пошту, щоб увійти до облікового запису та почати роботу з проєктами.',
-    button: 'Підтвердити пошту',
-    action: 'Щоб підтвердити електронну пошту Tasko.ai, відкрийте посилання',
-    expiry: '24 години',
-    notice:
-      'Якщо ви не реєструвалися в Tasko.ai, просто проігноруйте цей лист.',
-  },
   reset: {
     subject: 'Відновлення пароля Tasko.ai',
     preheader: 'Встановіть новий пароль для свого облікового запису.',

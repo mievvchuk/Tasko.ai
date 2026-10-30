@@ -23,22 +23,16 @@ import {
   RegisterDto,
   ResetPasswordDto,
   TwoFactorCodeDto,
-  VerifyEmailDto,
 } from './auth.dto.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { Actor } from './current-user.decorator.js';
 import type { CurrentUser } from '../users/users.service.js';
-import { EmailVerificationService } from './email-verification.service.js';
 import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    @Inject(AuthService) private readonly auth: AuthService,
-    @Inject(EmailVerificationService)
-    private readonly verification: EmailVerificationService,
-  ) {}
+  constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
   @Post('register')
   @UseGuards(AuthEmailRateLimitGuard)
@@ -60,23 +54,10 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @UseGuards(AuthEmailRateLimitGuard)
   @HttpCode(200)
   forgotPassword(@Body() data: ForgotPasswordDto) {
     return this.auth.forgotPassword(data.email);
-  }
-
-  @Post('verify-email')
-  @UseGuards(AuthEmailRateLimitGuard)
-  @HttpCode(200)
-  verifyEmail(@Body() data: VerifyEmailDto) {
-    return this.verification.verify(data.token);
-  }
-
-  @Post('resend-verification')
-  @UseGuards(AuthEmailRateLimitGuard)
-  @HttpCode(200)
-  resendVerification(@Body() data: ForgotPasswordDto) {
-    return this.auth.resendVerification(data.email);
   }
 
   @Post('reset-password')

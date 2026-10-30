@@ -14,7 +14,6 @@ import type { UsersService } from '../users/users.service.js';
 import { AuthService } from './auth.service.js';
 import { hashPassword } from './password.js';
 import type { MailService } from './mail.service.js';
-import type { EmailVerificationService } from './email-verification.service.js';
 
 describe('authentication', () => {
   const jwt = new JwtService({
@@ -59,14 +58,12 @@ describe('authentication', () => {
     webOrigin: 'http://localhost:5173',
   };
   const mail = { configured: vi.fn(() => false), sendReset: vi.fn() };
-  const verification = { issue: vi.fn() };
   const auth = new AuthService(
     users as unknown as UsersService,
     jwt,
     prisma as unknown as PrismaService,
     config,
     mail as unknown as MailService,
-    verification as unknown as EmailVerificationService,
   );
   const credentials = {
     email: 'client@example.com',
@@ -86,7 +83,6 @@ describe('authentication', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    config.emailVerificationRequired = false;
     mail.configured.mockReturnValue(false);
     sessionQuery.orderBy.mockReturnValue(sessionQuery);
     user = {
@@ -129,52 +125,11 @@ describe('authentication', () => {
     expect(users.create).not.toHaveBeenCalled();
   });
 
-  it('registers pending users and does not issue a session before email confirmation', async () => {
-    config.emailVerificationRequired = true;
-    mail.configured.mockReturnValue(true);
-    user.emailVerifiedAt = null;
-    users.findByEmail.mockResolvedValueOnce(null);
-    users.create.mockResolvedValueOnce(user);
-    const response = await auth.register({
-      ...credentials,
-      name: 'Client',
-      role: 'CLIENT',
+  it('signs in accounts registered before email confirmation was removed', async () => {
+    users.findByEmail.mockResolvedValueOnce({ ...user, emailVerifiedAt: null });
+    await expect(auth.login(credentials)).resolves.toMatchObject({
+      requiresTwoFactor: false,
     });
-    expect(response).toMatchObject({
-      requiresEmailVerification: true,
-      emailSent: true,
-    });
-    expect(users.create).toHaveBeenCalledWith(
-      expect.objectContaining({ emailVerifiedAt: null }),
-    );
-    users.findByEmail.mockResolvedValueOnce(user);
-    await expect(auth.login(credentials)).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
-    expect(db.AuthSession.create).not.toHaveBeenCalled();
-  });
-
-  it('preserves the pending account when email delivery fails and offers resend', async () => {
-    config.emailVerificationRequired = true;
-    mail.configured.mockReturnValue(true);
-    users.findByEmail.mockResolvedValueOnce(null);
-    users.create.mockResolvedValueOnce({ ...user, emailVerifiedAt: null });
-    verification.issue.mockRejectedValueOnce(new ServiceUnavailableException());
-    await expect(
-      auth.register({ ...credentials, name: 'Client', role: 'CLIENT' }),
-    ).resolves.toMatchObject({
-      requiresEmailVerification: true,
-      emailSent: false,
-    });
-  });
-
-  it('uses an indistinguishable resend response for missing and already confirmed accounts', async () => {
-    mail.configured.mockReturnValue(true);
-    users.findByEmail.mockResolvedValueOnce(null).mockResolvedValueOnce(user);
-    const absent = await auth.resendVerification('absent@example.com');
-    const confirmed = await auth.resendVerification(user.email);
-    expect(absent).toEqual(confirmed);
-    expect(verification.issue).not.toHaveBeenCalled();
   });
 
   it('handles a duplicate created concurrently', async () => {

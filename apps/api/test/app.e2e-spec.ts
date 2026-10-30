@@ -95,12 +95,12 @@ describe('API authorization (e2e)', () => {
   it('does not bypass the email rate limit with a differently cased URL', async () => {
     for (let attempt = 0; attempt < 10; attempt++) {
       await request(app.getHttpServer())
-        .post('/auth/resend-verification')
+        .post('/auth/forgot-password')
         .send({ email: 'user@example.com' })
         .expect(503);
     }
     await request(app.getHttpServer())
-      .post('/AUTH/Resend-Verification/')
+      .post('/AUTH/Forgot-Password/')
       .send({ email: 'user@example.com' })
       .expect(429);
   });

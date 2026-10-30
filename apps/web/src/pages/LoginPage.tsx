@@ -111,8 +111,6 @@ export function LoginPage() {
       </form>
       <p className="auth-switch">
         <Link to="/forgot-password">{t("forgotPassword")}</Link>
-        <br />
-        <Link to="/verify-email">{t("verifyEmailLink")}</Link>
       </p>
       <p className="auth-switch">
         {t("noAccount")} <Link to="/register">{t("createAccount")}</Link>

@@ -43,8 +43,6 @@ let app;
 let checks = 0;
 let createdProjectId;
 let storageCreated = false;
-let smtpTesting = false;
-const verificationEmails = [];
 
 try {
   await rawClient.connect();
@@ -79,7 +77,6 @@ try {
         .overrideProvider(APP_CONFIG)
         .useValue({
           ...configuration,
-          emailVerificationRequired: false,
           jwtSecret: 'integration-only-secret-'.repeat(3),
           ...(liveAi
             ? {}
@@ -93,10 +90,7 @@ try {
         .useValue(prisma)
         .overrideProvider(MailService)
         .useValue({
-          configured: () => smtpTesting,
-          sendVerification: async (email, token) => {
-            verificationEmails.push({ email, token });
-          },
+          configured: () => false,
           sendReset: async () => {},
         })
         .compile();
@@ -1029,61 +1023,18 @@ try {
       });
       await call('post', planningPath, 409, client.token, {});
 
-      // Exercise verification against real PostgreSQL with a local mail capture.
-      smtpTesting = true;
-      app.get(APP_CONFIG).emailVerificationRequired = true;
-      const verificationEmail = `verify-${runId}@example.com`;
-      const pendingUser = await call('post', '/auth/register', 201, null, {
-        name: 'Pending client',
-        email: verificationEmail,
+      // Пошту не підтверджуємо: новий акаунт може увійти одразу після реєстрації.
+      const newEmail = `new-${runId}@example.com`;
+      await call('post', '/auth/register', 201, null, {
+        name: 'New client',
+        email: newEmail,
         password,
         role: 'CLIENT',
       });
-      assert.equal(pendingUser.requiresEmailVerification, true);
-      assert.equal(verificationEmails.length, 1);
-      await call('post', '/auth/login', 403, null, {
-        email: verificationEmail,
-        password,
-      });
-      await call('post', '/auth/resend-verification', 200, null, {
-        email: verificationEmail,
-      });
-      assert.equal(
-        verificationEmails.length,
-        1,
-        'Cooldown prevents a second email',
-      );
-      const token = verificationEmails[0].token;
-      const storedTokens = await tx.orm.public.EmailVerificationToken.where({
-        userId: pendingUser.id,
-      }).all();
-      assert.notEqual(storedTokens[0].tokenHash, token);
-      await call('post', '/auth/verify-email', 400, null, { token: 'bad' });
-      await call('post', '/auth/verify-email', 200, null, { token });
-      await call('post', '/auth/verify-email', 400, null, { token });
       await call('post', '/auth/login', 200, null, {
-        email: verificationEmail,
+        email: newEmail,
         password,
       });
-      assert.ok(
-        (await tx.orm.public.User.where({ id: pendingUser.id }).first())
-          .emailVerifiedAt,
-      );
-      const missingResponse = await call(
-        'post',
-        '/auth/resend-verification',
-        200,
-        null,
-        { email: 'missing@example.com' },
-      );
-      const verifiedResponse = await call(
-        'post',
-        '/auth/resend-verification',
-        200,
-        null,
-        { email: verificationEmail },
-      );
-      assert.deepEqual(missingResponse, verifiedResponse);
 
       await call('post', '/auth/logout', 200, client.token);
       await call('get', '/auth/me', 401, client.token);

@@ -713,19 +713,6 @@ export const enText: Record<string, string> = {
   Відгук: "Feedback",
   "Зберегти рішення": "Save decision",
 
-  // Підтвердження пошти
-  "Підтвердження пошти": "Email confirmation",
-  "Натисніть кнопку, щоб підтвердити, що ця пошта належить вам.":
-    "Press the button to confirm this email belongs to you.",
-  "Відкрийте лист Tasko.ai та перейдіть за посиланням. Воно діє 24 години. Перевірте також папку «Спам».":
-    "Open the Tasko.ai email and follow the link. It's valid for 24 hours. Check your spam folder too.",
-  "Акаунт створено, але лист не вдалося надіслати. Спробуйте повторне надсилання нижче.":
-    "The account was created, but the email couldn't be sent. Try resending below.",
-  "Перевіряємо…": "Checking…",
-  "Підтвердити пошту": "Confirm email",
-  "Надіслати лист повторно": "Resend email",
-  "Перейти до входу": "Go to sign in",
-
   // Завантаженість
   "Завантаженість виконавців": "Freelancer workload",
   "Незавершені завдання, пріоритети та строки у доступних вам проєктах.":
