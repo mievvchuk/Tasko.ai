@@ -341,6 +341,13 @@
                   "kind": "scalar"
                 }
               },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "title": {
                 "nullable": false,
                 "type": {
@@ -395,6 +402,9 @@
                 },
                 "projectId": {
                   "column": "projectId"
+                },
+                "status": {
+                  "column": "status"
                 },
                 "title": {
                   "column": "title"
@@ -3600,6 +3610,15 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "IN_PROGRESS"
+                  },
+                  "nullable": false
+                },
                 "title": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -5900,7 +5919,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5d76149811f7c7a74dd59835f0bff27e565335afc1c6fd677386a7e87d67503f"
+    "storageHash": "36103268da77cf79b55af2416ac520b03e53b547b21674b363746ec60ad9374b"
   },
   "execution": {
     "executionHash": "b1f416eee504bbb2e59a30db119556ad237daeaeed853101e2e55c1da09d616f",

@@ -47,7 +47,7 @@ export class TaskStatusDto {
   status: 'TODO' | 'IN_PROGRESS';
   @ApiPropertyOptional({
     format: 'uuid',
-    description: 'Власна колонка канбану (лише для IN_PROGRESS)',
+    description: 'Власна колонка канбану з тим самим статусом',
   })
   @IsOptional()
   @IsUUID()
@@ -61,6 +61,13 @@ export class BoardColumnDto {
   @IsString()
   @Length(2, 40)
   title: string;
+  @ApiPropertyOptional({
+    enum: ['TODO', 'IN_PROGRESS'],
+    description: 'Етап колонки: «До виконання» (напр. Беклог) чи «У процесі»',
+  })
+  @IsOptional()
+  @IsIn(['TODO', 'IN_PROGRESS'])
+  status?: 'TODO' | 'IN_PROGRESS';
 }
 export class TaskQueryDto extends PageDto {
   @ApiPropertyOptional({

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { DragEvent, FormEvent } from "react";
+import { useRef, useState } from "react";
+import type { FormEvent, PointerEvent } from "react";
 import { Link, useParams } from "react-router";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
@@ -17,9 +17,23 @@ import {
 import { useApi } from "../useApi";
 
 import { useLanguage } from "../i18n";
-// Сервер дозволяє вручну перемикати лише ці два статуси (і власні колонки «У процесі»).
+// Сервер дозволяє вручну перемикати лише ці два статуси (і власні колонки цих етапів).
 // «На перевірці» — це передавання результату, а «Завершено» ставить клієнт.
 const movableStatuses: TaskStatus[] = ["TODO", "IN_PROGRESS"];
+
+// Картка, яку зараз тягнуть: звідки почали і скільки прокрутили з того часу
+interface Drag {
+  task: Task;
+  card: HTMLElement;
+  x: number;
+  y: number;
+  lastX: number;
+  lastY: number;
+  scrollLeft: number;
+  scrollY: number;
+  moved: boolean;
+  timer?: number;
+}
 
 export function ProjectBoardPage() {
   const { tr } = useLanguage();
@@ -35,15 +49,18 @@ export function ProjectBoardPage() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overLane, setOverLane] = useState<string | null>(null);
   const [newColumn, setNewColumn] = useState("");
+  const [newStage, setNewStage] = useState<BoardColumn["status"]>("TODO");
+  const boardRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<Drag | null>(null);
 
   const lanes = boardLanes(columns.data ?? []);
   const tasks = data ?? [];
   // Колонки додає й видаляє власник проєкту (або адміністратор)
   const isOwner = user?.role === "ADMIN" || project.data?.clientId === user?.id;
 
-  // Перетягувати можна лише своє завдання (або будь-яке — адміністратору)
+  // Пересувати картку може виконавець або власник проєкту
   function canMove(task: Task) {
-    const allowed = task.assigneeId === user?.id || user?.role === "ADMIN";
+    const allowed = task.assigneeId === user?.id || isOwner;
     return allowed && movableStatuses.includes(task.status);
   }
 
@@ -71,7 +88,7 @@ export function ProjectBoardPage() {
     return run(async () => {
       await request(`/projects/${id}/columns`, {
         method: "POST",
-        body: { title: newColumn },
+        body: { title: newColumn, status: newStage },
       });
       setNewColumn("");
       columns.refresh();
@@ -80,8 +97,9 @@ export function ProjectBoardPage() {
 
   function deleteColumn(lane: Lane) {
     const question = tr(
-      "Видалити колонку «{0}»? Її завдання повернуться в «У процесі».",
+      "Видалити колонку «{0}»? Її завдання повернуться в «{1}».",
       lane.title ?? "",
+      tr(taskStatusNames[lane.status]),
     );
     if (!confirm(question)) return;
     return run(async () => {
@@ -91,18 +109,103 @@ export function ProjectBoardPage() {
     });
   }
 
-  // Обробники drag-and-drop (вбудований HTML5 API, без бібліотек)
-  function handleDragOver(event: DragEvent, lane: Lane) {
-    if (!dragId || !movableStatuses.includes(lane.status)) return;
-    event.preventDefault(); // без цього браузер не дозволить «кинути» сюди
-    setOverLane(lane.key);
+  // Перетягування на Pointer Events: однаково працює з мишею і пальцем.
+  // Мишею тягнуть усю картку, на сенсорному екрані — за «ручку», щоб свайп прокручував дошку.
+  function laneAt(x: number, y: number) {
+    const key = document
+      .elementsFromPoint(x, y)
+      .find((element) => element instanceof HTMLElement && element.dataset.lane)
+      ?.getAttribute("data-lane");
+    return lanes.find((lane) => lane.key === key);
   }
-  function handleDrop(lane: Lane) {
-    const task = tasks.find((item) => item.id === dragId);
-    if (task && !tasksInLane([task], lane).length) void move(task, lane);
-    stopDragging();
+  function placeCard(drag: Drag) {
+    const board = boardRef.current;
+    const dx = drag.lastX - drag.x + (board?.scrollLeft ?? 0) - drag.scrollLeft;
+    const dy = drag.lastY - drag.y + window.scrollY - drag.scrollY;
+    drag.card.style.transform = `translate(${dx}px, ${dy}px) rotate(2deg)`;
+    const lane = laneAt(drag.lastX, drag.lastY);
+    setOverLane(lane && movableStatuses.includes(lane.status) ? lane.key : null);
   }
-  function stopDragging() {
+  // Біля краю екрана дошка і сторінка самі прокручуються, поки картку тримають
+  function autoScroll(drag: Drag) {
+    const board = boardRef.current;
+    const edge = 48;
+    let moved = false;
+    if (board) {
+      const { left, right } = board.getBoundingClientRect();
+      const step =
+        drag.lastX < left + edge ? -14 : drag.lastX > right - edge ? 14 : 0;
+      if (step) {
+        board.scrollLeft += step;
+        moved = true;
+      }
+    }
+    const bottom = window.innerHeight - 110; // над нижньою панеллю телефону
+    const stepY = drag.lastY < 90 ? -12 : drag.lastY > bottom ? 12 : 0;
+    if (stepY) {
+      window.scrollBy(0, stepY);
+      moved = true;
+    }
+    if (moved) placeCard(drag);
+  }
+  function startDrag(event: PointerEvent<HTMLElement>, task: Task) {
+    const target = event.target as HTMLElement;
+    if (!canMove(task) || event.button !== 0 || target.closest("select"))
+      return;
+    if (event.pointerType !== "mouse" && !target.closest(".kanban-grip"))
+      return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      task,
+      card: event.currentTarget,
+      x: event.clientX,
+      y: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      scrollLeft: boardRef.current?.scrollLeft ?? 0,
+      scrollY: window.scrollY,
+      moved: false,
+    };
+  }
+  function moveDrag(event: PointerEvent<HTMLElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    if (!drag.moved) {
+      // Невеликий зсув — ще клік, а не перетягування
+      if (Math.hypot(drag.lastX - drag.x, drag.lastY - drag.y) < 6) return;
+      drag.moved = true;
+      setDragId(drag.task.id);
+      drag.timer = window.setInterval(() => autoScroll(drag), 16);
+    }
+    placeCard(drag);
+  }
+  function endDrag(event: PointerEvent<HTMLElement>, cancelled = false) {
+    const drag = dragRef.current;
+    dragRef.current = null;
+    if (!drag) return;
+    window.clearInterval(drag.timer);
+    drag.card.style.transform = "";
+    if (drag.moved) {
+      // Після перетягування браузер ще надішле click — не відкриваємо завдання
+      const swallow = (click: Event) => {
+        click.preventDefault();
+        click.stopPropagation();
+      };
+      window.addEventListener("click", swallow, { capture: true, once: true });
+      setTimeout(
+        () => window.removeEventListener("click", swallow, { capture: true }),
+        0,
+      );
+      const lane = cancelled ? undefined : laneAt(event.clientX, event.clientY);
+      if (
+        lane &&
+        movableStatuses.includes(lane.status) &&
+        !tasksInLane([drag.task], lane).length
+      )
+        void move(drag.task, lane);
+    }
     setDragId(null);
     setOverLane(null);
   }
@@ -133,24 +236,54 @@ export function ProjectBoardPage() {
         <p>
           {anyMovable
             ? tr(
-                "Перетягніть свою картку в іншу колонку або виберіть колонку у списку на картці.",
+                "Перетягніть картку за ручку в іншу колонку або виберіть колонку у списку на картці.",
               )
             : tr("Статус завдання змінює призначений виконавець.")}
         </p>
       </div>
+      {/* Власник додає колонку: перед «До виконання» (Беклог) чи після «У процесі» */}
+      {isOwner && (
+        <form className="kanban-add" onSubmit={addColumn}>
+          <label htmlFor="new-column">{tr("Нова колонка")}</label>
+          <input
+            id="new-column"
+            required
+            minLength={2}
+            maxLength={40}
+            placeholder={tr("Наприклад, Беклог або Тестування")}
+            value={newColumn}
+            onChange={(event) => setNewColumn(event.target.value)}
+          />
+          <select
+            aria-label={tr("Де розмістити колонку")}
+            value={newStage}
+            onChange={(event) =>
+              setNewStage(event.target.value as BoardColumn["status"])
+            }
+          >
+            <option value="TODO">{tr("Перед «До виконання»")}</option>
+            <option value="IN_PROGRESS">{tr("Після «У процесі»")}</option>
+          </select>
+          <button className="button secondary">
+            <i className="bi bi-plus-lg" aria-hidden="true"></i>
+            {tr("Додати колонку")}
+          </button>
+        </form>
+      )}
       {actionError && <p className="form-error">{actionError}</p>}
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (
-        <div className="kanban-board">
+        <div
+          ref={boardRef}
+          className={dragId ? "kanban-board is-dragging" : "kanban-board"}
+        >
           {lanes.map((lane) => {
             const laneTasks = tasksInLane(tasks, lane);
             return (
               <section
                 key={lane.key}
+                data-lane={lane.key}
                 className={laneClass(lane)}
-                onDragOver={(event) => handleDragOver(event, lane)}
-                onDragLeave={() => setOverLane(null)}
-                onDrop={() => handleDrop(lane)}
               >
                 <h2>
                   <span className="kanban-title">{laneTitle(lane)}</span>
@@ -182,19 +315,27 @@ export function ProjectBoardPage() {
                       className={
                         dragId === task.id
                           ? "kanban-card dragging"
-                          : "kanban-card"
+                          : movable
+                            ? "kanban-card movable"
+                            : "kanban-card"
                       }
-                      draggable={movable}
-                      onDragStart={() => setDragId(task.id)}
-                      onDragEnd={stopDragging}
+                      onPointerDown={(event) => startDrag(event, task)}
+                      onPointerMove={moveDrag}
+                      onPointerUp={(event) => endDrag(event)}
+                      onPointerCancel={(event) => endDrag(event, true)}
+                      // вимикаємо вбудоване перетягування посилань і тексту
+                      onDragStart={(event) => event.preventDefault()}
                     >
                       <div className="kanban-card-title">
                         <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                         {movable && (
-                          <i
-                            className="bi bi-grip-vertical"
+                          <span
+                            className="kanban-grip"
+                            title={tr("Перетягніть картку")}
                             aria-hidden="true"
-                          ></i>
+                          >
+                            <i className="bi bi-grip-vertical"></i>
+                          </span>
                         )}
                       </div>
                       {task.description && <small>{task.description}</small>}
@@ -246,29 +387,6 @@ export function ProjectBoardPage() {
                     </article>
                   );
                 })}
-                {/* Власник додає власну колонку одразу після останньої «У процесі» */}
-                {isOwner &&
-                  lane.status === "IN_PROGRESS" &&
-                  lane === movableLanes.at(-1) && (
-                    <form className="kanban-add" onSubmit={addColumn}>
-                      <label htmlFor="new-column">
-                        {tr("Новий етап роботи")}
-                      </label>
-                      <input
-                        id="new-column"
-                        required
-                        minLength={2}
-                        maxLength={40}
-                        placeholder={tr("Наприклад, Тестування")}
-                        value={newColumn}
-                        onChange={(event) => setNewColumn(event.target.value)}
-                      />
-                      <button className="button secondary">
-                        <i className="bi bi-plus-lg" aria-hidden="true"></i>
-                        {tr("Додати колонку")}
-                      </button>
-                    </form>
-                  )}
               </section>
             );
           })}
