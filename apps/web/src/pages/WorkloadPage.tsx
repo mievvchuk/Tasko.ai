@@ -20,7 +20,6 @@ export function WorkloadPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / КОМАНДА</span>
           <h1>Завантаженість виконавців</h1>
           <p>
             Незавершені завдання, пріоритети та строки у доступних вам проєктах.

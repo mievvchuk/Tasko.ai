@@ -20,6 +20,12 @@ interface RequestOptions {
   timeoutMs?: number;
 }
 
+// Повна адреса ресурсу API (напр. фото профілю для тегу <img>)
+export function apiUrl(path: string) {
+  const baseUrl = import.meta.env?.VITE_API_URL || "/api";
+  return baseUrl.replace(/\/$/, "") + "/" + path.replace(/^\//, "");
+}
+
 export function getToken() {
   return sessionStorage.getItem(tokenKey);
 }

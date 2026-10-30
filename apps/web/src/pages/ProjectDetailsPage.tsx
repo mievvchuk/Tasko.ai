@@ -112,7 +112,6 @@ export function ProjectDetailsPage() {
       </Link>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / ПРОЄКТ</span>
           <h1>{project.title}</h1>
         </div>
         <div className="page-actions">

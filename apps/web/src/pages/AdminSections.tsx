@@ -5,12 +5,15 @@ import { downloadApiFile, request, errorMessage } from "../api";
 import { useApi } from "../useApi";
 import { formatDate } from "../format";
 import { ResourceState } from "../components/ResourceState";
-import { roleNames, taskStatusNames } from "../types";
+import { BarChart, ColumnChart } from "../components/Charts";
+import type { ChartTone } from "../components/Charts";
+import { projectStatusNames, roleNames, taskStatusNames } from "../types";
 import type {
   AdminUser,
   AdminReport,
   UserRole,
   TaskStatus,
+  ProjectStatus,
   Complaint,
 } from "../types";
 
@@ -73,27 +76,69 @@ export function AdminReportSummary({ report }: { report: AdminReport }) {
   }
 
   const stats = [
-    ["Користувачі", report.users],
-    ["Заблоковані", report.blockedUsers],
-    ["Проєкти", report.projects],
-    ["Завдання", report.tasks],
+    ["Користувачі", report.users, `заблоковано: ${report.blockedUsers}`],
+    ["Проєкти", report.projects, `активні: ${report.activeProjects}`],
+    ["Завдання", report.tasks, `завершено: ${report.tasksByStatus.DONE}`],
+    ["Прострочені", report.overdueTasks, "завдань після дедлайну"],
   ] as const;
 
   return (
     <>
       <div className="stats-grid">
-        {stats.map(([label, value]) => (
+        {stats.map(([label, value, note]) => (
           <article className="stat-card" key={label}>
             <span className="stat-label">{label}</span>
             <strong>{value}</strong>
+            <span className="stat-note">{note}</span>
           </article>
         ))}
       </div>
-      <p className="form-note">
-        Активні проєкти: {report.activeProjects} · Завершені:{" "}
-        {report.completedProjects} · Прострочені завдання: {report.overdueTasks}
-        . {formatTasksByStatus(report.tasksByStatus)}
-      </p>
+      <div className="chart-grid">
+        <ColumnChart
+          title="Нові за останні 6 місяців"
+          labels={report.growth.map(({ month }) => monthLabel(month))}
+          series={[
+            {
+              name: "Користувачі",
+              tone: "primary",
+              values: report.growth.map((row) => row.users),
+            },
+            {
+              name: "Проєкти",
+              tone: "accent",
+              values: report.growth.map((row) => row.projects),
+            },
+          ]}
+        />
+        <BarChart
+          title="Користувачі за ролями"
+          items={(Object.keys(roleNames) as UserRole[]).map((role) => ({
+            label: roleNames[role],
+            value: report.usersByRole[role],
+            tone: roleTones[role],
+          }))}
+        />
+        <BarChart
+          title="Проєкти за статусами"
+          items={(Object.keys(projectStatusNames) as ProjectStatus[]).map(
+            (status) => ({
+              label: projectStatusNames[status],
+              value: report.projectsByStatus[status],
+              tone: projectTones[status],
+            }),
+          )}
+        />
+        <BarChart
+          title="Завдання за статусами"
+          items={(Object.keys(taskStatusNames) as TaskStatus[]).map(
+            (status) => ({
+              label: taskStatusNames[status],
+              value: report.tasksByStatus[status],
+              tone: taskTones[status],
+            }),
+          )}
+        />
+      </div>
       <div className="export-actions" aria-label="Експорт звіту">
         <strong>Завантажити звіт:</strong>
         {reportFormats.map((format) => (
@@ -117,13 +162,31 @@ export function AdminReportSummary({ report }: { report: AdminReport }) {
   );
 }
 
-// Наприклад: «До виконання: 3 · У роботі: 2».
-function formatTasksByStatus(tasksByStatus: AdminReport["tasksByStatus"]) {
-  return Object.entries(tasksByStatus)
-    .map(
-      ([status, count]) => `${taskStatusNames[status as TaskStatus]}: ${count}`,
-    )
-    .join(" · ");
+// Кольори статусів, як у DESIGN-SYSTEM.md (розділ 01)
+const roleTones: Record<UserRole, ChartTone> = {
+  CLIENT: "accent",
+  FREELANCER: "primary",
+  ADMIN: "muted",
+};
+const taskTones: Record<TaskStatus, ChartTone> = {
+  TODO: "muted",
+  IN_PROGRESS: "primary",
+  REVIEW: "accent",
+  DONE: "success",
+};
+const projectTones: Record<ProjectStatus, ChartTone> = {
+  PLANNING: "muted",
+  ACTIVE: "primary",
+  PAUSED: "accent",
+  COMPLETED: "success",
+  CANCELLED: "danger",
+};
+
+// «2026-10» → «жовт.»
+function monthLabel(month: string) {
+  return new Date(`${month}-01T00:00:00`).toLocaleDateString("uk-UA", {
+    month: "short",
+  });
 }
 
 export function AdminComplaints() {

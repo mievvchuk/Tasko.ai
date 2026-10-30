@@ -42,7 +42,6 @@ export function ComplaintsPage() {
   return (
     <>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ПІДТРИМКА</span>
         <h1>Скарги</h1>
         <p>
           Опишіть проблему для адміністратора. Вкажіть UUID користувача або

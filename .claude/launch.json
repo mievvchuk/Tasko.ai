@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["--prefix", "apps/api", "run", "start:dev"],
+      "port": 3000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["--prefix", "apps/web", "run", "dev"],
+      "port": 5173,
+      "url": "http://127.0.0.1:5173"
+    }
+  ]
+}

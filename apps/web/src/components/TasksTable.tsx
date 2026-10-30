@@ -1,13 +1,8 @@
 import { Link } from "react-router";
 import { formatDate } from "../format";
+import { isOverdue } from "../kanban";
 import { priorityNames, taskStatusNames } from "../types";
 import type { ProjectMember, Task } from "../types";
-
-// Прострочене — це незавершене завдання, дедлайн якого вже минув.
-function isOverdue(task: Task) {
-  if (!task.deadline || task.status === "DONE") return false;
-  return new Date(task.deadline) < new Date();
-}
 
 export function TasksTable({
   tasks,

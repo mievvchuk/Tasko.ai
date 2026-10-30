@@ -66,7 +66,6 @@ export function ProjectMilestonesPage() {
         ← До проєкту
       </Link>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ЕТАПИ</span>
         <h1>Етапи та умовна оплата</h1>
         <p>Суми й статуси тут є обліковими та не виконують реальний платіж.</p>
       </div>

@@ -80,7 +80,6 @@ export function MarketplacePage() {
   return (
     <>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / БІРЖА</span>
         <h1>Відкриті проєкти</h1>
         <p>
           Оберіть проєкт, запропонуйте бюджет і строк виконання. Після вибору

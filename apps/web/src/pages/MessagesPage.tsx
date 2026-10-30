@@ -16,7 +16,6 @@ export function MessagesPage() {
   return (
     <>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / КОМАНДА</span>
         <h1>Повідомлення</h1>
         <p>Обговорення доступні лише учасникам відповідного проєкту.</p>
       </div>

@@ -17,9 +17,9 @@ import { hasDatabaseCode } from '../prisma/database-error.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   UsersService,
+  toPublicUser,
   type CurrentUser,
   type PublicUser,
-  type UserRole,
 } from '../users/users.service.js';
 import type {
   ChangePasswordDto,
@@ -434,21 +434,7 @@ export class AuthService {
     };
   }
 
-  private publicUser(user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    twoFactorEnabled: boolean;
-  }): PublicUser {
-    if (!['CLIENT', 'FREELANCER', 'ADMIN'].includes(user.role))
-      throw new ForbiddenException('Роль користувача некоректна.');
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role as UserRole,
-      twoFactorEnabled: user.twoFactorEnabled,
-    };
+  private publicUser(user: Parameters<typeof toPublicUser>[0]): PublicUser {
+    return toPublicUser(user);
   }
 }

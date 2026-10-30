@@ -151,7 +151,6 @@ function ProjectPlanEditor() {
         ← До проєкту
       </Link>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ПЛАНУВАННЯ</span>
         <h1>AI-план проєкту</h1>
         <p>{project.data?.title}</p>
       </div>

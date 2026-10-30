@@ -8,9 +8,23 @@ import {
   IsString,
   IsUrl,
   Length,
+  Matches,
   Max,
   Min,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+// Зміна імені на сторінці профілю — ті самі правила, що й при реєстрації
+export class UpdateAccountDto {
+  @ApiProperty({ example: 'Іван', minLength: 2, maxLength: 100 })
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(2, 100)
+  @Matches(/\S/)
+  name!: string;
+}
 
 export class UpdateFreelancerProfileDto {
   @ApiPropertyOptional({ maxLength: 3000 })

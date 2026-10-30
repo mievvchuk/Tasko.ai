@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, ValidateIf } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+  ValidateIf,
+} from 'class-validator';
 import { PageDto } from '../projects/projects.dto.js';
 
 export class UserQueryDto extends PageDto {
@@ -11,6 +17,11 @@ export class UserQueryDto extends PageDto {
   @IsOptional()
   @IsIn(['ACTIVE', 'BLOCKED'])
   status?: string;
+  @ApiPropertyOptional({ description: "Пошук за ім'ям або email" })
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  search?: string;
 }
 export class UpdateUserDto {
   @ApiPropertyOptional({ enum: ['CLIENT', 'FREELANCER', 'ADMIN'] })

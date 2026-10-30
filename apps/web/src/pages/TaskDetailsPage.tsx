@@ -99,7 +99,6 @@ export function TaskDetailsPage() {
       </Link>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / ЗАВДАННЯ</span>
           <h1>{currentTask.title}</h1>
         </div>
         <div className="page-actions">

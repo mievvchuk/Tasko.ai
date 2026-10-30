@@ -1,3 +1,4 @@
+import type { FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
@@ -21,10 +22,12 @@ export function AdminPage() {
   const page = parsePage(params.get("page"));
   const role = allowedOrEmpty(params.get("role"), Object.keys(roleNames));
   const status = allowedOrEmpty(params.get("status"), ["ACTIVE", "BLOCKED"]);
+  const search = (params.get("search") ?? "").slice(0, 100);
 
   const query = new URLSearchParams({ page: String(page), limit: "20" });
   if (role) query.set("role", role);
   if (status) query.set("status", status);
+  if (search) query.set("search", search);
   const users = useApi<AdminUser[]>(isAdmin ? `/admin/users?${query}` : null);
   const report = useApi<AdminReport>(isAdmin ? "/admin/report" : null);
 
@@ -40,6 +43,12 @@ export function AdminPage() {
     if (value) next.set(name, value);
     else next.delete(name);
     setParams(next);
+  }
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    changeFilter("search", String(data.get("search") || "").trim());
   }
 
   function changePage(value: number) {
@@ -59,9 +68,8 @@ export function AdminPage() {
   return (
     <>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / АДМІНІСТРУВАННЯ</span>
-        <h1>Адміністративна панель</h1>
-        <p>Облікові записи та загальні показники системи.</p>
+        <h1>Панель адміністратора</h1>
+        <p>Статистика всієї платформи, облікові записи та скарги.</p>
       </div>
       <ResourceState
         loading={report.loading}
@@ -78,6 +86,23 @@ export function AdminPage() {
           </button>
         </div>
         <div className="task-filters padded">
+          <form className="task-search" onSubmit={submitSearch}>
+            <label htmlFor="admin-user-search">Пошук користувача</label>
+            <div>
+              <input
+                key={search}
+                id="admin-user-search"
+                name="search"
+                type="search"
+                maxLength={100}
+                defaultValue={search}
+                placeholder="Ім'я або email"
+              />
+              <button className="button secondary" type="submit">
+                Знайти
+              </button>
+            </div>
+          </form>
           <div className="filter-field">
             <label htmlFor="admin-role-filter">Роль</label>
             <select
@@ -111,7 +136,9 @@ export function AdminPage() {
             <div className="padded">
               {!users.data.length && (
                 <p className="form-note">
-                  На цій сторінці користувачів не знайдено.
+                  {search || role || status
+                    ? "За цими умовами користувачів не знайдено."
+                    : "На цій сторінці користувачів не знайдено."}
                 </p>
               )}
               {users.data.map((person) => (

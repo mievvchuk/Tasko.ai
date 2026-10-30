@@ -24,7 +24,6 @@ export function NotificationsPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <span className="eyebrow">TASKO.AI / СПОВІЩЕННЯ</span>
           <h1>Сповіщення</h1>
           <p>Події ваших проєктів і завдань.</p>
         </div>

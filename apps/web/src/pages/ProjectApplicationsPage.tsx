@@ -55,7 +55,6 @@ export function ProjectApplicationsPage() {
         ← До проєкту
       </Link>
       <div className="page-heading">
-        <span className="eyebrow">TASKO.AI / ВІДГУКИ НА ПРОЄКТ</span>
         <h1>Заявки фрилансерів</h1>
         <p>
           Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.

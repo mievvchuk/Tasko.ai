@@ -63,6 +63,8 @@ async (page) => {
   await page.setViewportSize({ width: 390, height: 844 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Mobile layout should not overflow');
   await page.getByRole('button', { name: 'Відкрити навігацію' }).click();
+  // Вихід тепер у меню облікового запису: спершу відкриваємо меню
+  await page.getByRole('button', { name: 'Меню облікового запису' }).click();
   await page.getByRole('button', { name: 'Вийти з облікового запису' }).click();
   await page.waitForURL('**/login');
   assert(await page.evaluate(() => sessionStorage.getItem('tasko.accessToken')) === null, 'Logout should remove the token');

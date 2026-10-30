@@ -71,6 +71,14 @@ export function FreelancerProfileEditor() {
       setError(errorMessage(e));
     }
   }
+  const skillList = [
+    ...new Set(
+      skills
+        .split(",")
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
   if (!profile && !error)
     return <div className="page-loading">Завантажуємо профіль…</div>;
   return (
@@ -121,6 +129,14 @@ export function FreelancerProfileEditor() {
             placeholder="TypeScript, React, NestJS"
           />
         </label>
+        {/* Чипи — як клієнт побачить навички (оновлюються під час введення) */}
+        {skillList.length > 0 && (
+          <ul className="skill-chips full-width" aria-label="Навички">
+            {skillList.map((skill) => (
+              <li key={skill}>{skill}</li>
+            ))}
+          </ul>
+        )}
         <button className="button primary">Зберегти профіль</button>
       </form>
       <h3>Портфоліо</h3>
@@ -149,7 +165,7 @@ export function FreelancerProfileEditor() {
           Додати роботу
         </button>
       </form>
-      <div className="simple-list">
+      <div className="simple-list portfolio-list">
         {profile?.portfolio.map((item) => (
           <article className="list-card" key={item.id}>
             <div>
@@ -159,7 +175,7 @@ export function FreelancerProfileEditor() {
               <small>{item.description}</small>
             </div>
             <button
-              className="button secondary"
+              className="button secondary danger-outline"
               onClick={() => void remove(item.id)}
             >
               <i className="bi bi-trash" aria-hidden="true"></i>
