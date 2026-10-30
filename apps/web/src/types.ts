@@ -230,6 +230,7 @@ export interface BoardColumn {
   id: string;
   title: string;
   position: number;
+  status: "TODO" | "IN_PROGRESS"; // етап, до якого належить колонка
 }
 
 export interface FileAttachment {
