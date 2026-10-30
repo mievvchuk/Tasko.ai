@@ -1,0 +1,287 @@
+[
+  {
+    "id": "table.BoardColumn",
+    "label": "Create table \"BoardColumn\"",
+    "summary": "Creates table \"BoardColumn\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BoardColumn"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BoardColumn\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BoardColumn\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BoardColumn\"",
+        "sql": "CREATE TABLE \"public\".\"BoardColumn\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"position\" int4 NOT NULL,\n  \"projectId\" text NOT NULL,\n  \"title\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BoardColumn\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BoardColumn\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Task.columnId",
+    "label": "Add column \"columnId\" to \"Task\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "columnId",
+        "table": "Task"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"columnId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Task",
+          "columnId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"columnId\"",
+        "sql": "ALTER TABLE \"public\".\"Task\" ADD COLUMN \"columnId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"columnId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Task",
+          "columnId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.BoardColumn.BoardColumn_projectId_position_key",
+    "label": "Add unique constraint on \"BoardColumn\" (projectId, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "BoardColumn_projectId_position_key",
+        "table": "BoardColumn"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"BoardColumn_projectId_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BoardColumn_projectId_position_key",
+          "public",
+          "\"public\".\"BoardColumn\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"BoardColumn_projectId_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"BoardColumn\" ADD CONSTRAINT \"BoardColumn_projectId_position_key\" UNIQUE (\"projectId\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"BoardColumn_projectId_position_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BoardColumn_projectId_position_key",
+          "public",
+          "\"public\".\"BoardColumn\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BoardColumn.BoardColumn_projectId_idx_a96e4d92",
+    "label": "Create index \"BoardColumn_projectId_idx_a96e4d92\" on \"BoardColumn\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BoardColumn_projectId_idx_a96e4d92",
+        "table": "BoardColumn"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BoardColumn_projectId_idx_a96e4d92\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BoardColumn_projectId_idx_a96e4d92\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BoardColumn_projectId_idx_a96e4d92\"",
+        "sql": "CREATE INDEX \"BoardColumn_projectId_idx_a96e4d92\" ON \"public\".\"BoardColumn\" (\"projectId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BoardColumn_projectId_idx_a96e4d92\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BoardColumn_projectId_idx_a96e4d92\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Task.Task_columnId_idx_728f084b",
+    "label": "Create index \"Task_columnId_idx_728f084b\" on \"Task\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Task_columnId_idx_728f084b",
+        "table": "Task"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Task_columnId_idx_728f084b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Task_columnId_idx_728f084b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Task_columnId_idx_728f084b\"",
+        "sql": "CREATE INDEX \"Task_columnId_idx_728f084b\" ON \"public\".\"Task\" (\"columnId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Task_columnId_idx_728f084b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Task_columnId_idx_728f084b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.BoardColumn.BoardColumn_projectId_fkey",
+    "label": "Add foreign key \"BoardColumn_projectId_fkey\" on \"BoardColumn\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "BoardColumn_projectId_fkey",
+        "table": "BoardColumn"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"BoardColumn_projectId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BoardColumn_projectId_fkey",
+          "public",
+          "\"public\".\"BoardColumn\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"BoardColumn_projectId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"BoardColumn\"\nADD CONSTRAINT \"BoardColumn_projectId_fkey\"\nFOREIGN KEY (\"projectId\")\nREFERENCES \"public\".\"Project\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"BoardColumn_projectId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BoardColumn_projectId_fkey",
+          "public",
+          "\"public\".\"BoardColumn\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Task.Task_columnId_fkey",
+    "label": "Add foreign key \"Task_columnId_fkey\" on \"Task\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Task_columnId_fkey",
+        "table": "Task"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Task_columnId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Task_columnId_fkey",
+          "public",
+          "\"public\".\"Task\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Task_columnId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Task\"\nADD CONSTRAINT \"Task_columnId_fkey\"\nFOREIGN KEY (\"columnId\")\nREFERENCES \"public\".\"BoardColumn\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Task_columnId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Task_columnId_fkey",
+          "public",
+          "\"public\".\"Task\""
+        ]
+      }
+    ]
+  }
+]

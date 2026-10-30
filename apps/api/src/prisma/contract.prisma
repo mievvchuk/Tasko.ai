@@ -96,6 +96,7 @@ model Project {
   skills ProjectSkill[]
   favorites FavoriteProject[]
   milestones ProjectMilestone[]
+  boardColumns BoardColumn[]
   notifications Notification[]
   activityLogs ActivityLog[]
   complaints Complaint[]
@@ -160,9 +161,25 @@ model Task {
   priority  String   // LOW, MEDIUM, HIGH
   status    String   // TODO, IN_PROGRESS, REVIEW, DONE
   deadline  TimestamptzJsDate?
+  // Додаткова колонка канбану (етап усередині «У процесі»); null — звичайна колонка
+  columnId  String?
+  column    BoardColumn? @relation(fields: [columnId], references: [id])
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
   notifications Notification[]
+}
+
+// Власні колонки канбану проєкту, напр. «Дизайн», «Тестування»
+model BoardColumn {
+  id String @id @default(uuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id])
+  title String
+  position Int
+  createdAt TimestamptzJsDate @default(now())
+  tasks Task[]
+
+  @@unique([projectId, position])
 }
 
 model FreelancerProfile {

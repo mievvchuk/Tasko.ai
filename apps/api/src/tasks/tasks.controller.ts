@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { PageDto } from '../projects/projects.dto.js';
 import {
+  BoardColumnDto,
   CreateTaskDto,
   OrderStatusDto,
   TaskQueryDto,
@@ -62,7 +64,26 @@ export class TasksController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() data: TaskStatusDto,
   ) {
-    return this.tasks.status(user, id, data.status);
+    return this.tasks.status(user, id, data.status, data.columnId);
+  }
+  @Get('projects/:id/columns') columns(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.tasks.columns(user, id);
+  }
+  @Post('projects/:id/columns') addColumn(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: BoardColumnDto,
+  ) {
+    return this.tasks.addColumn(user, id, data.title);
+  }
+  @Delete('columns/:id') deleteColumn(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.tasks.deleteColumn(user, id);
   }
   @Get('projects/:id/orders') orders(
     @Actor() user: CurrentUser,

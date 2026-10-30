@@ -152,6 +152,7 @@ function TaskForm({
       <section className="data-panel project-form-panel">
         <form onSubmit={submit}>
           <fieldset className="form-fields work-form" disabled={busy}>
+            <h2 className="form-section-title">{tr("Про завдання")}</h2>
             <label htmlFor="task-title">{tr("Назва завдання")}</label>
             <input
               id="task-title"
@@ -169,6 +170,7 @@ function TaskForm({
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
+            <h2 className="form-section-title">{tr("Хто і коли")}</h2>
             <label htmlFor="task-assignee">{tr("Виконавець")}</label>
             <select
               id="task-assignee"
@@ -190,28 +192,36 @@ function TaskForm({
                 "Виконавця спочатку потрібно додати до учасників проєкту. Під час виконання змінити виконавця не можна.",
               )}
             </p>
-            <label htmlFor="task-form-priority">{tr("Пріоритет")}</label>
-            <select
-              id="task-form-priority"
-              value={priority}
-              onChange={(event) =>
-                setPriority(event.target.value as Task["priority"])
-              }
-            >
-              {Object.entries(priorityNames).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {tr(label)}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="task-form-deadline">{tr("Дедлайн завдання")}</label>
-            <input
-              id="task-form-deadline"
-              type="datetime-local"
-              step="1"
-              value={deadline}
-              onChange={(event) => setDeadline(event.target.value)}
-            />
+            <div className="form-row">
+              <div className="project-form-field">
+                <label htmlFor="task-form-priority">{tr("Пріоритет")}</label>
+                <select
+                  id="task-form-priority"
+                  value={priority}
+                  onChange={(event) =>
+                    setPriority(event.target.value as Task["priority"])
+                  }
+                >
+                  {Object.entries(priorityNames).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {tr(label)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="project-form-field">
+                <label htmlFor="task-form-deadline">
+                  {tr("Дедлайн завдання")}
+                </label>
+                <input
+                  id="task-form-deadline"
+                  type="datetime-local"
+                  step="1"
+                  value={deadline}
+                  onChange={(event) => setDeadline(event.target.value)}
+                />
+              </div>
+            </div>
             <p className="form-note">
               {tr(
                 "Час місцевий. Дедлайн не може бути пізнішим за дедлайн проєкту.",
@@ -222,7 +232,7 @@ function TaskForm({
                 {error}
               </p>
             )}
-            <div className="page-actions">
+            <div className="page-actions form-actions">
               <button className="button primary" type="submit">
                 {busy ? tr("Зберігаємо…") : tr("Зберегти завдання")}
               </button>

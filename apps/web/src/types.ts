@@ -222,6 +222,14 @@ export interface Task {
   status: TaskStatus;
   priority: "LOW" | "MEDIUM" | "HIGH";
   deadline: string | null;
+  columnId?: string | null;
+}
+
+// Власна колонка канбану проєкту (етап усередині «У процесі»)
+export interface BoardColumn {
+  id: string;
+  title: string;
+  position: number;
 }
 
 export interface FileAttachment {
