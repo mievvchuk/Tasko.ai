@@ -1,4 +1,4 @@
-// Поля редактора AI-плану: етап, завдання та критерії приймання.
+import { useLanguage } from "../i18n"; // Поля редактора AI-плану: етап, завдання та критерії приймання.
 
 export interface PlanTask {
   title: string;
@@ -68,14 +68,15 @@ function PlanTaskFields({
   onChange: (patch: Partial<PlanTask>) => void;
   onRemove: () => void;
 }) {
+  const { tr } = useLanguage();
   const idSuffix = `${milestoneIndex}-${taskIndex}`;
   return (
     <section className="plan-task">
       <h3>
-        Завдання {milestoneIndex + 1}.{taskIndex + 1}
+        {tr("Завдання")} {milestoneIndex + 1}.{taskIndex + 1}
       </h3>
       <div className="work-form">
-        <label htmlFor={`task-title-${idSuffix}`}>Назва завдання</label>
+        <label htmlFor={`task-title-${idSuffix}`}>{tr("Назва завдання")}</label>
         <input
           id={`task-title-${idSuffix}`}
           required
@@ -84,7 +85,9 @@ function PlanTaskFields({
           value={task.title}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-        <label htmlFor={`task-description-${idSuffix}`}>Опис роботи</label>
+        <label htmlFor={`task-description-${idSuffix}`}>
+          {tr("Опис роботи")}
+        </label>
         <textarea
           id={`task-description-${idSuffix}`}
           required
@@ -93,7 +96,7 @@ function PlanTaskFields({
           value={task.description}
           onChange={(e) => onChange({ description: e.target.value })}
         />
-        <label htmlFor={`task-priority-${idSuffix}`}>Пріоритет</label>
+        <label htmlFor={`task-priority-${idSuffix}`}>{tr("Пріоритет")}</label>
         <select
           id={`task-priority-${idSuffix}`}
           value={task.priority}
@@ -101,13 +104,13 @@ function PlanTaskFields({
             onChange({ priority: e.target.value as PlanTask["priority"] })
           }
         >
-          <option value="LOW">Низький</option>
-          <option value="MEDIUM">Середній</option>
-          <option value="HIGH">Високий</option>
+          <option value="LOW">{tr("Низький")}</option>
+          <option value="MEDIUM">{tr("Середній")}</option>
+          <option value="HIGH">{tr("Високий")}</option>
         </select>
         <CriteriaField
           id={`task-criteria-${idSuffix}`}
-          label="Критерії приймання — по одному на рядок"
+          label={tr("Критерії приймання — по одному на рядок")}
           value={task.acceptanceCriteria}
           onChange={(acceptanceCriteria) => onChange({ acceptanceCriteria })}
         />
@@ -119,7 +122,8 @@ function PlanTaskFields({
         onClick={onRemove}
       >
         <i className="bi bi-trash" aria-hidden="true"></i>
-        Прибрати завдання
+
+        {tr("Прибрати завдання")}
       </button>
     </section>
   );
@@ -142,6 +146,7 @@ export function PlanMilestoneFields({
   onChangeTask: (taskIndex: number, patch: Partial<PlanTask>) => void;
   onRemove: () => void;
 }) {
+  const { tr } = useLanguage();
   const tasks = milestone.tasks;
 
   function addTask() {
@@ -154,9 +159,11 @@ export function PlanMilestoneFields({
 
   return (
     <fieldset className="plan-milestone" disabled={disabled}>
-      <legend>Етап {index + 1}</legend>
+      <legend>
+        {tr("Етап")} {index + 1}
+      </legend>
       <div className="work-form">
-        <label htmlFor={`milestone-title-${index}`}>Назва етапу</label>
+        <label htmlFor={`milestone-title-${index}`}>{tr("Назва етапу")}</label>
         <input
           id={`milestone-title-${index}`}
           required
@@ -165,7 +172,9 @@ export function PlanMilestoneFields({
           value={milestone.title}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-        <label htmlFor={`milestone-description-${index}`}>Опис етапу</label>
+        <label htmlFor={`milestone-description-${index}`}>
+          {tr("Опис етапу")}
+        </label>
         <textarea
           id={`milestone-description-${index}`}
           required
@@ -176,7 +185,7 @@ export function PlanMilestoneFields({
         />
         <CriteriaField
           id={`milestone-criteria-${index}`}
-          label="Критерії приймання етапу — по одному на рядок"
+          label={tr("Критерії приймання етапу — по одному на рядок")}
           value={milestone.acceptanceCriteria}
           onChange={(acceptanceCriteria) => onChange({ acceptanceCriteria })}
         />
@@ -200,7 +209,8 @@ export function PlanMilestoneFields({
           onClick={addTask}
         >
           <i className="bi bi-plus-lg" aria-hidden="true"></i>
-          Додати завдання
+
+          {tr("Додати завдання")}
         </button>
         <button
           type="button"
@@ -209,7 +219,8 @@ export function PlanMilestoneFields({
           onClick={onRemove}
         >
           <i className="bi bi-trash" aria-hidden="true"></i>
-          Прибрати етап
+
+          {tr("Прибрати етап")}
         </button>
       </div>
     </fieldset>

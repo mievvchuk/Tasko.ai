@@ -14,11 +14,13 @@ import {
 } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
 // Сервер дозволяє вручну перемикати лише ці два статуси.
 // «На перевірці» — це передавання результату, а «Завершено» ставить клієнт.
 const movableStatuses: TaskStatus[] = ["TODO", "IN_PROGRESS"];
 
 export function ProjectBoardPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
   const { data, error, loading, refresh } = useApi<Task[]>(
@@ -77,14 +79,16 @@ export function ProjectBoardPage() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading">
-        <h1>Дошка завдань</h1>
+        <h1>{tr("Дошка завдань")}</h1>
         <p>
           {anyMovable
-            ? "Затисніть картку мишею й перетягніть між «До виконання» і «У процесі»."
-            : "Статус завдання змінює призначений виконавець."}
+            ? tr(
+                "Затисніть картку мишею й перетягніть між «До виконання» і «У процесі».",
+              )
+            : tr("Статус завдання змінює призначений виконавець.")}
         </p>
       </div>
       {actionError && <p className="form-error">{actionError}</p>}
@@ -100,10 +104,11 @@ export function ProjectBoardPage() {
               onDrop={() => handleDrop(status)}
             >
               <h2>
-                {taskStatusNames[status]} <span>{groups[status].length}</span>
+                {tr(taskStatusNames[status])}{" "}
+                <span>{groups[status].length}</span>
               </h2>
               {!groups[status].length && (
-                <p className="kanban-empty">Порожньо</p>
+                <p className="kanban-empty">{tr("Порожньо")}</p>
               )}
               {groups[status].map((task) => {
                 const movable = canMove(task);
@@ -128,10 +133,10 @@ export function ProjectBoardPage() {
                         ></i>
                       )}
                     </div>
-                    <small>{task.description || "Без опису"}</small>
+                    <small>{task.description || tr("Без опису")}</small>
                     <div className="kanban-meta">
                       <span className={`priority priority-${task.priority}`}>
-                        {priorityNames[task.priority]}
+                        {tr(priorityNames[task.priority])}
                       </span>
                       {task.deadline && (
                         <span
@@ -156,14 +161,14 @@ export function ProjectBoardPage() {
                     {/* select лишаємо — ним можна змінити статус з клавіатури */}
                     {movable && (
                       <select
-                        aria-label={`Статус ${task.title}`}
+                        aria-label={tr("Статус {0}", task.title)}
                         value={task.status}
                         onChange={(e) =>
                           void change(task.id, e.target.value as TaskStatus)
                         }
                       >
-                        <option value="TODO">До виконання</option>
-                        <option value="IN_PROGRESS">У процесі</option>
+                        <option value="TODO">{tr("До виконання")}</option>
+                        <option value="IN_PROGRESS">{tr("У процесі")}</option>
                       </select>
                     )}
                   </article>

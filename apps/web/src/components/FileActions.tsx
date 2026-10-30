@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { downloadFile, errorMessage, request } from "../api";
 import type { FileAttachment } from "../types";
 
+import { useLanguage } from "../i18n";
 export const fileAccept = ".pdf,.png,.jpg,.jpeg,.docx,.zip,.txt";
 
 export function FileUpload({
@@ -15,6 +16,7 @@ export function FileUpload({
   onBusyChange?: (busy: boolean) => void;
   disabled?: boolean;
 }) {
+  const { tr } = useLanguage();
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -23,7 +25,7 @@ export function FileUpload({
     if (!file || busy || disabled) return;
     setError("");
     if (!file.size || file.size > 10 * 1024 * 1024) {
-      setError("Файл має бути непорожнім і не перевищувати 10 МБ.");
+      setError(tr("Файл має бути непорожнім і не перевищувати 10 МБ."));
       return;
     }
     setBusy(true);
@@ -47,7 +49,7 @@ export function FileUpload({
   }
   return (
     <div className="work-form file-upload">
-      <label htmlFor="upload-file">Файл для завантаження</label>
+      <label htmlFor="upload-file">{tr("Файл для завантаження")}</label>
       <input
         ref={input}
         id="upload-file"
@@ -60,7 +62,7 @@ export function FileUpload({
         }}
       />
       <p className="form-note">
-        PDF, PNG, JPG, DOCX, ZIP або TXT (UTF-8), до 10 МБ.
+        {tr("PDF, PNG, JPG, DOCX, ZIP або TXT (UTF-8), до 10 МБ.")}
       </p>
       <button
         className="button secondary"
@@ -71,7 +73,7 @@ export function FileUpload({
         }}
       >
         <i className="bi bi-upload" aria-hidden="true"></i>
-        {busy ? "Завантажуємо…" : "Завантажити файл"}
+        {busy ? tr("Завантажуємо…") : tr("Завантажити файл")}
       </button>
       {error && (
         <p className="notice error" role="alert">
@@ -83,6 +85,7 @@ export function FileUpload({
 }
 
 export function FileDownload({ file }: { file: FileAttachment }) {
+  const { tr } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function download() {
@@ -107,9 +110,11 @@ export function FileDownload({ file }: { file: FileAttachment }) {
         }}
       >
         <i className="bi bi-download" aria-hidden="true"></i>
-        {busy ? "Отримуємо файл…" : file.fileName}
+        {busy ? tr("Отримуємо файл…") : file.fileName}
       </button>
-      <small>{Math.ceil(file.size / 1024)} КБ</small>
+      <small>
+        {Math.ceil(file.size / 1024)} {tr("КБ")}
+      </small>
       {error && (
         <p className="notice error" role="alert">
           {error}

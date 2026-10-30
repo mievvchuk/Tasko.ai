@@ -4,9 +4,11 @@ import { aiName, useAiChat } from "../aiChat";
 import { useApi } from "../useApi";
 import { AiConversation } from "./AiConversation";
 
+import { useLanguage } from "../i18n";
 // Плаваюча кнопка AI в куті екрана + бічна панель з розмовою.
 // На сторінці /ai не показується — там та сама розмова на весь екран.
 export function AiDrawer() {
+  const { tr } = useLanguage();
   const [open, setOpen] = useState(false);
   // Статус провайдера запитуємо лише після першого відкриття панелі
   const [started, setStarted] = useState(false);
@@ -23,9 +25,9 @@ export function AiDrawer() {
   const uuid = /^[0-9a-f-]{36}$/i;
   const context =
     taskId && uuid.test(taskId)
-      ? `Я зараз на сторінці завдання з ID ${taskId}.`
+      ? tr("Я зараз на сторінці завдання з ID {0}.", taskId)
       : projectId && uuid.test(projectId)
-        ? `Я зараз на сторінці проєкту з ID ${projectId}.`
+        ? tr("Я зараз на сторінці проєкту з ID {0}.", projectId)
         : undefined;
 
   // Після відкриття ставимо курсор у поле запитання
@@ -41,7 +43,7 @@ export function AiDrawer() {
         <button
           type="button"
           className="ai-fab"
-          aria-label={`Відкрити помічницю ${aiName}`}
+          aria-label={tr("Відкрити помічницю {0}", tr(aiName))}
           aria-controls="ai-drawer"
           aria-expanded={false}
           onClick={() => {
@@ -50,7 +52,7 @@ export function AiDrawer() {
           }}
         >
           <i className="bi bi-stars" aria-hidden="true"></i>
-          <span className="ai-fab-label">{aiName}</span>
+          <span className="ai-fab-label">{tr(aiName)}</span>
         </button>
       )}
       {open && (
@@ -65,7 +67,7 @@ export function AiDrawer() {
             id="ai-drawer"
             className="ai-drawer"
             role="dialog"
-            aria-label={`AI-помічниця ${aiName}`}
+            aria-label={tr("AI-помічниця {0}", tr(aiName))}
             onKeyDown={(event) => {
               if (event.key === "Escape") setOpen(false);
             }}
@@ -75,17 +77,19 @@ export function AiDrawer() {
                 <i className="bi bi-stars"></i>
               </span>
               <div>
-                <strong>{aiName}</strong>
+                <strong>{tr(aiName)}</strong>
                 <small>
-                  {context ? "Бачить поточну сторінку" : "Питання про Tasko.ai"}
+                  {context
+                    ? tr("Бачить поточну сторінку")
+                    : tr("Питання про Tasko.ai")}
                 </small>
               </div>
               {exchanges.length > 0 && (
                 <button
                   type="button"
                   className="ai-drawer-action"
-                  aria-label="Почати нову розмову"
-                  title="Почати нову розмову"
+                  aria-label={tr("Почати нову розмову")}
+                  title={tr("Почати нову розмову")}
                   disabled={busy}
                   onClick={clear}
                 >
@@ -95,8 +99,8 @@ export function AiDrawer() {
               <Link
                 className="ai-drawer-action"
                 to="/ai"
-                aria-label="Відкрити на всю сторінку"
-                title="Відкрити на всю сторінку"
+                aria-label={tr("Відкрити на всю сторінку")}
+                title={tr("Відкрити на всю сторінку")}
                 onClick={() => setOpen(false)}
               >
                 <i className="bi bi-arrows-angle-expand" aria-hidden="true"></i>
@@ -104,14 +108,16 @@ export function AiDrawer() {
               <button
                 type="button"
                 className="ai-drawer-action"
-                aria-label="Закрити панель помічниці"
+                aria-label={tr("Закрити панель помічниці")}
                 onClick={() => setOpen(false)}
               >
                 <i className="bi bi-x-lg" aria-hidden="true"></i>
               </button>
             </header>
             <div className="ai-drawer-body">
-              {status.loading && <p role="status">Підключаємося до агента…</p>}
+              {status.loading && (
+                <p role="status">{tr("Підключаємося до агента…")}</p>
+              )}
               {status.error && (
                 <p className="notice error" role="alert">
                   {status.error}
@@ -119,7 +125,9 @@ export function AiDrawer() {
               )}
               {status.data && !status.data.configured && (
                 <p className="notice error" role="alert">
-                  AI-провайдер ще не підключений. Зверніться до адміністратора.
+                  {tr(
+                    "AI-провайдер ще не підключений. Зверніться до адміністратора.",
+                  )}
                 </p>
               )}
               {status.data && (

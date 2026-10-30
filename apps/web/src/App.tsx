@@ -31,6 +31,7 @@ import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { ProjectPlanPage } from "./pages/ProjectPlanPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
+import { useLanguage } from "./i18n";
 function ProtectedRoute() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -44,12 +45,14 @@ function GuestRoute() {
 }
 
 export function App() {
+  const { tr } = useLanguage();
   const { loading, connectionError, retry, logout } = useAuth();
   if (loading)
     return (
       <div className="connection-screen" role="status">
         <span className="loader" />
-        Перевіряємо ваш сеанс…
+
+        {tr("Перевіряємо ваш сеанс…")}
       </div>
     );
   if (connectionError)
@@ -57,14 +60,14 @@ export function App() {
       <main className="connection-screen">
         <section className="auth-card">
           <span className="card-kicker">TASKO.AI</span>
-          <h1>Не вдалося відновити сеанс</h1>
+          <h1>{tr("Не вдалося відновити сеанс")}</h1>
           <p role="alert">{connectionError}</p>
           <div className="connection-actions">
             <button className="button primary" onClick={retry}>
-              Спробувати ще раз
+              {tr("Спробувати ще раз")}
             </button>
             <button className="button secondary" onClick={logout}>
-              Повернутися до входу
+              {tr("Повернутися до входу")}
             </button>
           </div>
         </section>
@@ -128,10 +131,12 @@ export function App() {
                   className="bi bi-exclamation-triangle"
                   aria-hidden="true"
                 ></i>
-                <h1>Сторінку не знайдено</h1>
-                <p>Перевірте адресу або поверніться до робочого простору.</p>
+                <h1>{tr("Сторінку не знайдено")}</h1>
+                <p>
+                  {tr("Перевірте адресу або поверніться до робочого простору.")}
+                </p>
                 <Link className="button primary" to="/">
-                  На головну
+                  {tr("На головну")}
                 </Link>
               </section>
             }

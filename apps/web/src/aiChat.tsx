@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { errorMessage, request } from "./api";
 
+import { useLanguage } from "./i18n";
 // Ім'я AI-помічника в інтерфейсі (і в системному промпті на сервері)
 export const aiName = "Ада";
 
@@ -59,6 +60,7 @@ const AiChatContext = createContext<AiChatState | null>(null);
 
 // Розмова живе в Layout, тому спільна для сторінки /ai і бічної панелі
 export function AiChatProvider({ children }: { children: ReactNode }) {
+  const { tr } = useLanguage();
   const [exchanges, setExchanges] = useState<AiExchange[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -109,7 +111,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       setError(
-        current.signal.aborted ? "Запит скасовано." : errorMessage(error),
+        current.signal.aborted ? tr("Запит скасовано.") : errorMessage(error),
       );
       return false;
     } finally {

@@ -9,7 +9,9 @@ import { projectStatusNames } from "../types";
 import type { Project, ProjectStatus, ProjectCategory, Skill } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
 export function ProjectFormPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
@@ -42,7 +44,7 @@ export function ProjectFormPage() {
   if (loading)
     return (
       <div className="page-loading" role="status">
-        Завантажуємо проєкт…
+        {tr("Завантажуємо проєкт…")}
       </div>
     );
   if (error)
@@ -57,14 +59,16 @@ export function ProjectFormPage() {
   if ((!id && user?.role !== "CLIENT") || (id && !canEdit) || closed) {
     return (
       <section className="account-panel">
-        <h1>Редагування недоступне</h1>
+        <h1>{tr("Редагування недоступне")}</h1>
         <p>
           {closed
-            ? "Завершений або скасований проєкт не можна змінювати."
-            : "Створювати проєкти може клієнт, а редагувати — власник або адміністратор."}
+            ? tr("Завершений або скасований проєкт не можна змінювати.")
+            : tr(
+                "Створювати проєкти може клієнт, а редагувати — власник або адміністратор.",
+              )}
         </p>
         <Link to={id ? `/projects/${id}` : "/projects"}>
-          Повернутися до проєктів
+          {tr("Повернутися до проєктів")}
         </Link>
       </section>
     );
@@ -73,6 +77,7 @@ export function ProjectFormPage() {
 }
 
 function ProjectForm({ project }: { project: Project | null }) {
+  const { tr } = useLanguage();
   const navigate = useNavigate();
   const [title, setTitle] = useState(project?.title || "");
   const [description, setDescription] = useState(project?.description || "");
@@ -110,11 +115,11 @@ function ProjectForm({ project }: { project: Project | null }) {
     if (submitting) return;
     setError("");
     if (title.trim().length < 2) {
-      setError("Назва має містити щонайменше 2 символи.");
+      setError(tr("Назва має містити щонайменше 2 символи."));
       return;
     }
     if (deadline && Number.isNaN(new Date(deadline).getTime())) {
-      setError("Перевірте дату дедлайну.");
+      setError(tr("Перевірте дату дедлайну."));
       return;
     }
     if (
@@ -122,11 +127,11 @@ function ProjectForm({ project }: { project: Project | null }) {
       deadlineChanged &&
       new Date(deadline).getTime() <= Date.now()
     ) {
-      setError("Дедлайн проєкту має бути в майбутньому.");
+      setError(tr("Дедлайн проєкту має бути в майбутньому."));
       return;
     }
     if (budgetMin && budgetMax && Number(budgetMax) < Number(budgetMin)) {
-      setError("Максимальний бюджет не може бути меншим за мінімальний.");
+      setError(tr("Максимальний бюджет не може бути меншим за мінімальний."));
       return;
     }
     setSubmitting(true);
@@ -166,17 +171,17 @@ function ProjectForm({ project }: { project: Project | null }) {
   return (
     <>
       <Link className="breadcrumb" to={backUrl}>
-        ← {project ? "До проєкту" : "Мої проєкти"}
+        ← {project ? tr("До проєкту") : tr("Мої проєкти")}
       </Link>
       <div className="page-heading">
-        <h1>{project ? "Редагувати проєкт" : "Створити проєкт"}</h1>
-        <p>Назва обов’язкова. Дедлайн указується за місцевим часом.</p>
+        <h1>{project ? tr("Редагувати проєкт") : tr("Створити проєкт")}</h1>
+        <p>{tr("Назва обов’язкова. Дедлайн указується за місцевим часом.")}</p>
       </div>
       <section className="data-panel project-form-panel">
         <form onSubmit={submit} aria-busy={submitting}>
           <fieldset className="form-fields" disabled={submitting}>
             <label htmlFor="project-title">
-              Назва проєкту
+              {tr("Назва проєкту")}
               <input
                 id="project-title"
                 value={title}
@@ -187,7 +192,7 @@ function ProjectForm({ project }: { project: Project | null }) {
               />
             </label>
             <div className="project-form-field">
-              <label htmlFor="project-description">Опис</label>
+              <label htmlFor="project-description">{tr("Опис")}</label>
               <textarea
                 id="project-description"
                 value={description}
@@ -197,7 +202,7 @@ function ProjectForm({ project }: { project: Project | null }) {
               />
             </div>
             <label htmlFor="project-deadline">
-              Дедлайн
+              {tr("Дедлайн")}
               <input
                 id="project-deadline"
                 type="datetime-local"
@@ -210,7 +215,7 @@ function ProjectForm({ project }: { project: Project | null }) {
                 value={deadline}
                 onInvalid={(event) => {
                   event.preventDefault();
-                  setError("Дедлайн проєкту має бути в майбутньому.");
+                  setError(tr("Дедлайн проєкту має бути в майбутньому."));
                 }}
                 onInput={(event) => {
                   setDeadline(event.currentTarget.value);
@@ -219,10 +224,12 @@ function ProjectForm({ project }: { project: Project | null }) {
                 onChange={(event) => setDeadline(event.target.value)}
               />
             </label>
-            <p className="form-note">Новий дедлайн має бути в майбутньому.</p>
+            <p className="form-note">
+              {tr("Новий дедлайн має бути в майбутньому.")}
+            </p>
             <div className="form-row">
               <label>
-                Бюджет від, грн
+                {tr("Бюджет від, грн")}
                 <input
                   type="number"
                   min="0"
@@ -232,7 +239,7 @@ function ProjectForm({ project }: { project: Project | null }) {
                 />
               </label>
               <label>
-                Бюджет до, грн
+                {tr("Бюджет до, грн")}
                 <input
                   type="number"
                   min="0"
@@ -243,12 +250,12 @@ function ProjectForm({ project }: { project: Project | null }) {
               </label>
             </div>
             <label>
-              Категорія
+              {tr("Категорія")}
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="">Без категорії</option>
+                <option value="">{tr("Без категорії")}</option>
                 {categories.data?.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name}
@@ -257,7 +264,7 @@ function ProjectForm({ project }: { project: Project | null }) {
               </select>
             </label>
             <fieldset className="skill-picker">
-              <legend>Потрібні навички</legend>
+              <legend>{tr("Потрібні навички")}</legend>
               {skills.data?.map((skill) => (
                 <label key={skill.id}>
                   <input
@@ -277,7 +284,7 @@ function ProjectForm({ project }: { project: Project | null }) {
             </fieldset>
             {project && (
               <div className="project-form-field">
-                <label htmlFor="edit-project-status">Статус</label>
+                <label htmlFor="edit-project-status">{tr("Статус")}</label>
                 <select
                   id="edit-project-status"
                   value={status}
@@ -287,7 +294,7 @@ function ProjectForm({ project }: { project: Project | null }) {
                 >
                   {Object.entries(projectStatusNames).map(([value, label]) => (
                     <option key={value} value={value}>
-                      {label}
+                      {tr(label)}
                     </option>
                   ))}
                 </select>
@@ -295,14 +302,16 @@ function ProjectForm({ project }: { project: Project | null }) {
             )}
             {!project && (
               <p className="form-note">
-                Новий проєкт матиме статус «Пошук виконавця» і буде доступний
-                фрилансерам.
+                {tr(
+                  "Новий проєкт матиме статус «Пошук виконавця» і буде доступний фрилансерам.",
+                )}
               </p>
             )}
             {project && (status === "COMPLETED" || status === "CANCELLED") && (
               <p className="notice">
-                Після закриття редагування буде недоступне. Для завершення всі
-                завдання та замовлення мають бути закриті.
+                {tr(
+                  "Після закриття редагування буде недоступне. Для завершення всі завдання та замовлення мають бути закриті.",
+                )}
               </p>
             )}
             {error && (
@@ -312,11 +321,11 @@ function ProjectForm({ project }: { project: Project | null }) {
             )}
             <div className="page-actions">
               <button className="button primary" type="submit">
-                {submitting ? "Зберігаємо…" : "Зберегти проєкт"}
+                {submitting ? tr("Зберігаємо…") : tr("Зберегти проєкт")}
               </button>
               {!submitting && (
                 <Link className="button secondary" to={backUrl}>
-                  Скасувати
+                  {tr("Скасувати")}
                 </Link>
               )}
             </div>

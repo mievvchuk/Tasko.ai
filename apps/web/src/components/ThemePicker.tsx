@@ -9,7 +9,7 @@ import {
 import type { ThemePreference } from "../theme";
 
 export function ThemePicker() {
-  const { language } = useLanguage();
+  const { language, tr } = useLanguage();
   const [preference, setPreference] = useState<ThemePreference>(storedTheme);
   useEffect(() => {
     applyTheme(preference);
@@ -29,9 +29,9 @@ export function ThemePicker() {
   const uk = language === "uk";
   return (
     <label className="theme-picker">
-      <span className="theme-picker-label">{uk ? "Тема" : "Theme"}</span>
+      <span className="theme-picker-label">{uk ? tr("Тема") : "Theme"}</span>
       <select
-        aria-label={uk ? "Тема сайту" : "Site theme"}
+        aria-label={uk ? tr("Тема сайту") : "Site theme"}
         value={preference}
         onChange={(event) => {
           const value = readThemePreference(event.target.value);
@@ -43,9 +43,9 @@ export function ThemePicker() {
           }
         }}
       >
-        <option value="light">{uk ? "Світла" : "Light"}</option>
-        <option value="dark">{uk ? "Темна" : "Dark"}</option>
-        <option value="system">{uk ? "Системна" : "System"}</option>
+        <option value="light">{uk ? tr("Світла") : "Light"}</option>
+        <option value="dark">{uk ? tr("Темна") : "Dark"}</option>
+        <option value="system">{uk ? tr("Системна") : "System"}</option>
       </select>
     </label>
   );

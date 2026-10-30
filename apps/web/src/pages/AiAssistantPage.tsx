@@ -4,7 +4,9 @@ import { useApi } from "../useApi";
 import { AiConversation } from "../components/AiConversation";
 import { ResourceState } from "../components/ResourceState";
 
+import { useLanguage } from "../i18n";
 export function AiAssistantPage() {
+  const { tr } = useLanguage();
   const [params] = useSearchParams();
   const projectId = params.get("project");
   const status = useApi<{ configured: boolean; toolsReadOnly: boolean }>(
@@ -15,10 +17,11 @@ export function AiAssistantPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <h1>{aiName}</h1>
+          <h1>{tr(aiName)}</h1>
           <p>
-            AI-помічниця Tasko.ai: дедлайни, завдання, етапи, заявки й
-            завантаження команди.
+            {tr(
+              "AI-помічниця Tasko.ai: дедлайни, завдання, етапи, заявки й завантаження команди.",
+            )}
           </p>
         </div>
         {exchanges.length > 0 && (
@@ -29,7 +32,8 @@ export function AiAssistantPage() {
             onClick={clear}
           >
             <i className="bi bi-trash3" aria-hidden="true"></i>
-            Нова розмова
+
+            {tr("Нова розмова")}
           </button>
         )}
       </div>
@@ -45,27 +49,34 @@ export function AiAssistantPage() {
               <i className="bi bi-stars"></i>
             </span>
             <div>
-              <strong>Привіт! Я {aiName}.</strong>
+              <strong>
+                {tr("Привіт! Я")} {tr(aiName)}.
+              </strong>
               <p>
-                Бачу лише дані, доступні вам, і пам'ятаю цю розмову. Вона ж
-                відкривається кнопкою «{aiName}» на будь-якій сторінці.
+                {tr(
+                  "Бачу лише дані, доступні вам, і пам'ятаю цю розмову. Вона ж відкривається кнопкою «",
+                )}
+                {tr(aiName)}
+                {tr("» на будь-якій сторінці.")}
               </p>
             </div>
           </div>
           {projectId && (
             <p>
-              <Link to={`/projects/${projectId}`}>Вибраний проєкт</Link> ·{" "}
-              <Link to="/ai">Запитати про всі доступні проєкти</Link>
+              <Link to={`/projects/${projectId}`}>{tr("Вибраний проєкт")}</Link>{" "}
+              · <Link to="/ai">{tr("Запитати про всі доступні проєкти")}</Link>
             </p>
           )}
           {!status.data.configured && (
             <p className="notice error" role="alert">
-              AI-провайдер ще не підключений. Зверніться до адміністратора.
+              {tr(
+                "AI-провайдер ще не підключений. Зверніться до адміністратора.",
+              )}
             </p>
           )}
           <AiConversation
             variant="page"
-            context={projectId ? `Проєкт з ID ${projectId}.` : undefined}
+            context={projectId ? tr("Проєкт з ID {0}.", projectId) : undefined}
             configured={status.data.configured}
           />
         </section>

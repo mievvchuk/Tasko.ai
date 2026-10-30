@@ -7,6 +7,8 @@ import { formatDate } from "../format";
 import type { Project, ProjectMilestone } from "../types";
 import { useApi } from "../useApi";
 
+import { useLanguage } from "../i18n";
+import { uiLocale } from "../i18n.en";
 const workNames = {
   PLANNED: "Заплановано",
   IN_PROGRESS: "У роботі",
@@ -20,6 +22,7 @@ const paymentNames = {
 };
 
 export function ProjectMilestonesPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
   const milestones = useApi<ProjectMilestone[]>(
@@ -45,7 +48,7 @@ export function ProjectMilestonesPage() {
       });
       setTitle("");
       setAmount("");
-      setNotice("Етап додано.");
+      setNotice(tr("Етап додано."));
       milestones.refresh();
     } catch (e) {
       setError(errorMessage(e));
@@ -63,11 +66,15 @@ export function ProjectMilestonesPage() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading">
-        <h1>Етапи та умовна оплата</h1>
-        <p>Суми й статуси тут є обліковими та не виконують реальний платіж.</p>
+        <h1>{tr("Етапи та умовна оплата")}</h1>
+        <p>
+          {tr(
+            "Суми й статуси тут є обліковими та не виконують реальний платіж.",
+          )}
+        </p>
       </div>
       {notice && <p className="notice success">{notice}</p>}
       {error && <p className="form-error">{error}</p>}
@@ -85,7 +92,7 @@ export function ProjectMilestonesPage() {
           onSubmit={(e) => void create(e)}
         >
           <label>
-            Назва етапу
+            {tr("Назва етапу")}
             <input
               required
               minLength={2}
@@ -94,7 +101,7 @@ export function ProjectMilestonesPage() {
             />
           </label>
           <label>
-            Сума, грн
+            {tr("Сума, грн")}
             <input
               required
               type="number"
@@ -105,7 +112,8 @@ export function ProjectMilestonesPage() {
           </label>
           <button className="button primary">
             <i className="bi bi-plus-lg" aria-hidden="true"></i>
-            Додати етап
+
+            {tr("Додати етап")}
           </button>
         </form>
       )}
@@ -115,22 +123,24 @@ export function ProjectMilestonesPage() {
             <h2>
               {item.position}. {item.title}
             </h2>
-            <p>{item.description || "Без опису"}</p>
+            <p>{item.description || tr("Без опису")}</p>
             <dl className="marketplace-facts">
               <div>
-                <dt>Статус</dt>
-                <dd>{workNames[item.status]}</dd>
+                <dt>{tr("Статус")}</dt>
+                <dd>{tr(workNames[item.status])}</dd>
               </div>
               <div>
-                <dt>Умовна оплата</dt>
-                <dd>{paymentNames[item.paymentStatus]}</dd>
+                <dt>{tr("Умовна оплата")}</dt>
+                <dd>{tr(paymentNames[item.paymentStatus])}</dd>
               </div>
               <div>
-                <dt>Сума</dt>
-                <dd>{item.amount.toLocaleString("uk-UA")} грн</dd>
+                <dt>{tr("Сума")}</dt>
+                <dd>
+                  {item.amount.toLocaleString(uiLocale())} {tr("грн")}
+                </dd>
               </div>
               <div>
-                <dt>Дедлайн</dt>
+                <dt>{tr("Дедлайн")}</dt>
                 <dd>{formatDate(item.deadline)}</dd>
               </div>
             </dl>
@@ -140,7 +150,7 @@ export function ProjectMilestonesPage() {
                   className="button secondary"
                   onClick={() => void update(item, { status: "IN_PROGRESS" })}
                 >
-                  Почати
+                  {tr("Почати")}
                 </button>
               )}
               {item.status === "IN_PROGRESS" && !owner && (
@@ -148,7 +158,7 @@ export function ProjectMilestonesPage() {
                   className="button secondary"
                   onClick={() => void update(item, { status: "REVIEW" })}
                 >
-                  Передати на перевірку
+                  {tr("Передати на перевірку")}
                 </button>
               )}
               {item.status === "REVIEW" && owner && (
@@ -157,27 +167,27 @@ export function ProjectMilestonesPage() {
                     className="button primary"
                     onClick={() => void update(item, { status: "COMPLETED" })}
                   >
-                    Прийняти
+                    {tr("Прийняти")}
                   </button>
                   <button
                     className="button secondary"
                     onClick={() => void update(item, { status: "IN_PROGRESS" })}
                   >
-                    Повернути
+                    {tr("Повернути")}
                   </button>
                 </>
               )}
               {owner && (
                 <select
-                  aria-label={`Оплата ${item.title}`}
+                  aria-label={tr("Оплата {0}", item.title)}
                   value={item.paymentStatus}
                   onChange={(e) =>
                     void update(item, { paymentStatus: e.target.value })
                   }
                 >
-                  <option value="UNPAID">Не зарезервовано</option>
-                  <option value="RESERVED">Умовно зарезервовано</option>
-                  <option value="PAID">Позначити оплаченим</option>
+                  <option value="UNPAID">{tr("Не зарезервовано")}</option>
+                  <option value="RESERVED">{tr("Умовно зарезервовано")}</option>
+                  <option value="PAID">{tr("Позначити оплаченим")}</option>
                 </select>
               )}
             </div>
@@ -185,7 +195,7 @@ export function ProjectMilestonesPage() {
         ))}
         {!milestones.data?.length && !milestones.loading && (
           <div className="empty-state data-panel">
-            <h3>Етапів ще немає</h3>
+            <h3>{tr("Етапів ще немає")}</h3>
           </div>
         )}
       </section>

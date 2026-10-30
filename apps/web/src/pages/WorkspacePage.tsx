@@ -11,11 +11,13 @@ import { SecuritySettings } from "../components/SecuritySettings";
 import { FreelancerProfileEditor } from "../components/FreelancerProfileEditor";
 import { UserAvatar } from "../components/UserAvatar";
 
+import { useLanguage } from "../i18n";
 const maxPhotoSize = 2 * 1024 * 1024;
 const photoTypes = ["image/png", "image/jpeg", "image/webp"];
 
 // Сторінка «Мій профіль»: фото, ім'я, статистика, профіль фрилансера та безпека
 export function WorkspacePage() {
+  const { tr } = useLanguage();
   const { user, updateUser } = useAuth();
   const stats = useApi<DashboardSummary>("/analytics/dashboard");
   const fileInput = useRef<HTMLInputElement>(null);
@@ -50,14 +52,14 @@ export function WorkspacePage() {
     // Швидка перевірка в браузері; остаточна — на сервері за вмістом файлу
     if (!photoTypes.includes(file.type) || file.size > maxPhotoSize) {
       setMessage("");
-      setError("Оберіть фото PNG, JPG або WEBP розміром до 2 МБ.");
+      setError(tr("Оберіть фото PNG, JPG або WEBP розміром до 2 МБ."));
       return;
     }
     const body = new FormData();
     body.append("file", file);
     await run(
       () => request<User>("/profile/avatar", { method: "POST", body }),
-      "Фото профілю оновлено.",
+      tr("Фото профілю оновлено."),
     );
   }
 
@@ -69,26 +71,28 @@ export function WorkspacePage() {
           method: "PATCH",
           body: { name },
         }),
-      "Ім'я збережено.",
+      tr("Ім'я збережено."),
     );
     if (saved) setEditingName(false);
   }
 
   const statItems = stats.data
     ? [
-        { label: "Проєкти", value: stats.data.projects },
-        { label: "Активні проєкти", value: stats.data.activeProjects },
-        { label: "Завдання", value: stats.data.tasks },
-        { label: "Виконано", value: stats.data.completedTasks },
+        { label: tr("Проєкти"), value: stats.data.projects },
+        { label: tr("Активні проєкти"), value: stats.data.activeProjects },
+        { label: tr("Завдання"), value: stats.data.tasks },
+        { label: tr("Виконано"), value: stats.data.completedTasks },
       ]
     : [];
 
   return (
     <>
       <div className="page-heading">
-        <h1>Мій профіль</h1>
+        <h1>{tr("Мій профіль")}</h1>
         <p>
-          Фото, особисті дані, профіль виконавця та безпека облікового запису.
+          {tr(
+            "Фото, особисті дані, профіль виконавця та безпека облікового запису.",
+          )}
         </p>
       </div>
 
@@ -115,7 +119,7 @@ export function WorkspacePage() {
               onClick={() => fileInput.current?.click()}
             >
               <i className="bi bi-camera" aria-hidden="true"></i>
-              {user.avatarUrl ? "Змінити фото" : "Додати фото"}
+              {user.avatarUrl ? tr("Змінити фото") : tr("Додати фото")}
             </button>
             {user.avatarUrl && (
               <button
@@ -126,22 +130,25 @@ export function WorkspacePage() {
                   void run(
                     () =>
                       request<User>("/profile/avatar", { method: "DELETE" }),
-                    "Фото профілю видалено.",
+                    tr("Фото профілю видалено."),
                   )
                 }
               >
                 <i className="bi bi-trash3" aria-hidden="true"></i>
-                Видалити
+
+                {tr("Видалити")}
               </button>
             )}
           </div>
-          <small className="form-note">PNG, JPG або WEBP, до 2 МБ</small>
+          <small className="form-note">
+            {tr("PNG, JPG або WEBP, до 2 МБ")}
+          </small>
         </div>
 
         <div className="profile-info">
           {editingName ? (
             <form className="profile-name-form" onSubmit={saveName}>
-              <label htmlFor="profile-name-input">Ім'я</label>
+              <label htmlFor="profile-name-input">{tr("Ім'я")}</label>
               <div>
                 <input
                   id="profile-name-input"
@@ -153,7 +160,7 @@ export function WorkspacePage() {
                   onChange={(event) => setName(event.target.value)}
                 />
                 <button className="button primary" disabled={busy}>
-                  Зберегти
+                  {tr("Зберегти")}
                 </button>
                 <button
                   type="button"
@@ -161,7 +168,7 @@ export function WorkspacePage() {
                   disabled={busy}
                   onClick={() => setEditingName(false)}
                 >
-                  Скасувати
+                  {tr("Скасувати")}
                 </button>
               </div>
             </form>
@@ -171,8 +178,8 @@ export function WorkspacePage() {
               <button
                 type="button"
                 className="icon-action"
-                aria-label="Змінити ім'я"
-                title="Змінити ім'я"
+                aria-label={tr("Змінити ім'я")}
+                title={tr("Змінити ім'я")}
                 onClick={() => {
                   setName(user.name);
                   setEditingName(true);
@@ -182,28 +189,32 @@ export function WorkspacePage() {
               </button>
             </div>
           )}
-          <span className="role-pill">{roleNames[user.role]}</span>
+          <span className="role-pill">{tr(roleNames[user.role])}</span>
           <dl className="profile-facts">
             <div>
               <dt>
                 <i className="bi bi-envelope" aria-hidden="true"></i>
-                Пошта
+
+                {tr("Пошта")}
               </dt>
               <dd>{user.email}</dd>
             </div>
             <div>
               <dt>
-                <i className="bi bi-calendar3" aria-hidden="true"></i>У Tasko.ai
-                з
+                <i className="bi bi-calendar3" aria-hidden="true"></i>
+                {tr("У Tasko.ai з")}
               </dt>
               <dd>{formatDate(user.createdAt ?? null)}</dd>
             </div>
             <div>
               <dt>
                 <i className="bi bi-shield-lock" aria-hidden="true"></i>
-                Двофакторний вхід
+
+                {tr("Двофакторний вхід")}
               </dt>
-              <dd>{user.twoFactorEnabled ? "Увімкнено" : "Вимкнено"}</dd>
+              <dd>
+                {user.twoFactorEnabled ? tr("Увімкнено") : tr("Вимкнено")}
+              </dd>
             </div>
           </dl>
           {user.role === "FREELANCER" && (
@@ -212,7 +223,8 @@ export function WorkspacePage() {
               to={`/freelancers/${user.id}`}
             >
               <i className="bi bi-eye" aria-hidden="true"></i>
-              Як мій профіль бачать клієнти
+
+              {tr("Як мій профіль бачать клієнти")}
             </Link>
           )}
           {message && (
@@ -228,7 +240,7 @@ export function WorkspacePage() {
         </div>
 
         {statItems.length > 0 && (
-          <ul className="profile-stats" aria-label="Статистика">
+          <ul className="profile-stats" aria-label={tr("Статистика")}>
             {statItems.map((item) => (
               <li key={item.label}>
                 <strong>{item.value}</strong>

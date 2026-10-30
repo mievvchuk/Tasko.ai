@@ -2,7 +2,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { errorMessage, request } from "../api";
 import type { OwnFreelancerProfile, PortfolioItem } from "../types";
 
+import { useLanguage } from "../i18n";
 export function FreelancerProfileEditor() {
+  const { tr } = useLanguage();
   const [profile, setProfile] = useState<OwnFreelancerProfile | null>(null);
   const [bio, setBio] = useState("");
   const [rate, setRate] = useState("");
@@ -43,7 +45,7 @@ export function FreelancerProfileEditor() {
             .filter(Boolean),
         },
       });
-      setMessage("Профіль збережено.");
+      setMessage(tr("Профіль збережено."));
       await load();
     } catch (e) {
       setError(errorMessage(e));
@@ -80,20 +82,20 @@ export function FreelancerProfileEditor() {
     ),
   ];
   if (!profile && !error)
-    return <div className="page-loading">Завантажуємо профіль…</div>;
+    return <div className="page-loading">{tr("Завантажуємо профіль…")}</div>;
   return (
     <section className="account-panel">
       <div className="section-heading">
         <div>
-          <h2>Профіль фрилансера</h2>
-          <p>Ці дані бачить клієнт під час вибору виконавця.</p>
+          <h2>{tr("Профіль фрилансера")}</h2>
+          <p>{tr("Ці дані бачить клієнт під час вибору виконавця.")}</p>
         </div>
       </div>
       {message && <p className="notice success">{message}</p>}
       {error && <p className="form-error">{error}</p>}
       <form className="form-grid" onSubmit={(e) => void save(e)}>
         <label className="full-width">
-          Про себе
+          {tr("Про себе")}
           <textarea
             maxLength={3000}
             value={bio}
@@ -101,7 +103,7 @@ export function FreelancerProfileEditor() {
           />
         </label>
         <label>
-          Ставка за годину, грн
+          {tr("Ставка за годину, грн")}
           <input
             type="number"
             min="0"
@@ -111,18 +113,18 @@ export function FreelancerProfileEditor() {
           />
         </label>
         <label>
-          Доступність
+          {tr("Доступність")}
           <select
             value={availability}
             onChange={(e) => setAvailability(e.target.value)}
           >
-            <option value="AVAILABLE">Доступний</option>
-            <option value="BUSY">Зайнятий</option>
-            <option value="UNAVAILABLE">Недоступний</option>
+            <option value="AVAILABLE">{tr("Доступний")}</option>
+            <option value="BUSY">{tr("Зайнятий")}</option>
+            <option value="UNAVAILABLE">{tr("Недоступний")}</option>
           </select>
         </label>
         <label className="full-width">
-          Навички через кому
+          {tr("Навички через кому")}
           <input
             value={skills}
             onChange={(e) => setSkills(e.target.value)}
@@ -131,18 +133,18 @@ export function FreelancerProfileEditor() {
         </label>
         {/* Чипи — як клієнт побачить навички (оновлюються під час введення) */}
         {skillList.length > 0 && (
-          <ul className="skill-chips full-width" aria-label="Навички">
+          <ul className="skill-chips full-width" aria-label={tr("Навички")}>
             {skillList.map((skill) => (
               <li key={skill}>{skill}</li>
             ))}
           </ul>
         )}
-        <button className="button primary">Зберегти профіль</button>
+        <button className="button primary">{tr("Зберегти профіль")}</button>
       </form>
-      <h3>Портфоліо</h3>
+      <h3>{tr("Портфоліо")}</h3>
       <form className="inline-form" onSubmit={(e) => void addPortfolio(e)}>
         <label>
-          Назва
+          {tr("Назва")}
           <input
             required
             minLength={2}
@@ -151,7 +153,7 @@ export function FreelancerProfileEditor() {
           />
         </label>
         <label>
-          HTTPS-посилання
+          {tr("HTTPS-посилання")}
           <input
             required
             type="url"
@@ -162,7 +164,8 @@ export function FreelancerProfileEditor() {
         </label>
         <button className="button secondary">
           <i className="bi bi-plus-lg" aria-hidden="true"></i>
-          Додати роботу
+
+          {tr("Додати роботу")}
         </button>
       </form>
       <div className="simple-list portfolio-list">
@@ -179,7 +182,8 @@ export function FreelancerProfileEditor() {
               onClick={() => void remove(item.id)}
             >
               <i className="bi bi-trash" aria-hidden="true"></i>
-              Видалити
+
+              {tr("Видалити")}
             </button>
           </article>
         ))}

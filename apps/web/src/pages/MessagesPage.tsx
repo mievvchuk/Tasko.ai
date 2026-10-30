@@ -9,15 +9,17 @@ import { ProjectPicker } from "../components/ProjectPicker";
 import { Pagination, ResourceState } from "../components/ResourceState";
 import type { Project, ProjectMember, ProjectMessage } from "../types";
 
+import { useLanguage } from "../i18n";
 export function MessagesPage() {
+  const { tr } = useLanguage();
   const [params, setParams] = useSearchParams();
   const projectId = params.get("project") || "";
   const project = useApi<Project>(projectId ? `/projects/${projectId}` : null);
   return (
     <>
       <div className="page-heading">
-        <h1>Повідомлення</h1>
-        <p>Обговорення доступні лише учасникам відповідного проєкту.</p>
+        <h1>{tr("Повідомлення")}</h1>
+        <p>{tr("Обговорення доступні лише учасникам відповідного проєкту.")}</p>
       </div>
       <ProjectPicker
         value={projectId}
@@ -37,6 +39,7 @@ export function MessagesPage() {
 }
 
 function ProjectMessages({ project }: { project: Project }) {
+  const { tr } = useLanguage();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
@@ -53,7 +56,7 @@ function ProjectMessages({ project }: { project: Project }) {
     if (busy) return;
     setError("");
     if (!content.trim()) {
-      setError("Напишіть повідомлення.");
+      setError(tr("Напишіть повідомлення."));
       return;
     }
     setBusy(true);
@@ -72,11 +75,11 @@ function ProjectMessages({ project }: { project: Project }) {
     }
   }
   function senderName(id: string) {
-    if (id === user?.id) return user.name + " (ви)";
-    if (id === project.clientId) return "Клієнт проєкту";
+    if (id === user?.id) return user.name + tr(" (ви)");
+    if (id === project.clientId) return tr("Клієнт проєкту");
     return (
       members.data?.find((member) => member.userId === id)?.user?.name ||
-      "Користувач " + id.slice(0, 8)
+      tr("Користувач ") + id.slice(0, 8)
     );
   }
   return (
@@ -84,7 +87,7 @@ function ProjectMessages({ project }: { project: Project }) {
       <div className="panel-heading">
         <div>
           <h2>{project.title}</h2>
-          <Link to={`/projects/${project.id}`}>До проєкту</Link>
+          <Link to={`/projects/${project.id}`}>{tr("До проєкту")}</Link>
         </div>
         <button
           className="button secondary"
@@ -94,7 +97,8 @@ function ProjectMessages({ project }: { project: Project }) {
           }}
         >
           <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-          Оновити повідомлення
+
+          {tr("Оновити повідомлення")}
         </button>
       </div>
       <ResourceState
@@ -109,7 +113,9 @@ function ProjectMessages({ project }: { project: Project }) {
         <>
           <div className="message-list padded" aria-live="polite">
             {!messages.data.length && (
-              <p className="form-note">На цій сторінці повідомлень немає.</p>
+              <p className="form-note">
+                {tr("На цій сторінці повідомлень немає.")}
+              </p>
             )}
             {[...messages.data].reverse().map((message) => (
               <article
@@ -129,8 +135,9 @@ function ProjectMessages({ project }: { project: Project }) {
             ))}
           </div>
           <p className="form-note padded">
-            Перша сторінка містить найновіші повідомлення. Наступні сторінки —
-            раніші.
+            {tr(
+              "Перша сторінка містить найновіші повідомлення. Наступні сторінки — раніші.",
+            )}
           </p>
           <Pagination
             page={page}
@@ -144,11 +151,11 @@ function ProjectMessages({ project }: { project: Project }) {
       <div className="padded">
         {closed ? (
           <p className="form-note">
-            Проєкт закрито. Обговорення доступне для читання.
+            {tr("Проєкт закрито. Обговорення доступне для читання.")}
           </p>
         ) : (
           <form className="work-form" onSubmit={send}>
-            <label htmlFor="message-content">Нове повідомлення</label>
+            <label htmlFor="message-content">{tr("Нове повідомлення")}</label>
             <textarea
               id="message-content"
               required
@@ -165,7 +172,7 @@ function ProjectMessages({ project }: { project: Project }) {
             )}
             <button className="button primary" disabled={busy}>
               <i className="bi bi-send" aria-hidden="true"></i>
-              {busy ? "Надсилаємо…" : "Надіслати повідомлення"}
+              {busy ? tr("Надсилаємо…") : tr("Надіслати повідомлення")}
             </button>
           </form>
         )}

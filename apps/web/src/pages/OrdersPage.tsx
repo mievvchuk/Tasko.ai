@@ -8,7 +8,9 @@ import { Pagination, ResourceState } from "../components/ResourceState";
 import { orderStatusNames } from "../types";
 import type { Project, Order, OrderStatus } from "../types";
 
+import { useLanguage } from "../i18n";
 export function OrdersPage() {
+  const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
@@ -50,11 +52,11 @@ export function OrdersPage() {
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
-        ← До проєкту
+        {tr("← До проєкту")}
       </Link>
       <div className="page-heading heading-with-action">
         <div>
-          <h1>Замовлення</h1>
+          <h1>{tr("Замовлення")}</h1>
           <p>{project.data.title}</p>
         </div>
         {canManage && (
@@ -66,16 +68,18 @@ export function OrdersPage() {
             }}
           >
             <i className="bi bi-plus-lg" aria-hidden="true"></i>
-            Створити замовлення
+
+            {tr("Створити замовлення")}
           </button>
         )}
       </div>
       <section className="data-panel">
         <div className="panel-heading">
-          <h2>Замовлення проєкту</h2>
+          <h2>{tr("Замовлення проєкту")}</h2>
           <button className="button secondary" onClick={orders.refresh}>
             <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-            Оновити
+
+            {tr("Оновити")}
           </button>
         </div>
         {error && (
@@ -92,19 +96,23 @@ export function OrdersPage() {
           <>
             <ul className="record-list padded">
               {!orders.data.length && (
-                <li className="form-note">На цій сторінці замовлень немає.</li>
+                <li className="form-note">
+                  {tr("На цій сторінці замовлень немає.")}
+                </li>
               )}
               {orders.data.map((order) => (
                 <li key={order.id}>
                   <div className="record-heading">
-                    <strong>Замовлення {order.id.slice(0, 8)}</strong>
+                    <strong>
+                      {tr("Замовлення")} {order.id.slice(0, 8)}
+                    </strong>
                     <span className="project-status">
-                      {orderStatusNames[order.status]}
+                      {tr(orderStatusNames[order.status])}
                     </span>
                   </div>
                   <p className="form-note">
-                    Створено: {formatDate(order.createdAt, true)} · Оновлено:{" "}
-                    {formatDate(order.updatedAt, true)}
+                    {tr("Створено:")} {formatDate(order.createdAt, true)}{" "}
+                    {tr("· Оновлено:")} {formatDate(order.updatedAt, true)}
                   </p>
                   {canManage &&
                     ["PENDING", "IN_PROGRESS"].includes(order.status) && (
@@ -122,8 +130,8 @@ export function OrdersPage() {
                           }}
                         >
                           {order.status === "PENDING"
-                            ? "Розпочати замовлення"
-                            : "Завершити замовлення"}
+                            ? tr("Розпочати замовлення")
+                            : tr("Завершити замовлення")}
                         </button>
                         <button
                           className="button secondary"
@@ -131,13 +139,15 @@ export function OrdersPage() {
                           onClick={() => {
                             if (
                               window.confirm(
-                                "Скасувати це замовлення? Повернути його в роботу буде неможливо.",
+                                tr(
+                                  "Скасувати це замовлення? Повернути його в роботу буде неможливо.",
+                                ),
                               )
                             )
                               void save(order.id, "CANCELLED");
                           }}
                         >
-                          Скасувати замовлення
+                          {tr("Скасувати замовлення")}
                         </button>
                       </div>
                     )}
