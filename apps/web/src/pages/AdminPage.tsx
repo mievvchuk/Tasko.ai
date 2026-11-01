@@ -1,136 +1,197 @@
-import type { FormEvent } from "react";
-import { useSearchParams } from "react-router";
+import { useState } from "react";
+import { Link } from "react-router";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
-import { parsePage } from "../format";
+import { formatDate } from "../format";
 import { Pagination, ResourceState } from "../components/ResourceState";
+import { UserAvatar } from "../components/UserAvatar";
 import { roleNames } from "../types";
 import type { AdminUser, AdminReport } from "../types";
 import {
   AccountStatusOptions,
-  AdminComplaints,
-  AdminReportSummary,
-  AdminUserCard,
+  AdminStats,
+  BreakdownCharts,
+  DataTable,
+  FilterSelect,
+  GrowthChart,
+  ListToolbar,
+  ReportExport,
   RoleOptions,
+  StatusPill,
+  UserDialog,
+  accountStatusNames,
+  allowedOrEmpty,
+  useListParams,
 } from "./AdminSections";
+import type { Column } from "./AdminSections";
 
 import { useLanguage } from "../i18n";
+
+// Огляд: метрики, графіки, експорт звіту й нові користувачі.
 export function AdminPage() {
   const { tr } = useLanguage();
-  const { user } = useAuth();
-  const [params, setParams] = useSearchParams();
-  const isAdmin = user?.role === "ADMIN";
-  // Фільтри беремо з адресного рядка, але лише допустимі значення.
-  const page = parsePage(params.get("page"));
-  const role = allowedOrEmpty(params.get("role"), Object.keys(roleNames));
-  const status = allowedOrEmpty(params.get("status"), ["ACTIVE", "BLOCKED"]);
-  const search = (params.get("search") ?? "").slice(0, 100);
-
-  const query = new URLSearchParams({ page: String(page), limit: "20" });
-  if (role) query.set("role", role);
-  if (status) query.set("status", status);
-  if (search) query.set("search", search);
-  const users = useApi<AdminUser[]>(isAdmin ? `/admin/users?${query}` : null);
-  const report = useApi<AdminReport>(isAdmin ? "/admin/report" : null);
-
-  function refreshAll() {
-    users.refresh();
-    report.refresh();
-  }
-
-  // Зміна фільтра повертає на першу сторінку списку.
-  function changeFilter(name: string, value: string) {
-    const next = new URLSearchParams(params);
-    next.delete("page");
-    if (value) next.set(name, value);
-    else next.delete(name);
-    setParams(next);
-  }
-
-  function submitSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    changeFilter("search", String(data.get("search") || "").trim());
-  }
-
-  function changePage(value: number) {
-    const next = new URLSearchParams(params);
-    next.set("page", String(value));
-    setParams(next);
-  }
-
-  if (!user || !isAdmin)
-    return (
-      <section className="account-panel">
-        <h1>{tr("Доступ заборонено")}</h1>
-        <p>{tr("Ця сторінка доступна лише адміністратору.")}</p>
-      </section>
-    );
+  const report = useApi<AdminReport>("/admin/report");
+  const latest = useApi<AdminUser[]>("/admin/users?limit=5");
 
   return (
     <>
-      <div className="page-heading">
-        <h1>{tr("Панель адміністратора")}</h1>
-        <p>{tr("Статистика всієї платформи, облікові записи та скарги.")}</p>
+      <div className="admin-page-heading">
+        <div>
+          <h1>{tr("Панель адміністратора")}</h1>
+          <p>{tr("Статистика всієї платформи, облікові записи та скарги.")}</p>
+        </div>
+        <ReportExport />
       </div>
       <ResourceState
         loading={report.loading}
         error={report.error}
         onRetry={report.refresh}
       />
-      {report.data && <AdminReportSummary report={report.data} />}
-      <section className="data-panel">
-        <div className="panel-heading">
-          <h2>{tr("Користувачі")}</h2>
-          <button className="button secondary" onClick={refreshAll}>
-            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-
-            {tr("Оновити дані")}
-          </button>
-        </div>
-        <div className="task-filters padded">
-          <form className="task-search" onSubmit={submitSearch}>
-            <label htmlFor="admin-user-search">{tr("Пошук користувача")}</label>
-            <div>
-              <input
-                key={search}
-                id="admin-user-search"
-                name="search"
-                type="search"
-                maxLength={100}
-                defaultValue={search}
-                placeholder={tr("Ім'я або email")}
+      {report.data && (
+        <>
+          <AdminStats report={report.data} />
+          <div className="admin-overview">
+            <GrowthChart report={report.data} />
+            <section className="chart-card admin-recent">
+              <div className="admin-recent-heading">
+                <h2>{tr("Нові користувачі")}</h2>
+                <Link to="/admin/users">{tr("Усі")}</Link>
+              </div>
+              <ResourceState
+                loading={latest.loading}
+                error={latest.error}
+                onRetry={latest.refresh}
               />
-              <button className="button secondary" type="submit">
-                {tr("Знайти")}
-              </button>
-            </div>
-          </form>
-          <div className="filter-field">
-            <label htmlFor="admin-role-filter">{tr("Роль")}</label>
-            <select
-              id="admin-role-filter"
-              value={role}
-              onChange={(event) => changeFilter("role", event.target.value)}
-            >
-              <option value="">{tr("Усі ролі")}</option>
-              <RoleOptions />
-            </select>
+              <ul>
+                {latest.data?.map((person) => (
+                  <li key={person.id}>
+                    <UserAvatar
+                      name={person.name}
+                      avatarUrl={person.avatarUrl}
+                      size="small"
+                    />
+                    <span>
+                      <strong>{person.name}</strong>
+                      <small>{person.email}</small>
+                    </span>
+                    <small>{tr(roleNames[person.role])}</small>
+                  </li>
+                ))}
+              </ul>
+            </section>
           </div>
-          <div className="filter-field">
-            <label htmlFor="admin-status-filter">
-              {tr("Стан облікового запису")}
-            </label>
-            <select
-              id="admin-status-filter"
-              value={status}
-              onChange={(event) => changeFilter("status", event.target.value)}
-            >
-              <option value="">{tr("Усі стани")}</option>
-              <AccountStatusOptions />
-            </select>
-          </div>
+          <BreakdownCharts report={report.data} />
+        </>
+      )}
+    </>
+  );
+}
+
+// Таблиця користувачів: пошук і фільтри на сервері, зміна ролі/стану в діалозі.
+export function AdminUsersPage() {
+  const { tr } = useLanguage();
+  const { user } = useAuth();
+  const { params, page, search, set, reset } = useListParams();
+  const role = allowedOrEmpty(params.get("role"), Object.keys(roleNames));
+  const status = allowedOrEmpty(params.get("status"), ["ACTIVE", "BLOCKED"]);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
+
+  const query = new URLSearchParams({ page: String(page), limit: "20" });
+  if (role) query.set("role", role);
+  if (status) query.set("status", status);
+  if (search) query.set("search", search);
+  const users = useApi<AdminUser[]>(`/admin/users?${query}`);
+
+  const columns: Column<AdminUser>[] = [
+    {
+      key: "name",
+      label: tr("Користувач"),
+      sort: (row) => row.name,
+      render: (row) => (
+        <span className="admin-user-cell">
+          <UserAvatar name={row.name} avatarUrl={row.avatarUrl} size="small" />
+          <span>
+            <strong>
+              {row.name}
+              {row.id === user?.id && tr(" (ви)")}
+            </strong>
+            <small>{row.email}</small>
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: "role",
+      label: tr("Роль"),
+      sort: (row) => tr(roleNames[row.role]),
+      render: (row) => tr(roleNames[row.role]),
+    },
+    {
+      key: "status",
+      label: tr("Стан"),
+      sort: (row) => row.status,
+      render: (row) => (
+        <StatusPill
+          status={row.status}
+          label={tr(accountStatusNames[row.status])}
+        />
+      ),
+    },
+    {
+      key: "createdAt",
+      label: tr("Зареєстровано"),
+      sort: (row) => row.createdAt,
+      render: (row) => formatDate(row.createdAt),
+    },
+    {
+      key: "actions",
+      label: tr("Дії"),
+      render: (row) => (
+        <button
+          className="button secondary"
+          aria-label={tr("Редагувати {0}", row.name)}
+          onClick={() => setEditing(row)}
+        >
+          <i className="bi bi-pencil" aria-hidden="true"></i>
+          {tr("Редагувати")}
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <div className="admin-page-heading">
+        <div>
+          <h1>{tr("Користувачі")}</h1>
+          <p>{tr("Облікові записи платформи: роль і стан доступу.")}</p>
         </div>
+      </div>
+      <section className="data-panel admin-panel">
+        <ListToolbar
+          search={search}
+          placeholder={tr("Ім'я або email")}
+          filtered={Boolean(search || role || status)}
+          onSearch={(value) => set("search", value)}
+          onReset={reset}
+        >
+          <FilterSelect
+            label={tr("Роль")}
+            value={role}
+            onChange={(value) => set("role", value)}
+          >
+            <option value="">{tr("Усі ролі")}</option>
+            <RoleOptions />
+          </FilterSelect>
+          <FilterSelect
+            label={tr("Стан облікового запису")}
+            value={status}
+            onChange={(value) => set("status", value)}
+          >
+            <option value="">{tr("Усі стани")}</option>
+            <AccountStatusOptions />
+          </FilterSelect>
+        </ListToolbar>
         <ResourceState
           loading={users.loading}
           error={users.error}
@@ -138,38 +199,32 @@ export function AdminPage() {
         />
         {users.data && (
           <>
-            <div className="padded">
-              {!users.data.length && (
-                <p className="form-note">
-                  {search || role || status
-                    ? tr("За цими умовами користувачів не знайдено.")
-                    : tr("На цій сторінці користувачів не знайдено.")}
-                </p>
-              )}
-              {users.data.map((person) => (
-                <AdminUserCard
-                  // Нова роль або стан у key скидає форму після збереження.
-                  key={`${person.id}-${person.role}-${person.status}`}
-                  user={person}
-                  self={person.id === user.id}
-                  onSaved={refreshAll}
-                />
-              ))}
-            </div>
+            <DataTable
+              caption={tr("Користувачі")}
+              columns={columns}
+              rows={users.data}
+              empty={
+                search || role || status
+                  ? tr("За цими умовами користувачів не знайдено.")
+                  : tr("На цій сторінці користувачів не знайдено.")
+              }
+            />
             <Pagination
               page={page}
               count={users.data.length}
-              onChange={changePage}
+              onChange={(value) => set("page", String(value))}
             />
           </>
         )}
       </section>
-      <AdminComplaints />
+      {editing && (
+        <UserDialog
+          user={editing}
+          self={editing.id === user?.id}
+          onSaved={users.refresh}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </>
   );
-}
-
-// Повертає значення, якщо воно є серед дозволених, інакше порожній рядок.
-function allowedOrEmpty(value: string | null, allowed: string[]) {
-  return value && allowed.includes(value) ? value : "";
 }

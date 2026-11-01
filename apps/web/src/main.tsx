@@ -5,8 +5,7 @@ import { AuthProvider } from "./auth";
 import { App } from "./App";
 import { LanguageProvider } from "./i18n";
 import "bootstrap-icons/font/bootstrap-icons.css"; // іконки: лише шрифт і класи bi-*
-import "./styles.css";
-import "./redesign.css"; // новий дизайн — підключаємо ПІСЛЯ старих стилів
+import "./app.css";
 import { applyTheme, storedTheme } from "./theme";
 
 applyTheme(storedTheme());
