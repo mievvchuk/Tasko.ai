@@ -71,7 +71,7 @@ export function App() {
     return (
       <main className="connection-screen">
         <section className="auth-card">
-          <span className="card-kicker">TASKO.AI</span>
+          <span className="card-kicker">Tasko.ai</span>
           <h1>{tr("Не вдалося відновити сеанс")}</h1>
           <p role="alert">{connectionError}</p>
           <div className="connection-actions">

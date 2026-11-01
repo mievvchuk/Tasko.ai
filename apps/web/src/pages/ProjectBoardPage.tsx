@@ -296,7 +296,7 @@ export function ProjectBoardPage() {
                       title={tr("Видалити колонку")}
                       onClick={() => void deleteColumn(lane)}
                     >
-                      <i className="bi bi-x-lg" aria-hidden="true"></i>
+                      <span className="bi bi-x-lg" aria-hidden="true"></span>
                     </button>
                   )}
                 </h2>

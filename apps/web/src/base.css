@@ -1,0 +1,66 @@
+/* Базові правила для всіх сторінок: скидання стилів браузера, текст, фокус і зменшений рух. */
+*, *::before, *::after { box-sizing: border-box; }
+/* clip, а не hidden: так sticky- і fixed-елементи продовжують працювати */
+html, body { overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--color-muted) var(--color-paper); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  caret-color: var(--color-accent);
+}
+::selection { background: var(--color-accent-soft); color: var(--color-ink); }
+/* Фокус з клавіатури видно завжди й одразу, без анімації */
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-synthesis: none;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  min-width: 0;
+  text-wrap: balance;
+}
+h1 { font-size: var(--text-display); }
+h2 { font-size: var(--text-section); }
+h3, h4 { font-size: var(--text-title); letter-spacing: 0; }
+p { margin: 0; text-wrap: pretty; }
+a { color: var(--color-accent-text); text-decoration: none; text-underline-offset: 0.16em; }
+a:hover { text-decoration: underline; }
+img, video { max-width: 100%; height: auto; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+small { font-size: var(--text-sm); }
+time, td, .stat-card strong { font-variant-numeric: tabular-nums; }
+ul, ol, dl, dd { margin: 0; padding: 0; }
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; }
+[hidden] { display: none !important; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Людям, яким рух заважає, — усі анімації й переходи вимикаються */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
