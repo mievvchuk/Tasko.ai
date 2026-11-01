@@ -191,6 +191,12 @@ export interface Complaint {
   createdAt: string;
 }
 
+export const complaintStatusNames: Record<Complaint["status"], string> = {
+  OPEN: "Очікує розгляду",
+  RESOLVED: "Вирішено",
+  REJECTED: "Відхилено",
+};
+
 export const applicationStatusNames: Record<ApplicationStatus, string> = {
   PENDING: "Очікує рішення",
   ACCEPTED: "Прийнято",

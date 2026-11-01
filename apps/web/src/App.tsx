@@ -23,7 +23,9 @@ import { MessagesPage } from "./pages/MessagesPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import { FilesPage } from "./pages/FilesPage";
 import { AiAssistantPage } from "./pages/AiAssistantPage";
-import { AdminPage } from "./pages/AdminPage";
+import { AdminLayout } from "./components/AdminLayout";
+import { AdminPage, AdminUsersPage } from "./pages/AdminPage";
+import { AdminComplaintsPage, AdminProjectsPage } from "./pages/AdminLists";
 import { MarketplacePage } from "./pages/MarketplacePage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
@@ -96,6 +98,12 @@ export function App() {
         </Route>
       </Route>
       <Route element={<ProtectedRoute />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="projects" element={<AdminProjectsPage />} />
+          <Route path="complaints" element={<AdminComplaintsPage />} />
+        </Route>
         <Route element={<Layout />}>
           <Route index element={<DashboardPage />} />
           <Route path="projects" element={<ProjectsPage />} />
@@ -127,7 +135,6 @@ export function App() {
           <Route path="tasks/:taskId/edit" element={<TaskFormPage />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="ai" element={<AiAssistantPage />} />
-          <Route path="admin" element={<AdminPage />} />
           <Route path="profile" element={<WorkspacePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="complaints" element={<ComplaintsPage />} />

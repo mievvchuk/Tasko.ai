@@ -2,15 +2,11 @@ import { useState, type FormEvent } from "react";
 import { errorMessage, request } from "../api";
 import { ResourceState } from "../components/ResourceState";
 import { formatDate } from "../format";
+import { complaintStatusNames as statusNames } from "../types";
 import type { Complaint } from "../types";
 import { useApi } from "../useApi";
 
 import { useLanguage } from "../i18n";
-const statusNames = {
-  OPEN: "Очікує розгляду",
-  RESOLVED: "Вирішено",
-  REJECTED: "Відхилено",
-};
 export function ComplaintsPage() {
   const { tr } = useLanguage();
   const { data, error, loading, refresh } = useApi<Complaint[]>(

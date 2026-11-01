@@ -2,41 +2,25 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
-import { roleNames } from "../types";
 import { useApi } from "../useApi";
 import type { Notification } from "../types";
 import { ThemePicker } from "./ThemePicker";
 import { AiChatProvider } from "../aiChat";
 import { AiDrawer } from "./AiDrawer";
-import { UserAvatar } from "./UserAvatar";
+import { AccountMenu } from "./AccountMenu";
 
-// Редизайн: на комп'ютері .topbar показано як темну бічну панель, на телефоні — як верхню (див. redesign.css).
+// На комп'ютері .topbar показано як світлу бічну панель з підписами, на телефоні — як верхню (див. app.css).
 // Логіка (ролі, сповіщення, вихід) залишилась такою самою.
 export function Layout() {
-  const { user, logout } = useAuth();
-  const { language, t, tr } = useLanguage();
+  const { user } = useAuth();
+  const { t, tr } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
-  // Відкрите чи закрите меню облікового запису (клік по аватару)
-  const [accountOpen, setAccountOpen] = useState(false);
   const notifications = useApi<{ items: Notification[]; unreadCount: number }>(
     "/notifications?limit=1",
   );
   if (!user) return null;
 
-  const close = () => {
-    setMenuOpen(false);
-    setAccountOpen(false);
-  };
-  const roleLabel =
-    language === "uk"
-      ? roleNames[user.role]
-      : t(
-          user.role === "CLIENT"
-            ? "client"
-            : user.role === "FREELANCER"
-              ? "freelancer"
-              : "admin",
-        );
+  const close = () => setMenuOpen(false);
   const unread = notifications.data?.unreadCount ?? 0;
   const projectsLabel =
     user.role === "FREELANCER"
@@ -73,7 +57,6 @@ export function Layout() {
             aria-label={t("navigation")}
             className={menuOpen ? "topbar-nav open" : "topbar-nav"}
           >
-            {/* На комп'ютері підпис .nav-label розгортається при наведенні (див. redesign.css) */}
             <NavLink to="/" end onClick={close}>
               <i className="bi bi-grid" aria-hidden="true"></i>
               <span className="nav-label">{t("main")}</span>
@@ -123,61 +106,7 @@ export function Layout() {
           <div className="topbar-actions">
             <ThemePicker />
             <LanguageButton />
-            <div
-              className="account-menu"
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setAccountOpen(false);
-              }}
-            >
-              <button
-                type="button"
-                className="account-button"
-                aria-label={t("accountMenu")}
-                aria-expanded={accountOpen}
-                aria-controls="account-dropdown"
-                onClick={() => setAccountOpen(!accountOpen)}
-              >
-                <UserAvatar
-                  name={user.name}
-                  avatarUrl={user.avatarUrl}
-                  size="small"
-                />
-                <span className="account-name">{user.name}</span>
-                <i className="bi bi-chevron-down" aria-hidden="true"></i>
-              </button>
-              {accountOpen && (
-                <>
-                  {/* Прозора підкладка на весь екран: клік поза меню закриває його */}
-                  <div
-                    className="account-backdrop"
-                    aria-hidden="true"
-                    onClick={() => setAccountOpen(false)}
-                  />
-                  <div className="account-dropdown" id="account-dropdown">
-                    <div className="account-info">
-                      <strong>{user.name}</strong>
-                      <small>{user.email}</small>
-                      <small>{roleLabel}</small>
-                    </div>
-                    <Link to="/profile" onClick={close}>
-                      <i className="bi bi-person" aria-hidden="true"></i>
-                      {t("myProfile")}
-                    </Link>
-                    <button
-                      type="button"
-                      className="account-logout"
-                      onClick={logout}
-                    >
-                      <i
-                        className="bi bi-box-arrow-right"
-                        aria-hidden="true"
-                      ></i>
-                      {t("logout")}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            <AccountMenu />
           </div>
         </div>
       </header>
