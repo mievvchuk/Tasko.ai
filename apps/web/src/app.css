@@ -2,7 +2,8 @@
  * nav: kept, the sidebar with labels (ten destinations earn it), a top bar under 60rem · signature: the kanban board, columns as tinted wells with white cards · states: loading, empty, error, full · dose: white and night
  * axes: light/grotesk-sans/chromatic-green · posture: restrained · modes: light+dark · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S3 R5 V4 · weakest: S, a task board looks like any task board; the board gets the one tinted surface and the green marks only what moves work forward */
-/* Hallmark · dismissed 41 · surfaces at L 19 to 29 are the night theme, where body ink is already light and inherited · dismissed F4 · secondary and danger-outline are outlined on the surface, only .primary is filled */
+/* Hallmark · dismissed 41 · surfaces at L 19 to 29 are the night theme, where body ink is already light and inherited */
+/* Hallmark · answered F4 · secondary and danger-outline are outlined on the surface, only .primary is filled */
 /* Hallmark · answered F7 · icon buttons, pills, panels and fact cells share a recipe per role so the app reads as one tool; the kanban board is the one surface that differs */
 /* Hallmark · Dose deviations ·body face stays Manrope, the project's own font file · overdue and high priority keep red because people read them as a warning, and the app is about deadlines */
 
@@ -2610,6 +2611,7 @@ dd {
   right: 0;
   bottom: auto;
   left: auto;
+  transform-origin: top right;
 }
 .admin-content {
   width: 100%;
@@ -2733,7 +2735,88 @@ dd {
   justify-content: flex-end;
 }
 
-/* ===== 15. Планшет і телефон ===== */
+/* ===== 15. Анімації =====
+   Лише CSS, без бібліотек. Рух показує зміну стану: щось відкрилося або з'явилося.
+   Анімуємо тільки opacity і transform, бо їх браузер малює плавно й без перерахунку макета.
+   Анімації вмикаються, коли елемент з'являється на сторінці (React додає його в DOM).
+   Для людей з prefers-reduced-motion base.css скорочує всі анімації до миті. */
+
+/* Три заготовки руху */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Меню акаунта: коротко випливає */
+.account-dropdown {
+  transform-origin: bottom left;
+  animation: pop-in var(--dur-short) var(--ease-out);
+}
+/* Мобільне меню під ☰: з'являється плавно */
+.topbar-nav.open {
+  animation: fade-in var(--dur-short) var(--ease-out);
+}
+/* Затемнення під панеллю AI й меню адмінки */
+.ai-drawer-backdrop,
+.admin-backdrop {
+  animation: fade-in var(--dur-short) var(--ease-out);
+}
+/* Діалог адмінки: фон темнішає, вікно трохи збільшується до свого розміру */
+.admin-dialog[open] {
+  animation: pop-in var(--dur-long) var(--ease-out);
+}
+.admin-dialog[open]::backdrop {
+  animation: fade-in var(--dur-long) var(--ease-out);
+}
+/* Повідомлення про успіх і помилки з'являються, а не вискакують */
+.notice,
+.form-error,
+.load-error {
+  animation: fade-in var(--dur-short) var(--ease-out);
+}
+/* Розгорнутий опис проєкту в таблиці */
+.project-description[open] p {
+  animation: fade-in var(--dur-short) var(--ease-out);
+}
+/* Нова відповідь AI-помічниці */
+.ai-exchange {
+  animation: rise var(--dur-long) var(--ease-out);
+}
+
+/* Вітальна сторінка: одна поява першого екрана. Текст виїжджає по черзі
+   (затримка 60мс на кожен рядок), потім мініатюра дошки.
+   Анімація запускається сама, без JavaScript, тож вміст видно навіть без скриптів. */
+.welcome-hero-text > *,
+.welcome-preview {
+  animation: rise var(--dur-long) var(--ease-out) both;
+}
+.welcome-hero-text > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.welcome-hero-text > :nth-child(3) {
+  animation-delay: 120ms;
+}
+.welcome-hero-text > :nth-child(4) {
+  animation-delay: 180ms;
+}
+.welcome-preview {
+  animation-delay: 240ms;
+}
+
+/* ===== 16. Планшет і телефон ===== */
 @media (max-width: 70rem) {
   .dashboard-bottom {
     grid-template-columns: minmax(0, 1fr);
@@ -2794,6 +2877,7 @@ dd {
     right: 0;
     bottom: auto;
     left: auto;
+    transform-origin: top right;
   }
   .topbar-nav {
     display: none;
