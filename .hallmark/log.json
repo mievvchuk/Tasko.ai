@@ -1,0 +1,14 @@
+[
+ {
+  "mode": "redesign",
+  "depth": "restyle",
+  "scope": "app",
+  "theme": "dose",
+  "shape": "app screen",
+  "signature": "kanban board, tinted wells with white cards",
+  "axes": "light/grotesk-sans/chromatic-green",
+  "nav": "kept sidebar with labels",
+  "prompt": "freelance project management app, white and black themes",
+  "date": "2026-11-01"
+ }
+]

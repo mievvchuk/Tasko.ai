@@ -183,7 +183,7 @@ function TaskForm({
                 .filter((member) => member.user?.role === "FREELANCER")
                 .map((member) => (
                   <option key={member.userId} value={member.userId}>
-                    {member.user?.name} — {member.user?.email}
+                    {member.user?.name} ({member.user?.email})
                   </option>
                 ))}
             </select>

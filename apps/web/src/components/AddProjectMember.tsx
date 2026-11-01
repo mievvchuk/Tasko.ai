@@ -78,7 +78,7 @@ export function AddProjectMember({
               <option value="">{tr("Оберіть фрилансера")}</option>
               {available.map((person) => (
                 <option key={person.id} value={person.id}>
-                  {person.name} — {person.email}
+                  {person.name} ({person.email})
                 </option>
               ))}
             </select>
