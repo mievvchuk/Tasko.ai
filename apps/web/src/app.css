@@ -3151,3 +3151,11 @@ dd {
     padding-left: 0;
   }
 }
+
+/* Vector identity: theme tokens keep the mark and wordmark legible together. */
+.brand-mark { padding: 2px; overflow: visible; }
+.brand-mark-dot { fill: var(--color-accent-text); transform-box: fill-box; transform-origin: center; animation: brand-wink 650ms ease-out 600ms 1; }
+.brand:hover .brand-mark-dot, .admin-brand:hover .brand-mark-dot { animation: brand-wink-hover 650ms ease-out 1; }
+@keyframes brand-wink { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(.18); } }
+@keyframes brand-wink-hover { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(.18); } }
+@media (prefers-reduced-motion: reduce) { .brand-mark-dot, .brand:hover .brand-mark-dot, .admin-brand:hover .brand-mark-dot { animation: none; } }

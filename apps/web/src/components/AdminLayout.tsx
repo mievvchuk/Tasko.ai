@@ -1,3 +1,4 @@
+import { BrandMark } from "./BrandMark";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
@@ -57,9 +58,7 @@ export function AdminLayout() {
       </a>
       <aside className="admin-sidebar" id="admin-sidebar">
         <Link className="admin-brand" to="/admin" onClick={close}>
-          <span className="brand-mark" aria-hidden="true">
-            t
-          </span>
+          <BrandMark />
           <span>
             <strong>Tasko.ai</strong>
             <small>{t("administration")}</small>

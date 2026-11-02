@@ -1,3 +1,4 @@
+import { BrandMark } from "./BrandMark";
 import { Link, NavLink, Outlet } from "react-router";
 import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "./ThemePicker";
@@ -8,9 +9,7 @@ export function AuthLayout() {
     <div className="auth-shell">
       <header className="public-header">
         <Link className="brand" to="/welcome">
-          <span className="brand-mark" aria-hidden="true">
-            t
-          </span>
+          <BrandMark />
           Tasko<span className="brand-ai">.ai</span>
         </Link>
         <nav aria-label={t("login")}>
