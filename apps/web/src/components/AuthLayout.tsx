@@ -1,3 +1,4 @@
+import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
 import { Link, NavLink, Outlet } from "react-router";
 import { LanguageButton, useLanguage } from "../i18n";
@@ -10,7 +11,7 @@ export function AuthLayout() {
       <header className="public-header">
         <Link className="brand" to="/welcome">
           <BrandMark />
-          Tasko<span className="brand-ai">.ai</span>
+          <BrandWord />
         </Link>
         <nav aria-label={t("login")}>
           <NavLink to="/login">{t("login")}</NavLink>

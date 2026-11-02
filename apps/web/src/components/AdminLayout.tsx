@@ -1,3 +1,4 @@
+import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
 import { useState } from "react";
 import type { FormEvent } from "react";
@@ -60,7 +61,7 @@ export function AdminLayout() {
         <Link className="admin-brand" to="/admin" onClick={close}>
           <BrandMark />
           <span>
-            <strong>Tasko.ai</strong>
+            <strong><BrandWord /></strong>
             <small>{t("administration")}</small>
           </span>
         </Link>

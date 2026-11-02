@@ -1,8 +1,4 @@
-Tasko.ai — пакет логотипа
-
-Відкрийте preview.html у браузері для перегляду світлої та темної версій.
-PNG — попередні растрові концепції з прозорим фоном.
-SVG — поточний векторний знак для двох тем; animated — з анімацією крапки.
-BrandMark.tsx — компонент із сайту; app.css і tokens.css — повні вихідні стилі сайту.
-SVG-анімація працює у браузері; деякі переглядачі показують лише статичний кадр.
-Перестановка букв у цей пакет не входить: вона ще не реалізована.
+Tasko.ai animated logo
+Open preview.html in a browser. Letters a and o swap along opposite arcs and return. Plays on load, hover or keyboard focus. Replay button included. Reduced-motion preference disables animation.
+BrandWord.tsx + brand-word.css: reusable React wordmark. BrandMark.tsx: SVG icon. app.css and tokens.css: site styles.
+PNG files are static concepts. Animated SVG files animate the icon dot only; letter animation is in HTML/CSS and React.
