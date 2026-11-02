@@ -1,19 +1,12 @@
 .brand-word { display: inline-block; white-space: nowrap; line-height: 1.4; }
-.brand-letter { display: inline-block; width: .66em; text-align: center; }
-.brand-letter-a { --travel: 1.72em; --arc: -.48em; }
-.brand-letter-o { --travel: -1.72em; --arc: .48em; }
-.brand-word .brand-letter { animation: tasko-letter-swap 2200ms cubic-bezier(.45,0,.25,1) 700ms 1; }
-.brand:hover .brand-letter, .brand:focus-visible .brand-letter,
-.admin-brand:hover .brand-letter, .admin-brand:focus-visible .brand-letter,
-.replay .brand-letter { animation-name: tasko-letter-replay; animation-delay: 0ms; }
-@keyframes tasko-letter-swap {
+/* Дві «a» (з «Tasko» і з «.ai») міняються місцями по дугах і повертаються, по колу */
+.brand-letter { display: inline-block; animation: tasko-a-swap 4s cubic-bezier(.45,0,.25,1) 700ms infinite; }
+.brand-letter-first { --shift: var(--travel, 0em); --arc: -.48em; }
+.brand-letter-second { --shift: calc(var(--travel, 0em) * -1); --arc: .48em; }
+@keyframes tasko-a-swap {
   0%, 100% { transform: translate(0,0); }
-  18%, 70% { transform: translate(calc(var(--travel) / 2), var(--arc)); }
-  36%, 52% { transform: translate(var(--travel),0); }
-}
-@keyframes tasko-letter-replay {
-  0%, 100% { transform: translate(0,0); }
-  18%, 70% { transform: translate(calc(var(--travel) / 2), var(--arc)); }
-  36%, 52% { transform: translate(var(--travel),0); }
+  10%, 38% { transform: translate(calc(var(--shift) / 2), var(--arc)); }
+  20%, 28% { transform: translate(var(--shift),0); }
+  48% { transform: translate(0,0); }
 }
 @media (prefers-reduced-motion: reduce) { .brand-word .brand-letter { animation: none !important; } }
