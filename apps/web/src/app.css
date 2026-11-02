@@ -2062,6 +2062,31 @@ dd {
   font-size: var(--text-sm);
   letter-spacing: 0;
 }
+.ai-draft {
+  display: grid;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+}
+.ai-draft h3,
+.ai-draft p,
+.ai-draft dl {
+  margin: 0;
+}
+.ai-draft dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.ai-draft dt {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+.ai-draft .button {
+  justify-self: start;
+}
 .ai-sources {
   display: flex;
   align-items: center;
