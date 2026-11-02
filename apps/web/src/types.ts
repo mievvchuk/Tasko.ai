@@ -30,7 +30,7 @@ export interface AuthSession {
 
 export const roleNames: Record<UserRole, string> = {
   CLIENT: "Клієнт",
-  FREELANCER: "Фрилансер",
+  FREELANCER: "Фрілансер",
   ADMIN: "Адміністратор",
 };
 

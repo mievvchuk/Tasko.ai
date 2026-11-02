@@ -1231,7 +1231,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     updatedAt: date(2),
   });
 
-  // Навички й профілі для фрилансерів, яким їх бракувало
+  // Навички й профілі для фрілансерів, яким їх бракувало
   for (const [userId, skillId] of [
     [freelancer1.id, postgresql.id],
     [freelancer3.id, telegramBot.id],

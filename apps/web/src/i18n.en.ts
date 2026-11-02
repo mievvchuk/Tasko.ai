@@ -206,14 +206,14 @@ export const enText: Record<string, string> = {
   "Завантажуємо…": "Uploading…",
   "Завантажити файл": "Upload file",
   "Отримуємо файл…": "Getting the file…",
-  "Фрилансера додано до команди.": "Freelancer added to the team.",
-  "Основного виконавця обрано через заявку. За потреби додайте інших фрилансерів для окремих завдань: вони отримають доступ до даних цього проєкту.":
+  "Фрілансера додано до команди.": "Freelancer added to the team.",
+  "Основного виконавця обрано через заявку. За потреби додайте інших фрілансерів для окремих завдань: вони отримають доступ до даних цього проєкту.":
     "The main freelancer was chosen through an application. Add other freelancers for separate tasks if needed: they'll get access to this project's data.",
   "Додатковий виконавець": "Additional freelancer",
-  "Оберіть фрилансера": "Choose a freelancer",
+  "Оберіть фрілансера": "Choose a freelancer",
   "Додаємо…": "Adding…",
   "Додати до команди": "Add to team",
-  "На цій сторінці немає інших активних фрилансерів.":
+  "На цій сторінці немає інших активних фрілансерів.":
     "There are no other active freelancers on this page.",
   "Відгук збережено": "Review saved",
   "Залишити відгук": "Leave a review",
@@ -226,10 +226,10 @@ export const enText: Record<string, string> = {
   "1 — Дуже погано": "1 — Very poor",
   Коментар: "Comment",
 
-  // Профіль фрилансера
+  // Профіль фрілансера
   "Профіль збережено.": "Profile saved.",
   "Завантажуємо профіль…": "Loading profile…",
-  "Профіль фрилансера": "Freelancer profile",
+  "Профіль фрілансера": "Freelancer profile",
   "Ці дані бачить клієнт під час вибору виконавця.":
     "Clients see this when choosing a freelancer.",
   "Про себе": "About me",
@@ -247,7 +247,7 @@ export const enText: Record<string, string> = {
   "Додати роботу": "Add work",
   "Профіль виконавця та відгуки клієнтів.":
     "Freelancer profile and client reviews.",
-  "Фрилансер ще не додав опис.":
+  "Фрілансер ще не додав опис.":
     "The freelancer hasn't added a description yet.",
   "Середній рейтинг із 5": "Average rating out of 5",
   "Завершено проєктів": "Completed projects",
@@ -559,7 +559,7 @@ export const enText: Record<string, string> = {
 
   // Заявки
   Заявки: "Applications",
-  "Заявки фрилансерів": "Freelancer applications",
+  "Заявки фрілансерів": "Freelancer applications",
   "Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.":
     "Compare offers, experience, rating and average delivery time.",
   "AI аналізує…": "AI is analysing…",
@@ -576,7 +576,7 @@ export const enText: Record<string, string> = {
   "Обираємо…": "Choosing…",
   "Обрати виконавця": "Choose freelancer",
   "Заявок ще немає": "No applications yet",
-  "Фрилансери побачать проєкт на біржі та зможуть відгукнутися.":
+  "Фрілансери побачать проєкт на біржі та зможуть відгукнутися.":
     "Freelancers will see the project on the marketplace and can apply.",
 
   // Дошка, деталі проєкту
@@ -601,7 +601,7 @@ export const enText: Record<string, string> = {
   "Аналіз AI": "AI analysis",
   "AI-планування": "AI planning",
   "Огляд проєкту": "Project overview",
-  Фрилансери: "Freelancers",
+  Фрілансери: "Freelancers",
   Виконано: "Done",
   завдань: "tasks",
   "Прогрес проєкту": "Project progress",
@@ -615,7 +615,7 @@ export const enText: Record<string, string> = {
   "Учасники проєкту": "Project members",
   "Користувач недоступний": "User unavailable",
   Учасник: "Member",
-  "Виконавця ще не обрано. Перейдіть до заявок фрилансерів.":
+  "Виконавця ще не обрано. Перейдіть до заявок фрілансерів.":
     "No freelancer chosen yet. Go to freelancer applications.",
 
   // Форма проєкту
@@ -641,7 +641,7 @@ export const enText: Record<string, string> = {
   "Бюджет від, грн": "Budget from, UAH",
   "Бюджет до, грн": "Budget to, UAH",
   "Потрібні навички": "Required skills",
-  "Новий проєкт матиме статус «Пошук виконавця» і буде доступний фрилансерам.":
+  "Новий проєкт матиме статус «Пошук виконавця» і буде доступний фрілансерам.":
     "The new project will have the “Looking for a freelancer” status and be visible to freelancers.",
   "Після закриття редагування буде недоступне. Для завершення всі завдання та замовлення мають бути закриті.":
     "After closing, editing won't be available. To complete, all tasks and orders must be closed.",
@@ -756,7 +756,7 @@ export const enText: Record<string, string> = {
   Виконавці: "Freelancers",
   "Незавершені завдання": "Unfinished tasks",
   "Високий пріоритет": "High priority",
-  "Показники враховують лише доступні вам дані. Вони не розкривають роботу фрилансера у чужих приватних проєктах.":
+  "Показники враховують лише доступні вам дані. Вони не розкривають роботу фрілансера у чужих приватних проєктах.":
     "Figures only count data available to you. They don't reveal a freelancer's work in other private projects.",
   "Виконавців поки немає": "No freelancers yet",
   "Додайте команду до проєкту, щоб переглядати розподіл роботи.":
@@ -805,7 +805,7 @@ export const enText: Record<string, string> = {
   "Навігація вітальної сторінки": "Welcome page navigation",
   Можливості: "Features",
   "Як це працює": "How it works",
-  "Фриланс-проєкти з AI-помічницею": "Freelance projects with an AI assistant",
+  "Фріланс-проєкти з AI-помічницею": "Freelance projects with an AI assistant",
   "Від ідеї до прийнятого результату — в одному місці":
     "From idea to accepted result — all in one place",
   "Tasko.ai поєднує біржу проєктів, канбан-дошку, етапи й перевірку робіт. А Ада, AI-помічниця, допомагає не пропустити жодного дедлайну.":
@@ -826,7 +826,7 @@ export const enText: Record<string, string> = {
   "Завдання, пріоритети й дедлайни. Перетягуйте картки між стовпцями й бачте прогрес кожного проєкту.":
     "Tasks, priorities and deadlines. Drag cards between columns and see each project's progress.",
   "Біржа й заявки": "Marketplace and applications",
-  "Клієнт публікує проєкт, фрилансери пропонують бюджет і строк, а клієнт обирає найкращу заявку.":
+  "Клієнт публікує проєкт, фрілансери пропонують бюджет і строк, а клієнт обирає найкращу заявку.":
     "The client posts a project, freelancers propose a budget and timeline, and the client picks the best offer.",
   "Ада — AI-помічниця": "Ada, the AI assistant",
   "Підкаже, що робити першим, знайде ризики й дедлайни та відповість на питання про ваші проєкти.":
@@ -843,7 +843,7 @@ export const enText: Record<string, string> = {
   "Опишіть задачу, бюджет і дедлайн — проєкт з’явиться на біржі.":
     "Describe the task, budget and deadline — the project appears on the marketplace.",
   "Оберіть виконавця": "Choose a freelancer",
-  "Порівняйте заявки, рейтинг і досвід фрилансерів або попросіть AI допомогти.":
+  "Порівняйте заявки, рейтинг і досвід фрілансерів або попросіть AI допомогти.":
     "Compare applications, ratings and experience, or ask AI to help.",
   "Прийміть результат": "Accept the result",
   "Стежте за прогресом, перевіряйте роботу й залиште відгук після завершення.":
@@ -853,13 +853,13 @@ export const enText: Record<string, string> = {
     "Post projects and choose a freelancer",
   "Канбан, етапи й умовна оплата": "Kanban, milestones and conditional payment",
   "Перевірка результатів і відгуки": "Result reviews and feedback",
-  "Для фрилансерів": "For freelancers",
+  "Для фрілансерів": "For freelancers",
   "Біржа відкритих проєктів і заявки":
     "Open project marketplace and applications",
   "Профіль із навичками й портфоліо": "Profile with skills and portfolio",
   "Ада підкаже пріоритети на день": "Ada suggests your priorities for the day",
   "Готові спробувати?": "Ready to try it?",
-  "Створіть акаунт клієнта або фрилансера — це займе хвилину.":
+  "Створіть акаунт клієнта або фрілансера — це займе хвилину.":
     "Create a client or freelancer account — it takes a minute.",
   "Створити акаунт": "Create account",
 
@@ -877,7 +877,7 @@ export const enText: Record<string, string> = {
   "До виконання": "To do",
   "На перевірці": "In review",
   Клієнт: "Client",
-  Фрилансер: "Freelancer",
+  Фрілансер: "Freelancer",
   Адміністратор: "Administrator",
   Низький: "Low",
   Середній: "Medium",

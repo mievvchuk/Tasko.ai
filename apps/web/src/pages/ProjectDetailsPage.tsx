@@ -181,7 +181,7 @@ export function ProjectDetailsPage() {
             <dd>{formatDate(project.deadline, true)}</dd>
           </div>
           <div>
-            <dt>{tr("Фрилансери")}</dt>
+            <dt>{tr("Фрілансери")}</dt>
             <dd>{members.length}</dd>
           </div>
           <div>
@@ -338,7 +338,7 @@ export function ProjectDetailsPage() {
             projectId={project.id}
             members={members}
             onAdded={() => {
-              setMemberNotice(tr("Фрилансера додано до команди."));
+              setMemberNotice(tr("Фрілансера додано до команди."));
               retry();
             }}
           />
@@ -379,7 +379,7 @@ export function ProjectDetailsPage() {
         ) : (
           <div className="empty-state compact">
             <p>
-              {tr("Виконавця ще не обрано. Перейдіть до заявок фрилансерів.")}
+              {tr("Виконавця ще не обрано. Перейдіть до заявок фрілансерів.")}
             </p>
           </div>
         )}

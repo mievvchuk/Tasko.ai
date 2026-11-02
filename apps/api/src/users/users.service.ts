@@ -162,7 +162,7 @@ export class UsersService {
 
   private requireFreelancer(user: CurrentUser) {
     if (user.role !== 'FREELANCER')
-      throw new ForbiddenException('Профіль виконавця доступний фрилансеру.');
+      throw new ForbiddenException('Профіль виконавця доступний фрілансеру.');
   }
 
   private normalizeSkills(values: string[]) {

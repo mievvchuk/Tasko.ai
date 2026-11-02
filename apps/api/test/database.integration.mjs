@@ -231,7 +231,7 @@ try {
       );
       assert.ok(skills.length > 0 && categories.length > 0);
       await call('patch', '/profile/freelancer', 200, freelancer.token, {
-        bio: 'Інтеграційний профіль фрилансера',
+        bio: 'Інтеграційний профіль фрілансера',
         hourlyRate: 700,
         availability: 'AVAILABLE',
         skills: ['TypeScript', 'NestJS'],

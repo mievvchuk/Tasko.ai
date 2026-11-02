@@ -87,7 +87,7 @@ export function FreelancerProfileEditor() {
     <section className="account-panel">
       <div className="section-heading">
         <div>
-          <h2>{tr("Профіль фрилансера")}</h2>
+          <h2>{tr("Профіль фрілансера")}</h2>
           <p>{tr("Ці дані бачить клієнт під час вибору виконавця.")}</p>
         </div>
       </div>

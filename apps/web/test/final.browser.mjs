@@ -81,7 +81,7 @@ async function run(page) {
   await page.getByLabel("Назва проєкту", { exact: true }).fill(projectTitle);
   await page
     .getByLabel("Опис", { exact: true })
-    .fill("Перевірка справжнього робочого циклу клієнта та фрилансера.");
+    .fill("Перевірка справжнього робочого циклу клієнта та фрілансера.");
   await page.getByLabel("Дедлайн", { exact: true }).fill("2027-12-20T15:30");
   await page
     .getByRole("button", { name: "Зберегти проєкт", exact: true })
@@ -94,7 +94,7 @@ async function run(page) {
     .getByRole("button", { name: "Додати учасника", exact: true })
     .click();
   await page
-    .getByLabel("Фрилансер", { exact: true })
+    .getByLabel("Фрілансер", { exact: true })
     .selectOption(freelancer.id);
   await page
     .getByRole("button", { name: "Додати до проєкту", exact: true })

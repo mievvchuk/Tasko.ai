@@ -36,7 +36,7 @@ export class AuthController {
 
   @Post('register')
   @UseGuards(AuthEmailRateLimitGuard)
-  @ApiOperation({ summary: 'Реєстрація клієнта або фрилансера' })
+  @ApiOperation({ summary: 'Реєстрація клієнта або фрілансера' })
   @ApiBody({ type: RegisterDto })
   register(@Body() data: RegisterDto) {
     return this.auth.register(data);

@@ -239,7 +239,7 @@ export class AdminService {
       { label: 'Завдання: на перевірці', value: report.tasksByStatus.REVIEW },
       { label: 'Завдання: завершено', value: report.tasksByStatus.DONE },
       { label: 'Замовники', value: report.usersByRole.CLIENT },
-      { label: 'Фрилансери', value: report.usersByRole.FREELANCER },
+      { label: 'Фрілансери', value: report.usersByRole.FREELANCER },
       { label: 'Адміністратори', value: report.usersByRole.ADMIN },
     ];
   }
