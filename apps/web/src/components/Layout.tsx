@@ -1,3 +1,4 @@
+import { BrandMark } from "./BrandMark";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router";
 import { useAuth } from "../auth";
@@ -37,9 +38,7 @@ export function Layout() {
       <header className="topbar">
         <div className="topbar-inner">
           <Link className="brand" to="/" onClick={close}>
-            <span className="brand-mark" aria-hidden="true">
-              t
-            </span>
+            <BrandMark />
             Tasko<span className="brand-ai">.ai</span>
           </Link>
           <button

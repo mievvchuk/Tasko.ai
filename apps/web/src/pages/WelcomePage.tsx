@@ -1,3 +1,4 @@
+import { BrandMark } from "../components/BrandMark";
 import { Link } from "react-router";
 import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "../components/ThemePicker";
@@ -78,9 +79,7 @@ export function WelcomePage() {
     <div className="welcome">
       <header className="public-header welcome-header">
         <Link className="brand" to="/welcome">
-          <span className="brand-mark" aria-hidden="true">
-            t
-          </span>
+          <BrandMark />
           Tasko<span className="brand-ai">.ai</span>
         </Link>
         <nav aria-label={tr("Навігація вітальної сторінки")}>
