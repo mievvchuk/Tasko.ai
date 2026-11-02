@@ -1,0 +1,230 @@
+import { useState } from "react";
+import { Link } from "react-router";
+import { useAuth } from "../auth";
+import { useApi } from "../useApi";
+import { formatDate } from "../format";
+import { Pagination, ResourceState } from "../components/ResourceState";
+import { UserAvatar } from "../components/UserAvatar";
+import { roleNames } from "../types";
+import type { AdminUser, AdminReport } from "../types";
+import {
+  AccountStatusOptions,
+  AdminStats,
+  BreakdownCharts,
+  DataTable,
+  FilterSelect,
+  GrowthChart,
+  ListToolbar,
+  ReportExport,
+  RoleOptions,
+  StatusPill,
+  UserDialog,
+  accountStatusNames,
+  allowedOrEmpty,
+  useListParams,
+} from "./AdminSections";
+import type { Column } from "./AdminSections";
+
+import { useLanguage } from "../i18n";
+
+// Огляд: метрики, графіки, експорт звіту й нові користувачі.
+export function AdminPage() {
+  const { tr } = useLanguage();
+  const report = useApi<AdminReport>("/admin/report");
+  const latest = useApi<AdminUser[]>("/admin/users?limit=5");
+
+  return (
+    <>
+      <div className="admin-page-heading">
+        <div>
+          <h1>{tr("Панель адміністратора")}</h1>
+          <p>{tr("Статистика всієї платформи, облікові записи та скарги.")}</p>
+        </div>
+        <ReportExport />
+      </div>
+      <ResourceState
+        loading={report.loading}
+        error={report.error}
+        onRetry={report.refresh}
+      />
+      {report.data && (
+        <>
+          <AdminStats report={report.data} />
+          <div className="admin-overview">
+            <GrowthChart report={report.data} />
+            <section className="chart-card admin-recent">
+              <div className="admin-recent-heading">
+                <h2>{tr("Нові користувачі")}</h2>
+                <Link to="/admin/users">{tr("Усі")}</Link>
+              </div>
+              <ResourceState
+                loading={latest.loading}
+                error={latest.error}
+                onRetry={latest.refresh}
+              />
+              <ul>
+                {latest.data?.map((person) => (
+                  <li key={person.id}>
+                    <UserAvatar
+                      name={person.name}
+                      avatarUrl={person.avatarUrl}
+                      size="small"
+                    />
+                    <span>
+                      <strong>{person.name}</strong>
+                      <small>{person.email}</small>
+                    </span>
+                    <small>{tr(roleNames[person.role])}</small>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+          <BreakdownCharts report={report.data} />
+        </>
+      )}
+    </>
+  );
+}
+
+// Таблиця користувачів: пошук і фільтри на сервері, зміна ролі/стану в діалозі.
+export function AdminUsersPage() {
+  const { tr } = useLanguage();
+  const { user } = useAuth();
+  const { params, page, search, set, reset } = useListParams();
+  const role = allowedOrEmpty(params.get("role"), Object.keys(roleNames));
+  const status = allowedOrEmpty(params.get("status"), ["ACTIVE", "BLOCKED"]);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
+
+  const query = new URLSearchParams({ page: String(page), limit: "20" });
+  if (role) query.set("role", role);
+  if (status) query.set("status", status);
+  if (search) query.set("search", search);
+  const users = useApi<AdminUser[]>(`/admin/users?${query}`);
+
+  const columns: Column<AdminUser>[] = [
+    {
+      key: "name",
+      label: tr("Користувач"),
+      sort: (row) => row.name,
+      render: (row) => (
+        <span className="admin-user-cell">
+          <UserAvatar name={row.name} avatarUrl={row.avatarUrl} size="small" />
+          <span>
+            <strong>
+              {row.name}
+              {row.id === user?.id && tr(" (ви)")}
+            </strong>
+            <small>{row.email}</small>
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: "role",
+      label: tr("Роль"),
+      sort: (row) => tr(roleNames[row.role]),
+      render: (row) => tr(roleNames[row.role]),
+    },
+    {
+      key: "status",
+      label: tr("Стан"),
+      sort: (row) => row.status,
+      render: (row) => (
+        <StatusPill
+          status={row.status}
+          label={tr(accountStatusNames[row.status])}
+        />
+      ),
+    },
+    {
+      key: "createdAt",
+      label: tr("Зареєстровано"),
+      sort: (row) => row.createdAt,
+      render: (row) => formatDate(row.createdAt),
+    },
+    {
+      key: "actions",
+      label: tr("Дії"),
+      render: (row) => (
+        <button
+          className="button secondary"
+          aria-label={tr("Редагувати {0}", row.name)}
+          onClick={() => setEditing(row)}
+        >
+          <i className="bi bi-pencil" aria-hidden="true"></i>
+          {tr("Редагувати")}
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <div className="admin-page-heading">
+        <div>
+          <h1>{tr("Користувачі")}</h1>
+          <p>{tr("Облікові записи платформи: роль і стан доступу.")}</p>
+        </div>
+      </div>
+      <section className="data-panel admin-panel">
+        <ListToolbar
+          search={search}
+          placeholder={tr("Ім'я або email")}
+          filtered={Boolean(search || role || status)}
+          onSearch={(value) => set("search", value)}
+          onReset={reset}
+        >
+          <FilterSelect
+            label={tr("Роль")}
+            value={role}
+            onChange={(value) => set("role", value)}
+          >
+            <option value="">{tr("Усі ролі")}</option>
+            <RoleOptions />
+          </FilterSelect>
+          <FilterSelect
+            label={tr("Стан облікового запису")}
+            value={status}
+            onChange={(value) => set("status", value)}
+          >
+            <option value="">{tr("Усі стани")}</option>
+            <AccountStatusOptions />
+          </FilterSelect>
+        </ListToolbar>
+        <ResourceState
+          loading={users.loading}
+          error={users.error}
+          onRetry={users.refresh}
+        />
+        {users.data && (
+          <>
+            <DataTable
+              caption={tr("Користувачі")}
+              columns={columns}
+              rows={users.data}
+              empty={
+                search || role || status
+                  ? tr("За цими умовами користувачів не знайдено.")
+                  : tr("На цій сторінці користувачів не знайдено.")
+              }
+            />
+            <Pagination
+              page={page}
+              count={users.data.length}
+              onChange={(value) => set("page", String(value))}
+            />
+          </>
+        )}
+      </section>
+      {editing && (
+        <UserDialog
+          user={editing}
+          self={editing.id === user?.id}
+          onSaved={users.refresh}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </>
+  );
+}
