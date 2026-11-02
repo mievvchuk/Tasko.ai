@@ -6,12 +6,16 @@ import { createDb } from '../dist/prisma/db.js';
 import { hashPassword } from '../dist/auth/password.js';
 
 const config = loadConfig();
+// Віддалену БД (демо-сайт на Render) дозволяємо лише явним SEED_REMOTE_DB=yes
 if (
+  process.env.SEED_REMOTE_DB !== 'yes' &&
   !['localhost', '127.0.0.1', '[::1]'].includes(
     new URL(config.databaseUrl).hostname,
   )
 ) {
-  throw new Error('Демонстраційні дані можна додавати лише до локальної БД.');
+  throw new Error(
+    'Демонстраційні дані можна додавати лише до локальної БД (або з SEED_REMOTE_DB=yes).',
+  );
 }
 
 // Постійні UUID дозволяють повторювати запуск без дублювання записів.
