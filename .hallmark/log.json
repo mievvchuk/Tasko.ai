@@ -3,6 +3,27 @@
   "mode": "redesign",
   "depth": "restyle",
   "scope": "app",
+  "theme": "coral",
+  "shape": "app screen",
+  "signature": "kanban: felt-desk columns, cotton index cards casting right",
+  "axes": "light/grotesk-sans/warm",
+  "nav": "kept sidebar",
+  "footer": "kept",
+  "hero": "none (app)",
+  "imagery": "built",
+  "photos": [],
+  "entry": "tokens.css",
+  "sections": [
+   "kept"
+  ],
+  "waived": [],
+  "prompt": "Запропонуй кілька дизайнів для мого проєкту → Coral",
+  "date": "2026-11-02"
+ },
+ {
+  "mode": "redesign",
+  "depth": "restyle",
+  "scope": "app",
   "theme": "dose",
   "shape": "app screen",
   "signature": "kanban board, tinted wells with white cards",
