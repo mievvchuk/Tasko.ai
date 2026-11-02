@@ -239,7 +239,7 @@ try {
     const endpoint = new URL(route.request().url()).pathname;
     let body = { items: [], unreadCount: 0 };
     if (endpoint.endsWith("/auth/me"))
-      body = { id: "freelancer-id", name: "Фрилансер", role: "FREELANCER" };
+      body = { id: "freelancer-id", name: "Фрілансер", role: "FREELANCER" };
     else if (endpoint.endsWith("/agent/status")) body = { configured: true };
     else if (endpoint.endsWith(`/projects/${projectId}`))
       body = {

@@ -109,7 +109,7 @@ export class ProjectsService {
     if (user.role === 'CLIENT') query = query.where({ clientId: user.id });
     if (user.role === 'FREELANCER') {
       const projectIds = await this.findMemberProjectIds(user.id);
-      // Фрилансер бачить лише проєкти, у яких він є учасником.
+      // Фрілансер бачить лише проєкти, у яких він є учасником.
       if (!projectIds.length) return [];
       query = query.where((project) => project.id.in(projectIds));
     }
@@ -319,7 +319,7 @@ export class ProjectsService {
       freelancer.role !== 'FREELANCER' ||
       freelancer.status !== 'ACTIVE'
     )
-      throw new BadRequestException('Потрібен активний фрилансер.');
+      throw new BadRequestException('Потрібен активний фрілансер.');
     try {
       const member = await this.prisma.client.orm.public.ProjectMember.create({
         id: randomUUID(),
@@ -344,7 +344,7 @@ export class ProjectsService {
       return member;
     } catch (error) {
       if (hasDatabaseCode(error, '23505'))
-        throw new ConflictException('Фрилансер уже є учасником проєкту.');
+        throw new ConflictException('Фрілансер уже є учасником проєкту.');
       throw error;
     }
   }
@@ -364,7 +364,7 @@ export class ProjectsService {
       user.status !== 'ACTIVE'
     )
       throw new BadRequestException(
-        'Виконавець має бути активним фрилансером у цьому проєкті.',
+        'Виконавець має бути активним фрілансером у цьому проєкті.',
       );
   }
 
@@ -385,7 +385,7 @@ export class ProjectsService {
   async marketplace(user: CurrentUser, page: MarketplaceQueryDto) {
     if (user.role === 'CLIENT')
       throw new ForbiddenException(
-        'Біржа проєктів призначена для фрилансерів.',
+        'Біржа проєктів призначена для фрілансерів.',
       );
     let projects = await this.prisma.client.orm.public.Project.where({
       status: 'PLANNING',
@@ -477,7 +477,7 @@ export class ProjectsService {
 
   async favorite(user: CurrentUser, projectId: string) {
     if (user.role !== 'FREELANCER')
-      throw new ForbiddenException('Обране доступне фрилансеру.');
+      throw new ForbiddenException('Обране доступне фрілансеру.');
     const project = await this.prisma.client.orm.public.Project.where({
       id: projectId,
     }).first();
@@ -496,7 +496,7 @@ export class ProjectsService {
 
   async unfavorite(user: CurrentUser, projectId: string) {
     if (user.role !== 'FREELANCER')
-      throw new ForbiddenException('Обране доступне фрилансеру.');
+      throw new ForbiddenException('Обране доступне фрілансеру.');
     const current = await this.prisma.client.orm.public.FavoriteProject.where({
       userId: user.id,
       projectId,
@@ -515,7 +515,7 @@ export class ProjectsService {
     data: CreateApplicationDto,
   ) {
     if (user.role !== 'FREELANCER')
-      throw new ForbiddenException('Заявку залишає фрилансер.');
+      throw new ForbiddenException('Заявку залишає фрілансер.');
     const project = await this.prisma.client.orm.public.Project.where({
       id: projectId,
     }).first();
@@ -558,7 +558,7 @@ export class ProjectsService {
         user.id,
         projectId,
         'APPLICATION_CREATED',
-        'Фрилансер залишив заявку.',
+        'Фрілансер залишив заявку.',
       );
       return application;
     } catch (error) {
@@ -661,7 +661,7 @@ export class ProjectsService {
       .select('id', 'name', 'email', 'role', 'status', 'avatarUrl', 'createdAt')
       .first();
     if (!freelancer || freelancer.role !== 'FREELANCER')
-      throw new NotFoundException('Фрилансера не знайдено.');
+      throw new NotFoundException('Фрілансера не знайдено.');
     const memberships = await this.prisma.client.orm.public.ProjectMember.where(
       { userId: id },
     ).all();
@@ -778,7 +778,7 @@ export class ProjectsService {
     }).first();
     if (!member)
       throw new BadRequestException(
-        'Фрилансер не був учасником цього проєкту.',
+        'Фрілансер не був учасником цього проєкту.',
       );
     try {
       return await this.prisma.client.orm.public.FreelancerReview.create({
@@ -793,7 +793,7 @@ export class ProjectsService {
     } catch (error) {
       if (hasDatabaseCode(error, '23505'))
         throw new ConflictException(
-          'Відгук для цього фрилансера вже залишено.',
+          'Відгук для цього фрілансера вже залишено.',
         );
       throw error;
     }

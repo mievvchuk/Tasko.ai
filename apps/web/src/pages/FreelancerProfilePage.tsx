@@ -30,7 +30,7 @@ export function FreelancerProfilePage() {
               <h1>{data.name}</h1>
             </div>
             <p>{tr("Профіль виконавця та відгуки клієнтів.")}</p>
-            <p>{data.profile.bio || tr("Фрилансер ще не додав опис.")}</p>
+            <p>{data.profile.bio || tr("Фрілансер ще не додав опис.")}</p>
             <p className="skill-list">
               {data.skills.map((skill) => (
                 <span className="badge" key={skill.id}>

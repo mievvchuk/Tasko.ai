@@ -52,8 +52,8 @@ export const aiToolNames: Record<string, string> = {
   list_project_applications: "Заявки",
   list_notifications: "Сповіщення",
   search_open_projects: "Біржа проєктів",
-  list_freelancers: "Фрилансери",
-  get_freelancer_profile: "Профіль фрилансера",
+  list_freelancers: "Фрілансери",
+  get_freelancer_profile: "Профіль фрілансера",
 };
 
 const AiChatContext = createContext<AiChatState | null>(null);

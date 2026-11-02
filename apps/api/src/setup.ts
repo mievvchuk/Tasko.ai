@@ -18,7 +18,7 @@ export function setupApp(app: INestApplication) {
   app.enableShutdownHooks();
   const swagger = new DocumentBuilder()
     .setTitle('AIFreelanceSystem API')
-    .setDescription('Керування фриланс-проєктами')
+    .setDescription('Керування фріланс-проєктами')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

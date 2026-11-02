@@ -41,7 +41,7 @@ export function AddProjectMember({
         body: { userId },
       });
       setUserId("");
-      setMessage(tr("Фрилансера додано до команди."));
+      setMessage(tr("Фрілансера додано до команди."));
       onAdded();
     } catch (error) {
       setError(errorMessage(error));
@@ -54,7 +54,7 @@ export function AddProjectMember({
     <div className="padded">
       <p className="form-note">
         {tr(
-          "Основного виконавця обрано через заявку. За потреби додайте інших фрилансерів для окремих завдань: вони отримають доступ до даних цього проєкту.",
+          "Основного виконавця обрано через заявку. За потреби додайте інших фрілансерів для окремих завдань: вони отримають доступ до даних цього проєкту.",
         )}
       </p>
       <ResourceState
@@ -75,7 +75,7 @@ export function AddProjectMember({
               disabled={busy}
               onChange={(event) => setUserId(event.target.value)}
             >
-              <option value="">{tr("Оберіть фрилансера")}</option>
+              <option value="">{tr("Оберіть фрілансера")}</option>
               {available.map((person) => (
                 <option key={person.id} value={person.id}>
                   {person.name} ({person.email})
@@ -89,7 +89,7 @@ export function AddProjectMember({
           </form>
           {!available.length && (
             <p className="form-note">
-              {tr("На цій сторінці немає інших активних фрилансерів.")}
+              {tr("На цій сторінці немає інших активних фрілансерів.")}
             </p>
           )}
           <Pagination

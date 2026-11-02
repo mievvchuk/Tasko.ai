@@ -20,8 +20,8 @@ async (page) => {
   await page.getByLabel('Повторіть пароль', { exact: true }).fill(password + 'wrong');
   await page.getByRole('button', { name: 'Створити обліковий запис' }).click();
   await page.getByRole('alert').filter({ hasText: 'Паролі не збігаються.' }).waitFor();
-  await page.getByRole('radio', { name: /Фрилансер/ }).check();
-  assert(await page.getByRole('radio', { name: /Фрилансер/ }).isChecked(), 'Role selector should work');
+  await page.getByRole('radio', { name: /Фрілансер/ }).check();
+  assert(await page.getByRole('radio', { name: /Фрілансер/ }).isChecked(), 'Role selector should work');
   await page.getByRole('radio', { name: /Клієнт/ }).check();
   await page.getByLabel('Повторіть пароль', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Створити обліковий запис' }).click();

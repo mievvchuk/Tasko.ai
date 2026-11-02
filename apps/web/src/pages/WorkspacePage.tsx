@@ -15,7 +15,7 @@ import { useLanguage } from "../i18n";
 const maxPhotoSize = 2 * 1024 * 1024;
 const photoTypes = ["image/png", "image/jpeg", "image/webp"];
 
-// Сторінка «Мій профіль»: фото, ім'я, статистика, профіль фрилансера та безпека
+// Сторінка «Мій профіль»: фото, ім'я, статистика, профіль фрілансера та безпека
 export function WorkspacePage() {
   const { tr } = useLanguage();
   const { user, updateUser } = useAuth();

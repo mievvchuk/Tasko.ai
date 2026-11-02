@@ -187,7 +187,7 @@ export class McpService {
       'list_project_applications',
       {
         description:
-          'Заявки фрилансерів на проєкт клієнта: бюджет, строки, AI-оцінка. Лише для власника проєкту.',
+          'Заявки фрілансерів на проєкт клієнта: бюджет, строки, AI-оцінка. Лише для власника проєкту.',
         inputSchema: z
           .object({ projectId: z.string().uuid(), ...pagination })
           .strict(),
@@ -210,7 +210,7 @@ export class McpService {
       'search_open_projects',
       {
         description:
-          'Відкриті проєкти на біржі (статус PLANNING) з бюджетом і навичками. Для фрилансерів.',
+          'Відкриті проєкти на біржі (статус PLANNING) з бюджетом і навичками. Для фрілансерів.',
         inputSchema: z
           .object({
             search: z.string().min(1).max(200).optional(),
@@ -226,7 +226,7 @@ export class McpService {
     server.registerTool(
       'list_freelancers',
       {
-        description: 'Активні фрилансери платформи. Для клієнтів.',
+        description: 'Активні фрілансери платформи. Для клієнтів.',
         inputSchema: z.object(pagination).strict(),
         annotations,
       },
@@ -237,7 +237,7 @@ export class McpService {
       'get_freelancer_profile',
       {
         description:
-          'Профіль фрилансера: навички, ставка, доступність, портфоліо та відгуки.',
+          'Профіль фрілансера: навички, ставка, доступність, портфоліо та відгуки.',
         inputSchema: z.object({ userId: z.string().uuid() }).strict(),
         annotations,
       },
