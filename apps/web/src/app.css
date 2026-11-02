@@ -1,11 +1,12 @@
-/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dose (deal 1/3, seed freelance-project-management-app-d170·e11a967b·2026-11-01·r0) · redesign: restyle
- * nav: kept, the sidebar with labels (ten destinations earn it), a top bar under 60rem · signature: the kanban board, columns as tinted wells with white cards · states: loading, empty, error, full · dose: white and night
- * axes: light/grotesk-sans/chromatic-green · posture: restrained · modes: light+dark · contrast: pass · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H5 E4 S3 R5 V4 · weakest: S, a task board looks like any task board; the board gets the one tinted surface and the green marks only what moves work forward */
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Coral (deal 2/3, seed freelance-project-management-platform-1fb2·e11a967b·2026-11-02·r0) · redesign: restyle
+ * nav: kept, the sidebar with labels, a top bar under 60rem · signature: the kanban board, felt-desk columns holding cotton index cards that cast right · states: loading, empty, error, full · light: paper on a desk · dark: the ink board
+ * axes: light/grotesk-sans/warm · posture: restrained · modes: light+dark · type: Manrope kept (General Sans has no Cyrillic) · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: H, the app keeps its layout, so the theme lives in surfaces; one light from the left, coral spent on focus, links and the active mark */
 /* Hallmark · dismissed 41 · surfaces at L 19 to 29 are the night theme, where body ink is already light and inherited */
-/* Hallmark · answered F4 · secondary and danger-outline are outlined on the surface, only .primary is filled */
+/* Hallmark · answered F4 · only .primary is ink; secondary is a cotton card, danger-outline an outline, ghost plain text */
 /* Hallmark · answered F7 · icon buttons, pills, panels and fact cells share a recipe per role so the app reads as one tool; the kanban board is the one surface that differs */
-/* Hallmark · Dose deviations ·body face stays Manrope, the project's own font file · overdue and high priority keep red because people read them as a warning, and the app is about deadlines */
+/* Hallmark · Coral deviations · body face stays Manrope, the project's own font file with Cyrillic; figures use its tabular numerals instead of Geist Mono · controls stay at the app's 40px, not 48px, for table density · overdue and high priority keep red because people read them as a warning · the active nav and "in progress" take a faint coral tint, the app needs a selected state */
+/* Hallmark · dismissed 11 · the lift is Coral's one control signal: buttons and index cards are the same pressed stock, so they rise into the same cast */
 
 /* Стилі Tasko.ai. Порядок: токени → база → компоненти → каркас → сторінки → адаптив.
    Назви класів збігаються з тими, що в TSX, тож логіку компонентів не змінено. */
@@ -131,7 +132,8 @@ label {
 }
 
 /* ===== 2. Кнопки ===== */
-/* Одна залита кнопка на екрані — зелена .primary; решта з рамкою або текстові */
+/* Кнопки — притиснуті картки: .primary чорнильна, .secondary бавовняна з тінню вправо.
+   Наведення піднімає картку на 1px, натискання втискає. */
 .button {
   display: inline-flex;
   align-items: center;
@@ -149,6 +151,7 @@ label {
   transition:
     background-color var(--dur-micro) var(--ease-out),
     border-color var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-micro) var(--ease-out),
     transform var(--dur-micro) var(--ease-out);
 }
 .button:active:not(:disabled) {
@@ -157,14 +160,21 @@ label {
 .button.primary {
   background: var(--color-accent);
   color: var(--color-accent-ink);
+  box-shadow: var(--cast-stock);
+}
+.button.primary:hover:not(:disabled),
+.button.secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 .button.primary:hover:not(:disabled) {
   background: var(--color-accent-deep);
 }
 .button.secondary {
-  background: var(--color-surface);
-  border-color: var(--color-rule-2);
+  background-color: var(--color-surface);
+  background-image: var(--tex-cotton);
   color: var(--color-ink);
+  box-shadow: var(--edge-stock), var(--cast-stock);
 }
 .button.secondary:hover:not(:disabled) {
   background: var(--color-paper-3);
@@ -752,7 +762,8 @@ label {
 .padded {
   padding: var(--space-md) var(--space-lg);
 }
-/* Картка — тонка рамка без тіні; одна межа на рівень вкладеності */
+/* Картка — аркуш бавовняного паперу: світлий край угорі, тінь падає вправо.
+   Одна межа на рівень вкладеності: вкладені блоки лише з лініями. */
 .data-panel,
 .account-panel,
 .chart-card,
@@ -760,9 +771,10 @@ label {
 .application-card,
 .submission-card,
 .marketplace-card {
-  border: 1px solid var(--color-rule);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
+  background-image: var(--tex-cotton);
+  box-shadow: var(--edge-stock), var(--cast-stock);
 }
 .data-panel {
   overflow: hidden;
@@ -995,9 +1007,10 @@ progress::-moz-progress-bar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   margin-bottom: var(--space-lg);
-  border: 1px solid var(--color-rule);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
+  background-image: var(--tex-cotton);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   overflow: hidden;
 }
 .stat-card {
@@ -1351,7 +1364,7 @@ dd {
 .kanban-board.is-dragging {
   scroll-snap-type: none;
 }
-/* Колонка — сіра заглибина без рамки; картки в ній білі з рамкою */
+/* Колонка — шматок фетрового столу; картки на ній — бавовняні картки з тінню вправо */
 .kanban-column {
   display: grid;
   align-content: start;
@@ -1359,7 +1372,8 @@ dd {
   min-height: 240px;
   padding: var(--space-sm);
   border-radius: var(--radius-card);
-  background: var(--color-paper-3);
+  background-color: var(--color-paper-3);
+  background-image: var(--tex-desk);
   scroll-snap-align: start;
   transition: background-color var(--dur-short) var(--ease-out), opacity var(--dur-short) var(--ease-out);
 }
@@ -1409,13 +1423,10 @@ dd {
   display: grid;
   gap: var(--space-xs);
   padding: var(--space-sm);
-  border: 1px solid var(--color-rule);
   border-radius: var(--radius-input);
-  background: var(--color-surface);
-  transition: border-color var(--dur-micro) var(--ease-out);
-}
-.kanban-card:hover {
-  border-color: var(--color-rule-2);
+  background-color: var(--color-surface);
+  background-image: var(--tex-cotton);
+  box-shadow: var(--edge-stock), var(--cast-stock);
 }
 /* Мишею картку тягнуть цілком; поки тягнуть — вона над усім і без переходів */
 .kanban-card.movable {
@@ -2407,9 +2418,10 @@ dd {
   display: grid;
   gap: var(--space-2xs);
   padding: var(--space-xs);
-  border: 1px solid var(--color-rule);
   border-radius: var(--radius-small);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
+  background-image: var(--tex-cotton);
+  box-shadow: var(--edge-stock), var(--cast-stock);
   font-size: var(--text-xs);
   font-weight: 600;
 }
@@ -2848,13 +2860,12 @@ dd {
 .kanban-card {
   animation: pop-in var(--dur-short) var(--ease-out);
   transition:
-    border-color var(--dur-micro) var(--ease-out),
     transform var(--dur-micro) var(--ease-out),
     box-shadow var(--dur-micro) var(--ease-out);
 }
 .kanban-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-pop);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 
 /* ===== 16. Планшет і телефон ===== */
