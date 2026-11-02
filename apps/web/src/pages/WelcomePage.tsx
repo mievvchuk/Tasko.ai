@@ -1,3 +1,4 @@
+import { BrandWord } from "../components/BrandWord";
 import { BrandMark } from "../components/BrandMark";
 import { Link } from "react-router";
 import { LanguageButton, useLanguage } from "../i18n";
@@ -78,10 +79,6 @@ export function WelcomePage() {
   return (
     <div className="welcome">
       <header className="public-header welcome-header">
-        <Link className="brand" to="/welcome">
-          <BrandMark />
-          Tasko<span className="brand-ai">.ai</span>
-        </Link>
         <nav aria-label={tr("Навігація вітальної сторінки")}>
           <a href="#features">{tr("Можливості")}</a>
           <a href="#how">{tr("Як це працює")}</a>
@@ -94,6 +91,10 @@ export function WelcomePage() {
       <main>
         <section className="welcome-hero">
           <div className="welcome-hero-text">
+            <div className="brand welcome-brand">
+              <BrandMark />
+              <BrandWord />
+            </div>
             <span className="welcome-badge">
               <i className="bi bi-stars" aria-hidden="true"></i>
               {tr("Фріланс-проєкти з AI-помічницею")}
