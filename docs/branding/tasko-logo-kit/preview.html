@@ -1,0 +1,20 @@
+<!doctype html><html lang="uk"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Tasko.ai — animated letters</title><style>@font-face{font-family:Manrope;src:url(Manrope-Variable.ttf)}body{margin:0;font-family:Manrope, sans-serif}.panel{padding:64px 32px;background:#f8f5f1;color:#231f1c}.dark{background:#231f1c;color:#f8f5f1}.brand{display:inline-flex;align-items:center;gap:16px;font-size:42px;font-weight:700;text-decoration:none;color:inherit;padding:16px 0}.brand img{width:64px;height:64px}.brand-ai{color:#bd4936}.dark .brand-ai{color:#ef9580}button{padding:12px 20px;margin-top:24px;cursor:pointer}.brand-word { display: inline-block; white-space: nowrap; line-height: 1.4; }
+.brand-letter { display: inline-block; width: .66em; text-align: center; }
+.brand-letter-a { --travel: 1.72em; --arc: -.48em; }
+.brand-letter-o { --travel: -1.72em; --arc: .48em; }
+.brand-word .brand-letter { animation: tasko-letter-swap 2200ms cubic-bezier(.45,0,.25,1) 700ms 1; }
+.brand:hover .brand-letter, .brand:focus-visible .brand-letter,
+.admin-brand:hover .brand-letter, .admin-brand:focus-visible .brand-letter,
+.replay .brand-letter { animation-name: tasko-letter-replay; animation-delay: 0ms; }
+@keyframes tasko-letter-swap {
+  0%, 100% { transform: translate(0,0); }
+  18%, 70% { transform: translate(calc(var(--travel) / 2), var(--arc)); }
+  36%, 52% { transform: translate(var(--travel),0); }
+}
+@keyframes tasko-letter-replay {
+  0%, 100% { transform: translate(0,0); }
+  18%, 70% { transform: translate(calc(var(--travel) / 2), var(--arc)); }
+  36%, 52% { transform: translate(var(--travel),0); }
+}
+@media (prefers-reduced-motion: reduce) { .brand-word .brand-letter { animation: none !important; } }
+</style><section class="panel light"><a class="brand" href="#" onclick="event.preventDefault()"><img src="tasko-mark-light-animated.svg" alt=""><span class="brand-word" role="img" aria-label="Tasko.ai"><span aria-hidden="true">T<span class="brand-letter brand-letter-a">a</span>sk<span class="brand-letter brand-letter-o">o</span><span class="brand-ai">.ai</span></span></span></a></section><section class="panel dark"><a class="brand" href="#" onclick="event.preventDefault()"><img src="tasko-mark-dark-animated.svg" alt=""><span class="brand-word" role="img" aria-label="Tasko.ai"><span aria-hidden="true">T<span class="brand-letter brand-letter-a">a</span>sk<span class="brand-letter brand-letter-o">o</span><span class="brand-ai">.ai</span></span></span></a></section><button onclick="document.querySelectorAll('.brand').forEach(el=>{el.classList.remove('replay');void el.offsetWidth;el.classList.add('replay')})">Повторити анімацію</button></html>

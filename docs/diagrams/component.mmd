@@ -1,0 +1,15 @@
+flowchart LR
+  Browser[React + TypeScript] -->|REST + JWT| API[NestJS API]
+  API --> Auth[Auth module]
+  API --> Projects[Projects and tasks]
+  API --> Collaboration[Messages, files, submissions]
+  API --> Analytics[Analytics and reports]
+  API --> Agent[AI agent]
+  Auth --> Prisma[Prisma ORM]
+  Projects --> Prisma
+  Collaboration --> Prisma
+  Analytics --> Prisma
+  Prisma --> DB[(PostgreSQL)]
+  Agent --> MCP[MCP tools]
+  MCP --> Prisma
+  Agent --> LLM[Language model API]

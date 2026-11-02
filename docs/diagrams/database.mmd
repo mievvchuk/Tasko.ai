@@ -1,0 +1,17 @@
+erDiagram
+  User ||--o{ Project : owns
+  User ||--o{ ProjectMember : joins
+  Project ||--o{ ProjectMember : contains
+  User ||--o{ ProjectApplication : submits
+  Project ||--o{ ProjectApplication : receives
+  Project ||--o{ Task : contains
+  User o|--o{ Task : assigned
+  Project ||--o{ Order : contains
+  Project ||--o{ Message : contains
+  User ||--o{ Message : sends
+  Project ||--o{ FileAttachment : contains
+  Task ||--o{ WorkSubmission : receives
+  WorkSubmission ||--o{ FileAttachment : includes
+  Project ||--o{ FreelancerReview : receives
+  User ||--o{ AuthSession : has
+  User ||--o{ PasswordResetToken : requests

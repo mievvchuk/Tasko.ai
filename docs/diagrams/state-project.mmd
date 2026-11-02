@@ -1,0 +1,11 @@
+stateDiagram-v2
+  [*] --> PLANNING: клієнт публікує
+  PLANNING --> ACTIVE: клієнт приймає заявку
+  PLANNING --> CANCELLED: клієнт скасовує
+  ACTIVE --> PAUSED: призупинення
+  PAUSED --> ACTIVE: відновлення
+  ACTIVE --> COMPLETED: усі роботи завершені
+  ACTIVE --> CANCELLED: скасування
+  PAUSED --> CANCELLED: скасування
+  COMPLETED --> [*]
+  CANCELLED --> [*]
