@@ -14,6 +14,16 @@ export interface AiExchange {
   offTopic: boolean;
   // Назви файлів, прикріплених до цього запитання
   files?: string[];
+  // Чернетка проєкту від інструмента draft_project — створюється лише кнопкою
+  projectDraft?: AiProjectDraft | null;
+}
+
+export interface AiProjectDraft {
+  title: string;
+  description: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  deadline?: string;
 }
 
 // Текст прикріпленого файлу, який повернув сервер (/agent/attachments)
@@ -54,6 +64,7 @@ export const aiToolNames: Record<string, string> = {
   search_open_projects: "Біржа проєктів",
   list_freelancers: "Фрілансери",
   get_freelancer_profile: "Профіль фрілансера",
+  draft_project: "Чернетка проєкту",
 };
 
 const AiChatContext = createContext<AiChatState | null>(null);

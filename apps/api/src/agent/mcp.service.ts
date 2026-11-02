@@ -1,7 +1,16 @@
-import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { ProjectsService } from '../projects/projects.service.js';
+import {
+  ProjectsService,
+  validateBudget,
+} from '../projects/projects.service.js';
 import { AnalyticsService } from '../analytics/analytics.service.js';
 import { MilestonesService } from '../projects/milestones.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
@@ -244,6 +253,38 @@ export class McpService {
       async ({ userId }) =>
         result(() => this.projects.freelancerProfile(user, userId)),
     );
+    // Нічого не записує: повертає чернетку, а створює проєкт сам клієнт кнопкою
+    // через звичайний POST /projects з тією ж валідацією, що й у формі.
+    if (user.role === 'CLIENT')
+      server.registerTool(
+        'draft_project',
+        {
+          description:
+            'Готує чернетку нового проєкту клієнта для підтвердження. Викликай лише тоді, коли користувач назвав назву, опис, бюджет і дедлайн. Проєкт НЕ створюється: користувач підтвердить його кнопкою.',
+          inputSchema: z
+            .object({
+              title: z.string().trim().min(2).max(200),
+              description: z.string().min(1).max(10000),
+              budgetMin: z.number().int().min(0).max(10000000).optional(),
+              budgetMax: z.number().int().min(0).max(10000000).optional(),
+              deadline: z.string().datetime({ offset: true }).optional(),
+            })
+            .strict(),
+          annotations,
+        },
+        async (draft) =>
+          result(async () => {
+            validateBudget(draft.budgetMin, draft.budgetMax);
+            if (
+              draft.deadline &&
+              new Date(draft.deadline).getTime() <= Date.now()
+            )
+              throw new BadRequestException(
+                'Дедлайн проєкту має бути в майбутньому.',
+              );
+            return draft;
+          }),
+      );
     return server;
   }
 }

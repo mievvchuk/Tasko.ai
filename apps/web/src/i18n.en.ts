@@ -176,6 +176,9 @@ export const enText: Record<string, string> = {
   "Повідомлення проєкту": "Project messages",
   "Біржа проєктів": "Project marketplace",
   "Підсумуй стан моїх проєктів": "Summarise the state of my projects",
+  "Допоможи створити новий проєкт": "Help me create a new project",
+  "Чернетка проєкту": "Project draft",
+  "Створюємо…": "Creating…",
   "Які завдання прострочені або під ризиком?":
     "Which tasks are overdue or at risk?",
   "Чи є нові заявки на мої проєкти?":

@@ -2,8 +2,10 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, KeyboardEvent } from "react";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
+import { useNavigate } from "react-router";
 import { aiName, aiToolNames, useAiChat } from "../aiChat";
-import type { AiAttachment } from "../aiChat";
+import type { AiAttachment, AiProjectDraft } from "../aiChat";
+import { formatDate } from "../format";
 import type { UserRole } from "../types";
 
 import { useLanguage } from "../i18n";
@@ -17,9 +19,9 @@ const maxFileSize = 5 * 1024 * 1024;
 const suggestions: Record<UserRole, string[]> = {
   CLIENT: [
     "Підсумуй стан моїх проєктів",
+    "Допоможи створити новий проєкт",
     "Які завдання прострочені або під ризиком?",
     "Чи є нові заявки на мої проєкти?",
-    "Хто з команди найбільш завантажений?",
   ],
   FREELANCER: [
     "Що мені зробити першим сьогодні?",
@@ -74,6 +76,65 @@ function Thinking() {
         </span>
       </span>
     </div>
+  );
+}
+
+// Чернетка від Ади: проєкт створює сам клієнт через звичайний POST /projects
+function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
+  const { tr } = useLanguage();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function create() {
+    setBusy(true);
+    setError("");
+    try {
+      const project = await request<{ id: string }>("/projects", {
+        method: "POST",
+        body: draft,
+      });
+      await navigate(`/projects/${project.id}`);
+    } catch (e) {
+      setError(errorMessage(e));
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="ai-draft" aria-label={tr("Чернетка проєкту")}>
+      <h3>{draft.title}</h3>
+      <p className="preserve-lines">{draft.description}</p>
+      <dl>
+        <div>
+          <dt>{tr("Бюджет")}</dt>
+          <dd>
+            {draft.budgetMin !== undefined || draft.budgetMax !== undefined
+              ? tr(
+                  "{0}–{1} грн",
+                  draft.budgetMin ?? 0,
+                  draft.budgetMax ?? "необмежено",
+                )
+              : tr("Не вказано")}
+          </dd>
+        </div>
+        <div>
+          <dt>{tr("Дедлайн")}</dt>
+          <dd>{formatDate(draft.deadline ?? null)}</dd>
+        </div>
+      </dl>
+      <button
+        type="button"
+        className="button primary"
+        disabled={busy}
+        onClick={() => void create()}
+      >
+        {busy ? tr("Створюємо…") : tr("Створити проєкт")}
+      </button>
+      {error && (
+        <p className="notice error" role="alert">
+          {error}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -199,6 +260,9 @@ export function AiConversation({
                 >
                   <MarkdownAnswer>{item.answer}</MarkdownAnswer>
                 </Suspense>
+                {item.projectDraft && (
+                  <ProjectDraftCard draft={item.projectDraft} />
+                )}
                 {item.toolsUsed.length > 0 && (
                   <p className="ai-sources">
                     <i className="bi bi-database" aria-hidden="true"></i>

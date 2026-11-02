@@ -125,6 +125,77 @@ describe('AI through MCP', () => {
       ),
     ).toBe(true);
   });
+  it('returns a project draft without creating the project', async () => {
+    const toolCall = (args: object) =>
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                role: 'assistant',
+                content: null,
+                tool_calls: [
+                  {
+                    id: 'call_1',
+                    type: 'function',
+                    function: {
+                      name: 'draft_project',
+                      arguments: JSON.stringify(args),
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    const draft = {
+      title: 'Лендинг кав’ярні',
+      description: 'Одна сторінка з меню',
+      budgetMin: 5000,
+      budgetMax: 8000,
+      deadline: new Date(Date.now() + 86400000 * 30).toISOString(),
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(topicResponse(true))
+        .mockResolvedValueOnce(toolCall(draft))
+        .mockResolvedValueOnce(planResponse('Перевірте чернетку.')),
+    );
+    const agent = new AgentService(
+      config,
+      mcp,
+      projects as unknown as ProjectsService,
+    );
+    expect((await agent.chat(user, 'Створи проєкт')).projectDraft).toEqual(
+      draft,
+    );
+
+    // Бюджет «до» менший за «від» — інструмент повертає помилку, чернетки немає
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(topicResponse(true))
+        .mockResolvedValueOnce(toolCall({ ...draft, budgetMax: 100 }))
+        .mockResolvedValueOnce(planResponse('Уточніть бюджет.')),
+    );
+    expect((await agent.chat(user, 'Створи проєкт')).projectDraft).toBeNull();
+  });
+  it('hides draft_project from non-clients', async () => {
+    const server = mcp.createServer({ ...user, role: 'FREELANCER' });
+    const client = new Client({ name: 'test', version: '1.0.0' });
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    const { tools } = await client.listTools();
+    expect(tools.some((tool) => tool.name === 'draft_project')).toBe(false);
+    await client.close();
+    await server.close();
+  });
   it('refuses off-topic questions without calling tools', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(topicResponse(false));
     vi.stubGlobal('fetch', fetchMock);
