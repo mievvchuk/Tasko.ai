@@ -18,7 +18,6 @@ import { hashPassword } from '../dist/auth/password.js';
 import { setupApp } from '../dist/setup.js';
 import { ApiExceptionFilter } from '../dist/common/api-exception.filter.js';
 import { HttpException } from '@nestjs/common';
-import { MailService } from '../dist/auth/mail.service.js';
 
 const require = createRequire(
   import.meta.resolve('@prisma/orm-postgres/runtime'),
@@ -88,11 +87,6 @@ try {
         })
         .overrideProvider(PrismaService)
         .useValue(prisma)
-        .overrideProvider(MailService)
-        .useValue({
-          configured: () => false,
-          sendReset: async () => {},
-        })
         .compile();
       app = module.createNestApplication({ logger: false });
       Object.defineProperty(app.get(FilesService), 'directory', {

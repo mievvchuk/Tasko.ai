@@ -148,7 +148,6 @@ export class UsersService {
     email: string;
     passwordHash: string;
     role: 'CLIENT' | 'FREELANCER';
-    emailVerifiedAt?: Date | null;
   }) {
     const now = new Date();
     return this.prisma.client.orm.public.User.create({
