@@ -33,30 +33,10 @@ API: `POST /projects/:id/ai-plan` із необов'язковим `instructions
 
 ## Запуск
 
-### Листи відновлення пароля через Gmail SMTP
-
-Після реєстрації вхід доступний одразу, підтвердження пошти немає. Пошта
-потрібна лише для листів відновлення пароля. У Google увімкніть
-двоетапну перевірку й створіть окремий пароль застосунку:
-https://myaccount.google.com/apppasswords. У кореневому `.env` додайте або
-оновіть лише ці параметри, зберігши решту налаштувань:
-
-```dotenv
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=your-address@gmail.com
-SMTP_PASSWORD=your-google-app-password
-EMAIL_FROM=your-address@gmail.com
-```
-
-Використовуйте пароль застосунку Google без розділювальних пробілів. SMTP-пароль
-залишається на сервері. `WEB_ORIGIN` має вказувати на адресу фронтенду, яка
-відкривається в браузері користувача. Перезапустіть API після зміни `.env`.
-Для нової копії БД застосуйте `npm.cmd run db:migrate` і `npm.cmd run db:verify`.
-
-Маршрути реєстрації та відновлення пароля мають окремі ліміти 10 запитів за
-15 хвилин на IP у межах одного процесу API. Відновлення пароля використовує SMTP,
-коли він налаштований; наявний Resend залишається резервним варіантом.
+Після реєстрації вхід доступний одразу. Сервіс не надсилає листів, тому пошта
+й SMTP не налаштовуються. Маршрут реєстрації має ліміт 10 запитів за 15 хвилин
+на IP у межах одного процесу API. Для нової копії БД застосуйте
+`npm.cmd run db:migrate` і `npm.cmd run db:verify`.
 
 Потрібні Node.js 22.22+ та PostgreSQL 15+. Використано наявний NestJS 12 і Prisma 8 RC; фронтенд — React 19, Vite 8 і React Router 8. Залежності зафіксовано в package-lock.json кожного застосунку.
 
@@ -135,7 +115,6 @@ JWT зберігається в sessionStorage поточної вкладки �
 | Маршрут                                      | Призначення                                    |
 | -------------------------------------------- | ---------------------------------------------- |
 | `/login`, `/register`                        | Вхід і реєстрація клієнта або фрілансера       |
-| `/forgot-password`, `/reset-password`        | Запит і встановлення нового пароля             |
 | `/`                                          | Головна панель зі статистикою та дедлайнами    |
 | `/projects`, `/projects/:id`                 | Список і деталі проєктів                       |
 | `/projects/new`, `/projects/:id/edit`        | Створення та редагування проєкту               |
@@ -194,7 +173,7 @@ POST /auth/register приймає name, email, password та role: CLIENT аб�
 
 POST /auth/login повертає accessToken, tokenType, expiresIn та user. Якщо ввімкнено 2FA, перша відповідь містить `requiresTwoFactor: true`, після чого потрібно повторити запит із шестизначним `twoFactorCode`. JWT діє 1 годину. У Swagger натисніть **Authorize** і вставте лише accessToken. GET `/auth/me` повертає поточного користувача.
 
-Додаткові маршрути: POST `/auth/logout`, GET/DELETE `/auth/sessions`, PATCH `/auth/password`, POST `/auth/2fa/setup`, `/auth/2fa/enable`, `/auth/2fa/disable`, POST `/auth/forgot-password` і `/auth/reset-password`. Для надсилання листа відновлення потрібні `EMAIL_API_KEY` та `EMAIL_FROM`; без них API чесно повертає 503 і не імітує відправлення.
+Додаткові маршрути: POST `/auth/logout`, GET/DELETE `/auth/sessions`, PATCH `/auth/password`, POST `/auth/2fa/setup`, `/auth/2fa/enable`, `/auth/2fa/disable`.
 
 Кожен захищений запит перевіряє актуальну роль і блокування в БД. Після блокування раніше виданий JWT теж не дає доступу. Паролі зберігаються як хеш scrypt.
 

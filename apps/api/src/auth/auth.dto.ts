@@ -57,28 +57,6 @@ export class DisableTwoFactorDto extends TwoFactorCodeDto {
   password: string;
 }
 
-export class ForgotPasswordDto {
-  @ApiProperty({ example: 'client@example.com' })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
-  @IsEmail()
-  @MaxLength(254)
-  email: string;
-}
-
-export class ResetPasswordDto {
-  @ApiProperty()
-  @IsString()
-  @Length(20, 200)
-  token: string;
-
-  @ApiProperty({ minLength: 8, maxLength: 128, format: 'password' })
-  @IsString()
-  @Length(8, 128)
-  newPassword: string;
-}
-
 export class RegisterDto extends LoginDto {
   @ApiProperty({ example: 'Іван', minLength: 2, maxLength: 100 })
   @Transform(({ value }: { value: unknown }) =>

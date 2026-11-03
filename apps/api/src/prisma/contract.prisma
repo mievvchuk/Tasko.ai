@@ -6,7 +6,6 @@ model User {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
-  emailVerifiedAt TimestamptzJsDate? @default(now())
   passwordHash String
   role      String   // CLIENT, FREELANCER, ADMIN
   status    String   // ACTIVE, BLOCKED
@@ -28,8 +27,6 @@ model User {
   freelancerReviews   FreelancerReview[] @relation("ReviewedFreelancer")
   clientReviews       FreelancerReview[] @relation("ReviewClient")
   authSessions        AuthSession[]
-  passwordResetTokens PasswordResetToken[]
-  emailVerificationTokens EmailVerificationToken[]
   freelancerProfile    FreelancerProfile?
   freelancerSkills     FreelancerSkill[]
   portfolioItems       PortfolioItem[]
@@ -49,26 +46,6 @@ model AuthSession {
   createdAt   TimestamptzJsDate @default(now())
   expiresAt   TimestamptzJsDate
   revokedAt   TimestamptzJsDate?
-}
-
-model PasswordResetToken {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  tokenHash   String   @unique
-  createdAt   TimestamptzJsDate @default(now())
-  expiresAt   TimestamptzJsDate
-  usedAt      TimestamptzJsDate?
-}
-
-model EmailVerificationToken {
-  id String @id @default(uuid())
-  userId String
-  user User @relation(fields: [userId], references: [id])
-  tokenHash String @unique
-  createdAt TimestamptzJsDate @default(now())
-  expiresAt TimestamptzJsDate
-  usedAt TimestamptzJsDate?
 }
 
 model Project {

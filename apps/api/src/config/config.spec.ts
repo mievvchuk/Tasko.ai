@@ -6,21 +6,6 @@ const valid = {
 };
 
 describe('configuration', () => {
-  it('requires complete SMTP configuration', () => {
-    expect(() => readConfig({ ...valid, SMTP_HOST: 'smtp.gmail.com' })).toThrow(
-      'SMTP_USER',
-    );
-  });
-  it('defaults to Gmail TLS port when SMTP is configured', () => {
-    const config = readConfig({
-      ...valid,
-      SMTP_HOST: 'smtp.gmail.com',
-      SMTP_USER: 'sender@gmail.com',
-      SMTP_PASSWORD: 'test-only-password',
-    });
-    expect(config.smtpPort).toBe(465);
-    expect(config.emailFrom).toBe('sender@gmail.com');
-  });
   it('accepts PostgreSQL and uses the default port', () => {
     expect(readConfig(valid).port).toBe(3000);
   });

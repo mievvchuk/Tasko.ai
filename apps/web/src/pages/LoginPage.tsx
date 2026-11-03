@@ -110,9 +110,6 @@ export function LoginPage() {
         </fieldset>
       </form>
       <p className="auth-switch">
-        <Link to="/forgot-password">{t("forgotPassword")}</Link>
-      </p>
-      <p className="auth-switch">
         {t("noAccount")} <Link to="/register">{t("createAccount")}</Link>
       </p>
     </section>

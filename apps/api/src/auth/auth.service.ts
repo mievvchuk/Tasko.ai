@@ -5,11 +5,10 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import QRCode from 'qrcode';
 import { APP_CONFIG } from '../config/config.module.js';
 import type { AppConfig } from '../config/config.js';
@@ -26,12 +25,10 @@ import type {
   DisableTwoFactorDto,
   LoginDto,
   RegisterDto,
-  ResetPasswordDto,
   TwoFactorCodeDto,
 } from './auth.dto.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { createTotpSecret, createTotpUri, verifyTotp } from './totp.js';
-import { MailService } from './mail.service.js';
 
 interface LoginMetadata {
   userAgent?: string;
@@ -43,14 +40,12 @@ const duplicateEmailMessage = 'Ця електронна пошта вже за�
 @Injectable()
 export class AuthService {
   private readonly sessionLifetime = 60 * 60 * 1000;
-  private readonly resetTokenLifetime = 30 * 60 * 1000;
 
   constructor(
     @Inject(UsersService) private readonly users: UsersService,
     @Inject(JwtService) private readonly jwt: JwtService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
-    @Inject(MailService) private readonly mail: MailService,
   ) {}
 
   private get db() {
@@ -68,7 +63,6 @@ export class AuthService {
         email: data.email,
         role: data.role,
         passwordHash: await hashPassword(data.password),
-        emailVerifiedAt: new Date(),
       });
       return this.publicUser(user);
     } catch (error) {
@@ -229,46 +223,6 @@ export class AuthService {
     return { message: 'Двофакторний вхід вимкнено.' };
   }
 
-  // Надсилає лист із посиланням для відновлення пароля.
-  // Відповідь однакова для наявної й відсутньої пошти, щоб не розкривати акаунти.
-  async forgotPassword(email: string) {
-    if (!this.canSendResetEmail())
-      throw new ServiceUnavailableException(
-        'Надсилання листів ще не налаштовано адміністратором.',
-      );
-    const user = await this.users.findByEmail(email);
-    if (!user) return this.resetRequestedMessage();
-
-    const { token, resetId } = await this.createResetToken(user.id);
-    try {
-      await this.sendResetEmail(user.email, token);
-    } catch (error) {
-      // Лист не дійшов — токен робимо недійсним, щоб ним не можна було скористатися.
-      await this.markResetTokenUsed(resetId);
-      throw error;
-    }
-    return this.resetRequestedMessage();
-  }
-
-  // Встановлює новий пароль за токеном із листа й завершує всі сеанси.
-  async resetPassword(data: ResetPasswordDto) {
-    const reset = await this.db.PasswordResetToken.where({
-      tokenHash: this.hashToken(data.token),
-    }).first();
-    if (!reset || reset.usedAt || this.isExpired(reset.expiresAt))
-      throw new BadRequestException(
-        'Посилання для відновлення некоректне або прострочене.',
-      );
-
-    await this.db.User.where({ id: reset.userId }).update({
-      passwordHash: await hashPassword(data.newPassword),
-      updatedAt: new Date(),
-    });
-    await this.markResetTokenUsed(reset.id);
-    await this.revokeSessions(reset.userId);
-    return { message: 'Пароль відновлено. Увійдіть із новим паролем.' };
-  }
-
   private ensureActive(user: { status: string }) {
     if (user.status !== 'ACTIVE')
       throw new ForbiddenException('Обліковий запис заблоковано.');
@@ -312,76 +266,6 @@ export class AuthService {
         await this.markSessionRevoked(session.id);
       }
     }
-  }
-
-  private canSendResetEmail() {
-    if (this.mail.configured()) return true;
-    return Boolean(this.config.emailApiKey && this.config.emailFrom);
-  }
-
-  // У БД зберігаємо лише хеш токена, а сам токен іде користувачу в листі.
-  private async createResetToken(userId: string) {
-    const token = randomBytes(32).toString('base64url');
-    await this.expireResetTokens(userId);
-    const reset = await this.db.PasswordResetToken.create({
-      id: randomUUID(),
-      userId,
-      tokenHash: this.hashToken(token),
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + this.resetTokenLifetime),
-      usedAt: null,
-    });
-    return { token, resetId: reset.id };
-  }
-
-  private markResetTokenUsed(resetId: string) {
-    return this.db.PasswordResetToken.where({ id: resetId }).update({
-      usedAt: new Date(),
-    });
-  }
-
-  private async expireResetTokens(userId: string) {
-    const tokens = await this.db.PasswordResetToken.where({ userId }).all();
-    for (const token of tokens) {
-      if (!token.usedAt) await this.markResetTokenUsed(token.id);
-    }
-  }
-
-  // Якщо SMTP не налаштовано, надсилаємо лист через HTTP API Resend.
-  private async sendResetEmail(email: string, token: string) {
-    if (this.mail.configured()) return this.mail.sendReset(email, token);
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.config.emailApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: this.config.emailFrom,
-        to: [email],
-        subject: 'Відновлення пароля Tasko.ai',
-        html: this.buildResetEmailHtml(token),
-      }),
-    });
-    if (!response.ok)
-      throw new ServiceUnavailableException(
-        'Не вдалося надіслати лист. Спробуйте пізніше.',
-      );
-  }
-
-  private buildResetEmailHtml(token: string) {
-    const link = `${this.config.webOrigin}/reset-password?token=${encodeURIComponent(token)}`;
-    return `<p>Щоб встановити новий пароль, відкрийте посилання:</p><p><a href="${link}">Відновити пароль</a></p><p>Посилання діє 30 хвилин.</p>`;
-  }
-
-  private hashToken(token: string) {
-    return createHash('sha256').update(token).digest('hex');
-  }
-
-  private resetRequestedMessage() {
-    return {
-      message: 'Якщо така пошта зареєстрована, на неї надіслано посилання.',
-    };
   }
 
   private publicUser(user: Parameters<typeof toPublicUser>[0]): PublicUser {
