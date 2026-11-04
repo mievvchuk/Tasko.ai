@@ -52,7 +52,6 @@ export function RegisterPage() {
       className="auth-card register-card"
       aria-labelledby="register-title"
     >
-      <span className="card-kicker">{t("registerKicker")}</span>
       <h2 id="register-title">{t("registerTitle")}</h2>
       <p className="card-description">{t("registerDescription")}</p>
       <form onSubmit={submit} aria-busy={submitting}>
@@ -71,6 +70,7 @@ export function RegisterPage() {
                 checked={role === "CLIENT"}
                 onChange={() => setRole("CLIENT")}
               />
+              <i className="bi bi-briefcase role-icon" aria-hidden="true"></i>
               <span>
                 <strong>{t("client")}</strong>
                 <small>{t("clientHint")}</small>
@@ -88,6 +88,7 @@ export function RegisterPage() {
                 checked={role === "FREELANCER"}
                 onChange={() => setRole("FREELANCER")}
               />
+              <i className="bi bi-laptop role-icon" aria-hidden="true"></i>
               <span>
                 <strong>{t("freelancer")}</strong>
                 <small>{t("freelancerHint")}</small>
