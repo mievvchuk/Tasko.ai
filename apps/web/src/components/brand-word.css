@@ -1,11 +1,13 @@
 .brand-word { display: inline-block; white-space: nowrap; line-height: 1.4; }
 /* Дві «a» (темна з «Tasko» і коралова з «.ai») повільно їдуть назустріч, міняються місцями, тримаються, потім повертаються.
    Рух ~1.2 с, щоб око встигало стежити за кольором літер. */
-.brand-letter { position: relative; z-index: 1; display: inline-block; animation: tasko-a-swap 7s cubic-bezier(.65,0,.35,1) 700ms infinite; }
+.brand-letter { position: relative; z-index: 1; display: inline-block; }
+/* Анімація лише після виміру відстані (data-ready ставить BrandWord) */
+.brand-word[data-ready] .brand-letter { animation: tasko-a-swap 7s cubic-bezier(.65,0,.35,1) 700ms infinite; }
 .brand-letter-first { --shift: var(--travel, 0em); }
 .brand-letter-second { --shift: calc(var(--travel, 0em) * -1); }
 /* Літери між ними трохи пригасають лише тоді, коли «a» проїжджають крізь них */
-.brand-mid { animation: tasko-mid-dim 7s ease-in-out 700ms infinite; }
+.brand-word[data-ready] .brand-mid { animation: tasko-mid-dim 7s ease-in-out 700ms infinite; }
 @keyframes tasko-a-swap {
   0%, 10%, 72%, 100% { transform: translateX(0); }
   27%, 55% { transform: translateX(var(--shift)); }
