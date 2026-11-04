@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { translate } from "./i18n.en";
 import type { Language } from "./i18n.en";
+import { IconMenu } from "./components/IconMenu";
 
 const uk = {
   language: "EN",
@@ -190,16 +191,21 @@ export function useLanguage() {
   return context;
 }
 
+// Глобус зі списком мов; назви мов — кожна своєю мовою
 export function LanguageButton() {
-  const { t, toggleLanguage } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
   return (
-    <button
-      type="button"
-      className="language-button"
-      onClick={toggleLanguage}
-      aria-label="Змінити мову / Change language"
-    >
-      {t("language")}
-    </button>
+    <IconMenu
+      icon="bi-globe2"
+      label="Мова / Language"
+      value={language}
+      options={[
+        { value: "uk", label: "Українська" },
+        { value: "en", label: "English" },
+      ]}
+      onChange={(value) => {
+        if (value !== language) toggleLanguage();
+      }}
+    />
   );
 }

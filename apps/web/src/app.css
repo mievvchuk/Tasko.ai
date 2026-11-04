@@ -276,31 +276,81 @@ label {
   opacity: 0.55;
   cursor: not-allowed;
 }
-.language-button {
-  min-height: 36px;
-  padding: var(--space-2xs) var(--space-sm);
-  border: 1px solid var(--color-rule-2);
-  border-radius: var(--radius-input);
-  background: var(--color-surface);
-  font-size: var(--text-sm);
-  font-weight: 700;
+/* Тема й мова: кнопки-іконки зі спливним списком */
+.icon-menu {
+  position: relative;
+  display: inline-flex;
 }
-.language-button:hover {
+.icon-menu-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--color-rule-2);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
+}
+.icon-menu-button:hover {
   background: var(--color-paper-3);
 }
-.theme-picker {
-  display: inline-flex;
+.icon-menu-button:active {
+  transform: scale(0.94);
+}
+.icon-menu-list {
+  position: absolute;
+  top: calc(100% + var(--space-xs));
+  right: 0;
+  z-index: var(--z-dropdown);
+  display: grid;
+  min-width: 170px;
+  margin: 0;
+  padding: var(--space-2xs);
+  list-style: none;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-pop);
+  animation: pop-in var(--dur-short) var(--ease-out);
+  transform-origin: top right;
+}
+.icon-menu-list button {
+  display: flex;
   align-items: center;
   gap: var(--space-xs);
-  color: var(--color-ink-2);
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
   font-size: var(--text-sm);
-  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
 }
-.theme-picker select {
-  width: auto;
-  min-height: 36px;
-  padding: var(--space-2xs) var(--space-xs);
-  font-size: var(--text-sm);
+.icon-menu-list button:hover {
+  background: var(--color-paper-3);
+}
+.icon-menu-list button[aria-pressed="true"] {
+  font-weight: 600;
+}
+.icon-menu-check {
+  margin-left: auto;
+  color: var(--color-accent-text);
+}
+/* У бічній панелі кнопки внизу — список відкривається вгору */
+.topbar-actions .icon-menu-list {
+  top: auto;
+  right: auto;
+  bottom: calc(100% + var(--space-xs));
+  left: 0;
+  transform-origin: bottom left;
 }
 
 /* ===== 3. Логотип, аватар, позначки ===== */
@@ -2263,6 +2313,29 @@ dd {
   flex-direction: column;
   min-height: 100vh;
 }
+/* М'яке світіння на фоні головної та входу. Кольори з токенів теми,
+   тож у світлій і темній темі градієнт підлаштовується сам. */
+.welcome,
+.auth-shell {
+  background:
+    radial-gradient(
+      60rem 40rem at 85% -10%,
+      color-mix(in oklch, var(--color-accent-text) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      50rem 36rem at -10% 35%,
+      color-mix(in oklch, var(--data-amber) 14%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      44rem 32rem at 70% 110%,
+      color-mix(in oklch, var(--data-blue) 9%, transparent),
+      transparent 70%
+    ),
+    var(--color-paper);
+  background-attachment: fixed;
+}
 .public-header {
   display: flex;
   flex-wrap: wrap;
@@ -3975,13 +4048,17 @@ tbody tr:nth-child(n + 6) { animation-delay: 150ms; }
   .topbar-actions .account-menu {
     flex-basis: auto;
   }
-  .theme-picker-label,
   .account-name,
   .account-button > .bi-chevron-down {
     display: none;
   }
-  .topbar .theme-picker select {
-    width: 88px;
+  /* На телефоні панель згори — список знову відкривається вниз */
+  .topbar-actions .icon-menu-list {
+    top: calc(100% + var(--space-xs));
+    right: 0;
+    bottom: auto;
+    left: auto;
+    transform-origin: top right;
   }
   .account-button {
     padding: var(--space-2xs);
