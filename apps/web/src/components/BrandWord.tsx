@@ -15,5 +15,5 @@ export function BrandWord() {
     measure();
     document.fonts?.ready.then(measure);
   }, []);
-  return (<span ref={ref} className="brand-word" role="img" aria-label="Tasko.ai"><span aria-hidden="true">T<span className="brand-letter brand-letter-first">a</span>sko<span className="brand-ai">.<span className="brand-letter brand-letter-second">a</span>i</span></span></span>);
+  return (<span ref={ref} className="brand-word" role="img" aria-label="Tasko.ai"><span aria-hidden="true">T<span className="brand-letter brand-letter-first">a</span><span className="brand-mid">sko</span><span className="brand-ai"><span className="brand-mid">.</span><span className="brand-letter brand-letter-second">a</span>i</span></span></span>);
 }

@@ -1,12 +1,16 @@
 .brand-word { display: inline-block; white-space: nowrap; line-height: 1.4; }
-/* Дві «a» (з «Tasko» і з «.ai») міняються місцями по дугах і повертаються, по колу */
-.brand-letter { display: inline-block; animation: tasko-a-swap 4s cubic-bezier(.45,0,.25,1) 700ms infinite; }
-.brand-letter-first { --shift: var(--travel, 0em); --arc: -.48em; }
-.brand-letter-second { --shift: calc(var(--travel, 0em) * -1); --arc: .48em; }
+/* Дві «a» (з «Tasko» і з «.ai») рівно їдуть назустріч і міняються місцями, тримаються, потім повертаються */
+.brand-letter { display: inline-block; animation: tasko-a-swap 5s cubic-bezier(.65,0,.35,1) 700ms infinite; }
+.brand-letter-first { --shift: var(--travel, 0em); }
+.brand-letter-second { --shift: calc(var(--travel, 0em) * -1); }
+/* Літери між ними пригасають, поки «a» проїжджають крізь них */
+.brand-mid { animation: tasko-mid-dim 5s ease-in-out 700ms infinite; }
 @keyframes tasko-a-swap {
-  0%, 100% { transform: translate(0,0); }
-  10%, 38% { transform: translate(calc(var(--shift) / 2), var(--arc)); }
-  20%, 28% { transform: translate(var(--shift),0); }
-  48% { transform: translate(0,0); }
+  0%, 8%, 60%, 100% { transform: translateX(0); }
+  22%, 46% { transform: translateX(var(--shift)); }
 }
-@media (prefers-reduced-motion: reduce) { .brand-word .brand-letter { animation: none !important; } }
+@keyframes tasko-mid-dim {
+  0%, 8%, 24%, 44%, 60%, 100% { opacity: 1; }
+  15%, 53% { opacity: .2; }
+}
+@media (prefers-reduced-motion: reduce) { .brand-word .brand-letter, .brand-word .brand-mid { animation: none !important; } }
