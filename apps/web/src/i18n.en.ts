@@ -936,4 +936,12 @@ export const enText: Record<string, string> = {
   "Учасник проєкту": "Project member",
   "Проєкт оновлено": "Project updated",
   "AI-план додано": "AI plan applied",
+  "Захищено": "Protected",
+  "Новий адміністратор": "New administrator",
+  "Роль адміністратора так не видається — створіть окремий акаунт адміністратора.": "The administrator role is not granted this way — create a separate administrator account.",
+  "Створюється окремий акаунт: роль адміністратора не видається наявним користувачам.": "A separate account is created: existing users are never given the administrator role.",
+  "Пароль нового адміністратора": "New administrator's password",
+  "Ваш пароль для підтвердження": "Your password to confirm",
+  "Код 2FA": "2FA code",
+  "Створити адміністратора": "Create administrator",
 };

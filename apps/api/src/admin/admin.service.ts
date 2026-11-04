@@ -4,15 +4,26 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import ExcelJS from 'exceljs';
 import pdfMake from 'pdfmake';
+import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { or } from '@prisma/orm-postgres/orm-client';
+import { hashPassword, verifyPassword } from '../auth/password.js';
+import { verifyTotp } from '../auth/totp.js';
 import { projectStatuses } from '../projects/projects.dto.js';
+import { hasDatabaseCode } from '../prisma/database-error.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUser } from '../users/users.service.js';
-import type { UpdateUserDto, UserQueryDto } from './admin.dto.js';
+import type {
+  CreateAdminDto,
+  UpdateUserDto,
+  UserQueryDto,
+} from './admin.dto.js';
+
+const duplicateEmail = 'Ця електронна пошта вже зареєстрована.';
 
 @Injectable()
 export class AdminService {
@@ -43,16 +54,14 @@ export class AdminService {
   }
   async update(user: CurrentUser, id: string, data: UpdateUserDto) {
     this.requireAdmin(user);
-    if (
-      id === user.id &&
-      (data.status === 'BLOCKED' || (data.role && data.role !== 'ADMIN'))
-    )
-      throw new ConflictException(
-        'Не можна заблокувати себе або змінити власну роль.',
-      );
     return this.prisma.client.transaction(async (tx) => {
       const target = await tx.orm.public.User.where({ id }).first();
       if (!target) throw new NotFoundException('Користувача не знайдено.');
+      // Адміністратори (і ти сам) не змінюють ролі й статус один одного з панелі
+      if (target.role === 'ADMIN')
+        throw new ForbiddenException(
+          'Роль і статус адміністраторів у панелі змінити не можна.',
+        );
       if (data.role && data.role !== target.role) {
         const owned = await tx.orm.public.Project.where({ clientId: id }).all();
         const memberships = await tx.orm.public.ProjectMember.where({
@@ -71,6 +80,50 @@ export class AdminService {
           updatedAt: new Date(),
         });
     });
+  }
+  // Новий адміністратор — завжди окремий акаунт; той, хто створює, підтверджує дію своїм паролем і кодом 2FA
+  async createAdmin(user: CurrentUser, data: CreateAdminDto) {
+    this.requireAdmin(user);
+    const me = await this.prisma.client.orm.public.User.where({
+      id: user.id,
+    }).first();
+    if (!me || !(await verifyPassword(data.currentPassword, me.passwordHash)))
+      throw new BadRequestException('Ваш пароль неправильний.');
+    if (
+      me.twoFactorEnabled &&
+      !(
+        me.twoFactorSecret &&
+        data.twoFactorCode &&
+        verifyTotp(me.twoFactorSecret, data.twoFactorCode)
+      )
+    )
+      throw new BadRequestException('Введіть правильний код 2FA.');
+    if (
+      await this.prisma.client.orm.public.User.where({
+        email: data.email,
+      }).first()
+    )
+      throw new ConflictException(duplicateEmail);
+    const now = new Date();
+    try {
+      const created = await this.prisma.client.orm.public.User.create({
+        id: randomUUID(),
+        name: data.name,
+        email: data.email,
+        passwordHash: await hashPassword(data.password),
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        createdAt: now,
+        updatedAt: now,
+      });
+      // Без хешу пароля та секрету 2FA
+      const { id, name, email, role, status, createdAt } = created;
+      return { id, name, email, role, status, createdAt };
+    } catch (error) {
+      if (hasDatabaseCode(error, '23505'))
+        throw new ConflictException(duplicateEmail);
+      throw error;
+    }
   }
   async report(user: CurrentUser) {
     this.requireAdmin(user);

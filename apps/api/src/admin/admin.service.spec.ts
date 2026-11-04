@@ -1,4 +1,9 @@
-import { ForbiddenException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
+import { hashPassword } from '../auth/password.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { AdminService, lastMonths } from './admin.service.js';
@@ -70,6 +75,77 @@ describe('AdminService reports', () => {
     expect(file.fileName.endsWith(`.${format}`)).toBe(true);
     expect(file.content.toString('utf8').startsWith(signature)).toBe(true);
     expect(file.content.length).toBeGreaterThan(100);
+  });
+
+  describe('admin role protection', () => {
+    const people: Record<string, Record<string, unknown>> = {};
+    const created: Record<string, unknown>[] = [];
+    const User = {
+      where: vi.fn((filter: { id?: string; email?: string }) => ({
+        first: vi.fn(async () =>
+          Object.values(people).find(
+            (person) =>
+              (filter.id && person.id === filter.id) ||
+              (filter.email && person.email === filter.email),
+          ),
+        ),
+      })),
+      create: vi.fn(async (row: Record<string, unknown>) => {
+        created.push(row);
+        return row;
+      }),
+    };
+    const tx = { orm: { public: { User } } };
+    const service = new AdminService({
+      client: {
+        orm: { public: { User } },
+        transaction: (run: (t: typeof tx) => unknown) => run(tx),
+      },
+    } as unknown as PrismaService);
+
+    beforeAll(async () => {
+      people.admin = {
+        id: 'admin-id',
+        email: 'admin@example.com',
+        role: 'ADMIN',
+        passwordHash: await hashPassword('Admin-pass-123'),
+        twoFactorEnabled: false,
+      };
+      people.other = { id: 'other-admin', email: 'o@example.com', role: 'ADMIN' };
+    });
+
+    it('never lets the panel change another admin, or yourself', async () => {
+      for (const id of ['other-admin', 'admin-id'])
+        await expect(
+          service.update(admin, id, { status: 'BLOCKED' }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('creates a separate admin only after the creator password matches', async () => {
+      const data = {
+        name: 'Нова Адмінка',
+        email: 'new-admin@example.com',
+        password: 'New-admin-123',
+        currentPassword: 'wrong-pass-1',
+      };
+      await expect(service.createAdmin(admin, data)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      await expect(
+        service.createAdmin({ ...admin, role: 'CLIENT' }, data),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(
+        service.createAdmin(admin, { ...data, email: 'o@example.com', currentPassword: 'Admin-pass-123' }),
+      ).rejects.toBeInstanceOf(ConflictException);
+
+      const result = await service.createAdmin(admin, {
+        ...data,
+        currentPassword: 'Admin-pass-123',
+      });
+      expect(result).toMatchObject({ email: data.email, role: 'ADMIN' });
+      expect(result).not.toHaveProperty('passwordHash');
+      expect(created).toHaveLength(1);
+    });
   });
 
   it('lists the last months oldest first, across a year boundary', () => {
