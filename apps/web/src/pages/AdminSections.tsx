@@ -290,17 +290,22 @@ export function AdminDialog({
     >
       <div className="admin-dialog-body">
         <div className="admin-dialog-heading">
-          <h2 id={id}>{title}</h2>
-          {description && <p>{description}</p>}
+          <div>
+            {/* Фокус на заголовку, а не на хрестику: інакше хрестик одразу в рамці фокуса */}
+            <h2 id={id} tabIndex={-1} autoFocus>
+              {title}
+            </h2>
+            {description && <p>{description}</p>}
+          </div>
+          <button
+            type="button"
+            className="admin-dialog-close"
+            aria-label={tr("Закрити")}
+            onClick={() => ref.current?.close()}
+          >
+            <i className="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
         </div>
-        <button
-          type="button"
-          className="admin-dialog-close"
-          aria-label={tr("Закрити")}
-          onClick={() => ref.current?.close()}
-        >
-          <i className="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
         {children}
       </div>
     </dialog>

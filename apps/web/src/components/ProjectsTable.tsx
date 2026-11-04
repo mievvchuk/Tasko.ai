@@ -33,10 +33,9 @@ export function ProjectsTable({ projects }: { projects: Project[] }) {
                   <strong>
                     <Link to={`/projects/${project.id}`}>{project.title}</Link>
                   </strong>
-                  <details className="project-description">
-                    <summary>{tr("Опис проєкту")}</summary>
-                    <p>{project.description || tr("Опис не додано.")}</p>
-                  </details>
+                  <p className="project-excerpt">
+                    {project.description || tr("Опис не додано.")}
+                  </p>
                 </td>
                 <td>
                   <span className={"project-status status-" + project.status}>

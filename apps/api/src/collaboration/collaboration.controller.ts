@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   Res,
+  Sse,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -42,6 +43,12 @@ export class CollaborationController {
     @Query() page: PageDto,
   ) {
     return this.collaboration.messages(user, id, page);
+  }
+  @Sse('projects/:id/messages/stream') messageStream(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.collaboration.messageStream(user, id);
   }
   @Post('projects/:id/messages') message(
     @Actor() user: CurrentUser,

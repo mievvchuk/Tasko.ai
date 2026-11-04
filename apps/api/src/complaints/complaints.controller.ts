@@ -34,6 +34,9 @@ export class ComplaintsController {
   @Get('complaints') own(@Actor() user: CurrentUser, @Query() page: PageDto) {
     return this.complaints.own(user, page.page, page.limit);
   }
+  @Get('complaints/targets') targets(@Actor() user: CurrentUser) {
+    return this.complaints.targets(user);
+  }
   @Post('complaints') create(
     @Actor() user: CurrentUser,
     @Body() data: CreateComplaintDto,

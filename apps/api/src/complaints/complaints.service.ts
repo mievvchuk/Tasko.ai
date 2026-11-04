@@ -59,6 +59,51 @@ export class ComplaintsService {
       updatedAt: now,
     });
   }
+  // На кого можна поскаржитися: проєкти користувача та люди з них (клієнти й учасники), без нього самого
+  async targets(user: CurrentUser) {
+    const db = this.prisma.client.orm.public;
+    const memberOf = await db.ProjectMember.where({ userId: user.id }).all();
+    const ids = new Set(memberOf.map((member) => member.projectId));
+    for (const project of await db.Project.where({ clientId: user.id })
+      .select('id')
+      .all())
+      ids.add(project.id);
+    if (!ids.size) return { projects: [], users: [] };
+    const projectIds = [...ids];
+    const projects = await db.Project.where((project) =>
+      project.id.in(projectIds),
+    )
+      .select('id', 'title', 'clientId')
+      .all();
+    const members = await db.ProjectMember.where((member) =>
+      member.projectId.in(projectIds),
+    ).all();
+    const titles = new Map(
+      projects.map((project) => [project.id, project.title]),
+    );
+    const userProjects = new Map<string, Set<string>>();
+    const link = (userId: string, projectId: string) => {
+      if (userId === user.id) return;
+      if (!userProjects.has(userId)) userProjects.set(userId, new Set());
+      userProjects.get(userId)!.add(titles.get(projectId) ?? '');
+    };
+    for (const project of projects) link(project.clientId, project.id);
+    for (const member of members) link(member.userId, member.projectId);
+    const userIds = [...userProjects.keys()];
+    const users = userIds.length
+      ? await db.User.where((row) => row.id.in(userIds))
+          .select('id', 'name', 'role')
+          .all()
+      : [];
+    return {
+      projects: projects
+        .map(({ id, title }) => ({ id, title }))
+        .sort((a, b) => a.title.localeCompare(b.title)),
+      users: users
+        .map((row) => ({ ...row, projects: [...userProjects.get(row.id)!] }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }
   own(user: CurrentUser, page: number, limit: number) {
     return this.prisma.client.orm.public.Complaint.where({
       reporterId: user.id,

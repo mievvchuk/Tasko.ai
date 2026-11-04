@@ -149,3 +149,51 @@ export async function downloadApiFile(path: string, fileName: string) {
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// Підписка на потік подій сервера (SSE) з токеном у заголовку.
+// EventSource заголовків не вміє, тому читаємо потік через fetch.
+// Після обриву з'єднання пробує знову за 3 с, доки signal не скасовано.
+export async function subscribe(
+  path: string,
+  onEvent: (type: string, data: string) => void,
+  signal: AbortSignal,
+) {
+  while (!signal.aborted) {
+    try {
+      const token = getToken();
+      const response = await fetch(apiUrl(path), {
+        headers: {
+          Accept: "text/event-stream",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        signal,
+      });
+      if (!response.ok || !response.body)
+        throw new Error(String(response.status));
+      const reader = response.body
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += value;
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
+        for (const raw of events) {
+          let type = "message";
+          const data: string[] = [];
+          for (const line of raw.split("\n")) {
+            if (line.startsWith("event:")) type = line.slice(6).trim();
+            else if (line.startsWith("data:"))
+              data.push(line.slice(5).trimStart());
+          }
+          onEvent(type, data.join("\n"));
+        }
+      }
+    } catch {
+      if (signal.aborted) return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+}
