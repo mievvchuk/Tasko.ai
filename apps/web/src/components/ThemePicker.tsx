@@ -7,6 +7,8 @@ import {
   themeKey,
 } from "../theme";
 import type { ThemePreference } from "../theme";
+import { IconMenu } from "./IconMenu";
+import type { IconMenuOption } from "./IconMenu";
 
 export function ThemePicker() {
   const { language, tr } = useLanguage();
@@ -27,26 +29,26 @@ export function ThemePicker() {
     };
   }, [preference]);
   const uk = language === "uk";
+  const options: IconMenuOption<ThemePreference>[] = [
+    { value: "light", label: uk ? tr("Світла") : "Light", icon: "bi-sun" },
+    { value: "dark", label: uk ? tr("Темна") : "Dark", icon: "bi-moon-stars" },
+    { value: "system", label: uk ? tr("Системна") : "System", icon: "bi-display" },
+  ];
+  const current = options.find((option) => option.value === preference)!;
   return (
-    <label className="theme-picker">
-      <span className="theme-picker-label">{uk ? tr("Тема") : "Theme"}</span>
-      <select
-        aria-label={uk ? tr("Тема сайту") : "Site theme"}
-        value={preference}
-        onChange={(event) => {
-          const value = readThemePreference(event.target.value);
-          setPreference(value);
-          try {
-            localStorage.setItem(themeKey, value);
-          } catch {
-            /* Still works for this visit. */
-          }
-        }}
-      >
-        <option value="light">{uk ? tr("Світла") : "Light"}</option>
-        <option value="dark">{uk ? tr("Темна") : "Dark"}</option>
-        <option value="system">{uk ? tr("Системна") : "System"}</option>
-      </select>
-    </label>
+    <IconMenu
+      icon={current.icon!}
+      label={`${uk ? tr("Тема сайту") : "Site theme"}: ${current.label}`}
+      value={preference}
+      options={options}
+      onChange={(value) => {
+        setPreference(value);
+        try {
+          localStorage.setItem(themeKey, value);
+        } catch {
+          /* Still works for this visit. */
+        }
+      }}
+    />
   );
 }
