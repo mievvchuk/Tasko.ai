@@ -312,15 +312,14 @@ export function AdminDialog({
   );
 }
 
-// Діалог зміни ролі та стану облікового запису.
+// Діалог зміни ролі та стану облікового запису (лише замовники й фрілансери;
+// адміністраторів панель не змінює, а нові адміни — окремі акаунти з AdminCreateDialog).
 export function UserDialog({
   user,
-  self,
   onSaved,
   onClose,
 }: {
   user: AdminUser;
-  self: boolean;
   onSaved: () => void;
   onClose: () => void;
 }) {
@@ -356,8 +355,7 @@ export function UserDialog({
       onClose={onClose}
     >
       <form onSubmit={save} className="work-form admin-dialog-form">
-        {/* Власний обліковий запис адміністратор змінювати не може. */}
-        <fieldset disabled={busy || self} className="user-controls">
+        <fieldset disabled={busy} className="user-controls">
           <div>
             <label htmlFor={`user-role-${user.id}`}>
               {tr("Роль користувача")}
@@ -367,7 +365,8 @@ export function UserDialog({
               value={role}
               onChange={(event) => setRole(event.target.value as UserRole)}
             >
-              <RoleOptions />
+              <option value="CLIENT">{tr(roleNames.CLIENT)}</option>
+              <option value="FREELANCER">{tr(roleNames.FREELANCER)}</option>
             </select>
           </div>
           <div>
@@ -385,11 +384,9 @@ export function UserDialog({
             </select>
           </div>
         </fieldset>
-        {self && (
-          <p className="form-note">
-            {tr("Змінити власну роль або заблокувати себе не можна.")}
-          </p>
-        )}
+        <p className="form-note">
+          {tr("Роль адміністратора так не видається — створіть окремий акаунт адміністратора.")}
+        </p>
         {error && (
           <p className="notice error" role="alert">
             {error}
@@ -401,6 +398,117 @@ export function UserDialog({
           </button>
           <button className="button primary" disabled={unchanged || busy}>
             {busy ? tr("Зберігаємо…") : tr("Зберегти користувача")}
+          </button>
+        </div>
+      </form>
+    </AdminDialog>
+  );
+}
+
+// Новий адміністратор — окремий акаунт; дію підтверджує паролем (і кодом 2FA) той, хто створює.
+export function AdminCreateDialog({
+  twoFactor,
+  onSaved,
+  onClose,
+}: {
+  twoFactor: boolean;
+  onSaved: () => void;
+  onClose: () => void;
+}) {
+  const { tr } = useLanguage();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const form = Object.fromEntries(new FormData(event.currentTarget));
+    setBusy(true);
+    setError("");
+    try {
+      await request("/admin/admins", {
+        method: "POST",
+        body: {
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          currentPassword: form.currentPassword,
+          ...(twoFactor ? { twoFactorCode: form.twoFactorCode } : {}),
+        },
+      });
+      onSaved();
+      onClose();
+    } catch (error) {
+      setError(errorMessage(error));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <AdminDialog
+      title={tr("Новий адміністратор")}
+      description={tr(
+        "Створюється окремий акаунт: роль адміністратора не видається наявним користувачам.",
+      )}
+      onClose={onClose}
+    >
+      <form onSubmit={save} className="work-form admin-dialog-form">
+        <fieldset disabled={busy} className="admin-dialog-form">
+          <label>
+            {tr("Ім'я")}
+            <input name="name" required minLength={2} maxLength={100} />
+          </label>
+          <label>
+            {tr("Електронна пошта")}
+            <input name="email" type="email" required maxLength={254} />
+          </label>
+          <label>
+            {tr("Пароль нового адміністратора")}
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              maxLength={128}
+              autoComplete="new-password"
+            />
+          </label>
+          <label>
+            {tr("Ваш пароль для підтвердження")}
+            <input
+              name="currentPassword"
+              type="password"
+              required
+              minLength={8}
+              maxLength={128}
+              autoComplete="current-password"
+            />
+          </label>
+          {twoFactor && (
+            <label>
+              {tr("Код 2FA")}
+              <input
+                name="twoFactorCode"
+                required
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                autoComplete="one-time-code"
+              />
+            </label>
+          )}
+        </fieldset>
+        {error && (
+          <p className="notice error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="admin-dialog-actions">
+          <button className="button secondary" type="button" onClick={onClose}>
+            {tr("Скасувати")}
+          </button>
+          <button className="button primary" disabled={busy}>
+            {busy ? tr("Створюємо…") : tr("Створити адміністратора")}
           </button>
         </div>
       </form>

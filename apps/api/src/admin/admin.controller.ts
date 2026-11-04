@@ -1,10 +1,11 @@
-import {Body,Controller,Get,Inject,Param,ParseUUIDPipe,Patch,Query,Res,UseGuards,} from '@nestjs/common';
+import {Body,Controller,Get,Inject,Param,ParseUUIDPipe,Patch,Post,Query,Res,UseGuards,} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { CurrentUser } from '../users/users.service.js';
 import {
+  CreateAdminDto,
   ReportExportQueryDto,
   UpdateUserDto,
   UserQueryDto,
@@ -29,6 +30,12 @@ export class AdminController {
     @Body() data: UpdateUserDto,
   ) {
     return this.admin.update(user, id, data);
+  }
+  @Post('admins') createAdmin(
+    @Actor() user: CurrentUser,
+    @Body() data: CreateAdminDto,
+  ) {
+    return this.admin.createAdmin(user, data);
   }
   @Get('report') report(@Actor() user: CurrentUser) {
     return this.admin.report(user);
