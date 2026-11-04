@@ -7,10 +7,18 @@ export function BrandWord() {
   useLayoutEffect(() => {
     const word = ref.current;
     if (!word) return;
+    // Chrome передає анімацію transform у компоновник зі значенням var() на момент старту
+    // і пізнішу зміну --travel не бачить. Тому анімацію вмикаємо (data-ready) лише після
+    // виміру, а при новому вимірі перезапускаємо її.
     const measure = () => {
       const [first, second] = word.querySelectorAll<HTMLElement>(".brand-letter");
       const em = parseFloat(getComputedStyle(word).fontSize);
-      word.style.setProperty("--travel", `${(second.offsetLeft - first.offsetLeft) / em}em`);
+      const travel = `${(second.offsetLeft - first.offsetLeft) / em}em`;
+      if (word.dataset.ready !== undefined && word.style.getPropertyValue("--travel") === travel) return;
+      delete word.dataset.ready;
+      word.style.setProperty("--travel", travel);
+      void word.offsetWidth; // застосувати стиль без анімації, щоб вона стартувала заново
+      word.dataset.ready = "";
     };
     measure();
     document.fonts?.ready.then(measure);
