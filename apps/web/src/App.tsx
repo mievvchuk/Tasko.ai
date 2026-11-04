@@ -20,7 +20,6 @@ import { TasksPage } from "./pages/TasksPage";
 import { TaskFormPage } from "./pages/TaskFormPage";
 import { TaskDetailsPage } from "./pages/TaskDetailsPage";
 import { MessagesPage } from "./pages/MessagesPage";
-import { OrdersPage } from "./pages/OrdersPage";
 import { FilesPage } from "./pages/FilesPage";
 import { AiAssistantPage } from "./pages/AiAssistantPage";
 import { AdminLayout } from "./components/AdminLayout";
@@ -117,7 +116,6 @@ export function App() {
           />
           <Route path="projects/:id/edit" element={<ProjectFormPage />} />
           <Route path="projects/:id/tasks/new" element={<TaskFormPage />} />
-          <Route path="projects/:id/orders" element={<OrdersPage />} />
           <Route path="projects/:id/files" element={<FilesPage />} />
           <Route
             path="projects/:id/applications"

@@ -151,7 +151,6 @@ export function ProjectDetailsPage() {
         <Link to={`/tasks?project=${id}`}>{tr("Усі завдання")}</Link>
         <Link to={`/messages?project=${id}`}>{tr("Повідомлення")}</Link>
         <Link to={`/projects/${id}/files`}>{tr("Файли")}</Link>
-        <Link to={`/projects/${id}/orders`}>{tr("Замовлення")}</Link>
         <Link to={`/projects/${id}/board`}>Kanban</Link>
         <Link to={`/projects/${id}/milestones`}>{tr("Етапи")}</Link>
         <Link to={`/projects/${id}/activity`}>{tr("Історія")}</Link>

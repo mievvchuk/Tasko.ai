@@ -57,6 +57,16 @@ test("headings, lists, quotes and code render as structured content", () => {
   }
 });
 
+test("technical ids are hidden but project links keep them", () => {
+  const id = "912c6411-0ae0-4b76-9cd9-50cc27569576";
+  const html = render(
+    `- **Застосунок** (ID ${id}) – завдання\n- [Макет](/projects/${id}) ${id} готово`,
+  );
+  assert.equal(html.split(id).length - 1, 1);
+  assert.match(html, new RegExp(`href="/projects/${id}"`));
+  assert.doesNotMatch(html, /\(ID/);
+});
+
 test("safe links open separately and javascript URLs are rejected", () => {
   const html = render(
     "[Довідка](https://example.com/help) [Небезпечно](javascript:alert%281%29)",

@@ -37,7 +37,7 @@ export class CollaborationService {
     user: CurrentUser,
     projectId: string,
   ): Promise<Observable<{ type: string; data: unknown }>> {
-    await this.projects.requireAccess(user, projectId);
+    await this.projects.requireAccess(user, projectId, false);
     return merge(
       this.posted.pipe(
         filter((event) => event.projectId === projectId),
@@ -48,7 +48,7 @@ export class CollaborationService {
   }
 
   async messages(user: CurrentUser, projectId: string, page: PageDto) {
-    await this.projects.requireAccess(user, projectId);
+    await this.projects.requireAccess(user, projectId, false);
     return this.client.orm.public.Message.where({ projectId })
       .orderBy((message) => message.createdAt.desc())
       .offset((page.page - 1) * page.limit)
@@ -56,7 +56,7 @@ export class CollaborationService {
       .all();
   }
   async message(user: CurrentUser, projectId: string, data: MessageDto) {
-    const project = await this.projects.requireAccess(user, projectId);
+    const project = await this.projects.requireAccess(user, projectId, false);
     this.projects.ensureWritable(project);
     const message = await this.client.orm.public.Message.create({
       id: randomUUID(),

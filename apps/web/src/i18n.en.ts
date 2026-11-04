@@ -646,8 +646,8 @@ export const enText: Record<string, string> = {
   "Потрібні навички": "Required skills",
   "Новий проєкт матиме статус «Пошук виконавця» і буде доступний фрілансерам.":
     "The new project will have the “Looking for a freelancer” status and be visible to freelancers.",
-  "Після закриття редагування буде недоступне. Для завершення всі завдання та замовлення мають бути закриті.":
-    "After closing, editing won't be available. To complete, all tasks and orders must be closed.",
+  "Після закриття редагування буде недоступне. Для завершення всі завдання мають бути завершені.":
+    "After closing, editing won't be available. To complete, all tasks must be done.",
   "Зберегти проєкт": "Save project",
 
   // Етапи
@@ -944,4 +944,14 @@ export const enText: Record<string, string> = {
   "Ваш пароль для підтвердження": "Your password to confirm",
   "Код 2FA": "2FA code",
   "Створити адміністратора": "Create administrator",
+  "Завантажити {0}": "Download {0}",
+  "Завантажити": "Download",
+  "Ви ще не берете участі в жодному проєкті.": "You are not taking part in any project yet.",
+  "Оберіть проєкт зліва, щоб відкрити обговорення": "Choose a project on the left to open its discussion",
+  "Показати": "Show",
+  "Непрочитані": "Unread",
+  "Відкрити обговорення": "Open discussion",
+  "Відкрити скарги": "Open complaints",
+  "За цим фільтром сповіщень немає": "No notifications match this filter",
+  "Нова скарга": "New complaint",
 };

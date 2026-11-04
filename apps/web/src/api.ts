@@ -124,10 +124,12 @@ export async function request<T>(
   return data as T;
 }
 
+export function fetchFile(id: string) {
+  return request<Blob>(`/files/${id}/download`, { responseType: "blob" });
+}
+
 export async function downloadFile(id: string, fileName: string) {
-  const blob = await request<Blob>(`/files/${id}/download`, {
-    responseType: "blob",
-  });
+  const blob = await fetchFile(id);
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;

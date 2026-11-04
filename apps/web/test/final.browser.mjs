@@ -182,7 +182,9 @@ async function run(page) {
     .waitFor();
   await upload("опис.txt", "Real client brief " + run);
   const downloadEvent = page.waitForEvent("download");
-  await page.getByRole("button", { name: "опис.txt", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Завантажити опис.txt", exact: true })
+    .click();
   const downloaded = await downloadEvent;
   assert(
     downloaded.suggestedFilename() === "опис.txt",
@@ -196,20 +198,6 @@ async function run(page) {
     "Download preserves actual content",
   );
 
-  await page.goto(base + `/projects/${projectId}/orders`);
-  await page
-    .getByRole("button", { name: "Створити замовлення", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Розпочати замовлення", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Завершити замовлення", exact: true })
-    .click();
-  await page
-    .getByRole("alert")
-    .filter({ hasText: "Спочатку завершіть завдання" })
-    .waitFor();
   await signIn(freelancer);
   await page.getByRole("link", { name: "Завдання", exact: true }).click();
   await page.getByLabel("Проєкт", { exact: true }).selectOption(projectId);
@@ -314,19 +302,6 @@ async function run(page) {
     path: ".tmp/final-task-desktop.png",
     fullPage: true,
   });
-  await page.goto(base + `/projects/${projectId}/orders`);
-  await page
-    .getByRole("button", { name: "Завершити замовлення", exact: true })
-    .click();
-  await page.getByText("Виконано", { exact: true }).waitFor();
-  await page
-    .getByRole("button", { name: "Створити замовлення", exact: true })
-    .click();
-  page.once("dialog", (dialog) => dialog.accept());
-  await page
-    .getByRole("button", { name: "Скасувати замовлення", exact: true })
-    .click();
-  await page.getByText("Скасовано", { exact: true }).waitFor();
   await page.goto(base + `/projects/${projectId}`);
   await page
     .getByRole("link", { name: "Редагувати проєкт", exact: true })

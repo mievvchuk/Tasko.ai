@@ -54,12 +54,14 @@ export class ProjectsService {
     return this.prisma.client.orm.public;
   }
 
-  async requireAccess(user: CurrentUser, id: string) {
+  // Адміністратор бачить усі проєкти; для приватного (листування) — adminBypass = false
+  async requireAccess(user: CurrentUser, id: string, adminBypass = true) {
     const project = await this.prisma.client.orm.public.Project.where({
       id,
     }).first();
     if (!project) throw new NotFoundException('Проєкт не знайдено.');
-    if (user.role === 'ADMIN' || project.clientId === user.id) return project;
+    if ((adminBypass && user.role === 'ADMIN') || project.clientId === user.id)
+      return project;
     const member = await this.prisma.client.orm.public.ProjectMember.where({
       projectId: id,
       userId: user.id,
@@ -107,6 +109,18 @@ export class ProjectsService {
     let query = this.db.Project;
     if (page.status) query = query.where({ status: page.status });
     if (user.role === 'CLIENT') query = query.where({ clientId: user.id });
+    // «Мої» для адміністратора: лише проєкти, де він замовник або учасник
+    if (user.role === 'ADMIN' && page.mine) {
+      const owned = await this.db.Project.where({ clientId: user.id })
+        .select('id')
+        .all();
+      const projectIds = [
+        ...owned.map((project) => project.id),
+        ...(await this.findMemberProjectIds(user.id)),
+      ];
+      if (!projectIds.length) return [];
+      query = query.where((project) => project.id.in(projectIds));
+    }
     if (user.role === 'FREELANCER') {
       const projectIds = await this.findMemberProjectIds(user.id);
       // Фрілансер бачить лише проєкти, у яких він є учасником.
@@ -239,21 +253,14 @@ export class ProjectsService {
     }
   }
 
-  // Завершити проєкт можна, лише коли всі завдання й замовлення закриті.
+  // Завершити проєкт можна, лише коли всі завдання завершені.
+  // Замовлення (Order) у інтерфейсі більше немає, тож на завершення вони не впливають.
   private async ensureProjectCanBeCompleted(projectId: string) {
     const tasks = await this.db.Task.where({ projectId })
       .select('status')
       .all();
-    const orders = await this.db.Order.where({ projectId })
-      .select('status')
-      .all();
-    const hasOpenTasks = tasks.some((task) => task.status !== 'DONE');
-    const hasOpenOrders = orders.some(
-      (order) => !closedStatuses.includes(order.status),
-    );
-    if (hasOpenTasks || hasOpenOrders) {
-      throw new ConflictException('Спочатку завершіть завдання та замовлення.');
-    }
+    if (tasks.some((task) => task.status !== 'DONE'))
+      throw new ConflictException('Спочатку завершіть усі завдання проєкту.');
   }
 
   // Записуємо лише ті поля, які клієнт справді передав у запиті.

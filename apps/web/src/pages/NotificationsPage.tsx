@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { errorMessage, request } from "../api";
+import { useAuth } from "../auth";
 import { ResourceState } from "../components/ResourceState";
 import { formatDate } from "../format";
 import type { Notification } from "../types";
@@ -21,11 +22,15 @@ const kinds: Record<string, [string, string]> = {
   PROJECT_MEMBER: ["Учасник проєкту", "bi-people"],
   PROJECT_UPDATED: ["Проєкт оновлено", "bi-folder"],
   AI_PLAN_APPLIED: ["AI-план додано", "bi-stars"],
+  NEW_COMPLAINT: ["Нова скарга", "bi-flag-fill"],
 };
 
 export function NotificationsPage() {
   const { tr } = useLanguage();
+  const { user } = useAuth();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [projectFilter, setProjectFilter] = useState("");
   const { data, error, loading, refresh } = useApi<{
     items: Notification[];
     unreadCount: number;
@@ -45,6 +50,19 @@ export function NotificationsPage() {
     setOpenId(openId === item.id ? null : item.id);
     if (!item.readAt) void mark(item.id);
   }
+  // Проєкти, про які є сповіщення, — для фільтра (у фрілансера й замовника їх може бути багато)
+  const projects = [
+    ...new Map(
+      (data?.items ?? [])
+        .filter((item) => item.projectId && item.projectTitle)
+        .map((item) => [item.projectId!, item.projectTitle!]),
+    ),
+  ];
+  const shown = (data?.items ?? []).filter(
+    (item) =>
+      (!unreadOnly || !item.readAt) &&
+      (!projectFilter || item.projectId === projectFilter),
+  );
   return (
     <>
       <div className="page-heading heading-with-action">
@@ -59,8 +77,45 @@ export function NotificationsPage() {
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (
         <section className="data-panel">
+          <div className="notification-filters">
+            <div className="segmented" role="group" aria-label={tr("Показати")}>
+              <button
+                type="button"
+                aria-pressed={!unreadOnly}
+                onClick={() => setUnreadOnly(false)}
+              >
+                {tr("Усі")}
+              </button>
+              <button
+                type="button"
+                aria-pressed={unreadOnly}
+                onClick={() => setUnreadOnly(true)}
+              >
+                {tr("Непрочитані")}
+                {Boolean(data?.unreadCount) && (
+                  <span className="count-badge">{data?.unreadCount}</span>
+                )}
+              </button>
+            </div>
+            {projects.length > 1 && (
+              <label>
+                <span className="visually-hidden">{tr("Проєкт")}</span>
+                <select
+                  value={projectFilter}
+                  onChange={(event) => setProjectFilter(event.target.value)}
+                >
+                  <option value="">{tr("Усі проєкти")}</option>
+                  {projects.map(([id, title]) => (
+                    <option key={id} value={id}>
+                      {title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
           <ul className="notification-list">
-            {data?.items.map((item) => {
+            {shown.map((item) => {
               const [kind, icon] = kinds[item.type] ?? ["Подія", "bi-bell"];
               const open = openId === item.id;
               return (
@@ -76,7 +131,10 @@ export function NotificationsPage() {
                     <span className="notification-text">
                       <strong>{item.message}</strong>
                       <small>
-                        {tr(kind)} · {formatDate(item.createdAt, true)}
+                        {tr(kind)}
+                        {item.projectTitle && ` · ${item.projectTitle}`}
+                        {" · "}
+                        {formatDate(item.createdAt, true)}
                       </small>
                     </span>
                     <i
@@ -90,6 +148,18 @@ export function NotificationsPage() {
                         <dt>{tr("Подія")}</dt>
                         <dd>{tr(kind)}</dd>
                       </div>
+                      {item.projectTitle && (
+                        <div>
+                          <dt>{tr("Проєкт")}</dt>
+                          <dd>{item.projectTitle}</dd>
+                        </div>
+                      )}
+                      {item.taskTitle && (
+                        <div>
+                          <dt>{tr("Завдання")}</dt>
+                          <dd>{item.taskTitle}</dd>
+                        </div>
+                      )}
                       <div>
                         <dt>{tr("Отримано")}</dt>
                         <dd>{formatDate(item.createdAt, true)}</dd>
@@ -124,6 +194,25 @@ export function NotificationsPage() {
                             {tr("Відкрити проєкт")}
                           </Link>
                         )}
+                        {item.type === "NEW_MESSAGE" && item.projectId && (
+                          <Link
+                            className="button secondary"
+                            to={`/messages?project=${item.projectId}`}
+                          >
+                            <i className="bi bi-chat-dots" aria-hidden="true"></i>
+                            {tr("Відкрити обговорення")}
+                          </Link>
+                        )}
+                        {item.type === "NEW_COMPLAINT" &&
+                          user?.role === "ADMIN" && (
+                            <Link
+                              className="button secondary"
+                              to="/admin/complaints"
+                            >
+                              <i className="bi bi-flag" aria-hidden="true"></i>
+                              {tr("Відкрити скарги")}
+                            </Link>
+                          )}
                       </div>
                     </dl>
                   )}
@@ -131,9 +220,13 @@ export function NotificationsPage() {
               );
             })}
           </ul>
-          {!data?.items.length && (
+          {!shown.length && (
             <div className="empty-state">
-              <h3>{tr("Сповіщень немає")}</h3>
+              <h3>
+                {data?.items.length
+                  ? tr("За цим фільтром сповіщень немає")
+                  : tr("Сповіщень немає")}
+              </h3>
             </div>
           )}
         </section>
