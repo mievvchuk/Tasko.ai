@@ -18,6 +18,65 @@ import type {
 
 const maxBoardColumns = 8;
 
+// Місце колонки на дошці. Стандартні «До виконання» й «У процесі» стоять на 1000 і 2000,
+// власні колонки — між ними за позицією; усе до 2000 належить етапу «До виконання».
+// Старі колонки «У процесі» мали малі позиції, тож їх зсуваємо за 2000.
+export function columnKey(column: { status: string; position: number }) {
+  return column.status === 'IN_PROGRESS' && column.position < 2000
+    ? 2000 + column.position
+    : column.position;
+}
+
+// Нова колонка стає в кінець свого етапу: «До виконання» — перед стандартною колонкою,
+// «У процесі» — після неї. Позиція не має збігатися з наявними (унікальна в проєкті).
+function nextPosition(
+  columns: { status: string; position: number }[],
+  status: 'TODO' | 'IN_PROGRESS',
+) {
+  const keys = columns.map(columnKey);
+  const [low, high] = status === 'TODO' ? [0, 1000] : [2000, 3000];
+  const inStage = keys.filter((key) => key >= low && key < high);
+  let position = Math.max(low + 90, ...inStage) + 10;
+  const taken = new Set(columns.map((column) => column.position));
+  while (taken.has(position)) position += 1;
+  return position;
+}
+
+// Новий порядок дошки → позиція й етап кожної власної колонки.
+// order — id власних колонок і стандартні 'TODO', 'IN_PROGRESS' у потрібному порядку.
+export function planColumnOrder(order: string[], columnIds: string[]) {
+  const expected = new Set([...columnIds, 'TODO', 'IN_PROGRESS']);
+  if (
+    order.length !== expected.size ||
+    new Set(order).size !== order.length ||
+    order.some((key) => !expected.has(key))
+  )
+    throw new BadRequestException('Порядок має містити всі колонки дошки.');
+  if (order.indexOf('TODO') > order.indexOf('IN_PROGRESS'))
+    throw new BadRequestException(
+      '«До виконання» має стояти перед «У процесі».',
+    );
+  const bases = [100, 1100, 2100];
+  const counts = [0, 0, 0];
+  let segment = 0;
+  const plan: {
+    id: string;
+    position: number;
+    status: 'TODO' | 'IN_PROGRESS';
+  }[] = [];
+  for (const key of order) {
+    if (key === 'TODO') segment = 1;
+    else if (key === 'IN_PROGRESS') segment = 2;
+    else
+      plan.push({
+        id: key,
+        position: bases[segment] + 10 * counts[segment]++,
+        status: segment < 2 ? 'TODO' : 'IN_PROGRESS',
+      });
+  }
+  return plan;
+}
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -180,12 +239,49 @@ export class TasksService {
     return updated;
   }
 
-  // Власні колонки канбану проєкту в порядку додавання
+  // Власні колонки канбану проєкту в порядку на дошці
   async columns(user: CurrentUser, projectId: string) {
     await this.projects.requireAccess(user, projectId);
-    return this.db.BoardColumn.where({ projectId })
+    const columns = await this.db.BoardColumn.where({ projectId })
       .orderBy((column) => column.position.asc())
       .all();
+    return columns.sort((a, b) => columnKey(a) - columnKey(b));
+  }
+
+  // Перетягування колонок: зберігаємо новий порядок. Якщо колонка перейшла в інший етап,
+  // її завдання отримують статус цього етапу.
+  async reorderColumns(user: CurrentUser, projectId: string, order: string[]) {
+    this.projects.ensureWritable(
+      await this.projects.requireOwner(user, projectId),
+    );
+    const columns = await this.db.BoardColumn.where({ projectId }).all();
+    const plan = planColumnOrder(
+      order,
+      columns.map((column) => column.id),
+    );
+    const before = new Map(columns.map((column) => [column.id, column.status]));
+    await this.projects.prisma.client.transaction(async (tx) => {
+      // Спершу тимчасові від'ємні позиції, бо позиція в проєкті унікальна
+      for (const [index, item] of plan.entries())
+        await tx.orm.public.BoardColumn.where({ id: item.id }).update({
+          position: -(index + 1),
+        });
+      for (const item of plan) {
+        await tx.orm.public.BoardColumn.where({ id: item.id }).update({
+          position: item.position,
+          status: item.status,
+        });
+        if (before.get(item.id) !== item.status)
+          for (const task of await tx.orm.public.Task.where({
+            columnId: item.id,
+          }).all())
+            await tx.orm.public.Task.where({ id: task.id }).update({
+              status: item.status,
+              updatedAt: new Date(),
+            });
+      }
+    });
+    return this.columns(user, projectId);
   }
 
   async addColumn(
@@ -207,7 +303,7 @@ export class TasksService {
       projectId,
       title,
       status,
-      position: Math.max(0, ...columns.map((column) => column.position)) + 1,
+      position: nextPosition(columns, status),
       createdAt: new Date(),
     });
   }

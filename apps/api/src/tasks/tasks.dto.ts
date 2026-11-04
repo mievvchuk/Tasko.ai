@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsDateString,
   IsIn,
@@ -105,4 +107,16 @@ export class OrderStatusDto {
   @ApiProperty({ enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] })
   @IsIn(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'])
   status: string;
+}
+
+export class ColumnOrderDto {
+  @ApiProperty({
+    type: [String],
+    description:
+      "Порядок колонок до «На перевірці»: id власних колонок і 'TODO', 'IN_PROGRESS'",
+  })
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  order: string[];
 }

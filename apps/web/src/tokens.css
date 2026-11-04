@@ -64,6 +64,9 @@
   --color-error: oklch(50% 0.19 27);        /* помилки й прострочене */
   --color-error-soft: oklch(95% 0.03 27);
   --color-error-ink: oklch(99% 0.005 27);
+  /* Кольори даних: різні відтінки, щоб ряди й статуси розрізнялись навіть на слабкому екрані */
+  --data-blue: oklch(55% 0.16 255); --data-amber: oklch(72% 0.15 70); --data-green: oklch(58% 0.14 150);
+  --data-red: oklch(57% 0.19 27); --data-gray: oklch(70% 0.015 60);
 
   --color-scrim: oklch(21% 0.012 38 / 0.4); /* затемнення під панелями */
   --shadow-pop: 0 10px 24px -6px oklch(32% 0.03 50 / 0.28); /* спливні меню й панелі, тінь вправо-вниз */
@@ -100,6 +103,8 @@
   --color-error: oklch(72% 0.14 25);
   --color-error-soft: oklch(28% 0.06 25);
   --color-error-ink: oklch(16% 0.02 25);
+  --data-blue: oklch(70% 0.14 255); --data-amber: oklch(80% 0.14 75); --data-green: oklch(74% 0.15 150);
+  --data-red: oklch(70% 0.17 27); --data-gray: oklch(58% 0.015 60);
 
   --color-scrim: oklch(7% 0.01 40 / 0.6);
   --shadow-pop: 0 0 0 1px oklch(39% 0.013 40), 10px 12px 24px -8px oklch(7% 0.01 40 / 0.7);

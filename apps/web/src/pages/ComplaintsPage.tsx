@@ -2,16 +2,24 @@ import { useState, type FormEvent } from "react";
 import { errorMessage, request } from "../api";
 import { ResourceState } from "../components/ResourceState";
 import { formatDate } from "../format";
-import { complaintStatusNames as statusNames } from "../types";
-import type { Complaint } from "../types";
+import { complaintStatusNames as statusNames, roleNames } from "../types";
+import type { Complaint, UserRole } from "../types";
+import { UserAvatar } from "../components/UserAvatar";
 import { useApi } from "../useApi";
 
 import { useLanguage } from "../i18n";
+interface Targets {
+  projects: { id: string; title: string }[];
+  users: { id: string; name: string; role: UserRole; projects: string[] }[];
+}
+
 export function ComplaintsPage() {
   const { tr } = useLanguage();
   const { data, error, loading, refresh } = useApi<Complaint[]>(
     "/complaints?limit=50",
   );
+  const targets = useApi<Targets>("/complaints/targets");
+  const [query, setQuery] = useState("");
   const [targetUserId, setTargetUserId] = useState("");
   const [projectId, setProjectId] = useState("");
   const [reason, setReason] = useState("");
@@ -32,6 +40,8 @@ export function ComplaintsPage() {
       });
       setReason("");
       setDescription("");
+      setTargetUserId("");
+      setProjectId("");
       refresh();
     } catch (e) {
       setFormError(errorMessage(e));
@@ -43,27 +53,88 @@ export function ComplaintsPage() {
         <h1>{tr("Скарги")}</h1>
         <p>
           {tr(
-            "Опишіть проблему для адміністратора. Вкажіть UUID користувача або проєкту.",
+            "Оберіть людину або проєкт і опишіть проблему для адміністратора.",
           )}
         </p>
       </div>
       <form className="data-panel form-grid" onSubmit={(e) => void submit(e)}>
-        <label>
-          {tr("UUID користувача")}
-          <input
-            value={targetUserId}
-            onChange={(e) => setTargetUserId(e.target.value)}
-            placeholder={tr("Необов’язково")}
+        <fieldset className="full-width complaint-targets">
+          <legend>{tr("На кого скарга")}</legend>
+          <ResourceState
+            loading={targets.loading}
+            error={targets.error}
+            onRetry={targets.refresh}
           />
-        </label>
-        <label>
-          {tr("UUID проєкту")}
-          <input
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-            placeholder={tr("Необов’язково")}
-          />
-        </label>
+          {targets.data && (
+            <>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={tr("Пошук за ім'ям")}
+                aria-label={tr("Пошук за ім'ям")}
+              />
+              <div className="target-list" role="radiogroup">
+                {targets.data.users
+                  .filter((person) =>
+                    person.name
+                      .toLowerCase()
+                      .includes(query.trim().toLowerCase()),
+                  )
+                  .map((person) => (
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={targetUserId === person.id}
+                      key={person.id}
+                      className={
+                        targetUserId === person.id
+                          ? "target-card active"
+                          : "target-card"
+                      }
+                      onClick={() =>
+                        setTargetUserId(
+                          targetUserId === person.id ? "" : person.id,
+                        )
+                      }
+                    >
+                      <UserAvatar name={person.name} size="small" />
+                      <span>
+                        <strong>{person.name}</strong>
+                        <small>
+                          {tr(roleNames[person.role])} ·{" "}
+                          {person.projects.join(", ")}
+                        </small>
+                      </span>
+                      <i
+                        className={`bi ${targetUserId === person.id ? "bi-check-circle-fill" : "bi-circle"}`}
+                        aria-hidden="true"
+                      ></i>
+                    </button>
+                  ))}
+                {!targets.data.users.length && (
+                  <p className="form-note">
+                    {tr("Поки немає людей, з якими ви працюєте в проєктах.")}
+                  </p>
+                )}
+              </div>
+              <label>
+                {tr("Проєкт")}
+                <select
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                >
+                  <option value="">{tr("Без проєкту")}</option>
+                  {targets.data.projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
+        </fieldset>
         <label>
           {tr("Причина")}
           <input
@@ -83,7 +154,10 @@ export function ComplaintsPage() {
           />
         </label>
         {formError && <p className="form-error full-width">{formError}</p>}
-        <button className="button primary">
+        <button
+          className="button primary"
+          disabled={!targetUserId && !projectId}
+        >
           <i className="bi bi-send" aria-hidden="true"></i>
 
           {tr("Надіслати скаргу")}
