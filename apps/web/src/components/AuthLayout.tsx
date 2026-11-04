@@ -22,7 +22,6 @@ export function AuthLayout() {
       </header>
       <main className="auth-main">
         <div className="auth-intro">
-          <span className="eyebrow">{t("workspace")}</span>
           <h1>{t("introTitle")}</h1>
           <p>{t("introText")}</p>
           <div className="workflow" aria-label={tr("Робочий процес")}>
