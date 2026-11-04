@@ -42,7 +42,6 @@ export function LoginPage() {
 
   return (
     <section className="auth-card" aria-labelledby="login-title">
-      <span className="card-kicker">{t("welcome")}</span>
       <h2 id="login-title">{t("loginTitle")}</h2>
       <p className="card-description">{t("loginDescription")}</p>
       {registration?.registered && (
