@@ -560,6 +560,13 @@ try {
         403,
         outsider.token,
       );
+      // Листування приватне: адміністратор поза проєктом його не читає
+      await call(
+        'get',
+        `/projects/${project.id}/messages`,
+        403,
+        adminLogin.accessToken,
+      );
       const upload = await api
         .post(`/projects/${project.id}/files`)
         .set('Authorization', `Bearer ${freelancer.token}`)

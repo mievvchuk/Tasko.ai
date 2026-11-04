@@ -35,8 +35,35 @@ export class NotificationsService {
     })
       .orderBy((item) => item.createdAt.desc())
       .all();
+    const items = all.slice((page - 1) * limit, page * limit);
+    // Назви проєкту й завдання — щоб у списку було видно, про що подія
+    const ids = (key: 'projectId' | 'taskId') => [
+      ...new Set(items.flatMap((item) => (item[key] ? [item[key]] : []))),
+    ];
+    const projectIds = ids('projectId');
+    const taskIds = ids('taskId');
+    const projects = projectIds.length
+      ? await this.prisma.client.orm.public.Project.where((project) =>
+          project.id.in(projectIds),
+        )
+          .select('id', 'title')
+          .all()
+      : [];
+    const tasks = taskIds.length
+      ? await this.prisma.client.orm.public.Task.where((task) =>
+          task.id.in(taskIds),
+        )
+          .select('id', 'title')
+          .all()
+      : [];
     return {
-      items: all.slice((page - 1) * limit, page * limit),
+      items: items.map((item) => ({
+        ...item,
+        projectTitle:
+          projects.find((project) => project.id === item.projectId)?.title ??
+          null,
+        taskTitle: tasks.find((task) => task.id === item.taskId)?.title ?? null,
+      })),
       unreadCount: all.filter((item) => !item.readAt).length,
     };
   }

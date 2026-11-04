@@ -110,6 +110,19 @@ describe('ProjectsService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('keeps private parts (messages) closed to an admin outside the project', async () => {
+    db.Project = {
+      where: vi.fn(() => chain({ id: 'project-id', clientId: client.id })),
+    };
+    db.ProjectMember = { where: vi.fn(() => chain(null)) };
+    await expect(
+      service.requireAccess(admin, 'project-id'),
+    ).resolves.toBeTruthy();
+    await expect(
+      service.requireAccess(admin, 'project-id', false),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it('only lets a client create a planning project', async () => {
     db.Project = { create: vi.fn(async (data: unknown) => data) };
 

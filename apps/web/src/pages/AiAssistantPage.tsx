@@ -15,6 +15,11 @@ export function AiAssistantPage() {
   const { exchanges, busy, clear } = useAiChat();
   return (
     <>
+      {projectId && (
+        <Link className="breadcrumb" to={`/projects/${projectId}`}>
+          {tr("← До проєкту")}
+        </Link>
+      )}
       <div className="page-heading heading-with-action">
         <div>
           <h1>{tr(aiName)}</h1>

@@ -5,8 +5,8 @@ import { request, errorMessage, subscribe } from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
-import { ProjectPicker } from "../components/ProjectPicker";
 import { Pagination, ResourceState } from "../components/ResourceState";
+import { projectStatusNames } from "../types";
 import type { Project, ProjectMember, ProjectMessage } from "../types";
 
 import { useLanguage } from "../i18n";
@@ -15,25 +15,59 @@ export function MessagesPage() {
   const [params, setParams] = useSearchParams();
   const projectId = params.get("project") || "";
   const project = useApi<Project>(projectId ? `/projects/${projectId}` : null);
+  // Лише проєкти, де користувач — замовник або учасник (навіть для адміністратора)
+  const mine = useApi<Project[]>("/projects?mine=true&limit=50");
   return (
     <>
       <div className="page-heading">
         <h1>{tr("Повідомлення")}</h1>
         <p>{tr("Обговорення доступні лише учасникам відповідного проєкту.")}</p>
       </div>
-      <ProjectPicker
-        value={projectId}
-        selected={project.data}
-        onChange={(value) => setParams(value ? { project: value } : {})}
-      />
-      <ResourceState
-        loading={project.loading}
-        error={project.error}
-        onRetry={project.refresh}
-      />
-      {project.data && (
-        <ProjectMessages key={projectId} project={project.data} />
-      )}
+      <div className="messenger">
+        <nav className="data-panel messenger-list" aria-label={tr("Мої проєкти")}>
+          <h2>{tr("Мої проєкти")}</h2>
+          <ResourceState
+            loading={mine.loading}
+            error={mine.error}
+            onRetry={mine.refresh}
+          />
+          {mine.data && !mine.data.length && (
+            <p className="form-note">
+              {tr("Ви ще не берете участі в жодному проєкті.")}
+            </p>
+          )}
+          <ul>
+            {mine.data?.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  aria-current={item.id === projectId ? "true" : undefined}
+                  onClick={() => setParams({ project: item.id })}
+                >
+                  <strong>{item.title}</strong>
+                  <small>{tr(projectStatusNames[item.status])}</small>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="messenger-chat">
+          {!projectId && (
+            <div className="data-panel empty-state">
+              <i className="bi bi-chat-dots" aria-hidden="true"></i>
+              <h3>{tr("Оберіть проєкт зліва, щоб відкрити обговорення")}</h3>
+            </div>
+          )}
+          <ResourceState
+            loading={project.loading}
+            error={project.error}
+            onRetry={project.refresh}
+          />
+          {project.data && (
+            <ProjectMessages key={projectId} project={project.data} />
+          )}
+        </div>
+      </div>
     </>
   );
 }
@@ -117,7 +151,7 @@ function ProjectMessages({ project }: { project: Project }) {
     );
   }
   return (
-    <section className="data-panel section-gap">
+    <section className="data-panel">
       <div className="panel-heading">
         <div>
           <h2>{project.title}</h2>
