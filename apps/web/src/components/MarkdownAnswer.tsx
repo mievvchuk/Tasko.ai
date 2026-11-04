@@ -29,6 +29,16 @@ const components: Components = {
   ),
 };
 
+const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+// Запобіжник, якщо модель усе ж написала технічний ID: «(ID …)» прибираємо, голі UUID теж
+// (UUID у посиланнях [Назва](/projects/…) лишаються — перед ними стоїть «/»).
+export function hideBareIds(text: string) {
+  return text
+    .replace(new RegExp(`\\s*\\((?:ID|id)[:\\s]*${uuid}\\)`, "gi"), "")
+    .replace(new RegExp(`\\s*\\(${uuid}\\)`, "gi"), "")
+    .replace(new RegExp(`(?<![/\\w-])(?:ID[:\\s]*)?${uuid}(?![\\w-])`, "gi"), "");
+}
+
 export default function MarkdownAnswer({ children }: { children: string }) {
   return (
     <div className="ai-answer">
@@ -38,7 +48,7 @@ export default function MarkdownAnswer({ children }: { children: string }) {
         skipHtml
         disallowedElements={["img"]}
       >
-        {children}
+        {hideBareIds(children)}
       </Markdown>
     </div>
   );

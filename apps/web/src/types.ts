@@ -160,6 +160,8 @@ export interface Notification {
   message: string;
   projectId: string | null;
   taskId: string | null;
+  projectTitle?: string | null;
+  taskTitle?: string | null;
   readAt: string | null;
   createdAt: string;
 }

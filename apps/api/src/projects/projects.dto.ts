@@ -46,6 +46,12 @@ export class ProjectQueryDto extends PageDto {
   @IsOptional()
   @IsIn(projectStatuses)
   status?: (typeof projectStatuses)[number];
+  @ApiPropertyOptional({
+    description: 'Лише проєкти, де користувач — замовник або учасник',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  mine?: boolean;
 }
 
 export class MarketplaceQueryDto extends PageDto {
