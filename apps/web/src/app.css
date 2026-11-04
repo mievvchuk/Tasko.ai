@@ -2626,8 +2626,8 @@ dd {
   display: grid;
   justify-items: start;
   gap: var(--space-md);
-  margin: var(--space-lg) 0 var(--space-2xl);
-  padding: var(--space-2xl) var(--space-xl);
+  margin: var(--space-lg) 0 var(--space-xl);
+  padding: var(--space-xl);
   border-radius: var(--radius-card);
   background: var(--color-ink);
   color: var(--color-paper);
@@ -3055,11 +3055,10 @@ dd {
   .welcome-lead,
   .welcome-features article,
   .welcome-steps li,
-  .welcome-roles article,
-  .welcome-cta {
+  .welcome-roles article {
     animation: rise linear both;
     animation-timeline: view();
-    animation-range: entry 0% entry 60%;
+    animation-range: entry 0% entry 30%;
   }
   .welcome-steps li:not(:last-child)::before {
     animation: grow-x linear both;
