@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { Subject, filter, interval, map, merge, type Observable } from 'rxjs';
 import { ProjectsService } from '../projects/projects.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
 import type { CurrentUser } from '../users/users.service.js';
@@ -23,8 +24,27 @@ export class CollaborationService {
     @Inject(ProjectsService) private readonly projects: ProjectsService,
     @Inject(TasksService) private readonly tasks: TasksService,
   ) {}
+  // shortcut: події живуть у пам'яті одного процесу API; для кількох інстансів потрібен Redis pub/sub
+  private readonly posted = new Subject<{
+    projectId: string;
+    message: unknown;
+  }>();
   private get client() {
     return this.projects.prisma.client;
+  }
+  // Потік нових повідомлень проєкту (SSE). Пінг раз на 25 с не дає проксі закрити з'єднання.
+  async messageStream(
+    user: CurrentUser,
+    projectId: string,
+  ): Promise<Observable<{ type: string; data: unknown }>> {
+    await this.projects.requireAccess(user, projectId);
+    return merge(
+      this.posted.pipe(
+        filter((event) => event.projectId === projectId),
+        map((event) => ({ type: 'message', data: event.message })),
+      ),
+      interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
+    );
   }
 
   async messages(user: CurrentUser, projectId: string, page: PageDto) {
@@ -59,6 +79,7 @@ export class CollaborationService {
         'Нове повідомлення у проєкті.',
         projectId,
       );
+    this.posted.next({ projectId, message });
     return message;
   }
   async submissions(user: CurrentUser, taskId: string, page: PageDto) {

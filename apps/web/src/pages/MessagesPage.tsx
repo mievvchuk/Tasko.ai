@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
-import { request, errorMessage } from "../api";
+import { request, errorMessage, subscribe } from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
@@ -51,6 +51,40 @@ function ProjectMessages({ project }: { project: Project }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const closed = ["COMPLETED", "CANCELLED"].includes(project.status);
+  // Нові повідомлення приходять одразу (SSE) і дописуються в кінець списку
+  const [live, setLive] = useState<ProjectMessage[]>([]);
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => setLive([]), [messages.data]);
+  useEffect(() => {
+    if (page !== 1) return;
+    const controller = new AbortController();
+    void subscribe(
+      `/projects/${project.id}/messages/stream`,
+      (type, data) => {
+        if (type !== "message") return;
+        const message = JSON.parse(data) as ProjectMessage;
+        setLive((list) =>
+          list.some((item) => item.id === message.id)
+            ? list
+            : [...list, message],
+        );
+      },
+      controller.signal,
+    );
+    return () => controller.abort();
+  }, [project.id, page]);
+  const shown = messages.data
+    ? [
+        ...[...messages.data].reverse(),
+        ...live.filter(
+          (message) => !messages.data!.some((item) => item.id === message.id),
+        ),
+      ]
+    : [];
+  useEffect(() => {
+    const list = listRef.current;
+    if (list) list.scrollTop = list.scrollHeight;
+  }, [shown.length]);
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -87,6 +121,10 @@ function ProjectMessages({ project }: { project: Project }) {
       <div className="panel-heading">
         <div>
           <h2>{project.title}</h2>
+          <span className="live-badge">
+            <i aria-hidden="true"></i>
+            {tr("Нові повідомлення з'являються одразу")}
+          </span>
           <Link to={`/projects/${project.id}`}>{tr("До проєкту")}</Link>
         </div>
         <button
@@ -111,13 +149,13 @@ function ProjectMessages({ project }: { project: Project }) {
       />
       {messages.data && !members.loading && !members.error && (
         <>
-          <div className="message-list padded" aria-live="polite">
-            {!messages.data.length && (
+          <div className="message-list padded" aria-live="polite" ref={listRef}>
+            {!shown.length && (
               <p className="form-note">
                 {tr("На цій сторінці повідомлень немає.")}
               </p>
             )}
-            {[...messages.data].reverse().map((message) => (
+            {shown.map((message) => (
               <article
                 className={
                   message.senderId === user?.id ? "message own" : "message"

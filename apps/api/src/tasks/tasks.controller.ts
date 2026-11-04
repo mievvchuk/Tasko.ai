@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import type { CurrentUser } from '../users/users.service.js';
 import { PageDto } from '../projects/projects.dto.js';
 import {
   BoardColumnDto,
+  ColumnOrderDto,
   CreateTaskDto,
   OrderStatusDto,
   TaskQueryDto,
@@ -78,6 +80,13 @@ export class TasksController {
     @Body() data: BoardColumnDto,
   ) {
     return this.tasks.addColumn(user, id, data.title, data.status);
+  }
+  @Put('projects/:id/columns/order') reorderColumns(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: ColumnOrderDto,
+  ) {
+    return this.tasks.reorderColumns(user, id, data.order);
   }
   @Delete('columns/:id') deleteColumn(
     @Actor() user: CurrentUser,

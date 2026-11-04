@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useApi } from "../useApi";
 import { formatDate } from "../format";
 import { ResourceState } from "../components/ResourceState";
+import { UserAvatar } from "../components/UserAvatar";
 import { priorityNames, taskStatusNames } from "../types";
 import type { FreelancerWorkload } from "../types";
 
@@ -12,6 +13,23 @@ const riskNames = {
   NEAR_DEADLINE: "Дедлайн наближається",
   HIGH_PRIORITY: "Високий пріоритет",
 };
+
+// Рівень навантаження за кількістю незавершених завдань
+function loadLevel(active: number) {
+  if (active >= 6)
+    return { key: "high", label: "Перевантаження", percent: 100 };
+  if (active >= 3)
+    return {
+      key: "medium",
+      label: "Помірне навантаження",
+      percent: 30 + active * 10,
+    };
+  return {
+    key: "low",
+    label: "Легке навантаження",
+    percent: Math.max(8, active * 15),
+  };
+}
 
 export function WorkloadPage() {
   const { tr } = useLanguage();
@@ -89,75 +107,99 @@ export function WorkloadPage() {
               <Link to="/projects">{tr("Переглянути проєкти")}</Link>
             </section>
           )}
-          {people.map((person, index) => (
-            <section
-              className="data-panel workload-panel"
-              key={person.user?.id || index}
-            >
-              <div className="panel-heading">
-                <div>
-                  <h2>
-                    {person.user ? (
-                      <Link to={`/freelancers/${person.user.id}`}>
-                        {person.user.name}
-                      </Link>
-                    ) : (
-                      tr("Користувач недоступний")
+          {people.map((person, index) => {
+            const level = loadLevel(person.activeTasks);
+            return (
+              <section
+                className="data-panel workload-panel"
+                key={person.user?.id || index}
+              >
+                <div className="workload-head">
+                  <UserAvatar name={person.user?.name || "?"} size="small" />
+                  <div className="workload-name">
+                    <h2>
+                      {person.user ? (
+                        <Link to={`/freelancers/${person.user.id}`}>
+                          {person.user.name}
+                        </Link>
+                      ) : (
+                        tr("Користувач недоступний")
+                      )}
+                    </h2>
+                    <span>
+                      {tr("Перший дедлайн:")}{" "}
+                      {formatDate(person.nearestDeadline, true)}
+                    </span>
+                  </div>
+                  <div className={"load-meter load-" + level.key}>
+                    <span>
+                      <b>{tr(level.label)}</b>
+                      {person.activeTasks}
+                    </span>
+                    <i aria-hidden="true">
+                      <em style={{ width: `${level.percent}%` }}></em>
+                    </i>
+                  </div>
+                </div>
+                <ul className="workload-chips">
+                  <li className="chip-active">
+                    <strong>{person.activeTasks}</strong> {tr("Незавершені")}
+                  </li>
+                  <li className="chip-overdue">
+                    <strong>{person.overdueTasks}</strong> {tr("Прострочені")}
+                  </li>
+                  <li className="chip-priority">
+                    <strong>{person.highPriorityTasks}</strong>{" "}
+                    {tr("Високий пріоритет")}
+                  </li>
+                </ul>
+                {person.tasks.length ? (
+                  <div
+                    className="table-scroll"
+                    role="region"
+                    aria-label={tr(
+                      "Завдання {0}",
+                      person.user?.name || "виконавця",
                     )}
-                  </h2>
-                  <p>
-                    {tr("Незавершені:")} {person.activeTasks}{" "}
-                    {tr("· Прострочені:")} {person.overdueTasks}{" "}
-                    {tr("· Високий пріоритет:")} {person.highPriorityTasks}
-                  </p>
-                </div>
-                <span>
-                  {tr("Перший дедлайн:")}{" "}
-                  {formatDate(person.nearestDeadline, true)}
-                </span>
-              </div>
-              {person.tasks.length ? (
-                <div
-                  className="table-scroll"
-                  role="region"
-                  aria-label={tr(
-                    "Завдання {0}",
-                    person.user?.name || "виконавця",
-                  )}
-                  tabIndex={0}
-                >
-                  <table className="projects-table tasks-table">
-                    <thead>
-                      <tr>
-                        <th scope="col">{tr("Завдання")}</th>
-                        <th scope="col">{tr("Пріоритет")}</th>
-                        <th scope="col">{tr("Статус")}</th>
-                        <th scope="col">{tr("Дедлайн")}</th>
-                        <th scope="col">{tr("Увага")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {person.tasks.map((task) => (
-                        <tr key={task.id}>
-                          <td>
-                            <Link to={`/tasks/${task.id}`}>{task.title}</Link>
-                          </td>
-                          <td>{tr(priorityNames[task.priority])}</td>
-                          <td>{tr(taskStatusNames[task.status])}</td>
-                          <td>{formatDate(task.deadline, true)}</td>
-                          <td>{tr(riskNames[task.risk])}</td>
+                    tabIndex={0}
+                  >
+                    <table className="projects-table tasks-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">{tr("Завдання")}</th>
+                          <th scope="col">{tr("Пріоритет")}</th>
+                          <th scope="col">{tr("Статус")}</th>
+                          <th scope="col">{tr("Дедлайн")}</th>
+                          <th scope="col">{tr("Увага")}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="padded form-note">
-                  {tr("Незавершених завдань немає.")}
-                </p>
-              )}
-            </section>
-          ))}
+                      </thead>
+                      <tbody>
+                        {person.tasks.map((task) => (
+                          <tr key={task.id}>
+                            <td>
+                              <Link to={`/tasks/${task.id}`}>{task.title}</Link>
+                            </td>
+                            <td>{tr(priorityNames[task.priority])}</td>
+                            <td>{tr(taskStatusNames[task.status])}</td>
+                            <td>{formatDate(task.deadline, true)}</td>
+                            <td>
+                              <span className={"risk-pill risk-" + task.risk}>
+                                {tr(riskNames[task.risk])}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="padded form-note">
+                    {tr("Незавершених завдань немає.")}
+                  </p>
+                )}
+              </section>
+            );
+          })}
         </>
       )}
     </>
