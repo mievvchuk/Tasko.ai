@@ -2814,6 +2814,13 @@ dd {
   flex-wrap: wrap;
   gap: var(--space-xs);
 }
+.admin-protected {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
 .user-controls select {
   width: auto;
   min-height: 32px;

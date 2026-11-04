@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import {
   IsIn,
   IsOptional,
@@ -6,6 +6,7 @@ import {
   Length,
   ValidateIf,
 } from 'class-validator';
+import { RegisterDto } from '../auth/auth.dto.js';
 import { PageDto } from '../projects/projects.dto.js';
 
 export class UserQueryDto extends PageDto {
@@ -23,15 +24,24 @@ export class UserQueryDto extends PageDto {
   @Length(0, 100)
   search?: string;
 }
+// Роль адміністратора зміною ролі не видається — лише окремим акаунтом (CreateAdminDto)
 export class UpdateUserDto {
-  @ApiPropertyOptional({ enum: ['CLIENT', 'FREELANCER', 'ADMIN'] })
+  @ApiPropertyOptional({ enum: ['CLIENT', 'FREELANCER'] })
   @ValidateIf((_object, value: unknown) => value !== undefined)
-  @IsIn(['CLIENT', 'FREELANCER', 'ADMIN'])
+  @IsIn(['CLIENT', 'FREELANCER'])
   role?: string;
   @ApiPropertyOptional({ enum: ['ACTIVE', 'BLOCKED'] })
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsIn(['ACTIVE', 'BLOCKED'])
   status?: string;
+}
+
+// Новий окремий акаунт адміністратора; дію підтверджує паролем (і кодом 2FA, якщо увімкнено) той, хто створює
+export class CreateAdminDto extends OmitType(RegisterDto, ['role'] as const) {
+  @ApiProperty({ minLength: 8, maxLength: 128, format: 'password' })
+  @IsString()
+  @Length(8, 128)
+  currentPassword: string;
 }
 
 export class ReportExportQueryDto {

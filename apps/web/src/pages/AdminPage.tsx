@@ -9,6 +9,7 @@ import { roleNames } from "../types";
 import type { AdminUser, AdminReport } from "../types";
 import {
   AccountStatusOptions,
+  AdminCreateDialog,
   AdminStats,
   BreakdownCharts,
   DataTable,
@@ -95,6 +96,7 @@ export function AdminUsersPage() {
   const role = allowedOrEmpty(params.get("role"), Object.keys(roleNames));
   const status = allowedOrEmpty(params.get("status"), ["ACTIVE", "BLOCKED"]);
   const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const query = new URLSearchParams({ page: String(page), limit: "20" });
   if (role) query.set("role", role);
@@ -146,16 +148,23 @@ export function AdminUsersPage() {
     {
       key: "actions",
       label: tr("Дії"),
-      render: (row) => (
-        <button
-          className="button secondary"
-          aria-label={tr("Редагувати {0}", row.name)}
-          onClick={() => setEditing(row)}
-        >
-          <i className="bi bi-pencil" aria-hidden="true"></i>
-          {tr("Редагувати")}
-        </button>
-      ),
+      // Адміністраторів (і себе) панель не змінює
+      render: (row) =>
+        row.role === "ADMIN" ? (
+          <span className="admin-protected">
+            <i className="bi bi-shield-lock" aria-hidden="true"></i>
+            {tr("Захищено")}
+          </span>
+        ) : (
+          <button
+            className="button secondary"
+            aria-label={tr("Редагувати {0}", row.name)}
+            onClick={() => setEditing(row)}
+          >
+            <i className="bi bi-pencil" aria-hidden="true"></i>
+            {tr("Редагувати")}
+          </button>
+        ),
     },
   ];
 
@@ -166,6 +175,10 @@ export function AdminUsersPage() {
           <h1>{tr("Користувачі")}</h1>
           <p>{tr("Облікові записи платформи: роль і стан доступу.")}</p>
         </div>
+        <button className="button primary" onClick={() => setCreating(true)}>
+          <i className="bi bi-shield-plus" aria-hidden="true"></i>
+          {tr("Новий адміністратор")}
+        </button>
       </div>
       <section className="data-panel admin-panel">
         <ListToolbar
@@ -220,9 +233,15 @@ export function AdminUsersPage() {
       {editing && (
         <UserDialog
           user={editing}
-          self={editing.id === user?.id}
           onSaved={users.refresh}
           onClose={() => setEditing(null)}
+        />
+      )}
+      {creating && (
+        <AdminCreateDialog
+          twoFactor={Boolean(user?.twoFactorEnabled)}
+          onSaved={users.refresh}
+          onClose={() => setCreating(false)}
         />
       )}
     </>

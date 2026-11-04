@@ -742,10 +742,18 @@ try {
         adminLogin.accessToken,
         { role: null },
       );
+      // Роль ADMIN зміною ролі не видається, а адміністраторів панель не змінює
+      await call(
+        'patch',
+        `/admin/users/${freelancer.id}`,
+        400,
+        adminLogin.accessToken,
+        { role: 'ADMIN' },
+      );
       await call(
         'patch',
         `/admin/users/${String(admin.id)}`,
-        409,
+        403,
         adminLogin.accessToken,
         { status: 'BLOCKED' },
       );
