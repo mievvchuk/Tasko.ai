@@ -20,10 +20,6 @@
       "model": "Complaint",
       "namespace": "public"
     },
-    "EmailVerificationToken": {
-      "model": "EmailVerificationToken",
-      "namespace": "public"
-    },
     "FavoriteProject": {
       "model": "FavoriteProject",
       "namespace": "public"
@@ -54,10 +50,6 @@
     },
     "Order": {
       "model": "Order",
-      "namespace": "public"
-    },
-    "PasswordResetToken": {
-      "model": "PasswordResetToken",
       "namespace": "public"
     },
     "PortfolioItem": {
@@ -572,94 +564,6 @@
               },
               "namespaceId": "public",
               "table": "Complaint"
-            }
-          },
-          "EmailVerificationToken": {
-            "fields": {
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
-              "expiresAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "tokenHash": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "usedAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
-              "userId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "user": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "userId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "User",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "createdAt": {
-                  "column": "createdAt"
-                },
-                "expiresAt": {
-                  "column": "expiresAt"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "tokenHash": {
-                  "column": "tokenHash"
-                },
-                "usedAt": {
-                  "column": "usedAt"
-                },
-                "userId": {
-                  "column": "userId"
-                }
-              },
-              "namespaceId": "public",
-              "table": "EmailVerificationToken"
             }
           },
           "FavoriteProject": {
@@ -1478,94 +1382,6 @@
               },
               "namespaceId": "public",
               "table": "Order"
-            }
-          },
-          "PasswordResetToken": {
-            "fields": {
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
-              "expiresAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "tokenHash": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "usedAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
-              "userId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "user": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "userId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "User",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "createdAt": {
-                  "column": "createdAt"
-                },
-                "expiresAt": {
-                  "column": "expiresAt"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "tokenHash": {
-                  "column": "tokenHash"
-                },
-                "usedAt": {
-                  "column": "usedAt"
-                },
-                "userId": {
-                  "column": "userId"
-                }
-              },
-              "namespaceId": "public",
-              "table": "PasswordResetToken"
             }
           },
           "PortfolioItem": {
@@ -2833,13 +2649,6 @@
                   "kind": "scalar"
                 }
               },
-              "emailVerifiedAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "kind": "scalar"
-                }
-              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -2988,21 +2797,6 @@
                   "namespace": "public"
                 }
               },
-              "emailVerificationTokens": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "userId"
-                  ]
-                },
-                "to": {
-                  "model": "EmailVerificationToken",
-                  "namespace": "public"
-                }
-              },
               "favoriteProjects": {
                 "cardinality": "1:N",
                 "on": {
@@ -3091,21 +2885,6 @@
                 },
                 "to": {
                   "model": "Project",
-                  "namespace": "public"
-                }
-              },
-              "passwordResetTokens": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "userId"
-                  ]
-                },
-                "to": {
-                  "model": "PasswordResetToken",
                   "namespace": "public"
                 }
               },
@@ -3210,9 +2989,6 @@
                 },
                 "email": {
                   "column": "email"
-                },
-                "emailVerifiedAt": {
-                  "column": "emailVerifiedAt"
                 },
                 "id": {
                   "column": "id"
@@ -3818,87 +3594,6 @@
                 ]
               },
               "uniques": []
-            },
-            "EmailVerificationToken": {
-              "columns": {
-                "createdAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nullable": false
-                },
-                "expiresAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "nullable": false
-                },
-                "id": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                },
-                "tokenHash": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                },
-                "usedAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "nullable": true
-                },
-                "userId": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                }
-              },
-              "foreignKeys": [
-                {
-                  "index": {
-                    "name": "EmailVerificationToken_userId_idx_a489d58a"
-                  },
-                  "source": {
-                    "columns": [
-                      "userId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "EmailVerificationToken"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "User"
-                  }
-                }
-              ],
-              "indexes": [
-                {
-                  "columns": [
-                    "userId"
-                  ],
-                  "name": "EmailVerificationToken_userId_idx_a489d58a",
-                  "prefix": "EmailVerificationToken_userId_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ]
-              },
-              "uniques": [
-                {
-                  "columns": [
-                    "tokenHash"
-                  ]
-                }
-              ]
             },
             "FavoriteProject": {
               "columns": {
@@ -4719,87 +4414,6 @@
                 ]
               },
               "uniques": []
-            },
-            "PasswordResetToken": {
-              "columns": {
-                "createdAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nullable": false
-                },
-                "expiresAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "nullable": false
-                },
-                "id": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                },
-                "tokenHash": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                },
-                "usedAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "nullable": true
-                },
-                "userId": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                }
-              },
-              "foreignKeys": [
-                {
-                  "index": {
-                    "name": "PasswordResetToken_userId_idx_a489d58a"
-                  },
-                  "source": {
-                    "columns": [
-                      "userId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "PasswordResetToken"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "User"
-                  }
-                }
-              ],
-              "indexes": [
-                {
-                  "columns": [
-                    "userId"
-                  ],
-                  "name": "PasswordResetToken_userId_idx_a489d58a",
-                  "prefix": "PasswordResetToken_userId_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ]
-              },
-              "uniques": [
-                {
-                  "columns": [
-                    "tokenHash"
-                  ]
-                }
-              ]
             },
             "PortfolioItem": {
               "columns": {
@@ -5700,15 +5314,6 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "emailVerifiedAt": {
-                  "codecId": "pg/timestamptz-date@1",
-                  "dataType": "pg/timestamptz",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nullable": true
-                },
                 "id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -5919,10 +5524,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "36103268da77cf79b55af2416ac520b03e53b547b21674b363746ec60ad9374b"
+    "storageHash": "1647d55c25447f3a775fc4c60b517cc1c317f1a5cbd79704624ba19135bfc91c"
   },
   "execution": {
-    "executionHash": "b1f416eee504bbb2e59a30db119556ad237daeaeed853101e2e55c1da09d616f",
+    "executionHash": "e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06",
     "mutations": {
       "defaults": [
         {
@@ -5965,17 +5570,6 @@
           },
           "ref": {
             "entry": "Complaint",
-            "field": "id",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "entry": "EmailVerificationToken",
             "field": "id",
             "namespace": "public"
           }
@@ -6031,17 +5625,6 @@
           },
           "ref": {
             "entry": "Order",
-            "field": "id",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "entry": "PasswordResetToken",
             "field": "id",
             "namespace": "public"
           }

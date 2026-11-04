@@ -2491,35 +2491,95 @@ dd {
   margin-top: var(--space-xs);
   color: var(--color-ink-2);
 }
-/* Можливості — список у дві колонки з тонкими лініями, а не однакові плитки */
-.welcome-features,
-.welcome-steps {
+/* Можливості — картки в три колонки, іконка в м'якому колі */
+.welcome-features {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 var(--space-xl);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
   margin-top: var(--space-xl);
 }
-.welcome-steps {
-  list-style: none;
-}
-.welcome-features article,
-.welcome-steps li {
+.welcome-features article {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
   align-content: start;
-  gap: var(--space-2xs) var(--space-md);
-  padding: var(--space-lg) 0;
-  border-top: 1px solid var(--color-rule);
+  gap: var(--space-xs);
+  padding: var(--space-lg);
+  border-radius: var(--radius-card);
+  background: var(--color-paper-2);
+  transition:
+    transform var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
 }
-.welcome-features article > i,
-.welcome-steps b {
-  grid-row: span 2;
+.welcome-features article:hover {
+  transform: translateY(-4px);
+  background-color: var(--color-surface);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
+}
+.welcome-features article > i {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-xs);
+  border-radius: var(--radius-input);
+  background: var(--color-accent-soft);
   color: var(--color-accent-text);
   font-size: var(--text-xl);
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.welcome-features article:hover > i {
+  transform: rotate(-8deg) scale(1.08);
 }
 .welcome-features p,
 .welcome-steps p {
   color: var(--color-ink-2);
+}
+/* Як це працює — три кроки в ряд, номери з'єднані лінією */
+.welcome-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+  list-style: none;  isolation: isolate;
+}
+.welcome-steps li {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--space-xs);
+}
+.welcome-steps b {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: var(--space-sm);
+  border: 2px solid var(--color-accent-text);
+  border-radius: 50%;
+  background: var(--color-paper);
+  color: var(--color-accent-text);
+  font-size: var(--text-lg);
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out),
+    transform var(--dur-short) var(--ease-out);
+}
+.welcome-steps li:hover b {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  transform: scale(1.08);
+}
+/* Лінія від кружечка до наступного кроку */
+.welcome-steps li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 26px;
+  left: 52px;
+  right: calc(-1 * var(--space-xl));
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent-text), var(--color-rule));
+  transform-origin: left;
 }
 .welcome-roles {
   display: grid;
@@ -2533,6 +2593,13 @@ dd {
   padding: var(--space-lg);
   border-radius: var(--radius-card);
   background: var(--color-paper-2);
+  transition:
+    transform var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+.welcome-roles article:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 .welcome-roles article > i {
   color: var(--color-accent-text);
@@ -2551,16 +2618,31 @@ dd {
 .welcome-roles li i {
   color: var(--color-accent-text);
 }
-/* Останній блок — темна смуга з однією дією */
+/* Останній блок — темна смуга з однією дією і м'яким світлом, що повільно рухається */
 .welcome-cta {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   display: grid;
   justify-items: start;
   gap: var(--space-md);
-  margin: var(--space-lg) 0 var(--space-2xl);
-  padding: var(--space-2xl) var(--space-xl);
+  margin: var(--space-lg) 0 var(--space-xl);
+  padding: var(--space-xl);
   border-radius: var(--radius-card);
   background: var(--color-ink);
   color: var(--color-paper);
+}
+.welcome-cta::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -50% -10% auto auto;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent-text) 0%, transparent 65%);
+  opacity: 0.35;
+  animation: drift 9s ease-in-out infinite alternate;
 }
 .welcome-cta h2 {
   color: var(--color-paper);
@@ -2568,6 +2650,12 @@ dd {
 .welcome-cta p {
   max-width: 50ch;
   color: var(--color-paper);
+}
+/* Основна кнопка тут світла: темна зливалася б із темною смугою */
+.welcome-cta .button.primary,
+.welcome-cta .button.primary:hover:not(:disabled) {
+  background: var(--color-paper);
+  color: var(--color-ink);
 }
 
 /* ===== 14. Адмінка ===== */
@@ -2908,8 +2996,152 @@ dd {
   box-shadow: var(--edge-stock), var(--cast-stock-lift);
 }
 
+@keyframes drift {
+  to {
+    transform: translate(-40%, 30%) scale(1.2);
+  }
+}
+@keyframes float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes glow {
+  0% {
+    box-shadow: var(--shadow-pop), 0 0 0 0 var(--color-accent);
+  }
+  70%,
+  100% {
+    box-shadow: var(--shadow-pop), 0 0 0 12px transparent;
+  }
+}
+@keyframes badge-pop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+}
+
+/* Вітальна сторінка: мініатюра дошки ледь «дихає», картка «У процесі» блимає смужкою,
+   а підказка Ади з'являється після дошки */
+.preview-board {
+  animation: float 6s ease-in-out 1s infinite;
+}
+.preview-column:nth-child(2) .preview-card i {
+  transform-origin: left;
+  animation: grow-x 2.4s var(--ease-out) 0.8s infinite alternate;
+}
+.preview-card {
+  animation: pop-in var(--dur-long) var(--ease-out) backwards;
+}
+.preview-column:nth-child(1) .preview-card { animation-delay: 360ms; }
+.preview-column:nth-child(2) .preview-card { animation-delay: 440ms; }
+.preview-column:nth-child(3) .preview-card { animation-delay: 520ms; }
+.preview-ada {
+  animation: rise var(--dur-long) var(--ease-out) 700ms backwards;
+}
+
+/* Поява блоків під час прокрутки: лише CSS (scroll-driven animations).
+   Браузер без підтримки просто показує вміст одразу. */
+@supports (animation-timeline: view()) {
+  .welcome-section > h2,
+  .welcome-lead,
+  .welcome-features article,
+  .welcome-steps li,
+  .welcome-roles article {
+    animation: rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 30%;
+  }
+  .welcome-steps li:not(:last-child)::before {
+    animation: grow-x linear both;
+    animation-timeline: view();
+    animation-range: entry 40% cover 40%;
+  }
+}
+
+/* Вхід і реєстрація: текст зліва виїжджає по черзі, форма — трохи пізніше */
+.auth-intro > *,
+.auth-main > .auth-card {
+  animation: rise var(--dur-long) var(--ease-out) backwards;
+}
+.auth-intro > :nth-child(2) { animation-delay: 60ms; }
+.auth-intro > :nth-child(3) { animation-delay: 120ms; }
+.auth-intro > :nth-child(4) { animation-delay: 180ms; }
+.auth-main > .auth-card { animation-delay: 150ms; }
+.workflow span {
+  animation: pop-in var(--dur-long) var(--ease-out) backwards;
+  transition: transform var(--dur-micro) var(--ease-out);
+}
+.workflow span:nth-of-type(1) { animation-delay: 300ms; }
+.workflow span:nth-of-type(2) { animation-delay: 420ms; }
+.workflow span:nth-of-type(3) { animation-delay: 540ms; }
+.workflow span:hover {
+  transform: translateY(-2px);
+}
+
+/* Бічне меню: іконка трохи зсувається під курсором */
+.topbar-nav a i,
+.admin-sidebar nav a i {
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.topbar-nav a:hover i,
+.admin-sidebar nav a:hover i {
+  transform: translateX(2px) scale(1.1);
+}
+/* Лічильник непрочитаних «вистрибує» */
+.badge-count {
+  animation: badge-pop var(--dur-long) var(--ease-out) 400ms backwards;
+}
+/* Кнопка Ади мерехтить м'яким кільцем, щоб її помітили */
+.ai-fab {
+  animation: glow 3s ease-in-out 1.5s infinite;
+}
+.ai-fab .bi-stars {
+  transition: transform var(--dur-long) var(--ease-out);
+}
+.ai-fab:hover .bi-stars {
+  transform: rotate(72deg) scale(1.15);
+}
+
+/* Картки й панелі застосунку трохи піднімаються під курсором */
+.chart-card,
+.marketplace-card,
+.application-card,
+.submission-card {
+  transition:
+    transform var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+.chart-card:hover,
+.marketplace-card:hover,
+.application-card:hover,
+.submission-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--edge-stock), var(--cast-stock-lift);
+}
+/* Рядки таблиць проявляються по черзі */
+tbody tr {
+  animation: fade-in var(--dur-long) var(--ease-out) backwards;
+}
+tbody tr:nth-child(2) { animation-delay: 30ms; }
+tbody tr:nth-child(3) { animation-delay: 60ms; }
+tbody tr:nth-child(4) { animation-delay: 90ms; }
+tbody tr:nth-child(5) { animation-delay: 120ms; }
+tbody tr:nth-child(n + 6) { animation-delay: 150ms; }
+
 /* ===== 16. Планшет і телефон ===== */
 @media (max-width: 70rem) {
+  .welcome-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .dashboard-bottom {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -3081,6 +3313,9 @@ dd {
   }
   .welcome-cta {
     padding: var(--space-xl) var(--space-lg);
+  }
+  .welcome-steps li::before {
+    display: none;
   }
   .preview-board {
     grid-template-columns: repeat(2, minmax(0, 1fr));

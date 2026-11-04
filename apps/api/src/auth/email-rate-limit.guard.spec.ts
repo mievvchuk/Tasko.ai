@@ -7,11 +7,11 @@ describe('email request rate limit', () => {
     vi.useFakeTimers();
     const header = vi.fn();
     const context = {
-      getHandler: () => function forgotPassword() {},
+      getHandler: () => function register() {},
       switchToHttp: () => ({
         getRequest: () => ({
           ip: '127.0.0.1',
-          path: '/auth/forgot-password',
+          path: '/auth/register',
         }),
         getResponse: () => ({ setHeader: header }),
       }),

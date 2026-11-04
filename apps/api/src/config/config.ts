@@ -10,12 +10,6 @@ export interface AppConfig {
   aiApiKey?: string;
   aiBaseUrl?: string;
   aiModel?: string;
-  emailApiKey?: string;
-  emailFrom?: string;
-  smtpHost?: string;
-  smtpPort?: number;
-  smtpUser?: string;
-  smtpPassword?: string;
 }
 
 export function loadEnvironment() {
@@ -50,12 +44,6 @@ export function readConfig(env: NodeJS.ProcessEnv): AppConfig {
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error('PORT має бути цілим числом від 1 до 65535.');
   }
-  const smtpHost = env.SMTP_HOST?.trim();
-  const smtpPort = Number(env.SMTP_PORT || 465);
-  if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535)
-    throw new Error('SMTP_PORT має бути коректним номером порту.');
-  if (smtpHost && (!env.SMTP_USER || !env.SMTP_PASSWORD))
-    throw new Error('Заповніть SMTP_USER та SMTP_PASSWORD.');
   const webOrigin = env.WEB_ORIGIN ?? 'http://localhost:5173';
   if (
     !URL.canParse(webOrigin) ||
@@ -72,12 +60,6 @@ export function readConfig(env: NodeJS.ProcessEnv): AppConfig {
     aiApiKey: env.AI_API_KEY || env.OPENAI_API_KEY,
     aiBaseUrl: env.AI_BASE_URL || 'https://api.openai.com/v1',
     aiModel: env.OPENAI_MODEL,
-    emailApiKey: env.EMAIL_API_KEY,
-    emailFrom: env.EMAIL_FROM || env.SMTP_USER,
-    smtpHost,
-    smtpPort,
-    smtpUser: env.SMTP_USER,
-    smtpPassword: env.SMTP_PASSWORD,
   };
 }
 

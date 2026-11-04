@@ -25,7 +25,7 @@ Tasko.ai is a course project that brings clients and freelancers together, from 
 - **Collaboration:** messages, file sharing, work submissions, revision requests, and approvals.
 - **AI assistant Ada:** answers questions using data accessible to the user, helps draft a project through conversation, compares applications, and generates editable project plans.
 - **Analytics:** progress, deadlines, and team workload.
-- **Security and administration:** JWT, session management, password recovery, TOTP 2FA, moderation, and report exports.
+- **Security and administration:** JWT, session management, password change, TOTP 2FA, moderation, and report exports.
 - **Interface:** Ukrainian and English, light and dark themes, and responsive layouts.
 
 > Milestone payment statuses are for tracking only; Tasko.ai does not transfer money.
@@ -138,19 +138,9 @@ Use an HTTPS OpenAI-compatible provider and a model that supports tool calls. Re
 
 The assistant uses MCP tools to access project, task, deadline, and workload data available to the current user. No separate MCP server is required. Generated project plans are editable drafts; milestones and tasks are saved only after confirmation.
 
-## Password recovery
+## Email
 
-Registration does not require email verification. Configure SMTP or Resend in the root `.env` for password recovery emails. Gmail example:
-
-```dotenv
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=your-address@gmail.com
-SMTP_PASSWORD=your-google-app-password
-EMAIL_FROM=your-address@gmail.com
-```
-
-Gmail requires a [Google app password](https://myaccount.google.com/apppasswords). Set `WEB_ORIGIN` to the frontend address users can reach and restart the API after configuration changes.
+Registration does not require email verification, and the service sends no email, so no SMTP setup is needed.
 
 ## Checks
 

@@ -3,7 +3,6 @@ import {
   ConflictException,
   ForbiddenException,
   NotFoundException,
-  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -13,7 +12,6 @@ import type { PrismaService } from '../prisma/prisma.service.js';
 import type { UsersService } from '../users/users.service.js';
 import { AuthService } from './auth.service.js';
 import { hashPassword } from './password.js';
-import type { MailService } from './mail.service.js';
 
 describe('authentication', () => {
   const jwt = new JwtService({
@@ -38,15 +36,10 @@ describe('authentication', () => {
     orderBy: vi.fn(),
   };
   sessionQuery.orderBy.mockReturnValue(sessionQuery);
-  const passwordResetQuery = { first: vi.fn(), update: vi.fn(), all: vi.fn() };
   const db = {
     AuthSession: {
       create: vi.fn(),
       where: vi.fn(() => sessionQuery),
-    },
-    PasswordResetToken: {
-      create: vi.fn(),
-      where: vi.fn(() => passwordResetQuery),
     },
     User: { where: vi.fn(() => ({ update: vi.fn() })) },
   };
@@ -57,13 +50,11 @@ describe('authentication', () => {
     port: 3000,
     webOrigin: 'http://localhost:5173',
   };
-  const mail = { configured: vi.fn(() => false), sendReset: vi.fn() };
   const auth = new AuthService(
     users as unknown as UsersService,
     jwt,
     prisma as unknown as PrismaService,
     config,
-    mail as unknown as MailService,
   );
   const credentials = {
     email: 'client@example.com',
@@ -78,12 +69,10 @@ describe('authentication', () => {
     passwordHash: string;
     twoFactorEnabled: boolean;
     twoFactorSecret: string | null;
-    emailVerifiedAt: Date | null;
   };
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    mail.configured.mockReturnValue(false);
     sessionQuery.orderBy.mockReturnValue(sessionQuery);
     user = {
       id: randomUUID(),
@@ -94,7 +83,6 @@ describe('authentication', () => {
       passwordHash: await hashPassword(credentials.password),
       twoFactorEnabled: false,
       twoFactorSecret: null,
-      emailVerifiedAt: new Date(),
     };
     session.userId = user.id;
     session.expiresAt = new Date(Date.now() + 60_000);
@@ -123,13 +111,6 @@ describe('authentication', () => {
       auth.register({ ...credentials, name: 'Client', role: 'CLIENT' }),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(users.create).not.toHaveBeenCalled();
-  });
-
-  it('signs in accounts registered before email confirmation was removed', async () => {
-    users.findByEmail.mockResolvedValueOnce({ ...user, emailVerifiedAt: null });
-    await expect(auth.login(credentials)).resolves.toMatchObject({
-      requiresTwoFactor: false,
-    });
   });
 
   it('handles a duplicate created concurrently', async () => {
@@ -221,22 +202,6 @@ describe('authentication', () => {
     await expect(
       auth.revokeSession(current, randomUUID()),
     ).rejects.toBeInstanceOf(NotFoundException);
-  });
-
-  it('rejects password reset email when a provider is not configured', async () => {
-    await expect(auth.forgotPassword(user.email)).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
-  });
-
-  it('rejects an invalid password reset token', async () => {
-    passwordResetQuery.first.mockResolvedValue(null);
-    await expect(
-      auth.resetPassword({
-        token: 'invalid-token',
-        newPassword: 'New-pass-123',
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('creates a 2FA secret and rejects an invalid activation code', async () => {

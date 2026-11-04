@@ -23,7 +23,6 @@ const uk = {
   twoFactorCode: "Код двофакторного входу",
   loggingIn: "Входимо…",
   signIn: "Увійти",
-  forgotPassword: "Забули пароль?",
   noAccount: "Ще не маєте облікового запису?",
   createAccount: "Зареєструватися",
   registered: "Обліковий запис створено. Увійдіть, щоб розпочати роботу.",
@@ -69,21 +68,6 @@ const uk = {
   enterPasswordAgain: "Введіть пароль ще раз",
   showPassword: "Показати пароль",
   hidePassword: "Приховати пароль",
-  recoveryKicker: "ВІДНОВЛЕННЯ ДОСТУПУ",
-  recoveryTitle: "Забули пароль?",
-  recoveryDescription:
-    "Вкажіть пошту, і ми надішлемо посилання на новий пароль.",
-  sending: "Надсилаємо…",
-  sendLink: "Надіслати посилання",
-  backToLogin: "Повернутися до входу",
-  newPasswordKicker: "НОВИЙ ПАРОЛЬ",
-  newPasswordTitle: "Встановіть новий пароль",
-  newPassword: "Новий пароль",
-  repeatNewPassword: "Повторіть новий пароль",
-  saving: "Зберігаємо…",
-  changePassword: "Змінити пароль",
-  goToLogin: "Перейти до входу",
-  missingResetToken: "У посиланні немає токена відновлення.",
 } as const;
 
 const en: Record<keyof typeof uk, string> = {
@@ -105,7 +89,6 @@ const en: Record<keyof typeof uk, string> = {
   twoFactorCode: "Two-factor authentication code",
   loggingIn: "Signing in…",
   signIn: "Sign in",
-  forgotPassword: "Forgot your password?",
   noAccount: "Do not have an account yet?",
   createAccount: "Register",
   registered: "Your account was created. Sign in to start working.",
@@ -151,21 +134,6 @@ const en: Record<keyof typeof uk, string> = {
   enterPasswordAgain: "Enter password again",
   showPassword: "Show password",
   hidePassword: "Hide password",
-  recoveryKicker: "ACCOUNT RECOVERY",
-  recoveryTitle: "Forgot your password?",
-  recoveryDescription:
-    "Enter your email and we will send a password reset link.",
-  sending: "Sending…",
-  sendLink: "Send reset link",
-  backToLogin: "Back to sign in",
-  newPasswordKicker: "NEW PASSWORD",
-  newPasswordTitle: "Set a new password",
-  newPassword: "New password",
-  repeatNewPassword: "Repeat new password",
-  saving: "Saving…",
-  changePassword: "Change password",
-  goToLogin: "Go to sign in",
-  missingResetToken: "The reset token is missing from the link.",
 };
 
 type TranslationKey = keyof typeof uk;

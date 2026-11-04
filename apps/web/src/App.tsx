@@ -29,9 +29,7 @@ import { AdminComplaintsPage, AdminProjectsPage } from "./pages/AdminLists";
 import { MarketplacePage } from "./pages/MarketplacePage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
-import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { WelcomePage } from "./pages/WelcomePage";
-import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { WorkloadPage } from "./pages/WorkloadPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { ProjectBoardPage } from "./pages/ProjectBoardPage";
@@ -93,8 +91,6 @@ export function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
       </Route>
       <Route element={<ProtectedRoute />}>

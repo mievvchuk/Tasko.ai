@@ -18,10 +18,8 @@ import { AuthService } from './auth.service.js';
 import {
   ChangePasswordDto,
   DisableTwoFactorDto,
-  ForgotPasswordDto,
   LoginDto,
   RegisterDto,
-  ResetPasswordDto,
   TwoFactorCodeDto,
 } from './auth.dto.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
@@ -51,19 +49,6 @@ export class AuthController {
       userAgent: request.get('user-agent'),
       ipAddress: request.ip,
     });
-  }
-
-  @Post('forgot-password')
-  @UseGuards(AuthEmailRateLimitGuard)
-  @HttpCode(200)
-  forgotPassword(@Body() data: ForgotPasswordDto) {
-    return this.auth.forgotPassword(data.email);
-  }
-
-  @Post('reset-password')
-  @HttpCode(200)
-  resetPassword(@Body() data: ResetPasswordDto) {
-    return this.auth.resetPassword(data);
   }
 
   @Get('me')
