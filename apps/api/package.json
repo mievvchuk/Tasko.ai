@@ -28,7 +28,8 @@
     "db:migrate": "prisma db migrate --advance-ref db",
     "db:verify": "prisma db verify",
     "admin:create": "npm run build && node dist/users/create-admin.js",
-    "seed:demo": "npm run build && node scripts/seed-demo.mjs"
+    "seed:demo": "npm run build && node scripts/seed-demo.mjs",
+    "seed:people": "node scripts/seed-people.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",

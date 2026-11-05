@@ -46,7 +46,7 @@ export class AdminService {
       );
     }
     return query
-      .select('id', 'name', 'email', 'role', 'status', 'createdAt')
+      .select('id', 'name', 'email', 'role', 'status', 'avatarUrl', 'createdAt')
       .orderBy((person) => person.createdAt.desc())
       .offset((filters.page - 1) * filters.limit)
       .limit(filters.limit)
@@ -302,11 +302,11 @@ export class AdminService {
   }
 }
 
-function countBy<K extends string, T extends Record<F, unknown>, F extends string>(
-  keys: readonly K[],
-  rows: T[],
-  field: F,
-) {
+function countBy<
+  K extends string,
+  T extends Record<F, unknown>,
+  F extends string,
+>(keys: readonly K[], rows: T[], field: F) {
   return Object.fromEntries(
     keys.map((key) => [key, rows.filter((row) => row[field] === key).length]),
   ) as Record<K, number>;
