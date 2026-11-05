@@ -644,6 +644,33 @@ export const enText: Record<string, string> = {
   "Бюджет від, грн": "Budget from, UAH",
   "Бюджет до, грн": "Budget to, UAH",
   "Потрібні навички": "Required skills",
+  "Вітаємо в Tasko.ai, {0}!": "Welcome to Tasko.ai, {0}!",
+  "Тут ви знайдете виконавця, розплануєте роботу й приймете результат — усе в одному місці. Ось із чого почати:":
+    "Find a freelancer, plan the work and accept the result — all in one place. Here is where to start:",
+  "Тут ви знайдете замовлення, домовитеся про умови й здасте роботу — усе в одному місці. Ось із чого почати:":
+    "Find projects, agree on terms and deliver your work — all in one place. Here is where to start:",
+  "Перейти до робочого простору": "Go to the workspace",
+  "Опишіть перший проєкт": "Describe your first project",
+  "Назва, бюджет, дедлайн і потрібні навички. Проєкт одразу побачать фрілансери.":
+    "Title, budget, deadline and required skills. Freelancers will see the project right away.",
+  "Порівняйте заявки за бюджетом, строком і рейтингом — або попросіть AI їх упорядкувати.":
+    "Compare applications by budget, timeline and rating — or let AI rank them.",
+  "Плануйте разом з Адою": "Plan together with Ada",
+  "AI розіб'є проєкт на етапи й завдання та підкаже, де ризики з дедлайнами.":
+    "AI splits the project into milestones and tasks and points out deadline risks.",
+  "Відкрити Аду": "Open Ada",
+  "Заповніть профіль": "Complete your profile",
+  "Фото, коротко про себе, навички й ставка — так клієнти швидше вам довірять.":
+    "Photo, a short bio, skills and rate — clients will trust you sooner.",
+  "До профілю": "Go to profile",
+  "Знайдіть проєкт": "Find a project",
+  "На біржі — відкриті проєкти з бюджетом і дедлайном. Фільтруйте за навичками.":
+    "The marketplace lists open projects with budget and deadline. Filter by skills.",
+  "Відкрити біржу": "Open marketplace",
+  "Подайте заявку": "Apply",
+  "Запропонуйте бюджет і строк, додайте роботу з портфоліо. Після вибору — канбан і чат.":
+    "Propose a budget and timeline, attach a portfolio piece. Once chosen — kanban and chat.",
+  "Шукати проєкти": "Browse projects",
   "Етап оновлено.": "Milestone updated.",
   "Оберіть зі списку або впишіть свою": "Pick from the list or type your own",
   "Оберіть або впишіть навичку": "Pick or type a skill",

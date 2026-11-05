@@ -29,6 +29,10 @@ import { MarketplacePage } from "./pages/MarketplacePage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
 import { WelcomePage } from "./pages/WelcomePage";
+import {
+  GettingStartedPage,
+  justRegisteredKey,
+} from "./pages/GettingStartedPage";
 import { WorkloadPage } from "./pages/WorkloadPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { ProjectBoardPage } from "./pages/ProjectBoardPage";
@@ -49,7 +53,15 @@ function ProtectedRoute() {
 
 function GuestRoute() {
   const { user } = useAuth();
-  if (user) return <Navigate to="/" replace />;
+  if (user) {
+    let fresh = false;
+    try {
+      fresh = sessionStorage.getItem(justRegisteredKey) === "1";
+    } catch {
+      // без сховища просто йдемо на головну
+    }
+    return <Navigate to={fresh ? "/getting-started" : "/"} replace />;
+  }
   return <Outlet />;
 }
 
@@ -93,6 +105,7 @@ export function App() {
         </Route>
       </Route>
       <Route element={<ProtectedRoute />}>
+        <Route path="/getting-started" element={<GettingStartedPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminPage />} />
           <Route path="users" element={<AdminUsersPage />} />

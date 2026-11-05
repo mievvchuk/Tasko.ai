@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { errorMessage, request } from "../api";
+import { useAuth } from "../auth";
+import { justRegisteredKey } from "./GettingStartedPage";
 import { PasswordInput } from "../components/PasswordInput";
 import { passwordStrength } from "../format";
 import { useLanguage } from "../i18n";
@@ -10,6 +12,7 @@ const strengthNames = ["", "Легкий", "Середній", "Складний
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const { t, tr } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,6 +43,18 @@ export function RegisterPage() {
         auth: false,
         timeoutMs: 45000,
       });
+      // Одразу входимо: GuestRoute побачить позначку й відкриє вітальну сторінку
+      try {
+        sessionStorage.setItem(justRegisteredKey, "1");
+        if (await login(email.trim(), password)) return;
+      } catch {
+        // не вдалося увійти автоматично — звичайний вхід нижче
+      }
+      try {
+        sessionStorage.removeItem(justRegisteredKey);
+      } catch {
+        // сховище недоступне
+      }
       await navigate("/login", {
         replace: true,
         state: { registered: true, email: email.trim() },
@@ -143,7 +158,8 @@ export function RegisterPage() {
                 <i></i>
               </span>
               <span>
-                {tr("Складність:")} <strong>{tr(strengthNames[strength])}</strong>
+                {tr("Складність:")}{" "}
+                <strong>{tr(strengthNames[strength])}</strong>
                 {password.length < 8 && ` · ${t("passwordHint")}`}
               </span>
             </div>
