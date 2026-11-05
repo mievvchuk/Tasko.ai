@@ -13,6 +13,7 @@ import {
   Min,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { nameWithoutEmoji, nameWithoutEmojiMessage } from '../auth/auth.dto.js';
 
 // Зміна імені на сторінці профілю — ті самі правила, що й при реєстрації
 export class UpdateAccountDto {
@@ -23,6 +24,7 @@ export class UpdateAccountDto {
   @IsString()
   @Length(2, 100)
   @Matches(/\S/)
+  @Matches(nameWithoutEmoji, { message: nameWithoutEmojiMessage })
   name!: string;
 }
 

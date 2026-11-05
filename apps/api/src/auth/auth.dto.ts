@@ -10,6 +10,11 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
+// Ім'я без емодзі: піктограми, прапорці (regional indicators) і їхні «склеювачі»
+export const nameWithoutEmoji =
+  /^[^\p{Extended_Pictographic}\p{Regional_Indicator}‍️⃣]*$/u;
+export const nameWithoutEmojiMessage = 'Ім’я не може містити емодзі.';
+
 export class LoginDto {
   @ApiProperty({ example: 'client@example.com' })
   @Transform(({ value }: { value: unknown }) =>
@@ -65,6 +70,7 @@ export class RegisterDto extends LoginDto {
   @IsString()
   @Length(2, 100)
   @Matches(/\S/)
+  @Matches(nameWithoutEmoji, { message: nameWithoutEmojiMessage })
   name: string;
 
   @ApiProperty({ enum: ['CLIENT', 'FREELANCER'] })
