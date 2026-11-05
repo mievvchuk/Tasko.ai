@@ -1,0 +1,126 @@
+@startuml er-diagram
+' ER-діаграма основних сутностей Tasko.ai. Відповідає apps/api/src/prisma/contract.prisma
+title ER-діаграма основних сутностей Tasko.ai
+
+hide circle
+hide empty members
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 12
+skinparam nodesep 60
+skinparam ranksep 70
+
+entity User {
+  * id : uuid <<PK>>
+  --
+  * name : varchar
+  * email : varchar <<UQ>>
+  * passwordHash : varchar
+  * role : varchar
+  * status : varchar
+  * twoFactorEnabled : boolean
+  * createdAt : timestamptz
+}
+
+entity Project {
+  * id : uuid <<PK>>
+  --
+  * clientId : uuid <<FK>>
+  * title : varchar
+  description : text
+  * status : varchar
+  deadline : timestamptz
+  budgetMin : int
+  budgetMax : int
+  categoryId : uuid
+  * createdAt : timestamptz
+}
+
+entity ProjectMember {
+  * id : uuid <<PK>>
+  --
+  * projectId : uuid <<FK>>
+  * userId : uuid <<FK>>
+  * role : varchar
+  * joinedAt : timestamptz
+  ..
+  UQ (projectId, userId)
+}
+
+entity Order {
+  * id : uuid <<PK>>
+  --
+  * clientId : uuid
+  * projectId : uuid <<FK>>
+  * status : varchar
+  * createdAt : timestamptz
+}
+
+entity Task {
+  * id : uuid <<PK>>
+  --
+  * projectId : uuid <<FK>>
+  assigneeId : uuid <<FK>>
+  * title : varchar
+  description : text
+  * priority : varchar
+  * status : varchar
+  deadline : timestamptz
+}
+
+entity WorkSubmission {
+  * id : uuid <<PK>>
+  --
+  * taskId : uuid <<FK>>
+  * submittedBy : uuid <<FK>>
+  reviewerId : uuid <<FK>>
+  * description : text
+  * status : varchar
+  feedback : text
+  * submittedAt : timestamptz
+}
+
+entity Message {
+  * id : uuid <<PK>>
+  --
+  * projectId : uuid <<FK>>
+  * senderId : uuid <<FK>>
+  * content : text
+  * createdAt : timestamptz
+}
+
+entity FileAttachment {
+  * id : uuid <<PK>>
+  --
+  * projectId : uuid <<FK>>
+  * uploadedBy : uuid <<FK>>
+  submissionId : uuid <<FK>>
+  * fileName : varchar
+  * storagePath : varchar
+  * mimeType : varchar
+  * size : int
+}
+
+' Project у центрі, решта навколо: так лінії не перетинають таблиці
+User ||--o{ Project : clientId
+Project ||--o{ ProjectMember : projectId
+User ||--o{ ProjectMember : userId
+Project ||--o{ Order : projectId
+Project ||--o{ Task : projectId
+User |o--o{ Task : assigneeId
+Task ||--o{ WorkSubmission : taskId
+User ||--o{ WorkSubmission : submittedBy
+User |o--o{ WorkSubmission : reviewerId
+Project ||--o{ Message : projectId
+User ||--o{ Message : senderId
+Project ||--o{ FileAttachment : projectId
+User ||--o{ FileAttachment : uploadedBy
+WorkSubmission |o--o{ FileAttachment : submissionId
+
+legend right
+  * — обов'язкове поле (NOT NULL)
+  PK — первинний ключ, FK — зовнішній ключ, UQ — унікальне
+  Order.clientId зберігається без зовнішнього ключа
+endlegend
+@enduml

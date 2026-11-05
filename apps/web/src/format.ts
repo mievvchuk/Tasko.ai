@@ -44,12 +44,18 @@ export function parsePage(value: string | null) {
   return page;
 }
 
-export function toDateTimeInput(value: string | null) {
+// Значення для <input type="date"> у місцевому часі: YYYY-MM-DD
+export function toDateInput(value: string | null) {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   const pad = (number: number) => String(number).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+// Дедлайн без години означає кінець обраного дня за місцевим часом
+export function dateInputEnd(value: string) {
+  return new Date(`${value}T23:59:59`);
 }
 
 // Скільки календарних днів до дедлайну: 0 — сьогодні, від'ємне — прострочено
@@ -65,4 +71,19 @@ export function deadlineLabel(deadline: string, now = new Date()) {
   if (days === 0) return trNow("Сьогодні");
   if (days === 1) return trNow("Завтра");
   return trNow("Через {0} дн.", days);
+}
+
+// Складність пароля 0–4: 0 — порожній, 1 легкий, 2 середній, 3 складний, 4 дуже складний.
+// Бали за довжину (8+, 12+), великі й малі літери, цифри та інші символи; коротший за 8 — завжди легкий.
+export function passwordStrength(password: string): 0 | 1 | 2 | 3 | 4 {
+  if (!password) return 0;
+  if (password.length < 8) return 1;
+  const points = [
+    true,
+    password.length >= 12,
+    /\p{Ll}/u.test(password) && /\p{Lu}/u.test(password),
+    /\d/.test(password),
+    /[^\p{L}\d]/u.test(password),
+  ].filter(Boolean).length;
+  return points <= 2 ? 1 : points === 3 ? 2 : points === 4 ? 3 : 4;
 }

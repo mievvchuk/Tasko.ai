@@ -1,0 +1,298 @@
+@startuml class-diagram
+' Діаграма класів серверної частини Tasko.ai (ядро: Auth, Projects, Tasks, Collaboration, Analytics, Agent)
+title Діаграма класів серверної частини Tasko.ai
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Times New Roman
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+hide empty members
+left to right direction
+
+' ---------- Бібліотечні інтерфейси й класи NestJS ----------
+package "@nestjs/common" {
+  interface CanActivate {
+    + canActivate(context: ExecutionContext): Promise<boolean>
+  }
+  interface ExceptionFilter {
+    + catch(error: unknown, host: ArgumentsHost): void
+  }
+  interface OnModuleDestroy {
+    + onModuleDestroy(): Promise<void>
+  }
+  class BadGatewayException
+}
+
+' ---------- Спільна інфраструктура ----------
+package "common / prisma" {
+  class PrismaService {
+    + client: Db
+    + checkConnection(): Promise<void>
+    + onModuleDestroy(): Promise<void>
+  }
+  class ApiExceptionFilter {
+    + catch(error: unknown, host: ArgumentsHost): void
+  }
+}
+
+' ---------- Автентифікація ----------
+package "auth" {
+  class AuthController {
+    - auth: AuthService
+    + register(data: RegisterDto)
+    + login(data: LoginDto, request: Request)
+    + me(user: CurrentUser)
+    + logout(user: CurrentUser)
+    + changePassword(user: CurrentUser, data: ChangePasswordDto)
+    + setupTwoFactor(user: CurrentUser)
+  }
+  class AuthService {
+    - sessionLifetime: number
+    - users: UsersService
+    - jwt: JwtService
+    - prisma: PrismaService
+    - config: AppConfig
+    + register(data: RegisterDto): Promise<PublicUser>
+    + login(data: LoginDto, metadata: LoginMetadata)
+    + authenticate(id: string, sessionId: string): Promise<CurrentUser>
+    + logout(user: CurrentUser)
+    + changePassword(user: CurrentUser, data: ChangePasswordDto)
+    + enableTwoFactor(user: CurrentUser, data: TwoFactorCodeDto)
+    - ensureActive(user): void
+    - createSession(userId: string, metadata: LoginMetadata): Promise<string>
+    - revokeSessions(userId: string, keepSessionId?: string)
+  }
+  class JwtAuthGuard {
+    - jwt: JwtService
+    - auth: AuthService
+    + canActivate(context: ExecutionContext): Promise<boolean>
+  }
+  class AuthEmailRateLimitGuard {
+    - requests: Map<string, Entry>
+    + canActivate(context: ExecutionContext): boolean
+  }
+  class LoginDto {
+    + email: string
+    + password: string
+    + twoFactorCode?: string
+  }
+  class RegisterDto {
+    + name: string
+    + role: 'CLIENT' | 'FREELANCER'
+  }
+}
+
+package "users" {
+  class UsersService {
+    - prisma: PrismaService
+    + findByEmail(email: string)
+    + findById(id: string)
+    + create(data): Promise<User>
+    + updateAccount(user: CurrentUser, data: UpdateAccountDto)
+    + updateFreelancerProfile(user: CurrentUser, data)
+  }
+  interface PublicUser {
+    + id: string
+    + name: string
+    + email: string
+    + role: UserRole
+    + twoFactorEnabled: boolean
+  }
+  interface CurrentUser {
+    + sessionId: string
+  }
+}
+
+' ---------- Проєкти ----------
+package "projects" {
+  class PageDto {
+    + page: number = 1
+    + limit: number = 20
+  }
+  class ProjectQueryDto {
+    + status?: ProjectStatus
+  }
+  class ProjectsController {
+    - projects: ProjectsService
+    + list(user: CurrentUser, page: ProjectQueryDto)
+    + create(user: CurrentUser, data: CreateProjectDto)
+    + update(user: CurrentUser, id: string, data: UpdateProjectDto)
+    + apply(user: CurrentUser, id: string, data)
+    + acceptApplication(user: CurrentUser, id: string)
+  }
+  class ProjectsService {
+    + prisma: PrismaService
+    + requireAccess(user: CurrentUser, id: string): Promise<Project>
+    + requireOwner(user: CurrentUser, id: string): Promise<Project>
+    + ensureWritable(project): void
+    + list(user: CurrentUser, page: ProjectQueryDto)
+    + create(user: CurrentUser, data: CreateProjectDto)
+    + update(user: CurrentUser, id: string, data: UpdateProjectDto)
+    + addMember(user: CurrentUser, projectId: string, userId: string)
+    + acceptApplication(user: CurrentUser, id: string)
+    + notify(...)
+    + logActivity(...)
+    - getProgress(tasks): number
+    - ensureProjectCanBeCompleted(projectId: string)
+  }
+}
+
+' ---------- Завдання ----------
+package "tasks" {
+  class CreateTaskDto {
+    + title: string
+    + description?: string
+    + assigneeId?: string
+    + priority?: string
+    + deadline?: string
+  }
+  class UpdateTaskDto
+  class TaskQueryDto {
+    + search?: string
+    + status?: string
+    + priority?: string
+    + overdue?: boolean
+  }
+  class TasksController {
+    - tasks: TasksService
+    + list(user: CurrentUser, projectId: string, filters: TaskQueryDto)
+    + create(user: CurrentUser, projectId: string, data: CreateTaskDto)
+    + update(user: CurrentUser, id: string, data: UpdateTaskDto)
+    + status(user: CurrentUser, id: string, data: TaskStatusDto)
+  }
+  class TasksService {
+    - projects: ProjectsService
+    + find(user: CurrentUser, id: string)
+    + list(user: CurrentUser, projectId: string, filters: TaskQueryDto)
+    + create(user: CurrentUser, projectId: string, data: CreateTaskDto)
+    + update(user: CurrentUser, id: string, data: UpdateTaskDto)
+    + status(user: CurrentUser, id: string, status, columnId?)
+    + createOrder(user: CurrentUser, projectId: string)
+    - checkDeadline(deadline, projectDeadline): void
+  }
+}
+
+' ---------- Спільна робота ----------
+package "collaboration" {
+  class CollaborationService {
+    - projects: ProjectsService
+    - tasks: TasksService
+    + messages(user: CurrentUser, projectId: string, page: PageDto)
+    + message(user: CurrentUser, projectId: string, data: MessageDto)
+    + submit(user: CurrentUser, taskId: string, data: SubmissionDto)
+    + review(user: CurrentUser, id: string, data: ReviewDto)
+  }
+  class FilesService {
+    - projects: ProjectsService
+    + list(user: CurrentUser, projectId: string, page: PageDto)
+    + upload(user: CurrentUser, projectId: string, file?: UploadedFile)
+    + download(user: CurrentUser, id: string)
+  }
+}
+
+' ---------- Аналітика ----------
+package "analytics" {
+  class AnalyticsService {
+    - projects: ProjectsService
+    + visibleProjects(user: CurrentUser)
+    + visibleTasks(user: CurrentUser)
+    + dashboard(user: CurrentUser)
+    + deadlines(user: CurrentUser)
+    + workload(user: CurrentUser)
+    + summary(user: CurrentUser, projectId: string)
+  }
+}
+
+' ---------- AI-агент ----------
+package "agent" {
+  class AgentController {
+    - agent: AgentService
+    - mcp: McpService
+    - planning: ProjectPlanningService
+    + status()
+    + chat(user: CurrentUser, data: ChatTurnDto)
+    + generatePlan(user: CurrentUser, id: string)
+    + applyPlan(user: CurrentUser, id: string, data)
+    + rankApplications(user: CurrentUser, id: string)
+  }
+  class AgentService {
+    - config: AppConfig
+    - mcp: McpService
+    - projects: ProjectsService
+    + status()
+    + chat(user: CurrentUser, message: string, history: ChatTurn[], attachments: ChatAttachment[])
+    + generateProjectPlan(brief: PlanBrief)
+    + rankApplications(user: CurrentUser, projectId: string)
+    - complete(messages, tools?)
+  }
+  class McpService {
+    - projects: ProjectsService
+    - analytics: AnalyticsService
+    - tasks: TasksService
+    - collaboration: CollaborationService
+    + createServer(user: CurrentUser): McpServer
+  }
+  class ProjectPlanningService {
+    - projects: ProjectsService
+    - agent: AgentService
+    + generate(user: CurrentUser, projectId: string, instructions?: string)
+    + apply(user: CurrentUser, projectId: string, requestId: string, input: unknown)
+  }
+  class InvalidModelOutputException
+}
+
+' ---------- Наслідування ----------
+LoginDto <|-- RegisterDto
+PageDto <|-- ProjectQueryDto
+PageDto <|-- TaskQueryDto
+CreateTaskDto <|-- UpdateTaskDto : PartialType
+PublicUser <|-- CurrentUser
+BadGatewayException <|-- InvalidModelOutputException
+
+' ---------- Реалізація інтерфейсів ----------
+CanActivate <|.. JwtAuthGuard
+CanActivate <|.. AuthEmailRateLimitGuard
+ExceptionFilter <|.. ApiExceptionFilter
+OnModuleDestroy <|.. PrismaService
+
+' ---------- Залежності (впровадження через конструктор) ----------
+AuthController --> AuthService
+AuthService --> UsersService
+AuthService --> PrismaService
+JwtAuthGuard --> AuthService
+UsersService --> PrismaService
+
+ProjectsController --> ProjectsService
+ProjectsService --> PrismaService
+
+TasksController --> TasksService
+TasksService --> ProjectsService
+
+CollaborationService --> ProjectsService
+CollaborationService --> TasksService
+FilesService --> ProjectsService
+
+AnalyticsService --> ProjectsService
+
+AgentController --> AgentService
+AgentController --> ProjectPlanningService
+AgentService --> McpService
+AgentService --> ProjectsService
+McpService --> ProjectsService
+McpService --> AnalyticsService
+McpService --> TasksService
+McpService --> CollaborationService
+ProjectPlanningService --> AgentService
+ProjectPlanningService --> ProjectsService
+AgentService ..> InvalidModelOutputException : throws
+
+' ---------- Використання DTO ----------
+AuthController ..> RegisterDto
+TasksController ..> CreateTaskDto
+TasksController ..> UpdateTaskDto
+TasksController ..> TaskQueryDto
+ProjectsController ..> ProjectQueryDto
+AuthService ..> CurrentUser
+@enduml

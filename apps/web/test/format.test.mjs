@@ -44,3 +44,13 @@ test("deadline label counts calendar days, not hours", async () => {
     "Прострочено на 2 дн.",
   );
 });
+
+test("password strength grows with length and character variety", async () => {
+  const { passwordStrength } = await import("../src/format.ts");
+  assert.equal(passwordStrength(""), 0);
+  assert.equal(passwordStrength("Ab1!"), 1);
+  assert.equal(passwordStrength("password"), 1);
+  assert.equal(passwordStrength("Password1"), 2);
+  assert.equal(passwordStrength("Password1!"), 3);
+  assert.equal(passwordStrength("Пароль-Довгий-2026"), 4);
+});

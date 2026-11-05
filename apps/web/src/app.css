@@ -1291,6 +1291,9 @@ a.stat-card:hover {
   scrollbar-width: none;
 }
 .project-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
   padding: var(--space-xs) var(--space-sm);
   border-bottom: 2px solid transparent;
   color: var(--color-ink-2);
@@ -1299,6 +1302,12 @@ a.stat-card:hover {
   white-space: nowrap;
   text-decoration: none !important;
   transition: border-color var(--dur-micro) var(--ease-out);
+}
+.milestone-form > label {
+  flex: 1 1 180px;
+}
+.milestone-form > .milestone-form-wide {
+  flex-basis: 100%;
 }
 .project-links a:hover {
   border-bottom-color: var(--color-rule-2);
@@ -1406,7 +1415,9 @@ dd {
   background-color: var(--color-paper-3);
   background-image: var(--tex-desk);
   scroll-snap-align: start;
-  transition: background-color var(--dur-short) var(--ease-out), opacity var(--dur-short) var(--ease-out);
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    opacity var(--dur-short) var(--ease-out);
 }
 .kanban-column h2 {
   display: flex;
@@ -1600,6 +1611,15 @@ dd {
   background: var(--color-accent-soft);
   color: var(--color-accent-text);
 }
+.skill-picker-add {
+  display: flex;
+  flex: 1 1 100%;
+  gap: var(--space-xs);
+}
+.skill-picker-add input {
+  flex: 1;
+  min-width: 0;
+}
 .skill-chips {
   list-style: none;
   display: flex;
@@ -1727,6 +1747,9 @@ dd {
 }
 
 /* Картки заявок, етапів, скарг і здач */
+.application-tools {
+  margin-bottom: var(--space-md);
+}
 .application-list {
   display: grid;
   gap: var(--space-sm);
@@ -2245,7 +2268,9 @@ dd {
   font-size: var(--text-sm);
   font-weight: 600;
   text-align: left;
-  transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out);
 }
 .ai-chip:hover {
   border-color: var(--color-accent);
@@ -2438,6 +2463,47 @@ dd {
   margin-bottom: var(--space-xs);
   font-size: var(--text-sm);
   font-weight: 600;
+}
+/* Складність пароля: смужка заповнюється й змінює колір від легкого до дуже складного */
+.password-strength {
+  display: grid;
+  gap: var(--space-2xs);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  --level-color: var(--data-red);
+  --level-width: 25%;
+}
+.password-strength strong {
+  color: var(--level-color);
+  transition: color var(--dur-short) var(--ease-out);
+}
+.password-strength.level-2 {
+  --level-color: var(--data-amber);
+  --level-width: 50%;
+}
+.password-strength.level-3 {
+  --level-color: var(--data-blue);
+  --level-width: 75%;
+}
+.password-strength.level-4 {
+  --level-color: var(--data-green);
+  --level-width: 100%;
+}
+.password-strength-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-3);
+}
+.password-strength-bar i {
+  display: block;
+  width: var(--level-width);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--level-color);
+  transition:
+    width var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
 }
 /* Ролі — картки з іконкою; саму радіокнопку сховано, вибір видно рамкою й галочкою */
 .role-option {
@@ -2679,7 +2745,8 @@ dd {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-xl);
   margin-top: var(--space-xl);
-  list-style: none;  isolation: isolate;
+  list-style: none;
+  isolation: isolate;
 }
 .welcome-steps li {
   position: relative;
@@ -2717,7 +2784,11 @@ dd {
   left: 52px;
   right: calc(-1 * var(--space-xl));
   height: 2px;
-  background: linear-gradient(90deg, var(--color-accent-text), var(--color-rule));
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-text),
+    var(--color-rule)
+  );
   transform-origin: left;
 }
 .welcome-roles {
@@ -2779,7 +2850,11 @@ dd {
   width: 60%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--color-accent-text) 0%, transparent 65%);
+  background: radial-gradient(
+    circle,
+    var(--color-accent-text) 0%,
+    transparent 65%
+  );
   opacity: 0.35;
   animation: drift 9s ease-in-out infinite alternate;
 }
@@ -3303,7 +3378,9 @@ dl.admin-details > dd {
 }
 .picker-card.active {
   border-color: var(--color-accent-text);
-  box-shadow: 0 0 0 2px var(--color-accent-soft), var(--cast-stock-lift);
+  box-shadow:
+    0 0 0 2px var(--color-accent-soft),
+    var(--cast-stock-lift);
 }
 .picker-card strong {
   display: -webkit-box;
@@ -3924,11 +4001,15 @@ dl.admin-details > dd {
 }
 @keyframes glow {
   0% {
-    box-shadow: var(--shadow-pop), 0 0 0 0 var(--color-accent);
+    box-shadow:
+      var(--shadow-pop),
+      0 0 0 0 var(--color-accent);
   }
   70%,
   100% {
-    box-shadow: var(--shadow-pop), 0 0 0 12px transparent;
+    box-shadow:
+      var(--shadow-pop),
+      0 0 0 12px transparent;
   }
 }
 @keyframes badge-pop {
@@ -3952,9 +4033,15 @@ dl.admin-details > dd {
 .preview-card {
   animation: pop-in var(--dur-long) var(--ease-out) backwards;
 }
-.preview-column:nth-child(1) .preview-card { animation-delay: 360ms; }
-.preview-column:nth-child(2) .preview-card { animation-delay: 440ms; }
-.preview-column:nth-child(3) .preview-card { animation-delay: 520ms; }
+.preview-column:nth-child(1) .preview-card {
+  animation-delay: 360ms;
+}
+.preview-column:nth-child(2) .preview-card {
+  animation-delay: 440ms;
+}
+.preview-column:nth-child(3) .preview-card {
+  animation-delay: 520ms;
+}
 .preview-ada {
   animation: rise var(--dur-long) var(--ease-out) 700ms backwards;
 }
@@ -3983,17 +4070,31 @@ dl.admin-details > dd {
 .auth-main > .auth-card {
   animation: rise var(--dur-long) var(--ease-out) backwards;
 }
-.auth-intro > :nth-child(2) { animation-delay: 60ms; }
-.auth-intro > :nth-child(3) { animation-delay: 120ms; }
-.auth-intro > :nth-child(4) { animation-delay: 180ms; }
-.auth-main > .auth-card { animation-delay: 150ms; }
+.auth-intro > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.auth-intro > :nth-child(3) {
+  animation-delay: 120ms;
+}
+.auth-intro > :nth-child(4) {
+  animation-delay: 180ms;
+}
+.auth-main > .auth-card {
+  animation-delay: 150ms;
+}
 .workflow span {
   animation: pop-in var(--dur-long) var(--ease-out) backwards;
   transition: transform var(--dur-micro) var(--ease-out);
 }
-.workflow span:nth-of-type(1) { animation-delay: 300ms; }
-.workflow span:nth-of-type(2) { animation-delay: 420ms; }
-.workflow span:nth-of-type(3) { animation-delay: 540ms; }
+.workflow span:nth-of-type(1) {
+  animation-delay: 300ms;
+}
+.workflow span:nth-of-type(2) {
+  animation-delay: 420ms;
+}
+.workflow span:nth-of-type(3) {
+  animation-delay: 540ms;
+}
 .workflow span:hover {
   transform: translateY(-2px);
 }
@@ -4042,11 +4143,21 @@ dl.admin-details > dd {
 tbody tr {
   animation: fade-in var(--dur-long) var(--ease-out) backwards;
 }
-tbody tr:nth-child(2) { animation-delay: 30ms; }
-tbody tr:nth-child(3) { animation-delay: 60ms; }
-tbody tr:nth-child(4) { animation-delay: 90ms; }
-tbody tr:nth-child(5) { animation-delay: 120ms; }
-tbody tr:nth-child(n + 6) { animation-delay: 150ms; }
+tbody tr:nth-child(2) {
+  animation-delay: 30ms;
+}
+tbody tr:nth-child(3) {
+  animation-delay: 60ms;
+}
+tbody tr:nth-child(4) {
+  animation-delay: 90ms;
+}
+tbody tr:nth-child(5) {
+  animation-delay: 120ms;
+}
+tbody tr:nth-child(n + 6) {
+  animation-delay: 150ms;
+}
 
 /* ===== 16. Планшет і телефон ===== */
 @media (max-width: 70rem) {
@@ -4259,7 +4370,8 @@ tbody tr:nth-child(n + 6) { animation-delay: 150ms; }
     z-index: var(--z-sticky-nav);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    padding: var(--space-2xs) var(--space-2xs) calc(var(--space-2xs) + env(safe-area-inset-bottom));
+    padding: var(--space-2xs) var(--space-2xs)
+      calc(var(--space-2xs) + env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-rule);
     background: var(--color-paper-2);
   }
@@ -4314,9 +4426,42 @@ tbody tr:nth-child(n + 6) { animation-delay: 150ms; }
 }
 
 /* Vector identity: theme tokens keep the mark and wordmark legible together. */
-.brand-mark { padding: 2px; overflow: visible; }
-.brand-mark-dot { fill: var(--color-accent-text); transform-box: fill-box; transform-origin: center; animation: brand-wink 650ms ease-out 600ms 1; }
-.brand:hover .brand-mark-dot, .admin-brand:hover .brand-mark-dot { animation: brand-wink-hover 650ms ease-out 1; }
-@keyframes brand-wink { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(.18); } }
-@keyframes brand-wink-hover { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(.18); } }
-@media (prefers-reduced-motion: reduce) { .brand-mark-dot, .brand:hover .brand-mark-dot, .admin-brand:hover .brand-mark-dot { animation: none; } }
+.brand-mark {
+  padding: 2px;
+  overflow: visible;
+}
+.brand-mark-dot {
+  fill: var(--color-accent-text);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: brand-wink 650ms ease-out 600ms 1;
+}
+.brand:hover .brand-mark-dot,
+.admin-brand:hover .brand-mark-dot {
+  animation: brand-wink-hover 650ms ease-out 1;
+}
+@keyframes brand-wink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.18);
+  }
+}
+@keyframes brand-wink-hover {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.18);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark-dot,
+  .brand:hover .brand-mark-dot,
+  .admin-brand:hover .brand-mark-dot {
+    animation: none;
+  }
+}

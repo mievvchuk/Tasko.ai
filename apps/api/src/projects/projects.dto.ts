@@ -125,6 +125,29 @@ export class CreateProjectDto {
   @ArrayMaxSize(30)
   @IsUUID('4', { each: true })
   skillIds?: string[];
+
+  @ApiPropertyOptional({
+    maxLength: 60,
+    description: 'Назва категорії: наявна або нова, яку буде створено',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(2, 60)
+  categoryName?: string;
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Назви навичок: наявні або нові, які буде створено',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  @Length(1, 40, { each: true })
+  skillNames?: string[];
 }
 
 export class UpdateProjectDto extends PartialType(CreateProjectDto, {

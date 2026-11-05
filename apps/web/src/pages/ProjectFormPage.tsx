@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { LoadError } from "../components/LoadError";
-import { toDateTimeInput } from "../format";
+import { dateInputEnd, toDateInput } from "../format";
 import { projectStatusNames } from "../types";
 import type { Project, ProjectStatus, ProjectCategory, Skill } from "../types";
 import { useApi } from "../useApi";
@@ -82,7 +82,7 @@ function ProjectForm({ project }: { project: Project | null }) {
   const [title, setTitle] = useState(project?.title || "");
   const [description, setDescription] = useState(project?.description || "");
   const [deadline, setDeadline] = useState(
-    toDateTimeInput(project?.deadline || null),
+    toDateInput(project?.deadline || null),
   );
   const [status, setStatus] = useState<ProjectStatus>(
     project?.status || "PLANNING",
@@ -95,20 +95,30 @@ function ProjectForm({ project }: { project: Project | null }) {
   const [budgetMax, setBudgetMax] = useState(
     project?.budgetMax?.toString() || "",
   );
-  const [categoryId, setCategoryId] = useState(project?.categoryId || "");
-  const [skillIds, setSkillIds] = useState<string[]>(
-    project?.skills?.map((skill) => skill.id) || [],
+  const [categoryName, setCategoryName] = useState(
+    project?.category?.name || "",
   );
+  const [skillNames, setSkillNames] = useState<string[]>(
+    project?.skills?.map((skill) => skill.name) || [],
+  );
+  const [skillDraft, setSkillDraft] = useState("");
+
+  function addSkill() {
+    const name = skillDraft.trim().toLowerCase();
+    if (name && !skillNames.includes(name) && skillNames.length < 30)
+      setSkillNames([...skillNames, name]);
+    setSkillDraft("");
+  }
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const backUrl = project ? `/projects/${project.id}` : "/projects";
-  const originalDeadline = toDateTimeInput(project?.deadline || null);
+  const originalDeadline = toDateInput(project?.deadline || null);
   const deadlineChanged = deadline !== originalDeadline;
   const keepingOverdueDeadline =
     project &&
     !deadlineChanged &&
     deadline &&
-    new Date(deadline).getTime() <= Date.now();
+    dateInputEnd(deadline).getTime() <= Date.now();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,14 +128,14 @@ function ProjectForm({ project }: { project: Project | null }) {
       setError(tr("Назва має містити щонайменше 2 символи."));
       return;
     }
-    if (deadline && Number.isNaN(new Date(deadline).getTime())) {
+    if (deadline && Number.isNaN(dateInputEnd(deadline).getTime())) {
       setError(tr("Перевірте дату дедлайну."));
       return;
     }
     if (
       deadline &&
       deadlineChanged &&
-      new Date(deadline).getTime() <= Date.now()
+      dateInputEnd(deadline).getTime() <= Date.now()
     ) {
       setError(tr("Дедлайн проєкту має бути в майбутньому."));
       return;
@@ -143,17 +153,17 @@ function ProjectForm({ project }: { project: Project | null }) {
         deadline?: string | null;
         budgetMin?: number;
         budgetMax?: number;
-        categoryId?: string;
-        skillIds?: string[];
+        categoryName?: string;
+        skillNames?: string[];
       } = { title: title.trim(), description };
       if (budgetMin !== "") body.budgetMin = Number(budgetMin);
       if (budgetMax !== "") body.budgetMax = Number(budgetMax);
-      if (categoryId) body.categoryId = categoryId;
-      body.skillIds = skillIds;
+      if (categoryName.trim()) body.categoryName = categoryName.trim();
+      body.skillNames = skillNames;
       if (project) body.status = status;
       // Незмінений дедлайн не перезаписуємо, щоб зберегти точність часу в БД.
       if (deadlineChanged)
-        body.deadline = deadline ? new Date(deadline).toISOString() : null;
+        body.deadline = deadline ? dateInputEnd(deadline).toISOString() : null;
       const result = await request<{ id: string }>(
         project ? `/projects/${project.id}` : "/projects",
         { method: project ? "PATCH" : "POST", body },
@@ -207,12 +217,11 @@ function ProjectForm({ project }: { project: Project | null }) {
               {tr("Дедлайн")}
               <input
                 id="project-deadline"
-                type="datetime-local"
-                step="1"
+                type="date"
                 min={
                   keepingOverdueDeadline
                     ? undefined
-                    : toDateTimeInput(new Date().toISOString())
+                    : toDateInput(new Date().toISOString())
                 }
                 value={deadline}
                 onInvalid={(event) => {
@@ -253,38 +262,68 @@ function ProjectForm({ project }: { project: Project | null }) {
             </div>
             <label>
               {tr("Категорія")}
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-              >
-                <option value="">{tr("Без категорії")}</option>
+              <input
+                list="project-category-options"
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                minLength={2}
+                maxLength={60}
+                placeholder={tr("Оберіть зі списку або впишіть свою")}
+              />
+              <datalist id="project-category-options">
                 {categories.data?.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
+                  <option key={item.id} value={item.name} />
                 ))}
-              </select>
+              </datalist>
             </label>
             <fieldset className="skill-picker">
               <legend className="form-section-title">
                 {tr("Потрібні навички")}
               </legend>
-              {skills.data?.map((skill) => (
-                <label key={skill.id}>
+              {skillNames.map((name) => (
+                <label key={name}>
                   <input
                     type="checkbox"
-                    checked={skillIds.includes(skill.id)}
-                    onChange={(e) =>
-                      setSkillIds(
-                        e.target.checked
-                          ? [...skillIds, skill.id]
-                          : skillIds.filter((id) => id !== skill.id),
-                      )
+                    checked
+                    onChange={() =>
+                      setSkillNames(skillNames.filter((item) => item !== name))
                     }
+                    aria-label={tr("Прибрати навичку {0}", name)}
                   />{" "}
-                  {skill.name}
+                  {name}
                 </label>
               ))}
+              <div className="skill-picker-add">
+                <input
+                  list="project-skill-options"
+                  value={skillDraft}
+                  onChange={(e) => setSkillDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addSkill();
+                    }
+                  }}
+                  maxLength={40}
+                  placeholder={tr("Оберіть або впишіть навичку")}
+                  aria-label={tr("Нова навичка")}
+                />
+                <datalist id="project-skill-options">
+                  {skills.data
+                    ?.filter((skill) => !skillNames.includes(skill.name))
+                    .map((skill) => (
+                      <option key={skill.id} value={skill.name} />
+                    ))}
+                </datalist>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={addSkill}
+                  disabled={!skillDraft.trim()}
+                >
+                  {tr("Додати")}
+                </button>
+              </div>
             </fieldset>
             {project && (
               <div className="project-form-field">

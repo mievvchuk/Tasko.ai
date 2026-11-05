@@ -5,7 +5,7 @@ import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { ResourceState } from "../components/ResourceState";
-import { toDateTimeInput } from "../format";
+import { dateInputEnd, toDateInput } from "../format";
 import { priorityNames } from "../types";
 import type { Project, ProjectMember, Task } from "../types";
 
@@ -87,7 +87,7 @@ function TaskForm({
     task?.priority || "MEDIUM",
   );
   const [deadline, setDeadline] = useState(
-    toDateTimeInput(task?.deadline || null),
+    toDateInput(task?.deadline || null),
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -99,14 +99,14 @@ function TaskForm({
       setError(tr("Назва має містити щонайменше 2 символи."));
       return;
     }
-    if (deadline && Number.isNaN(new Date(deadline).getTime())) {
+    if (deadline && Number.isNaN(dateInputEnd(deadline).getTime())) {
       setError(tr("Перевірте дату дедлайну."));
       return;
     }
     if (
       deadline &&
       project.deadline &&
-      new Date(deadline) > new Date(project.deadline)
+      deadline > toDateInput(project.deadline)
     ) {
       setError(
         tr("Дедлайн завдання не може бути пізнішим за дедлайн проєкту."),
@@ -124,8 +124,12 @@ function TaskForm({
       } = { title: title.trim(), description, priority };
       if (assigneeId !== (task?.assigneeId || ""))
         body.assigneeId = assigneeId || null;
-      if (deadline !== toDateTimeInput(task?.deadline || null))
-        body.deadline = deadline ? new Date(deadline).toISOString() : null;
+      if (deadline !== toDateInput(task?.deadline || null)) {
+        // У день дедлайну проєкту завдання не може закінчуватися пізніше за сам проєкт
+        const due = deadline ? dateInputEnd(deadline) : null;
+        const cap = project.deadline ? new Date(project.deadline) : null;
+        body.deadline = due ? (cap && due > cap ? cap : due).toISOString() : null;
+      }
       const result = await request<{ id: string }>(
         task ? `/tasks/${task.id}` : `/projects/${project.id}/tasks`,
         { method: task ? "PATCH" : "POST", body },
@@ -215,8 +219,7 @@ function TaskForm({
                 </label>
                 <input
                   id="task-form-deadline"
-                  type="datetime-local"
-                  step="1"
+                  type="date"
                   value={deadline}
                   onChange={(event) => setDeadline(event.target.value)}
                 />

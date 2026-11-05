@@ -151,6 +151,7 @@ export class ProjectsService {
       throw new ForbiddenException('Проєкти створює клієнт.');
     this.validateDeadline(data.deadline);
     validateBudget(data.budgetMin, data.budgetMax);
+    await this.resolveNamedCategoryAndSkills(data);
     await this.ensureCategoryExists(data.categoryId);
 
     const now = new Date();
@@ -203,6 +204,8 @@ export class ProjectsService {
     if (data.status === 'COMPLETED') {
       await this.ensureProjectCanBeCompleted(id);
     }
+    await this.resolveNamedCategoryAndSkills(data);
+    await this.ensureCategoryExists(data.categoryId ?? undefined);
 
     const updated = await this.db.Project.where({ id }).update(
       this.buildProjectChanges(data),
@@ -226,6 +229,41 @@ export class ProjectsService {
   private async findCategory(categoryId?: string | null) {
     if (!categoryId) return null;
     return this.db.ProjectCategory.where({ id: categoryId }).first();
+  }
+
+  // Категорію й навички можна передати назвами: наявні беремо, відсутні створюємо.
+  private async resolveNamedCategoryAndSkills(
+    data: Pick<
+      CreateProjectDto,
+      'categoryId' | 'categoryName' | 'skillIds' | 'skillNames'
+    >,
+  ) {
+    const orm = this.prisma.client.orm.public;
+    if (data.categoryName) {
+      const name = data.categoryName.trim();
+      const all = await orm.ProjectCategory.all();
+      const found = all.find(
+        (category) => category.name.toLowerCase() === name.toLowerCase(),
+      );
+      data.categoryId = (
+        found ?? (await orm.ProjectCategory.create({ id: randomUUID(), name }))
+      ).id;
+    }
+    if (data.skillNames) {
+      const names = [
+        ...new Set(
+          data.skillNames.map((n) => n.trim().toLowerCase()).filter(Boolean),
+        ),
+      ];
+      const ids = [...(data.skillIds ?? [])];
+      for (const name of names) {
+        const skill =
+          (await orm.Skill.where({ name }).first()) ??
+          (await orm.Skill.create({ id: randomUUID(), name }));
+        ids.push(skill.id);
+      }
+      data.skillIds = ids;
+    }
   }
 
   private async ensureCategoryExists(categoryId?: string) {

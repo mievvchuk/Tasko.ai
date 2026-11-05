@@ -3,11 +3,14 @@ import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { errorMessage, request } from "../api";
 import { PasswordInput } from "../components/PasswordInput";
+import { passwordStrength } from "../format";
 import { useLanguage } from "../i18n";
+
+const strengthNames = ["", "Легкий", "Середній", "Складний", "Дуже складний"];
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, tr } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +18,7 @@ export function RegisterPage() {
   const [role, setRole] = useState<"CLIENT" | "FREELANCER">("CLIENT");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const strength = passwordStrength(password);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -130,7 +134,22 @@ export function RegisterPage() {
             onChange={setPassword}
             autoComplete="new-password"
           />
-          <p className="field-hint">{t("passwordHint")}</p>
+          {password ? (
+            <div
+              className={`password-strength level-${strength}`}
+              aria-live="polite"
+            >
+              <span className="password-strength-bar" aria-hidden="true">
+                <i></i>
+              </span>
+              <span>
+                {tr("Складність:")} <strong>{tr(strengthNames[strength])}</strong>
+                {password.length < 8 && ` · ${t("passwordHint")}`}
+              </span>
+            </div>
+          ) : (
+            <p className="field-hint">{t("passwordHint")}</p>
+          )}
           <PasswordInput
             id="confirmation"
             label={t("repeatPassword")}
