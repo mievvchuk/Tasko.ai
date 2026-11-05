@@ -1,15 +1,19 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 import { ApiError, request, sessionEndedEvent, tokenKey } from "../src/api.ts";
-import { formatDate, parsePage, toDateTimeInput } from "../src/format.ts";
+import { formatDate, parsePage, toDateInput, dateInputEnd } from "../src/format.ts";
 
-test("deadline input preserves local wall time and round-trips seconds", () => {
-  assert.equal(toDateTimeInput(null), "");
-  assert.equal(toDateTimeInput("invalid"), "");
+test("deadline date input keeps the local day and ends at 23:59:59", () => {
+  assert.equal(toDateInput(null), "");
+  assert.equal(toDateInput("invalid"), "");
   for (const value of ["2026-01-17T12:34:56Z", "2026-07-17T12:34:56Z"]) {
-    const local = toDateTimeInput(value);
-    assert.equal(new Date(local).getTime(), new Date(value).getTime());
-    assert.equal(local.length, 19);
+    const local = new Date(value);
+    const day = toDateInput(value);
+    assert.match(day, /^\d{4}-\d{2}-\d{2}$/);
+    const end = dateInputEnd(day);
+    assert.equal(end.getDate(), local.getDate());
+    assert.equal(end.getHours(), 23);
+    assert.equal(end.getSeconds(), 59);
   }
 });
 

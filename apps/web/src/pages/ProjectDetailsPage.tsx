@@ -148,15 +148,39 @@ export function ProjectDetailsPage() {
         </div>
       </div>
       <nav className="project-links" aria-label={tr("Розділи проєкту")}>
-        <Link to={`/tasks?project=${id}`}>{tr("Усі завдання")}</Link>
-        <Link to={`/messages?project=${id}`}>{tr("Повідомлення")}</Link>
-        <Link to={`/projects/${id}/files`}>{tr("Файли")}</Link>
-        <Link to={`/projects/${id}/board`}>Kanban</Link>
-        <Link to={`/projects/${id}/milestones`}>{tr("Етапи")}</Link>
-        <Link to={`/projects/${id}/activity`}>{tr("Історія")}</Link>
-        <Link to={`/ai?project=${id}`}>{tr("Аналіз AI")}</Link>
+        <Link to={`/tasks?project=${id}`}>
+          <i className="bi bi-list-check" aria-hidden="true"></i>
+          {tr("Усі завдання")}
+        </Link>
+        <Link to={`/messages?project=${id}`}>
+          <i className="bi bi-chat-dots" aria-hidden="true"></i>
+          {tr("Повідомлення")}
+        </Link>
+        <Link to={`/projects/${id}/files`}>
+          <i className="bi bi-folder2" aria-hidden="true"></i>
+          {tr("Файли")}
+        </Link>
+        <Link to={`/projects/${id}/board`}>
+          <i className="bi bi-kanban" aria-hidden="true"></i>
+          Kanban
+        </Link>
+        <Link to={`/projects/${id}/milestones`}>
+          <i className="bi bi-flag" aria-hidden="true"></i>
+          {tr("Етапи")}
+        </Link>
+        <Link to={`/projects/${id}/activity`}>
+          <i className="bi bi-clock-history" aria-hidden="true"></i>
+          {tr("Історія")}
+        </Link>
+        <Link to={`/ai?project=${id}`}>
+          <i className="bi bi-graph-up" aria-hidden="true"></i>
+          {tr("Аналіз AI")}
+        </Link>
         {canEdit && (
-          <Link to={`/projects/${id}/plan`}>{tr("AI-планування")}</Link>
+          <Link to={`/projects/${id}/plan`}>
+            <i className="bi bi-stars" aria-hidden="true"></i>
+            {tr("AI-планування")}
+          </Link>
         )}
       </nav>
       <section

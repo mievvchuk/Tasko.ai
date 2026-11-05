@@ -65,13 +65,16 @@ export function ProjectApplicationsPage() {
           )}
         </p>
       </div>
-      <button
-        className="button secondary"
-        disabled={ranking || !data?.length}
-        onClick={() => void rank()}
-      >
-        {ranking ? tr("AI аналізує…") : tr("Порівняти заявки через AI")}
-      </button>
+      <div className="application-tools">
+        <button
+          className="button secondary"
+          disabled={ranking || !data?.length}
+          onClick={() => void rank()}
+        >
+          <i className="bi bi-stars" aria-hidden="true"></i>
+          {ranking ? tr("AI аналізує…") : tr("Порівняти заявки через AI")}
+        </button>
+      </div>
       {actionError && <p className="form-error">{actionError}</p>}
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (

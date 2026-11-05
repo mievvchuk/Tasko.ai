@@ -1,0 +1,87 @@
+// ER-діаграма основних сутностей Tasko.ai (КП.ОК25.ПІ.231.14.000.Д9)
+// Відповідає apps/api/src/prisma/contract.prisma. Вставте в https://dbdiagram.io
+
+Table User {
+  id uuid [pk]
+  name varchar [not null]
+  email varchar [not null, unique]
+  passwordHash varchar [not null]
+  role varchar [not null, note: 'CLIENT, FREELANCER, ADMIN']
+  status varchar [not null, note: 'ACTIVE, BLOCKED']
+  twoFactorEnabled boolean [not null, default: false]
+  createdAt timestamptz [not null]
+}
+
+Table Project {
+  id uuid [pk]
+  clientId uuid [not null, ref: > User.id]
+  title varchar [not null]
+  description text
+  status varchar [not null, note: 'PLANNING, ACTIVE, PAUSED, COMPLETED, CANCELLED']
+  deadline timestamptz
+  budgetMin int
+  budgetMax int
+  categoryId uuid
+  createdAt timestamptz [not null]
+}
+
+Table ProjectMember {
+  id uuid [pk]
+  projectId uuid [not null, ref: > Project.id]
+  userId uuid [not null, ref: > User.id]
+  role varchar [not null, note: 'OWNER, ADMIN, MEMBER']
+  joinedAt timestamptz [not null]
+
+  indexes {
+    (projectId, userId) [unique]
+  }
+}
+
+Table "Order" {
+  id uuid [pk]
+  clientId uuid [not null, note: 'ідентифікатор клієнта, без зовнішнього ключа']
+  projectId uuid [not null, ref: > Project.id]
+  status varchar [not null, note: 'PENDING, IN_PROGRESS, COMPLETED, CANCELLED']
+  createdAt timestamptz [not null]
+}
+
+Table Task {
+  id uuid [pk]
+  projectId uuid [not null, ref: > Project.id]
+  assigneeId uuid [ref: >? User.id]
+  title varchar [not null]
+  description text
+  priority varchar [not null, note: 'LOW, MEDIUM, HIGH']
+  status varchar [not null, note: 'TODO, IN_PROGRESS, REVIEW, DONE']
+  deadline timestamptz
+}
+
+Table WorkSubmission {
+  id uuid [pk]
+  taskId uuid [not null, ref: > Task.id]
+  submittedBy uuid [not null, ref: > User.id]
+  reviewerId uuid [ref: >? User.id]
+  description text [not null]
+  status varchar [not null, note: 'SUBMITTED, REVIEWING, APPROVED, REJECTED, NEEDS_REVISION']
+  feedback text
+  submittedAt timestamptz [not null]
+}
+
+Table Message {
+  id uuid [pk]
+  projectId uuid [not null, ref: > Project.id]
+  senderId uuid [not null, ref: > User.id]
+  content text [not null]
+  createdAt timestamptz [not null]
+}
+
+Table FileAttachment {
+  id uuid [pk]
+  projectId uuid [not null, ref: > Project.id]
+  uploadedBy uuid [not null, ref: > User.id]
+  submissionId uuid [ref: >? WorkSubmission.id]
+  fileName varchar [not null]
+  storagePath varchar [not null]
+  mimeType varchar [not null]
+  size int [not null]
+}
