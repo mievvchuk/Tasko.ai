@@ -25,7 +25,8 @@ export function UserAvatar({
     );
   return (
     <span className={className} aria-hidden="true">
-      {name.charAt(0).toUpperCase()}
+      {/* Перша літера чи цифра: charAt(0) ламає емодзі на половинку символу */}
+      {(name.match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase()}
     </span>
   );
 }
