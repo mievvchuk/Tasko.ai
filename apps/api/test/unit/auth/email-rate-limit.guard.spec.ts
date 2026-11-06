@@ -1,5 +1,5 @@
 import type { ExecutionContext } from '@nestjs/common';
-import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
+import { AuthEmailRateLimitGuard } from '../../../src/auth/email-rate-limit.guard.js';
 
 describe('email request rate limit', () => {
   afterEach(() => vi.useRealTimers());

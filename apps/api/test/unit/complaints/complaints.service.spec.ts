@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { validateComplaintTargets } from './complaints.service.js';
+import { validateComplaintTargets } from '../../../src/complaints/complaints.service.js';
 
 describe('validateComplaintTargets', () => {
   it('requires a target and rejects self complaints', () => {

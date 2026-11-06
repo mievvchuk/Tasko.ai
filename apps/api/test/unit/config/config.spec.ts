@@ -1,4 +1,4 @@
-import { readConfig } from './config.js';
+import { readConfig } from '../../../src/config/config.js';
 
 const valid = {
   DATABASE_URL: 'postgresql://localhost/coursework_test',

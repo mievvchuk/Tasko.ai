@@ -1,13 +1,13 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { AgentService, offTopicAnswer } from './agent.service.js';
-import { McpService } from './mcp.service.js';
-import type { ProjectsService } from '../projects/projects.service.js';
-import type { AnalyticsService } from '../analytics/analytics.service.js';
-import type { TasksService } from '../tasks/tasks.service.js';
-import type { CollaborationService } from '../collaboration/collaboration.service.js';
-import type { MilestonesService } from '../projects/milestones.service.js';
-import type { NotificationsService } from '../notifications/notifications.service.js';
+import { AgentService, offTopicAnswer } from '../../../src/agent/agent.service.js';
+import { McpService } from '../../../src/agent/mcp.service.js';
+import type { ProjectsService } from '../../../src/projects/projects.service.js';
+import type { AnalyticsService } from '../../../src/analytics/analytics.service.js';
+import type { TasksService } from '../../../src/tasks/tasks.service.js';
+import type { CollaborationService } from '../../../src/collaboration/collaboration.service.js';
+import type { MilestonesService } from '../../../src/projects/milestones.service.js';
+import type { NotificationsService } from '../../../src/notifications/notifications.service.js';
 import { ForbiddenException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 

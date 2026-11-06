@@ -3,9 +3,9 @@ import {
   ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
-import type { ProjectsService } from '../projects/projects.service.js';
-import type { CurrentUser } from '../users/users.service.js';
-import { TasksService, columnKey, planColumnOrder } from './tasks.service.js';
+import type { ProjectsService } from '../../../src/projects/projects.service.js';
+import type { CurrentUser } from '../../../src/users/users.service.js';
+import { TasksService, columnKey, planColumnOrder } from '../../../src/tasks/tasks.service.js';
 
 describe('kanban board columns', () => {
   const freelancer: CurrentUser = {

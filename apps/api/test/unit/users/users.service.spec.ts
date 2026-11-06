@@ -1,6 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
-import type { PrismaService } from '../prisma/prisma.service.js';
-import { UsersService, type CurrentUser } from './users.service.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { UsersService, type CurrentUser } from '../../../src/users/users.service.js';
 
 const client: CurrentUser = {
   id: 'client-id',

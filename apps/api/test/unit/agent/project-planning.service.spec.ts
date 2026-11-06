@@ -1,8 +1,8 @@
 import { ForbiddenException, ConflictException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { ProjectPlanningService } from './project-planning.service.js';
-import type { ProjectsService } from '../projects/projects.service.js';
-import type { AgentService } from './agent.service.js';
+import { ProjectPlanningService } from '../../../src/agent/project-planning.service.js';
+import type { ProjectsService } from '../../../src/projects/projects.service.js';
+import type { AgentService } from '../../../src/agent/agent.service.js';
 
 const user = {
   id: randomUUID(),

@@ -1,4 +1,4 @@
-import { validateFile } from './files.service.js';
+import { validateFile } from '../../../src/collaboration/files.service.js';
 
 describe('file validation', () => {
   it('accepts UTF-8 text and computes the MIME type itself', () => {

@@ -1,4 +1,4 @@
-import { createTotpSecret, createTotpUri, verifyTotp } from './totp.js';
+import { createTotpSecret, createTotpUri, verifyTotp } from '../../../src/auth/totp.js';
 
 describe('TOTP', () => {
   it('verifies a standard RFC 6238 code', () => {

@@ -1,4 +1,4 @@
-import { hashPassword, verifyPassword } from './password.js';
+import { hashPassword, verifyPassword } from '../../../src/auth/password.js';
 
 describe('password hashing', () => {
   it('hashes the password with a different salt each time', async () => {

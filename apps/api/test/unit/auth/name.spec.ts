@@ -1,8 +1,8 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { describe, expect, it } from 'vitest';
-import { RegisterDto } from './auth.dto.js';
-import { UpdateAccountDto } from '../users/users.dto.js';
+import { RegisterDto } from '../../../src/auth/auth.dto.js';
+import { UpdateAccountDto } from '../../../src/users/users.dto.js';
 
 const nameErrors = async (name: string) => {
   const errors = await validate(

@@ -1,5 +1,5 @@
 import { BadGatewayException } from '@nestjs/common';
-import { parseApplicationRanking } from './application-ranking.js';
+import { parseApplicationRanking } from '../../../src/agent/application-ranking.js';
 
 describe('parseApplicationRanking', () => {
   const ids = ['a', 'b'];

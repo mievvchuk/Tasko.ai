@@ -1,10 +1,10 @@
-import type { ProjectsService } from '../projects/projects.service.js';
-import type { CurrentUser } from '../users/users.service.js';
+import type { ProjectsService } from '../../../src/projects/projects.service.js';
+import type { CurrentUser } from '../../../src/users/users.service.js';
 import {
   AnalyticsService,
   nearestDeadline,
   taskRisk,
-} from './analytics.service.js';
+} from '../../../src/analytics/analytics.service.js';
 
 describe('nearest deadline', () => {
   const now = new Date('2026-10-17T12:00:00Z');

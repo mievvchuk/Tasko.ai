@@ -3,10 +3,10 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { hashPassword } from '../auth/password.js';
-import type { PrismaService } from '../prisma/prisma.service.js';
-import type { CurrentUser } from '../users/users.service.js';
-import { AdminService, lastMonths } from './admin.service.js';
+import { hashPassword } from '../../../src/auth/password.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import type { CurrentUser } from '../../../src/users/users.service.js';
+import { AdminService, lastMonths } from '../../../src/admin/admin.service.js';
 
 describe('AdminService reports', () => {
   const admin: CurrentUser = {
