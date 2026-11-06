@@ -5,8 +5,8 @@ import {
   extractAttachments,
   maxAttachmentChars,
   maxTotalAttachmentChars,
-} from './attachments.js';
-import { withAttachments } from './agent.service.js';
+} from '../../../src/agent/attachments.js';
+import { withAttachments } from '../../../src/agent/agent.service.js';
 
 function file(name: string, content: Buffer | string) {
   const buffer = Buffer.isBuffer(content) ? content : Buffer.from(content);

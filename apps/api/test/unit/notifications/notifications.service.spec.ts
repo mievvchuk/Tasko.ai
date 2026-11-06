@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
-import type { PrismaService } from '../prisma/prisma.service.js';
-import { NotificationsService } from './notifications.service.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { NotificationsService } from '../../../src/notifications/notifications.service.js';
 
 describe('NotificationsService', () => {
   it('does not allow reading another user notification', async () => {

@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
-import type { AppConfig } from '../config/config.js';
-import type { PrismaService } from '../prisma/prisma.service.js';
-import type { UsersService } from '../users/users.service.js';
-import { AuthService } from './auth.service.js';
-import { hashPassword } from './password.js';
+import type { AppConfig } from '../../../src/config/config.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import type { UsersService } from '../../../src/users/users.service.js';
+import { AuthService } from '../../../src/auth/auth.service.js';
+import { hashPassword } from '../../../src/auth/password.js';
 
 describe('authentication', () => {
   const jwt = new JwtService({

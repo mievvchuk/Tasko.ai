@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const contract = readFileSync(
-  new URL('./contract.prisma', import.meta.url),
+  new URL('../../../src/prisma/contract.prisma', import.meta.url),
   'utf8',
 );
 

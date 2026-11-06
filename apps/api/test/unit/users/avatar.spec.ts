@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { PrismaService } from '../prisma/prisma.service.js';
-import { maxAvatarSize, validateAvatar } from './avatar.js';
-import { UsersService } from './users.service.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import { maxAvatarSize, validateAvatar } from '../../../src/users/avatar.js';
+import { UsersService } from '../../../src/users/users.service.js';
 
 function upload(bytes: number[] | Buffer, name = 'photo.png') {
   const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);

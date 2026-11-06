@@ -4,9 +4,9 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import type { PrismaService } from '../prisma/prisma.service.js';
-import type { CurrentUser } from '../users/users.service.js';
-import { ProjectsService, validateBudget } from './projects.service.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import type { CurrentUser } from '../../../src/users/users.service.js';
+import { ProjectsService, validateBudget } from '../../../src/projects/projects.service.js';
 
 describe('validateBudget', () => {
   it('rejects a maximum below the minimum', () => {

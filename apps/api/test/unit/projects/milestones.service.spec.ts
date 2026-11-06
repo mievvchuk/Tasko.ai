@@ -1,5 +1,5 @@
 import { ConflictException } from '@nestjs/common';
-import { checkMilestoneTransition } from './milestones.service.js';
+import { checkMilestoneTransition } from '../../../src/projects/milestones.service.js';
 
 describe('checkMilestoneTransition', () => {
   it('allows the normal workflow', () => {

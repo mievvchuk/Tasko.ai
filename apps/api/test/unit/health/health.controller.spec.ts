@@ -1,6 +1,6 @@
 import { ServiceUnavailableException } from '@nestjs/common';
-import { HealthController } from './health.controller.js';
-import type { PrismaService } from '../prisma/prisma.service.js';
+import { HealthController } from '../../../src/health/health.controller.js';
+import type { PrismaService } from '../../../src/prisma/prisma.service.js';
 
 describe('health', () => {
   it('reports a successful database check', async () => {
