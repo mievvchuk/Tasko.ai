@@ -994,4 +994,21 @@ export const enText: Record<string, string> = {
   Легкий: "Weak",
   Складний: "Strong",
   "Дуже складний": "Very strong",
+  // Довідка та база знань
+  Довідка: "Help",
+  "Відкрити довідку": "Open help",
+  "Закрити довідку": "Close help",
+  "Назад до списку": "Back to the list",
+  "Підказки до цієї сторінки": "Tips for this page",
+  "Пошук у довідці": "Search help",
+  "Нічого не знайдено. Спробуйте інші слова або запитайте Аду.":
+    "Nothing found. Try other words or ask Ada.",
+  "На цій сторінці": "On this page",
+  Корисне: "Useful",
+  "Уся довідка та база знань": "All help and knowledge base",
+  "База знань": "Knowledge base",
+  "Довідка та база знань": "Help and knowledge base",
+  "Інструкції до кожного розділу Tasko.ai, пояснення статусів і відповіді на часті запитання.":
+    "Guides to every section of Tasko.ai, status explanations and answers to common questions.",
+  "Статті довідки": "Help articles",
 };

@@ -10,6 +10,7 @@ import { ThemePicker } from "./ThemePicker";
 import { AiChatProvider } from "../aiChat";
 import { AiDrawer } from "./AiDrawer";
 import { AccountMenu } from "./AccountMenu";
+import { HelpButton } from "./HelpButton";
 
 // На комп'ютері .topbar показано як світлу бічну панель з підписами, на телефоні — як верхню (див. app.css).
 // Логіка (ролі, сповіщення, вихід) залишилась такою самою.
@@ -102,6 +103,10 @@ export function Layout() {
               <i className="bi bi-person" aria-hidden="true"></i>
               <span className="nav-label">{t("profile")}</span>
             </NavLink>
+            <NavLink to="/help" onClick={close}>
+              <i className="bi bi-question-circle" aria-hidden="true"></i>
+              <span className="nav-label">{tr("Довідка")}</span>
+            </NavLink>
           </nav>
           <div className="topbar-actions">
             <ThemePicker />
@@ -117,6 +122,7 @@ export function Layout() {
         </main>
         <AiDrawer />
       </AiChatProvider>
+      <HelpButton />
       {/* Нижня панель для телефону (як у мобільному UI kit); на комп'ютері схована */}
       <nav className="bottom-nav" aria-label={t("navigation")}>
         <NavLink to="/" end onClick={close}>
