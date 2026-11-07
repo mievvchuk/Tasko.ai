@@ -40,6 +40,7 @@ import { ProjectMilestonesPage } from "./pages/ProjectMilestonesPage";
 import { ProjectActivityPage } from "./pages/ProjectActivityPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { ProjectPlanPage } from "./pages/ProjectPlanPage";
+import { HelpPage } from "./pages/HelpPage";
 
 import { useLanguage } from "./i18n";
 function ProtectedRoute() {
@@ -145,6 +146,8 @@ export function App() {
           <Route path="profile" element={<WorkspacePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="complaints" element={<ComplaintsPage />} />
+          <Route path="help" element={<HelpPage />} />
+          <Route path="help/:articleId" element={<HelpPage />} />
           <Route
             path="*"
             element={
