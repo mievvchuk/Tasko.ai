@@ -6,6 +6,7 @@ import { App } from "./App";
 import { LanguageProvider } from "./i18n";
 import "bootstrap-icons/font/bootstrap-icons.css"; // іконки: лише шрифт і класи bi-*
 import "./app.css";
+import "./metrics.css";
 import { applyTheme, storedTheme } from "./theme";
 
 applyTheme(storedTheme());

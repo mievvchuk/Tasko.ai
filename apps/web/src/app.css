@@ -344,13 +344,14 @@ label {
   margin-left: auto;
   color: var(--color-accent-text);
 }
-/* У бічній панелі кнопки внизу — список відкривається вгору */
-.topbar-actions .icon-menu-list {
-  top: auto;
-  right: auto;
-  bottom: calc(100% + var(--space-xs));
-  left: 0;
-  transform-origin: bottom left;
+/* Тема, мова й акаунт — у верхній панелі, списки відкриваються вниз */
+.topbar-actions .icon-menu-list,
+.topbar-actions .account-dropdown {
+  top: calc(100% + var(--space-xs));
+  right: 0;
+  bottom: auto;
+  left: auto;
+  transform-origin: top right;
 }
 
 /* ===== 3. Логотип, аватар, позначки ===== */
@@ -595,6 +596,7 @@ label {
 /* ===== 5. Каркас: бічна панель і вміст ===== */
 .app-shell {
   min-height: 100vh;
+  padding-top: var(--header);
   padding-left: var(--sidebar);
 }
 .topbar {
@@ -661,16 +663,26 @@ label {
 .topbar-nav .badge-count {
   margin-left: auto;
 }
+/* На комп'ютері дії стоять у верхній смузі праворуч від бічної панелі */
 .topbar-actions {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--sidebar);
   display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--space-xs);
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--color-rule);
+  height: var(--header);
+  padding: 0 var(--space-xl);
+  border-bottom: 1px solid var(--color-rule);
+  background: var(--color-paper);
 }
-.topbar-actions .account-menu {
-  flex-basis: 100%;
+.topbar-actions .account-button {
+  width: auto;
+}
+.topbar-actions .account-name {
+  max-width: 180px;
 }
 .page-content {
   max-width: var(--container);
@@ -4208,6 +4220,7 @@ tbody tr:nth-child(n + 6) {
 @media (max-width: 60rem) {
   .app-shell,
   .admin-shell {
+    padding-top: 0;
     padding-left: 0;
   }
   .topbar {
@@ -4234,14 +4247,13 @@ tbody tr:nth-child(n + 6) {
     order: 2;
   }
   .topbar-actions {
+    position: static;
     order: 1;
-    flex-wrap: nowrap;
     gap: var(--space-2xs);
+    height: auto;
     padding: 0;
     border: 0;
-  }
-  .topbar-actions .account-menu {
-    flex-basis: auto;
+    background: none;
   }
   .account-name,
   .account-button > .bi-chevron-down {

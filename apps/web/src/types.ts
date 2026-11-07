@@ -307,6 +307,22 @@ export interface AdminReport {
   projectsByStatus: Record<ProjectStatus, number>;
   // month — «2026-10»
   growth: { month: string; users: number; projects: number }[];
+  complaintsByStatus: Record<Complaint["status"], number>;
+  applicationsByStatus: Record<"PENDING" | "ACCEPTED" | "REJECTED", number>;
+  // Останні 7 днів; day — «2026-11-07»
+  week: {
+    users: number;
+    projects: number;
+    complaints: number;
+    applications: number;
+    days: { day: string; users: number; projects: number; complaints: number }[];
+  };
+  // Середній час у годинах; null — даних ще немає
+  averageHours: {
+    complaintResolution: number | null;
+    firstApplication: number | null;
+    hire: number | null;
+  };
 }
 
 export const priorityNames = {
