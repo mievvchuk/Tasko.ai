@@ -7,9 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import ExcelJS from 'exceljs';
-import pdfMake from 'pdfmake';
 import { randomUUID } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 import { or } from '@prisma/orm-postgres/orm-client';
 import { hashPassword, verifyPassword } from '../auth/password.js';
 import { verifyTotp } from '../auth/totp.js';
@@ -17,6 +15,7 @@ import { projectStatuses } from '../projects/projects.dto.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUser } from '../users/users.service.js';
+import { buildReportPdf } from './report-pdf.js';
 import type {
   CreateAdminDto,
   UpdateUserDto,
@@ -79,6 +78,71 @@ export class AdminService {
           ...(data.status ? { status: data.status } : {}),
           updatedAt: new Date(),
         });
+    });
+  }
+  // Видалення: без історії — запис стирається повністю; з історією (проєкти, повідомлення, заявки…)
+  // стираються особисті дані, а в історії лишається «Видалений користувач», щоб не ламати проєкти інших.
+  async remove(user: CurrentUser, id: string) {
+    this.requireAdmin(user);
+    if (id === user.id)
+      throw new BadRequestException('Власний обліковий запис видалити не можна.');
+    return this.prisma.client.transaction(async (tx) => {
+      const db = tx.orm.public;
+      const target = await db.User.where({ id }).first();
+      if (!target) throw new NotFoundException('Користувача не знайдено.');
+      if (target.role === 'ADMIN')
+        throw new ForbiddenException(
+          'Адміністраторів видаляти з панелі не можна.',
+        );
+      const history = [
+        db.Project.where({ clientId: id }),
+        db.ProjectMember.where({ userId: id }),
+        db.Task.where({ assigneeId: id }),
+        db.ProjectApplication.where({ freelancerId: id }),
+        db.Message.where({ senderId: id }),
+        db.WorkSubmission.where({ submittedBy: id }),
+        db.WorkSubmission.where({ reviewerId: id }),
+        db.FreelancerReview.where({ clientId: id }),
+        db.FreelancerReview.where({ freelancerId: id }),
+        db.Complaint.where({ reporterId: id }),
+        db.Complaint.where({ targetUserId: id }),
+        db.FileAttachment.where({ uploadedBy: id }),
+        db.ActivityLog.where({ actorId: id }),
+      ];
+      let hasHistory = false;
+      for (const rows of history)
+        if (await rows.first()) {
+          hasHistory = true;
+          break;
+        }
+
+      // Особисті дані зникають в обох випадках
+      await db.AuthSession.where({ userId: id }).deleteAll();
+      await db.Notification.where({ userId: id }).deleteAll();
+      await db.FavoriteProject.where({ userId: id }).deleteAll();
+      await db.FreelancerSkill.where({ userId: id }).deleteAll();
+      await db.ProjectApplication.where({ freelancerId: id }).updateAll({
+        portfolioItemId: null,
+      });
+      await db.PortfolioItem.where({ userId: id }).deleteAll();
+      await db.FreelancerProfile.where({ userId: id }).deleteAll();
+
+      if (!hasHistory) {
+        await db.User.where({ id }).delete();
+        return { id, mode: 'deleted' as const };
+      }
+      await db.User.where({ id }).update({
+        name: 'Видалений користувач',
+        email: `deleted-${id}@deleted.tasko`,
+        // Випадковий хеш: увійти під цим акаунтом більше неможливо
+        passwordHash: await hashPassword(randomUUID()),
+        status: 'BLOCKED',
+        avatarUrl: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        updatedAt: new Date(),
+      });
+      return { id, mode: 'anonymized' as const };
     });
   }
   // Новий адміністратор — завжди окремий акаунт; той, хто створює, підтверджує дію своїм паролем і кодом 2FA
@@ -301,46 +365,7 @@ export class AdminService {
       };
     }
 
-    const fontDirectory = fileURLToPath(
-      new URL(
-        '../../node_modules/pdfmake/build/fonts/Roboto/',
-        import.meta.url,
-      ),
-    );
-    pdfMake.setUrlAccessPolicy(() => false);
-    pdfMake.setLocalAccessPolicy((path) => path.startsWith(fontDirectory));
-    pdfMake.addFonts({
-      Roboto: {
-        normal: `${fontDirectory}Roboto-Regular.ttf`,
-        bold: `${fontDirectory}Roboto-Medium.ttf`,
-        italics: `${fontDirectory}Roboto-Italic.ttf`,
-        bolditalics: `${fontDirectory}Roboto-MediumItalic.ttf`,
-      },
-    });
-    const content = await pdfMake
-      .createPdf({
-        defaultStyle: { font: 'Roboto', fontSize: 11 },
-        content: [
-          { text: 'Звіт Tasko.ai', style: 'header' },
-          { text: `Сформовано: ${new Date().toLocaleString('uk-UA')}` },
-          {
-            margin: [0, 14, 0, 0],
-            table: {
-              headerRows: 1,
-              widths: ['*', 100],
-              body: [
-                [
-                  { text: 'Показник', bold: true },
-                  { text: 'Значення', bold: true },
-                ],
-                ...rows.map((row) => [row.label, String(row.value)]),
-              ],
-            },
-          },
-        ],
-        styles: { header: { fontSize: 20, bold: true, margin: [0, 0, 0, 8] } },
-      })
-      .getBuffer();
+    const content = await buildReportPdf(report);
     return {
       fileName: `tasko-report-${date}.pdf`,
       contentType: 'application/pdf',

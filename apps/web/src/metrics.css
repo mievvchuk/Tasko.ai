@@ -222,3 +222,72 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Підказка «i» стоїть у куті плитки й не наїжджає на підпис і число */
+.kpi-tile {
+  position: relative;
+}
+.kpi-tile > .info-tip {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+}
+.kpi-text {
+  padding-right: var(--space-md);
+}
+.kpi-label {
+  hyphens: auto;
+}
+
+/* Точки графіка: наведення або фокус показує значення дня */
+.line-plot {
+  position: relative;
+}
+.line-series .line-hit {
+  fill: transparent;
+  stroke: none;
+}
+.line-point {
+  cursor: pointer;
+  outline: none;
+}
+.line-point.active circle:not(.line-hit) {
+  fill: var(--tone);
+}
+.line-point:focus-visible circle:not(.line-hit) {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}
+.line-tooltip {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  display: grid;
+  gap: 2px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-small);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 12px));
+}
+.line-tooltip span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  opacity: 0.75;
+}
+.line-tooltip span.current {
+  opacity: 1;
+  font-weight: 700;
+}
+
+/* Видалення користувача в діалозі адміністратора */
+.admin-delete-user {
+  justify-self: start;
+}
+.admin-delete-confirm p {
+  margin: 0 0 var(--space-sm);
+}

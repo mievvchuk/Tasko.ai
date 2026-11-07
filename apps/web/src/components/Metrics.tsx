@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ChartTone } from "./Charts";
 
 // Плитки показників: іконка в кольоровому кружку, підпис, підказка «i» і велике число
@@ -93,6 +94,8 @@ export function LineChart({
   const y = (value: number) =>
     pad.top + (1 - value / top) * (height - pad.top - pad.bottom);
   const ticks = [0, 1, 2, 3, 4].map((step) => (top / 4) * step);
+  // Точка під курсором або фокусом: ряд і день
+  const [active, setActive] = useState<{ row: number; index: number } | null>(null);
   const description = labels
     .map(
       (label, index) =>
@@ -104,6 +107,7 @@ export function LineChart({
   return (
     <figure className="chart-card line-chart">
       <figcaption>{title}</figcaption>
+      <div className="line-plot">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         role="img"
@@ -133,21 +137,57 @@ export function LineChart({
             {label}
           </text>
         ))}
-        {series.map((row) => (
+        {series.map((row, rowIndex) => (
           <g key={row.name} className={`line-series stroke-${row.tone}`}>
             <polyline
               points={row.values
                 .map((value, index) => `${x(index)},${y(value)}`)
                 .join(" ")}
             />
-            {row.values.map((value, index) => (
-              <circle key={index} cx={x(index)} cy={y(value)} r={3.5}>
-                <title>{`${labels[index]} · ${row.name}: ${value}`}</title>
-              </circle>
-            ))}
+            {row.values.map((value, index) => {
+              const on = active?.row === rowIndex && active.index === index;
+              return (
+                <g
+                  key={index}
+                  className={on ? "line-point active" : "line-point"}
+                  tabIndex={0}
+                  aria-label={`${labels[index]}, ${row.name}: ${value}`}
+                  onMouseEnter={() => setActive({ row: rowIndex, index })}
+                  onMouseLeave={() => setActive(null)}
+                  onFocus={() => setActive({ row: rowIndex, index })}
+                  onBlur={() => setActive(null)}
+                >
+                  {/* Невидиме більше коло — щоб у точку легко влучити курсором */}
+                  <circle className="line-hit" cx={x(index)} cy={y(value)} r={12} />
+                  <circle cx={x(index)} cy={y(value)} r={on ? 5.5 : 3.5} />
+                </g>
+              );
+            })}
           </g>
         ))}
       </svg>
+      {active && (
+        <div
+          className="line-tooltip"
+          role="status"
+          style={{
+            left: `${(x(active.index) / width) * 100}%`,
+            top: `${(y(series[active.row].values[active.index]) / height) * 100}%`,
+          }}
+        >
+          <strong>{labels[active.index]}</strong>
+          {series.map((row, rowIndex) => (
+            <span
+              key={row.name}
+              className={rowIndex === active.row ? "current" : undefined}
+            >
+              <i className={`legend-dot tone-${row.tone}`} aria-hidden="true" />
+              {row.name}: <b>{row.values[active.index]}</b>
+            </span>
+          ))}
+        </div>
+      )}
+      </div>
       <div className="chart-legend">
         {series.map((row) => (
           <span key={row.name}>
