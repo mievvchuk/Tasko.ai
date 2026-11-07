@@ -28,6 +28,13 @@ export class UpdateAccountDto {
   name!: string;
 }
 
+// Вибір ролі після реєстрації (адміністратора так не призначити)
+export class UpdateRoleDto {
+  @ApiProperty({ enum: ['CLIENT', 'FREELANCER'] })
+  @IsIn(['CLIENT', 'FREELANCER'])
+  role!: 'CLIENT' | 'FREELANCER';
+}
+
 export class UpdateFreelancerProfileDto {
   @ApiPropertyOptional({ maxLength: 3000 })
   @IsOptional()

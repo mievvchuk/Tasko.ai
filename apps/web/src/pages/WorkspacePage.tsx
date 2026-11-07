@@ -10,6 +10,7 @@ import { useApi } from "../useApi";
 import { SecuritySettings } from "../components/SecuritySettings";
 import { FreelancerProfileEditor } from "../components/FreelancerProfileEditor";
 import { UserAvatar } from "../components/UserAvatar";
+import { RoleSwitch } from "../components/RoleSwitch";
 
 import { useLanguage } from "../i18n";
 const maxPhotoSize = 2 * 1024 * 1024;
@@ -189,7 +190,11 @@ export function WorkspacePage() {
               </button>
             </div>
           )}
-          <span className="role-pill">{tr(roleNames[user.role])}</span>
+          {user.role === "ADMIN" ? (
+            <span className="role-pill">{tr(roleNames[user.role])}</span>
+          ) : (
+            <RoleSwitch />
+          )}
           <dl className="profile-facts">
             <div>
               <dt>

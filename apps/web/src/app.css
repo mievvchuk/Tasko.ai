@@ -2022,9 +2022,56 @@ dd {
   background: var(--color-paper-3);
   color: var(--color-ink-2);
 }
-.security-form,
-.two-factor-setup {
+.security-form {
   max-width: 460px;
+}
+/* QR ліворуч, секрет і код праворуч; на вузькому екрані — одне під одним */
+.two-factor-setup {
+  grid-template-columns: 168px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-lg);
+  max-width: 640px;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+}
+.two-factor-setup img {
+  width: 168px;
+  height: 168px;
+  padding: var(--space-xs);
+  border-radius: var(--radius-input);
+  background: #fff; /* QR має лишатися чорним на білому, щоб камера його читала */
+}
+.two-factor-setup > div {
+  display: grid;
+  gap: var(--space-sm);
+  justify-items: start;
+}
+.two-factor-setup p {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+.two-factor-setup code {
+  max-width: 100%;
+  padding: var(--space-2xs) var(--space-xs);
+  border-radius: var(--radius-input);
+  background: var(--color-paper-3);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.two-factor-setup .field {
+  width: 100%;
+  max-width: 240px;
+}
+@media (max-width: 560px) {
+  .two-factor-setup {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
 }
 
 /* ===== 11. AI-помічниця ===== */
@@ -2443,14 +2490,14 @@ dd {
 }
 .auth-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
   align-items: center;
   gap: var(--space-2xl);
   flex: 1;
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--space-md) var(--space-xl);
 }
 .auth-intro {
   display: grid;
@@ -2490,6 +2537,13 @@ dd {
   gap: var(--space-sm);
   padding: var(--space-xl);
 }
+/* Реєстрація має вміщатися на 14" ноутбуці (≈1366×650) без скролу */
+.register-card {
+  padding: var(--space-md) var(--space-lg);
+}
+.register-card .form-fields {
+  gap: var(--space-sm);
+}
 .auth-card h2 {
   font-size: var(--text-xl);
 }
@@ -2501,16 +2555,6 @@ dd {
   color: var(--color-ink-2);
   font-size: var(--text-sm);
   text-align: center;
-}
-.role-selector {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-xs);
-}
-.role-selector legend {
-  margin-bottom: var(--space-xs);
-  font-size: var(--text-sm);
-  font-weight: 600;
 }
 /* Складність пароля: смужка заповнюється й змінює колір від легкого до дуже складного */
 .password-strength {
@@ -2552,75 +2596,6 @@ dd {
   transition:
     width var(--dur-short) var(--ease-out),
     background-color var(--dur-short) var(--ease-out);
-}
-/* Ролі — картки з іконкою; саму радіокнопку сховано, вибір видно рамкою й галочкою */
-.role-option {
-  position: relative;
-  display: grid !important;
-  justify-items: center;
-  gap: var(--space-2xs);
-  padding: var(--space-md) var(--space-sm);
-  border: 1px solid var(--color-rule-2);
-  border-radius: var(--radius-input);
-  text-align: center;
-  cursor: pointer;
-  transition:
-    border-color var(--dur-short) var(--ease-out),
-    background-color var(--dur-short) var(--ease-out),
-    transform var(--dur-micro) var(--ease-out);
-}
-.role-option:hover {
-  background: var(--color-paper-2);
-}
-.role-option:active {
-  transform: scale(0.98);
-}
-.role-option input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-.role-option:has(input:focus-visible) {
-  outline: 2px solid var(--color-accent-text);
-  outline-offset: 2px;
-}
-.role-icon {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--color-paper-3);
-  color: var(--color-ink-2);
-  font-size: 1.4rem;
-  transition:
-    background-color var(--dur-short) var(--ease-out),
-    color var(--dur-short) var(--ease-out);
-}
-.role-option span {
-  display: grid;
-  gap: var(--space-3xs);
-}
-.role-option small {
-  color: var(--color-muted);
-  font-weight: 400;
-}
-.role-option.selected {
-  border-color: var(--color-accent-text);
-  background: var(--color-accent-soft);
-}
-.role-option.selected .role-icon {
-  background: var(--color-accent-text);
-  color: var(--color-surface);
-}
-.role-option.selected::after {
-  content: "\f26a"; /* bi-check-circle-fill */
-  position: absolute;
-  top: var(--space-xs);
-  right: var(--space-xs);
-  color: var(--color-accent-text);
-  font-family: bootstrap-icons;
-  animation: pop-in var(--dur-short) var(--ease-out);
 }
 .public-footer {
   padding: var(--space-lg) var(--space-xl);
@@ -4354,7 +4329,6 @@ tbody tr:nth-child(n + 6) {
     padding-left: var(--space-md);
   }
   .form-grid,
-  .role-selector,
   .welcome-features,
   .welcome-steps,
   .welcome-roles {
@@ -4573,6 +4547,14 @@ tbody tr:nth-child(n + 6) {
   font-family: var(--font-display);
   font-size: var(--text-3xl);
   line-height: 1.15;
+}
+.role-switch {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-xs);
+}
+.onboarding .role-switch {
+  justify-items: center;
 }
 .onboarding-lead {
   max-width: 56ch;

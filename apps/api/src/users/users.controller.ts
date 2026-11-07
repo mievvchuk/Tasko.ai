@@ -25,6 +25,7 @@ import {
   UpdateAccountDto,
   UpdateFreelancerProfileDto,
   UpdatePortfolioItemDto,
+  UpdateRoleDto,
 } from './users.dto.js';
 import { UsersService, type CurrentUser } from './users.service.js';
 
@@ -38,6 +39,11 @@ export class UsersController {
   @Patch('profile/account')
   updateAccount(@Actor() user: CurrentUser, @Body() data: UpdateAccountDto) {
     return this.users.updateAccount(user, data);
+  }
+
+  @Patch('profile/role')
+  updateRole(@Actor() user: CurrentUser, @Body() data: UpdateRoleDto) {
+    return this.users.updateRole(user, data);
   }
 
   @Post('profile/avatar')
