@@ -7,6 +7,8 @@ import { useSearchParams } from "react-router";
 import { downloadApiFile, request, errorMessage } from "../api";
 import { formatDate, parsePage } from "../format";
 import { BarChart, ColumnChart } from "../components/Charts";
+import { AverageRow, BreakdownTable, KpiGrid, LineChart } from "../components/Metrics";
+import type { KpiItem } from "../components/Metrics";
 import type { ChartTone } from "../components/Charts";
 import {
   complaintStatusNames,
@@ -669,48 +671,249 @@ export function ReportExport() {
 }
 
 // Картки-метрики дашборда.
+// Огляд у вигляді плиток із підказками, середніх часів, активності за тиждень і розбивки
 export function AdminStats({ report }: { report: AdminReport }) {
   const { tr } = useLanguage();
-  const stats = [
-    [
-      tr("Користувачі"),
-      "bi-people",
-      report.users,
-      tr("заблоковано: {0}", report.blockedUsers),
-    ],
-    [
-      tr("Проєкти"),
-      "bi-folder",
-      report.projects,
-      tr("активні: {0}", report.activeProjects),
-    ],
-    [
-      tr("Завдання"),
-      "bi-check2-square",
-      report.tasks,
-      tr("завершено: {0}", report.tasksByStatus.DONE),
-    ],
-    [
-      tr("Прострочені"),
-      "bi-alarm",
-      report.overdueTasks,
-      tr("завдань після дедлайну"),
-    ],
-  ] as const;
+  const main: KpiItem[] = [
+    {
+      label: tr("Користувачі"),
+      value: report.users,
+      icon: "bi-people",
+      tone: "primary",
+      hint: tr("Усі облікові записи платформи."),
+    },
+    {
+      label: tr("Нові користувачі за 7 днів"),
+      value: report.week.users,
+      icon: "bi-person-plus",
+      tone: "success",
+      hint: tr("Зареєструвалися за останні 7 днів, включно з сьогодні."),
+    },
+    {
+      label: tr("Проєкти"),
+      value: report.projects,
+      icon: "bi-folder",
+      tone: "primary",
+      hint: tr("Усі проєкти незалежно від статусу."),
+    },
+    {
+      label: tr("Нові проєкти за 7 днів"),
+      value: report.week.projects,
+      icon: "bi-folder-plus",
+      tone: "success",
+      hint: tr("Створені за останні 7 днів."),
+    },
+    {
+      label: tr("Шукають виконавця"),
+      value: report.projectsByStatus.PLANNING,
+      icon: "bi-hourglass-split",
+      tone: "accent",
+      hint: tr("Проєкти на біржі, для яких ще не обрано фрілансера."),
+    },
+    {
+      label: tr("Активні проєкти"),
+      value: report.activeProjects,
+      icon: "bi-lightning-charge",
+      tone: "primary",
+      hint: tr("Виконавця обрано, триває робота."),
+    },
+    {
+      label: tr("Завершені проєкти"),
+      value: report.completedProjects,
+      icon: "bi-check2-circle",
+      tone: "success",
+      hint: tr("Роботу прийнято клієнтом."),
+    },
+    {
+      label: tr("Заблоковані користувачі"),
+      value: report.blockedUsers,
+      icon: "bi-slash-circle",
+      tone: "danger",
+      hint: tr("Облікові записи, яким адміністратор закрив доступ."),
+    },
+  ];
+  const complaints: KpiItem[] = [
+    {
+      label: tr("Нові за 7 днів"),
+      value: report.week.complaints,
+      icon: "bi-plus-lg",
+      tone: "primary",
+      hint: tr("Скарги, подані за останні 7 днів."),
+    },
+    {
+      label: tr("Очікують розгляду"),
+      value: report.complaintsByStatus.OPEN,
+      icon: "bi-exclamation-lg",
+      tone: "accent",
+      hint: tr("Скарги без рішення адміністратора."),
+    },
+    {
+      label: tr("Вирішено"),
+      value: report.complaintsByStatus.RESOLVED,
+      icon: "bi-check-lg",
+      tone: "success",
+      hint: tr("Скарги, за якими вжито заходів."),
+    },
+    {
+      label: tr("Відхилено"),
+      value: report.complaintsByStatus.REJECTED,
+      icon: "bi-x-lg",
+      tone: "danger",
+      hint: tr("Скарги, які не підтвердилися."),
+    },
+  ];
+  const applications: KpiItem[] = [
+    {
+      label: tr("Нові за 7 днів"),
+      value: report.week.applications,
+      icon: "bi-send",
+      tone: "primary",
+      hint: tr("Заявки фрілансерів за останні 7 днів."),
+    },
+    {
+      label: tr("Очікують рішення"),
+      value: report.applicationsByStatus.PENDING,
+      icon: "bi-clock",
+      tone: "accent",
+      hint: tr("Клієнт ще не прийняв і не відхилив заявку."),
+    },
+    {
+      label: tr("Прийнято"),
+      value: report.applicationsByStatus.ACCEPTED,
+      icon: "bi-person-check",
+      tone: "success",
+      hint: tr("Заявки, за якими обрано виконавця."),
+    },
+    {
+      label: tr("Відхилено"),
+      value: report.applicationsByStatus.REJECTED,
+      icon: "bi-person-x",
+      tone: "danger",
+      hint: tr("Заявки, які клієнт відхилив."),
+    },
+  ];
+  const tasks: KpiItem[] = [
+    {
+      label: tr("У процесі"),
+      value: report.tasksByStatus.IN_PROGRESS,
+      icon: "bi-arrow-repeat",
+      tone: "primary",
+      hint: tr("Завдання, над якими зараз працюють."),
+    },
+    {
+      label: tr("На перевірці"),
+      value: report.tasksByStatus.REVIEW,
+      icon: "bi-eye",
+      tone: "accent",
+      hint: tr("Роботу здано, клієнт ще не прийняв."),
+    },
+    {
+      label: tr("Завершено"),
+      value: report.tasksByStatus.DONE,
+      icon: "bi-check2-all",
+      tone: "success",
+      hint: tr("Прийняті завдання."),
+    },
+    {
+      label: tr("Прострочені"),
+      value: report.overdueTasks,
+      icon: "bi-alarm",
+      tone: "danger",
+      hint: tr("Незавершені завдання з дедлайном у минулому."),
+    },
+  ];
+  const groups: [string, KpiItem[]][] = [
+    [tr("Скарги"), complaints],
+    [tr("Заявки"), applications],
+    [tr("Завдання"), tasks],
+  ];
+  const days = report.week.days;
   return (
-    <div className="stats-grid admin-stats">
-      {stats.map(([label, icon, value, note]) => (
-        <article className="stat-card" key={label}>
-          <span className="stat-label">
-            {label}
-            <i className={`bi ${icon}`} aria-hidden="true"></i>
-          </span>
-          <strong>{value}</strong>
-          <span className="stat-note">{note}</span>
-        </article>
-      ))}
+    <div className="admin-overview-stack">
+      <KpiGrid items={main} label={tr("Основні показники")} />
+      <AverageRow
+        items={[
+          {
+            label: tr("Середній час розгляду скарги"),
+            value: formatHours(report.averageHours.complaintResolution, tr),
+            hint: tr("Від подання скарги до рішення адміністратора."),
+          },
+          {
+            label: tr("Середній час до першої заявки"),
+            value: formatHours(report.averageHours.firstApplication, tr),
+            hint: tr("Від створення проєкту до першої заявки фрілансера."),
+          },
+          {
+            label: tr("Середній час до вибору виконавця"),
+            value: formatHours(report.averageHours.hire, tr),
+            hint: tr("Від створення проєкту до прийнятої заявки."),
+          },
+        ]}
+      />
+      <div className="admin-kpi-groups">
+        {groups.map(([title, items]) => (
+          <section key={title}>
+            <h2>{title}</h2>
+            <KpiGrid items={items} label={title} compact />
+          </section>
+        ))}
+      </div>
+      <div className="admin-activity">
+        <LineChart
+          title={tr("Активність за 7 днів")}
+          labels={days.map(({ day }) => dayLabel(day))}
+          series={[
+            {
+              name: tr("Користувачі"),
+              tone: "primary",
+              values: days.map((row) => row.users),
+            },
+            {
+              name: tr("Проєкти"),
+              tone: "success",
+              values: days.map((row) => row.projects),
+            },
+            {
+              name: tr("Скарги"),
+              tone: "danger",
+              values: days.map((row) => row.complaints),
+            },
+          ]}
+        />
+        <BreakdownTable
+          title={tr("Користувачі за ролями")}
+          column={[tr("Роль"), tr("Кількість"), tr("Частка")]}
+          totalLabel={tr("Усього")}
+          rows={(Object.keys(roleNames) as UserRole[]).map((role) => ({
+            label: tr(roleNames[role]),
+            value: report.usersByRole[role],
+          }))}
+        />
+      </div>
     </div>
   );
+}
+
+// 0.5 → «30 хв», 5 → «5 год», 50 → «2,1 дн.»; null → «—»
+export function formatHours(
+  hours: number | null,
+  tr: (text: string, ...args: (string | number)[]) => string,
+) {
+  if (hours === null) return "—";
+  const number = (value: number) =>
+    value.toLocaleString(uiLocale(), { maximumFractionDigits: 1 });
+  if (hours < 1) return tr("{0} хв", Math.round(hours * 60));
+  if (hours < 48) return tr("{0} год", number(hours));
+  return tr("{0} дн.", number(hours / 24));
+}
+
+// «2026-11-07» → «07.11»
+function dayLabel(day: string) {
+  return new Date(`${day}T00:00:00Z`).toLocaleDateString(uiLocale(), {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "UTC",
+  });
 }
 
 export function GrowthChart({ report }: { report: AdminReport }) {

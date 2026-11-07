@@ -61,7 +61,9 @@ function GuestRoute() {
     } catch {
       // без сховища просто йдемо на головну
     }
-    return <Navigate to={fresh ? "/getting-started" : "/"} replace />;
+    // Адміністратор після входу одразу бачить адмін-панель; у робочий простір веде «До робочого простору»
+    const home = user.role === "ADMIN" ? "/admin" : "/";
+    return <Navigate to={fresh ? "/getting-started" : home} replace />;
   }
   return <Outlet />;
 }

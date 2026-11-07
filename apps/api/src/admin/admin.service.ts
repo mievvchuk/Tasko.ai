@@ -133,6 +133,7 @@ export class AdminService {
       'createdAt',
     ).all();
     const projects = await this.prisma.client.orm.public.Project.select(
+      'id',
       'status',
       'createdAt',
     ).all();
@@ -140,6 +141,32 @@ export class AdminService {
       'status',
       'deadline',
     ).all();
+    const complaints = await this.prisma.client.orm.public.Complaint.select(
+      'status',
+      'createdAt',
+      'updatedAt',
+    ).all();
+    const applications =
+      await this.prisma.client.orm.public.ProjectApplication.select(
+        'projectId',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ).all();
+    const days = lastDays(7);
+    const weekStart = new Date(`${days[0]}T00:00:00Z`);
+    const projectCreated = new Map(projects.map((p) => [p.id, p.createdAt]));
+    // Від створення проєкту до першої заявки та до прийнятої заявки
+    const firstApplication = new Map<string, Date>();
+    for (const application of applications) {
+      const seen = firstApplication.get(application.projectId);
+      if (!seen || application.createdAt < seen)
+        firstApplication.set(application.projectId, application.createdAt);
+    }
+    const sinceProject = (projectId: string, at: Date) => {
+      const created = projectCreated.get(projectId);
+      return created ? at.getTime() - created.getTime() : null;
+    };
     return {
       users: users.length,
       blockedUsers: users.filter((person) => person.status === 'BLOCKED')
@@ -172,6 +199,52 @@ export class AdminService {
           (project) => monthOf(project.createdAt) === month,
         ).length,
       })),
+      complaintsByStatus: countBy(
+        ['OPEN', 'RESOLVED', 'REJECTED'],
+        complaints,
+        'status',
+      ),
+      applicationsByStatus: countBy(
+        ['PENDING', 'ACCEPTED', 'REJECTED'],
+        applications,
+        'status',
+      ),
+      // Останні 7 днів: підсумки й щоденні ряди для лінійної діаграми
+      week: {
+        users: users.filter((person) => person.createdAt >= weekStart).length,
+        projects: projects.filter((project) => project.createdAt >= weekStart)
+          .length,
+        complaints: complaints.filter((c) => c.createdAt >= weekStart).length,
+        applications: applications.filter((a) => a.createdAt >= weekStart)
+          .length,
+        days: days.map((day) => ({
+          day,
+          users: users.filter((person) => dayOf(person.createdAt) === day)
+            .length,
+          projects: projects.filter((project) => dayOf(project.createdAt) === day)
+            .length,
+          complaints: complaints.filter((c) => dayOf(c.createdAt) === day)
+            .length,
+        })),
+      },
+      // Середній час у годинах; null — ще немає даних
+      averageHours: {
+        complaintResolution: averageHours(
+          complaints
+            .filter((c) => c.status !== 'OPEN')
+            .map((c) => c.updatedAt.getTime() - c.createdAt.getTime()),
+        ),
+        firstApplication: averageHours(
+          [...firstApplication].map(([projectId, at]) =>
+            sinceProject(projectId, at),
+          ),
+        ),
+        hire: averageHours(
+          applications
+            .filter((a) => a.status === 'ACCEPTED')
+            .map((a) => sinceProject(a.projectId, a.updatedAt)),
+        ),
+      },
     };
   }
 
@@ -294,6 +367,12 @@ export class AdminService {
       { label: 'Замовники', value: report.usersByRole.CLIENT },
       { label: 'Фрілансери', value: report.usersByRole.FREELANCER },
       { label: 'Адміністратори', value: report.usersByRole.ADMIN },
+      { label: 'Скарги: очікують розгляду', value: report.complaintsByStatus.OPEN },
+      { label: 'Скарги: вирішено', value: report.complaintsByStatus.RESOLVED },
+      { label: 'Скарги: відхилено', value: report.complaintsByStatus.REJECTED },
+      { label: 'Нові користувачі за 7 днів', value: report.week.users },
+      { label: 'Нові проєкти за 7 днів', value: report.week.projects },
+      { label: 'Нові заявки за 7 днів', value: report.week.applications },
     ];
   }
 
@@ -315,6 +394,33 @@ function countBy<
 // «2026-10» — місяць дати за UTC
 function monthOf(date: Date) {
   return date.toISOString().slice(0, 7);
+}
+
+// «2026-11-07» — день дати за UTC
+function dayOf(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+// Останні n днів, від найстарішого до сьогодні
+export function lastDays(n: number, now = new Date()) {
+  return Array.from({ length: n }, (_, index) =>
+    dayOf(
+      new Date(
+        Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate() - (n - 1 - index),
+        ),
+      ),
+    ),
+  );
+}
+
+function averageHours(durations: (number | null)[]) {
+  const known = durations.filter((ms): ms is number => ms !== null && ms >= 0);
+  if (known.length === 0) return null;
+  const mean = known.reduce((sum, ms) => sum + ms, 0) / known.length;
+  return Math.round((mean / 3_600_000) * 10) / 10;
 }
 
 // Останні n місяців, від найстарішого до поточного

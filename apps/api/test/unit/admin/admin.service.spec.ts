@@ -23,9 +23,33 @@ describe('AdminService reports', () => {
     { role: 'CLIENT', status: 'ACTIVE', createdAt: now },
     { role: 'FREELANCER', status: 'BLOCKED', createdAt: longAgo },
   ];
+  const hour = 3_600_000;
   const projectRows = [
-    { status: 'ACTIVE', createdAt: now },
-    { status: 'COMPLETED', createdAt: now },
+    { id: 'p1', status: 'ACTIVE', createdAt: new Date(now.getTime() - 10 * hour) },
+    { id: 'p2', status: 'COMPLETED', createdAt: now },
+  ];
+  const complaintRows = [
+    { status: 'OPEN', createdAt: now, updatedAt: now },
+    {
+      status: 'RESOLVED',
+      createdAt: new Date(now.getTime() - 4 * hour),
+      updatedAt: now,
+    },
+  ];
+  // До проєкту p1: перша заявка через 2 год, прийнята через 6 год
+  const applicationRows = [
+    {
+      projectId: 'p1',
+      status: 'ACCEPTED',
+      createdAt: new Date(now.getTime() - 8 * hour),
+      updatedAt: new Date(now.getTime() - 4 * hour),
+    },
+    {
+      projectId: 'p1',
+      status: 'REJECTED',
+      createdAt: new Date(now.getTime() - 7 * hour),
+      updatedAt: new Date(now.getTime() - 4 * hour),
+    },
   ];
   const taskRows = [
     { status: 'TODO', deadline: new Date(Date.now() - 60_000) },
@@ -37,6 +61,12 @@ describe('AdminService reports', () => {
       select: vi.fn(() => ({ all: vi.fn(async () => projectRows) })),
     },
     Task: { select: vi.fn(() => ({ all: vi.fn(async () => taskRows) })) },
+    Complaint: {
+      select: vi.fn(() => ({ all: vi.fn(async () => complaintRows) })),
+    },
+    ProjectApplication: {
+      select: vi.fn(() => ({ all: vi.fn(async () => applicationRows) })),
+    },
   };
   const prisma = { client: { orm: { public: db } } };
   const service = new AdminService(prisma as unknown as PrismaService);
@@ -57,7 +87,16 @@ describe('AdminService reports', () => {
     });
     // Поточний місяць — останній; старі записи в діаграму не потрапляють
     expect(report.growth).toHaveLength(6);
-    expect(report.growth.at(-1)).toMatchObject({ users: 1, projects: 2 });
+    expect(report.growth.at(-1)).toMatchObject({ users: 1 });
+    // p1 створено 10 год тому — на межі місяця він може потрапити в попередній
+    expect(report.growth.reduce((sum, row) => sum + row.projects, 0)).toBe(2);
+    expect(report).toMatchObject({
+      complaintsByStatus: { OPEN: 1, RESOLVED: 1, REJECTED: 0 },
+      applicationsByStatus: { PENDING: 0, ACCEPTED: 1, REJECTED: 1 },
+      week: { users: 1, projects: 2, complaints: 2, applications: 2 },
+      averageHours: { complaintResolution: 4, firstApplication: 2, hire: 6 },
+    });
+    expect(report.week.days).toHaveLength(7);
     await expect(
       service.report({ ...admin, role: 'CLIENT' }),
     ).rejects.toBeInstanceOf(ForbiddenException);

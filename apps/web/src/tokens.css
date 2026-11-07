@@ -35,6 +35,7 @@
   --radius-card: 8px; --radius-input: 6px; --radius-small: 6px; --radius-pill: 999px;
   --control: 40px;      /* висота кнопок і полів */
   --sidebar: 248px;     /* ширина бічної панелі */
+  --header: 60px;       /* висота верхньої панелі робочого простору */
   --container: 1200px;  /* максимальна ширина вмісту */
 
   /* Шари над сторінкою */
