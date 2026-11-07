@@ -650,6 +650,11 @@ export const enText: Record<string, string> = {
   "Тут ви знайдете замовлення, домовитеся про умови й здасте роботу — усе в одному місці. Ось із чого почати:":
     "Find projects, agree on terms and deliver your work — all in one place. Here is where to start:",
   "Перейти до робочого простору": "Go to the workspace",
+  "Що ви плануєте робити?": "What do you plan to do?",
+  "Шукаю виконавця": "I need a freelancer",
+  "Шукаю замовлення": "I am looking for work",
+  "Роль можна змінити в профілі, поки у вас немає проєктів і заявок.":
+    "You can change your role in your profile until you have projects or applications.",
   "Опишіть перший проєкт": "Describe your first project",
   "Назва, бюджет, дедлайн і потрібні навички. Проєкт одразу побачать фрілансери.":
     "Title, budget, deadline and required skills. Freelancers will see the project right away.",

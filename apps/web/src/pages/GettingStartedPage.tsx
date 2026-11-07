@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { useAuth } from "../auth";
 import { BrandMark } from "../components/BrandMark";
 import { BrandWord } from "../components/BrandWord";
+import { RoleSwitch } from "../components/RoleSwitch";
 import { useLanguage } from "../i18n";
 
 // Позначка «щойно зареєструвався»: після входу GuestRoute веде сюди, а не на головну
@@ -83,6 +84,7 @@ export function GettingStartedPage() {
           <i className="bi bi-stars"></i>
         </div>
         <h1>{tr("Вітаємо в Tasko.ai, {0}!", firstName)}</h1>
+        <RoleSwitch />
         <p className="onboarding-lead">
           {role === "CLIENT"
             ? tr(

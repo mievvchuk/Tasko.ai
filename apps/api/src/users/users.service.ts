@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -17,6 +18,7 @@ import type {
   UpdateAccountDto,
   UpdateFreelancerProfileDto,
   UpdatePortfolioItemDto,
+  UpdateRoleDto,
 } from './users.dto.js';
 
 export type UserRole = 'CLIENT' | 'FREELANCER' | 'ADMIN';
@@ -77,6 +79,29 @@ export class UsersService {
     const updated = await this.prisma.client.orm.public.User.where({
       id: user.id,
     }).update({ name: data.name, updatedAt: new Date() });
+    return toPublicUser(updated!);
+  }
+
+  // Роль обирають на вітальній сторінці; міняти можна, лише поки немає проєктів і заявок,
+  // бо від ролі залежать права в уже наявних проєктах
+  async updateRole(user: CurrentUser, data: UpdateRoleDto) {
+    if (user.role === 'ADMIN')
+      throw new ForbiddenException('Роль адміністратора не змінюється тут.');
+    if (user.role === data.role) return toPublicUser(await this.requireUser(user.id));
+    const db = this.prisma.client.orm.public;
+    const [project, application, membership] = await Promise.all([
+      db.Project.where({ clientId: user.id }).first(),
+      db.ProjectApplication.where({ freelancerId: user.id }).first(),
+      db.ProjectMember.where({ userId: user.id }).first(),
+    ]);
+    if (project || application || membership)
+      throw new ConflictException(
+        'Роль можна змінити, лише поки у вас немає проєктів і заявок.',
+      );
+    const updated = await db.User.where({ id: user.id }).update({
+      role: data.role,
+      updatedAt: new Date(),
+    });
     return toPublicUser(updated!);
   }
 

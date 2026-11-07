@@ -18,7 +18,6 @@ export function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [role, setRole] = useState<"CLIENT" | "FREELANCER">("CLIENT");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const strength = passwordStrength(password);
@@ -39,7 +38,8 @@ export function RegisterPage() {
     try {
       await request("/auth/register", {
         method: "POST",
-        body: { name: name.trim(), email: email.trim(), password, role },
+        // Роль не питаємо: стартова — клієнт, людина обирає її на вітальній сторінці
+        body: { name: name.trim(), email: email.trim(), password, role: "CLIENT" },
         auth: false,
         timeoutMs: 45000,
       });
@@ -75,45 +75,6 @@ export function RegisterPage() {
       <p className="card-description">{t("registerDescription")}</p>
       <form onSubmit={submit} aria-busy={submitting}>
         <fieldset disabled={submitting} className="form-fields">
-          <fieldset className="role-selector">
-            <legend>{t("roleQuestion")}</legend>
-            <label
-              className={
-                role === "CLIENT" ? "role-option selected" : "role-option"
-              }
-            >
-              <input
-                type="radio"
-                name="role"
-                value="CLIENT"
-                checked={role === "CLIENT"}
-                onChange={() => setRole("CLIENT")}
-              />
-              <i className="bi bi-briefcase role-icon" aria-hidden="true"></i>
-              <span>
-                <strong>{t("client")}</strong>
-                <small>{t("clientHint")}</small>
-              </span>
-            </label>
-            <label
-              className={
-                role === "FREELANCER" ? "role-option selected" : "role-option"
-              }
-            >
-              <input
-                type="radio"
-                name="role"
-                value="FREELANCER"
-                checked={role === "FREELANCER"}
-                onChange={() => setRole("FREELANCER")}
-              />
-              <i className="bi bi-laptop role-icon" aria-hidden="true"></i>
-              <span>
-                <strong>{t("freelancer")}</strong>
-                <small>{t("freelancerHint")}</small>
-              </span>
-            </label>
-          </fieldset>
           <div className="field">
             <label htmlFor="name">{t("name")}</label>
             <input
@@ -142,13 +103,22 @@ export function RegisterPage() {
               placeholder="you@example.com"
             />
           </div>
-          <PasswordInput
-            id="password"
-            label={t("password")}
-            value={password}
-            onChange={setPassword}
-            autoComplete="new-password"
-          />
+          <div className="form-grid">
+            <PasswordInput
+              id="password"
+              label={t("password")}
+              value={password}
+              onChange={setPassword}
+              autoComplete="new-password"
+            />
+            <PasswordInput
+              id="confirmation"
+              label={t("repeatPassword")}
+              value={confirmation}
+              onChange={setConfirmation}
+              autoComplete="new-password"
+            />
+          </div>
           {password ? (
             <div
               className={`password-strength level-${strength}`}
@@ -166,13 +136,6 @@ export function RegisterPage() {
           ) : (
             <p className="field-hint">{t("passwordHint")}</p>
           )}
-          <PasswordInput
-            id="confirmation"
-            label={t("repeatPassword")}
-            value={confirmation}
-            onChange={setConfirmation}
-            autoComplete="new-password"
-          />
           {error && (
             <div className="notice error" role="alert">
               {error}
