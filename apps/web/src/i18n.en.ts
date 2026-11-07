@@ -1054,4 +1054,10 @@ export const enText: Record<string, string> = {
   "{0} хв": "{0} min",
   "{0} год": "{0} h",
   "{0} дн.": "{0} d",
+  // Видалення користувача адміністратором
+  "Видалити {0}?": "Delete {0}?",
+  "Якщо в користувача немає проєктів, повідомлень чи заявок, обліковий запис зникне повністю. Інакше зітремо ім'я, пошту, фото й профіль, а в історії проєктів лишиться «Видалений користувач». Дію не можна скасувати.": "If the user has no projects, messages or applications, the account is removed completely. Otherwise we erase the name, email, photo and profile, and project history keeps \"Deleted user\". This cannot be undone.",
+  "Видаляємо…": "Deleting…",
+  "Так, видалити": "Yes, delete",
+  "Видалити користувача": "Delete user",
 };

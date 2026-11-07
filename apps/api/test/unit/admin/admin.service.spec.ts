@@ -187,6 +187,71 @@ describe('AdminService reports', () => {
     });
   });
 
+  describe('deleting users', () => {
+    // Таблиці в пам'яті: where() фільтрує за рівністю полів
+    let tables: Record<string, Record<string, unknown>[]>;
+    const matches = (row: Record<string, unknown>, filter: Record<string, unknown>) =>
+      Object.entries(filter).every(([key, value]) => row[key] === value);
+    const table = (name: string) => ({
+      where: (filter: Record<string, unknown>) => {
+        const rows = () => (tables[name] ??= []).filter((row) => matches(row, filter));
+        return {
+          first: async () => rows()[0] ?? null,
+          delete: async () => { tables[name] = tables[name].filter((row) => row !== rows()[0]); },
+          deleteAll: async () => { const gone = rows(); tables[name] = tables[name].filter((row) => !gone.includes(row)); },
+          update: async (data: Record<string, unknown>) => Object.assign(rows()[0], data),
+          updateAll: async (data: Record<string, unknown>) => rows().forEach((row) => Object.assign(row, data)),
+        };
+      },
+    });
+    const names = ['User', 'Project', 'ProjectMember', 'Task', 'ProjectApplication', 'Message', 'WorkSubmission', 'FreelancerReview', 'Complaint', 'FileAttachment', 'ActivityLog', 'AuthSession', 'Notification', 'FavoriteProject', 'FreelancerSkill', 'PortfolioItem', 'FreelancerProfile'];
+    const orm = { public: Object.fromEntries(names.map((name) => [name, table(name)])) };
+    const service = new AdminService({
+      client: { orm, transaction: (run: (t: { orm: typeof orm }) => unknown) => run({ orm }) },
+    } as unknown as PrismaService);
+
+    beforeEach(() => {
+      tables = {
+        User: [
+          { id: 'fresh', name: 'Новий', email: 'fresh@example.com', role: 'CLIENT' },
+          { id: 'busy', name: 'Іван', email: 'busy@example.com', role: 'FREELANCER', avatarUrl: '/avatars/a.png' },
+          { id: 'other-admin', role: 'ADMIN' },
+        ],
+        Message: [{ senderId: 'busy' }],
+        ProjectApplication: [{ freelancerId: 'busy', portfolioItemId: 'p1' }],
+        PortfolioItem: [{ id: 'p1', userId: 'busy' }],
+        AuthSession: [{ userId: 'busy' }, { userId: 'fresh' }],
+      };
+    });
+
+    it('removes a user without history completely', async () => {
+      await expect(service.remove(admin, 'fresh')).resolves.toMatchObject({ mode: 'deleted' });
+      expect(tables.User.find((u) => u.id === 'fresh')).toBeUndefined();
+      expect(tables.AuthSession.some((s) => s.userId === 'fresh')).toBe(false);
+    });
+
+    it('keeps history but wipes personal data of an active user', async () => {
+      await expect(service.remove(admin, 'busy')).resolves.toMatchObject({ mode: 'anonymized' });
+      expect(tables.User.find((u) => u.id === 'busy')).toMatchObject({
+        name: 'Видалений користувач',
+        email: 'deleted-busy@deleted.tasko',
+        status: 'BLOCKED',
+        avatarUrl: null,
+      });
+      expect(tables.Message).toHaveLength(1);
+      expect(tables.PortfolioItem).toHaveLength(0);
+      expect(tables.ProjectApplication[0].portfolioItemId).toBeNull();
+      expect(tables.AuthSession.some((s) => s.userId === 'busy')).toBe(false);
+    });
+
+    it('never deletes admins, yourself, or for non-admins', async () => {
+      await expect(service.remove(admin, 'other-admin')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.remove(admin, 'admin-id')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.remove({ ...admin, role: 'CLIENT' }, 'fresh')).rejects.toBeInstanceOf(ForbiddenException);
+      expect(tables.User).toHaveLength(3);
+    });
+  });
+
   it('lists the last months oldest first, across a year boundary', () => {
     expect(lastMonths(3, new Date('2026-01-20T00:00:00Z'))).toEqual([
       '2025-11',

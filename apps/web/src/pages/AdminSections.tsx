@@ -330,7 +330,22 @@ export function UserDialog({
   const [status, setStatus] = useState(user.status);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const unchanged = role === user.role && status === user.status;
+
+  async function remove() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await request(`/admin/users/${user.id}`, { method: "DELETE" });
+      onSaved();
+      onClose();
+    } catch (error) {
+      setError(errorMessage(error));
+      setBusy(false);
+    }
+  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -389,6 +404,44 @@ export function UserDialog({
         <p className="form-note">
           {tr("Роль адміністратора так не видається — створіть окремий акаунт адміністратора.")}
         </p>
+        {confirmDelete ? (
+          <div className="notice error admin-delete-confirm" role="alert">
+            <p>
+              <strong>{tr("Видалити {0}?", user.name)}</strong>{" "}
+              {tr(
+                "Якщо в користувача немає проєктів, повідомлень чи заявок, обліковий запис зникне повністю. Інакше зітремо ім'я, пошту, фото й профіль, а в історії проєктів лишиться «Видалений користувач». Дію не можна скасувати.",
+              )}
+            </p>
+            <div className="admin-dialog-actions">
+              <button
+                className="button secondary"
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmDelete(false)}
+              >
+                {tr("Скасувати")}
+              </button>
+              <button
+                className="button danger-outline"
+                type="button"
+                disabled={busy}
+                onClick={() => void remove()}
+              >
+                {busy ? tr("Видаляємо…") : tr("Так, видалити")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            className="button danger-outline admin-delete-user"
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmDelete(true)}
+          >
+            <i className="bi bi-trash3" aria-hidden="true"></i>
+            {tr("Видалити користувача")}
+          </button>
+        )}
         {error && (
           <p className="notice error" role="alert">
             {error}

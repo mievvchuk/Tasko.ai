@@ -1,4 +1,4 @@
-import {Body,Controller,Get,Inject,Param,ParseUUIDPipe,Patch,Post,Query,Res,UseGuards,} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Inject,Param,ParseUUIDPipe,Patch,Post,Query,Res,UseGuards,} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Actor } from '../auth/current-user.decorator.js';
@@ -30,6 +30,12 @@ export class AdminController {
     @Body() data: UpdateUserDto,
   ) {
     return this.admin.update(user, id, data);
+  }
+  @Delete('users/:id') remove(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.admin.remove(user, id);
   }
   @Post('admins') createAdmin(
     @Actor() user: CurrentUser,
