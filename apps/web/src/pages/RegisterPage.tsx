@@ -5,22 +5,19 @@ import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
 import { justRegisteredKey } from "./GettingStartedPage";
 import { PasswordInput } from "../components/PasswordInput";
-import { passwordStrength } from "../format";
+import { PasswordStrength } from "../components/PasswordStrength";
 import { useLanguage } from "../i18n";
-
-const strengthNames = ["", "Легкий", "Середній", "Складний", "Дуже складний"];
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { t, tr } = useLanguage();
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const strength = passwordStrength(password);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,7 +36,12 @@ export function RegisterPage() {
       await request("/auth/register", {
         method: "POST",
         // Роль не питаємо: стартова — клієнт, людина обирає її на вітальній сторінці
-        body: { name: name.trim(), email: email.trim(), password, role: "CLIENT" },
+        body: {
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          role: "CLIENT",
+        },
         auth: false,
         timeoutMs: 45000,
       });
@@ -119,23 +121,7 @@ export function RegisterPage() {
               autoComplete="new-password"
             />
           </div>
-          {password ? (
-            <div
-              className={`password-strength level-${strength}`}
-              aria-live="polite"
-            >
-              <span className="password-strength-bar" aria-hidden="true">
-                <i></i>
-              </span>
-              <span>
-                {tr("Складність:")}{" "}
-                <strong>{tr(strengthNames[strength])}</strong>
-                {password.length < 8 && ` · ${t("passwordHint")}`}
-              </span>
-            </div>
-          ) : (
-            <p className="field-hint">{t("passwordHint")}</p>
-          )}
+          <PasswordStrength password={password} />
           {error && (
             <div className="notice error" role="alert">
               {error}

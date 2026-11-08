@@ -164,7 +164,8 @@ export class AuthService {
       !account ||
       !(await verifyPassword(data.currentPassword, account.passwordHash))
     ) {
-      throw new UnauthorizedException('Поточний пароль неправильний.');
+      // 400, а не 401: інакше інтерфейс вважає сеанс завершеним і виходить з акаунта
+      throw new BadRequestException('Поточний пароль неправильний.');
     }
     if (data.currentPassword === data.newPassword)
       throw new BadRequestException(
@@ -212,7 +213,7 @@ export class AuthService {
       !account ||
       !(await verifyPassword(data.password, account.passwordHash))
     )
-      throw new UnauthorizedException('Пароль неправильний.');
+      throw new BadRequestException('Пароль неправильний.');
     if (!this.isValidTotp(account.twoFactorSecret, data.code))
       throw new BadRequestException('Код 2FA неправильний або прострочений.');
     await this.db.User.where({ id: user.id }).update({
