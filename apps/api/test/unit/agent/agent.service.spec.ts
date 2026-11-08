@@ -1,6 +1,9 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { AgentService, offTopicAnswer } from '../../../src/agent/agent.service.js';
+import {
+  AgentService,
+  offTopicAnswer,
+} from '../../../src/agent/agent.service.js';
 import { McpService } from '../../../src/agent/mcp.service.js';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { AnalyticsService } from '../../../src/analytics/analytics.service.js';
@@ -252,6 +255,32 @@ describe('AI through MCP', () => {
       'assistant',
       'user',
     ]);
+  });
+  it('tells the model that an admin does not create projects', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(topicResponse(true))
+      .mockResolvedValueOnce(
+        planResponse(
+          'Проєкти створюють клієнти, а адміністратор керує платформою.',
+        ),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+    await new AgentService(
+      config,
+      mcp,
+      projects as unknown as ProjectsService,
+    ).chat({ ...user, role: 'ADMIN' }, 'Хочу створити месенджер KOLO');
+    const chatBody = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(chatBody.messages[0].content).toContain(
+      'Користувач — адміністратор',
+    );
+    // Інструмента чернетки проєкту в адміністратора немає
+    expect(
+      chatBody.tools.map(
+        (tool: { function: { name: string } }) => tool.function.name,
+      ),
+    ).not.toContain('draft_project');
   });
   it('preserves upstream throttling as 429', async () => {
     vi.stubGlobal(
