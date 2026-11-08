@@ -229,9 +229,13 @@ export interface Task {
   assigneeId: string | null;
   status: TaskStatus;
   priority: "LOW" | "MEDIUM" | "HIGH";
+  rating?: number | null;
   deadline: string | null;
   columnId?: string | null;
 }
+// Рейтинг завдання 1–5 зірками: «★★★☆☆»
+export const ratingStars = (rating: number) =>
+  "★".repeat(rating) + "☆".repeat(5 - rating);
 
 // Власна колонка канбану проєкту (етап усередині «У процесі»)
 export interface BoardColumn {

@@ -140,6 +140,7 @@ export class TasksService {
       description: data.description ?? null,
       assigneeId: data.assigneeId ?? null,
       priority: data.priority ?? 'MEDIUM',
+      rating: data.rating ?? null,
       status: 'TODO',
       deadline: data.deadline ? new Date(data.deadline) : null,
       createdAt: now,
@@ -189,6 +190,7 @@ export class TasksService {
         : {}),
       ...(data.assigneeId !== undefined ? { assigneeId: data.assigneeId } : {}),
       ...(data.priority !== undefined ? { priority: data.priority } : {}),
+      ...(data.rating !== undefined ? { rating: data.rating } : {}),
       ...(data.deadline !== undefined
         ? { deadline: data.deadline ? new Date(data.deadline) : null }
         : {}),

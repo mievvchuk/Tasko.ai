@@ -1578,7 +1578,6 @@ dd {
 
 /* ===== 10. Форми сторінок ===== */
 .project-form-panel {
-  max-width: 860px;
   padding: var(--space-lg);
 }
 .form-fields,

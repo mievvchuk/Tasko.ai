@@ -1,16 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import {
-  ArrayMaxSize,
-  IsArray,
-  IsBoolean,
-  IsDateString,
-  IsIn,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Length,
-  ValidateIf,
-} from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min, ValidateIf } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PageDto } from '../projects/projects.dto.js';
 
@@ -35,6 +24,12 @@ export class CreateTaskDto {
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsIn(['LOW', 'MEDIUM', 'HIGH'])
   priority?: string;
+  @ApiPropertyOptional({ minimum: 1, maximum: 5, nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating?: number | null;
   @ApiPropertyOptional({ format: 'date-time' })
   @IsOptional()
   @IsDateString()

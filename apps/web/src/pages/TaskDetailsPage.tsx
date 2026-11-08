@@ -6,7 +6,7 @@ import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
 import { Pagination, ResourceState } from "../components/ResourceState";
-import { priorityNames, taskStatusNames } from "../types";
+import { priorityNames, ratingStars, taskStatusNames } from "../types";
 import type { Task, Project, ProjectMember, WorkSubmission } from "../types";
 import {
   ErrorNotice,
@@ -128,6 +128,15 @@ export function TaskDetailsPage() {
           </Fact>
           <Fact label={tr("Пріоритет")}>
             {tr(priorityNames[currentTask.priority])}
+          </Fact>
+          <Fact label={tr("Рейтинг")}>
+            {currentTask.rating ? (
+              <span aria-label={`${currentTask.rating} / 5`}>
+                {ratingStars(currentTask.rating)}
+              </span>
+            ) : (
+              tr("Не задано")
+            )}
           </Fact>
           <Fact label={tr("Виконавець")}>{assigneeName}</Fact>
           <Fact label={tr("Дедлайн")}>

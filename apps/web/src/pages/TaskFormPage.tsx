@@ -6,7 +6,7 @@ import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { ResourceState } from "../components/ResourceState";
 import { dateInputEnd, toDateInput } from "../format";
-import { priorityNames } from "../types";
+import { priorityNames, ratingStars } from "../types";
 import type { Project, ProjectMember, Task } from "../types";
 
 import { useLanguage } from "../i18n";
@@ -86,6 +86,7 @@ function TaskForm({
   const [priority, setPriority] = useState<Task["priority"]>(
     task?.priority || "MEDIUM",
   );
+  const [rating, setRating] = useState(task?.rating ? String(task.rating) : "");
   const [deadline, setDeadline] = useState(
     toDateInput(task?.deadline || null),
   );
@@ -119,9 +120,15 @@ function TaskForm({
         title: string;
         description: string;
         priority: Task["priority"];
+        rating: number | null;
         assigneeId?: string | null;
         deadline?: string | null;
-      } = { title: title.trim(), description, priority };
+      } = {
+        title: title.trim(),
+        description,
+        priority,
+        rating: rating ? Number(rating) : null,
+      };
       if (assigneeId !== (task?.assigneeId || ""))
         body.assigneeId = assigneeId || null;
       if (deadline !== toDateInput(task?.deadline || null)) {
@@ -209,6 +216,21 @@ function TaskForm({
                   {Object.entries(priorityNames).map(([value, label]) => (
                     <option key={value} value={value}>
                       {tr(label)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="project-form-field">
+                <label htmlFor="task-form-rating">{tr("Рейтинг")}</label>
+                <select
+                  id="task-form-rating"
+                  value={rating}
+                  onChange={(event) => setRating(event.target.value)}
+                >
+                  <option value="">{tr("Не задано")}</option>
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <option key={value} value={value}>
+                      {ratingStars(value)} ({value})
                     </option>
                   ))}
                 </select>
