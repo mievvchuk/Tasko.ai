@@ -26,41 +26,101 @@ const users = [
     id: id(1),
     name: 'Олена Коваль',
     // Прості пошти для трьох головних акаунтів — їх зручно вводити на захисті
-    email: 'olena.koval@tasko.example',
+    email: 'olena.koval@tasko.ai',
     role: 'CLIENT',
   },
   {
     id: id(2),
     name: 'Микола Шевченко',
-    email: 'mykola.shevchenko@tasko.example',
+    email: 'mykola.shevchenko@tasko.ai',
     role: 'CLIENT',
   },
   {
     id: id(3),
     name: 'Андрій Мельник',
-    email: 'andrii.melnyk@tasko.example',
+    email: 'andrii.melnyk@tasko.ai',
     role: 'FREELANCER',
   },
   {
     id: id(4),
     name: 'Ірина Бондар',
-    email: 'iryna.bondar@tasko.example',
+    email: 'iryna.bondar@tasko.ai',
     role: 'FREELANCER',
   },
   {
     id: id(5),
     name: 'Дмитро Савчук',
-    email: 'dmytro.savchuk@tasko.example',
+    email: 'dmytro.savchuk@tasko.ai',
     role: 'FREELANCER',
   },
   {
     id: id(6),
     name: 'Адміністратор',
-    email: 'admin@tasko.example',
+    email: 'admin@tasko.ai',
     role: 'ADMIN',
   },
 ];
 const [client1, client2, freelancer1, freelancer2, freelancer3, admin] = users;
+
+// Ще 50 акаунтів: 15 клієнтів і 35 фрілансерів (у них профіль і навички нижче)
+const extraPeople = [
+  ['Оксана Ткаченко', 'oksana.tkachenko', 'CLIENT'],
+  ['Віталій Кравченко', 'vitalii.kravchenko', 'CLIENT'],
+  ['Людмила Бойко', 'liudmyla.boiko', 'CLIENT'],
+  ['Сергій Поліщук', 'serhii.polishchuk', 'CLIENT'],
+  ['Тетяна Лисенко', 'tetiana.lysenko', 'CLIENT'],
+  ['Олександр Руденко', 'oleksandr.rudenko', 'CLIENT'],
+  ['Наталія Мороз', 'nataliia.moroz', 'CLIENT'],
+  ['Ігор Марченко', 'ihor.marchenko', 'CLIENT'],
+  ['Світлана Павленко', 'svitlana.pavlenko', 'CLIENT'],
+  ['Роман Козак', 'roman.kozak', 'CLIENT'],
+  ['Галина Литвин', 'halyna.lytvyn', 'CLIENT'],
+  ['Володимир Гриценко', 'volodymyr.hrytsenko', 'CLIENT'],
+  ['Марія Карпенко', 'mariia.karpenko', 'CLIENT'],
+  ['Юрій Остапчук', 'yurii.ostapchuk', 'CLIENT'],
+  ['Ольга Захарченко', 'olha.zakharchenko', 'CLIENT'],
+  ['Максим Савченко', 'maksym.savchenko', 'FREELANCER'],
+  ['Аліса Гуменюк', 'alisa.humeniuk', 'FREELANCER'],
+  ['Богдан Ковальчук', 'bohdan.kovalchuk', 'FREELANCER'],
+  ['Катерина Петренко', 'kateryna.petrenko', 'FREELANCER'],
+  ['Данило Остапенко', 'danylo.ostapenko', 'FREELANCER'],
+  ['Соломія Савчин', 'solomiia.savchyn', 'FREELANCER'],
+  ['Арсен Ковтун', 'arsen.kovtun', 'FREELANCER'],
+  ['Юлія Шевчук', 'yuliia.shevchuk', 'FREELANCER'],
+  ['Назар Бондаренко', 'nazar.bondarenko', 'FREELANCER'],
+  ['Дарина Коваленко', 'daryna.kovalenko', 'FREELANCER'],
+  ['Тарас Мельничук', 'taras.melnychuk', 'FREELANCER'],
+  ['Вікторія Сидоренко', 'viktoriia.sydorenko', 'FREELANCER'],
+  ['Олег Гончар', 'oleh.honchar', 'FREELANCER'],
+  ['Ірина Федоренко', 'iryna.fedorenko', 'FREELANCER'],
+  ['Євген Клименко', 'yevhen.klymenko', 'FREELANCER'],
+  ['Аліна Демченко', 'alina.demchenko', 'FREELANCER'],
+  ['Павло Василенко', 'pavlo.vasylenko', 'FREELANCER'],
+  ['Христина Іваненко', 'khrystyna.ivanenko', 'FREELANCER'],
+  ['Станіслав Зінченко', 'stanislav.zinchenko', 'FREELANCER'],
+  ['Діана Кузьменко', 'diana.kuzmenko', 'FREELANCER'],
+  ['Микита Пономаренко', 'mykyta.ponomarenko', 'FREELANCER'],
+  ['Валерія Тимошенко', 'valeriia.tymoshenko', 'FREELANCER'],
+  ['Кирило Нестеренко', 'kyrylo.nesterenko', 'FREELANCER'],
+  ['Яна Гаврилюк', 'yana.havryliuk', 'FREELANCER'],
+  ['Ростислав Яковенко', 'rostyslav.yakovenko', 'FREELANCER'],
+  ['Мирослава Лук’яненко', 'myroslava.lukianenko', 'FREELANCER'],
+  ['Андрій Прокопенко', 'andrii.prokopenko', 'FREELANCER'],
+  ['Олена Семенюк', 'olena.semeniuk', 'FREELANCER'],
+  ['Владислав Дорошенко', 'vladyslav.doroshenko', 'FREELANCER'],
+  ['Зоряна Мартинюк', 'zoriana.martyniuk', 'FREELANCER'],
+  ['Ілля Білоус', 'illia.bilous', 'FREELANCER'],
+  ['Ангеліна Чорновол', 'anhelina.chornovol', 'FREELANCER'],
+  ['Віктор Довженко', 'viktor.dovzhenko', 'FREELANCER'],
+  ['Уляна Кушнір', 'uliana.kushnir', 'FREELANCER'],
+  ['Георгій Соловйов', 'heorhii.soloviov', 'FREELANCER'],
+].map(([name, local, role], index) => ({
+  id: id(2001 + index),
+  name,
+  email: `${local}@tasko.ai`,
+  role,
+}));
+users.push(...extraPeople);
 // Каталог, у якому API зберігає завантажені файли (див. files.service.ts).
 const storageDirectory = new URL('../storage/', import.meta.url);
 const credentialsDirectory = new URL('../../../.tmp/', import.meta.url);
@@ -129,6 +189,17 @@ try {
       created[model] = (created[model] || 0) + 1;
     }
 
+    // Акаунти з попередніх заповнень (@tasko.example) переходять на @tasko.ai
+    for (const old of await models.User.select('id', 'email').all()) {
+      if (!old.email.endsWith('@tasko.example')) continue;
+      const email = old.email.replace(/@tasko\.example$/, '@tasko.ai');
+      if (await models.User.where({ email }).first()) continue;
+      await models.User.where({ id: old.id }).update({
+        email,
+        updatedAt: new Date(),
+      });
+      created.UserEmail = (created.UserEmail || 0) + 1;
+    }
     for (const user of users) {
       const existing = await models.User.where({ email: user.email }).first();
       if (
@@ -567,6 +638,41 @@ try {
       [freelancer2.id, skills[3].id],
     ])
       await addBy('FreelancerSkill', { userId, skillId }, { userId, skillId });
+    const bios = [
+      'Фронтенд-розробник: React, TypeScript, адаптивна верстка.',
+      'Бекенд на Node.js і NestJS, проєктую REST API та бази даних.',
+      'UI/UX-дизайнер, працюю у Figma від прототипу до дизайн-системи.',
+      'Full-stack розробник, доводжу проєкти від ідеї до запуску.',
+      'Дизайнер інтерфейсів мобільних застосунків.',
+    ];
+    const skillSets = [
+      [skills[0], skills[1]],
+      [skills[0], skills[2]],
+      [skills[3]],
+      [skills[0], skills[1], skills[2]],
+      [skills[1], skills[3]],
+    ];
+    for (const [index, person] of extraPeople
+      .filter((person) => person.role === 'FREELANCER')
+      .entries()) {
+      await addBy(
+        'FreelancerProfile',
+        { userId: person.id },
+        {
+          userId: person.id,
+          bio: bios[index % bios.length],
+          hourlyRate: 300 + ((index * 70) % 900),
+          availability: ['AVAILABLE', 'AVAILABLE', 'BUSY'][index % 3],
+          updatedAt: date(0),
+        },
+      );
+      for (const skill of skillSets[index % skillSets.length])
+        await addBy(
+          'FreelancerSkill',
+          { userId: person.id, skillId: skill.id },
+          { userId: person.id, skillId: skill.id },
+        );
+    }
     await addBy(
       'FavoriteProject',
       { userId: freelancer3.id, projectId: design.id },
