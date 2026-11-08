@@ -48,6 +48,7 @@ export function AdminLayout() {
   const sections = [
     ["/admin", "bi-speedometer2", tr("Огляд")],
     ["/admin/users", "bi-people", tr("Користувачі")],
+    ["/admin/moderation", "bi-patch-check", tr("Модерація")],
     ["/admin/projects", "bi-folder", tr("Проєкти")],
     ["/admin/complaints", "bi-flag", tr("Скарги")],
   ];
@@ -61,7 +62,9 @@ export function AdminLayout() {
         <Link className="admin-brand" to="/admin" onClick={close}>
           <BrandMark />
           <span>
-            <strong><BrandWord /></strong>
+            <strong>
+              <BrandWord />
+            </strong>
             <small>{t("administration")}</small>
           </span>
         </Link>

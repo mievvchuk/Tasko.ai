@@ -7,7 +7,12 @@ import { useSearchParams } from "react-router";
 import { downloadApiFile, request, errorMessage } from "../api";
 import { formatDate, parsePage } from "../format";
 import { BarChart, ColumnChart } from "../components/Charts";
-import { AverageRow, BreakdownTable, KpiGrid, LineChart } from "../components/Metrics";
+import {
+  AverageRow,
+  BreakdownTable,
+  KpiGrid,
+  LineChart,
+} from "../components/Metrics";
 import type { KpiItem } from "../components/Metrics";
 import type { ChartTone } from "../components/Charts";
 import {
@@ -180,9 +185,7 @@ export function DataTable<T extends { id: string }>({
   empty: string;
 }) {
   const { tr } = useLanguage();
-  const [sort, setSort] = useState<{ key: string; desc: boolean } | null>(
-    null,
-  );
+  const [sort, setSort] = useState<{ key: string; desc: boolean } | null>(null);
   const sortBy = columns.find((column) => column.key === sort?.key)?.sort;
   const sorted = sortBy
     ? [...rows].sort((a, b) => {
@@ -215,7 +218,11 @@ export function DataTable<T extends { id: string }>({
                   key={column.key}
                   scope="col"
                   aria-sort={
-                    active ? (sort.desc ? "descending" : "ascending") : undefined
+                    active
+                      ? sort.desc
+                        ? "descending"
+                        : "ascending"
+                      : undefined
                   }
                 >
                   {column.sort ? (
@@ -402,7 +409,9 @@ export function UserDialog({
           </div>
         </fieldset>
         <p className="form-note">
-          {tr("Роль адміністратора так не видається — створіть окремий акаунт адміністратора.")}
+          {tr(
+            "Роль адміністратора так не видається — створіть окремий акаунт адміністратора.",
+          )}
         </p>
         {confirmDelete ? (
           <div className="notice error admin-delete-confirm" role="alert">
@@ -592,7 +601,10 @@ export function ComplaintDialog({
     try {
       await request(`/admin/complaints/${complaint.id}`, {
         method: "PATCH",
-        body: { status, adminNote: note.trim() || tr("Рішення адміністратора") },
+        body: {
+          status,
+          adminNote: note.trim() || tr("Рішення адміністратора"),
+        },
       });
       onDecided();
       onClose();
@@ -673,7 +685,13 @@ export function complaintTarget(complaint: ComplaintWithDetails) {
   return complaint.targetUser?.name || complaint.project?.title || "";
 }
 
-export function StatusPill({ status, label }: { status: string; label: string }) {
+export function StatusPill({
+  status,
+  label,
+}: {
+  status: string;
+  label: string;
+}) {
   return <span className={`project-status status-${status}`}>{label}</span>;
 }
 
@@ -728,6 +746,13 @@ export function ReportExport() {
 export function AdminStats({ report }: { report: AdminReport }) {
   const { tr } = useLanguage();
   const main: KpiItem[] = [
+    {
+      label: tr("На модерації"),
+      value: report.projectsByStatus.MODERATION ?? 0,
+      icon: "bi-patch-question",
+      tone: "accent",
+      hint: tr("Нові проєкти, які чекають на рішення адміністратора."),
+    },
     {
       label: tr("Користувачі"),
       value: report.users,
@@ -1015,13 +1040,11 @@ export function BreakdownCharts({ report }: { report: AdminReport }) {
       />
       <BarChart
         title={tr("Завдання за статусами")}
-        items={(Object.keys(taskStatusNames) as TaskStatus[]).map(
-          (status) => ({
-            label: tr(taskStatusNames[status]),
-            value: report.tasksByStatus[status],
-            tone: taskTones[status],
-          }),
-        )}
+        items={(Object.keys(taskStatusNames) as TaskStatus[]).map((status) => ({
+          label: tr(taskStatusNames[status]),
+          value: report.tasksByStatus[status],
+          tone: taskTones[status],
+        }))}
       />
     </div>
   );
@@ -1040,6 +1063,8 @@ const taskTones: Record<TaskStatus, ChartTone> = {
   DONE: "success",
 };
 const projectTones: Record<ProjectStatus, ChartTone> = {
+  MODERATION: "accent",
+  REJECTED: "danger",
   PLANNING: "muted",
   ACTIVE: "primary",
   PAUSED: "accent",

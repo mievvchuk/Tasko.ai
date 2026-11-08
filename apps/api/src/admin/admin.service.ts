@@ -14,13 +14,18 @@ import { fileURLToPath } from 'node:url';
 import { or } from '@prisma/orm-postgres/orm-client';
 import { hashPassword, verifyPassword } from '../auth/password.js';
 import { verifyTotp } from '../auth/totp.js';
-import { projectStatuses } from '../projects/projects.dto.js';
+import {
+  moderationStatuses,
+  projectStatuses,
+} from '../projects/projects.dto.js';
+import { ProjectsService } from '../projects/projects.service.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { buildReportPdf } from './report-pdf.js';
 import type {
   CreateAdminDto,
+  ModerationDecisionDto,
   UpdateUserDto,
   UserQueryDto,
 } from './admin.dto.js';
@@ -34,10 +39,82 @@ const duplicateEmail = 'Ця електронна пошта вже зареєс
 
 @Injectable()
 export class AdminService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(ProjectsService) private readonly projects: ProjectsService,
+  ) {}
   private requireAdmin(user: CurrentUser) {
     if (user.role !== 'ADMIN')
       throw new ForbiddenException('Потрібні права адміністратора.');
+  }
+
+  // Черга модерації: нові й виправлені проєкти, найстаріші першими
+  async moderationQueue(user: CurrentUser) {
+    this.requireAdmin(user);
+    const orm = this.prisma.client.orm.public;
+    const projects = await orm.Project.where({ status: 'MODERATION' })
+      .orderBy((project) => project.updatedAt.asc())
+      .all();
+    if (!projects.length) return [];
+    const clientIds = [...new Set(projects.map((project) => project.clientId))];
+    const clients = await orm.User.where((person) => person.id.in(clientIds))
+      .select('id', 'name', 'email', 'avatarUrl')
+      .all();
+    const categories = await orm.ProjectCategory.all();
+    const skills = await orm.Skill.all();
+    const links = await orm.ProjectSkill.where((link) =>
+      link.projectId.in(projects.map((project) => project.id)),
+    ).all();
+    return Promise.all(
+      projects.map(async (project) => ({
+        ...project,
+        client:
+          clients.find((person) => person.id === project.clientId) ?? null,
+        category:
+          categories.find((category) => category.id === project.categoryId) ??
+          null,
+        skills: links
+          .filter((link) => link.projectId === project.id)
+          .flatMap((link) =>
+            skills.filter((skill) => skill.id === link.skillId),
+          ),
+        // Для повторно надісланого проєкту — чому його відхилили минулого разу
+        previousRejection: await this.projects.findRejectionReason(project.id),
+      })),
+    );
+  }
+
+  async moderate(user: CurrentUser, id: string, data: ModerationDecisionDto) {
+    this.requireAdmin(user);
+    const orm = this.prisma.client.orm.public;
+    const project = await orm.Project.where({ id }).first();
+    if (!project) throw new NotFoundException('Проєкт не знайдено.');
+    if (project.status !== 'MODERATION')
+      throw new ConflictException('Проєкт уже не очікує модерації.');
+    const approved = data.decision === 'APPROVE';
+    const reason = data.reason?.trim() ?? '';
+    if (!approved && reason.length < 5)
+      throw new BadRequestException('Вкажіть причину відхилення.');
+    const updated = await orm.Project.where({ id }).update({
+      status: approved ? 'PLANNING' : 'REJECTED',
+      updatedAt: new Date(),
+    });
+    await this.projects.logActivity(
+      user.id,
+      id,
+      approved ? 'PROJECT_APPROVED' : 'PROJECT_REJECTED',
+      approved ? 'Проєкт схвалено модератором.' : reason,
+    );
+    await this.projects.notify(
+      project.clientId,
+      user.id,
+      approved ? 'PROJECT_APPROVED' : 'PROJECT_REJECTED',
+      approved
+        ? `Проєкт «${project.title}» схвалено й опубліковано на біржі.`
+        : `Проєкт «${project.title}» відхилено модератором: ${reason}`,
+      id,
+    );
+    return updated;
   }
 
   list(user: CurrentUser, filters: UserQueryDto) {
@@ -286,7 +363,11 @@ export class AdminService {
         ]),
       ),
       usersByRole: countBy(['CLIENT', 'FREELANCER', 'ADMIN'], users, 'role'),
-      projectsByStatus: countBy(projectStatuses, projects, 'status'),
+      projectsByStatus: countBy(
+        [...projectStatuses, ...moderationStatuses],
+        projects,
+        'status',
+      ),
       // Нові користувачі й проєкти за останні 6 місяців (для діаграми)
       growth: lastMonths(6).map((month) => ({
         month,

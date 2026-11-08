@@ -159,7 +159,8 @@ describe('ProjectsService', () => {
     expect(project).toMatchObject({
       clientId: client.id,
       title: 'Landing page',
-      status: 'PLANNING',
+      // Новий проєкт спершу йде на модерацію
+      status: 'MODERATION',
     });
   });
 

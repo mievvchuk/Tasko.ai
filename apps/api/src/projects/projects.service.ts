@@ -18,6 +18,7 @@ import type {
   ProjectQueryDto,
   MarketplaceQueryDto,
 } from './projects.dto.js';
+import { moderationStatuses } from './projects.dto.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
 
 // Статуси, після яких проєкт або замовлення вважається закритим.
@@ -83,6 +84,14 @@ export class ProjectsService {
   ensureWritable(project: { status: string }) {
     if (closedStatuses.includes(project.status))
       throw new ConflictException('Проєкт уже закрито.');
+  }
+
+  // Команду можна збирати лише після схвалення модератором
+  private ensureModerated(project: { status: string }) {
+    if ((moderationStatuses as readonly string[]).includes(project.status))
+      throw new ConflictException(
+        'Проєкт ще не пройшов модерацію адміністратора.',
+      );
   }
 
   private validateDeadline(deadline?: string | null) {
@@ -153,7 +162,7 @@ export class ProjectsService {
     });
   }
 
-  // Створює новий проєкт клієнта зі статусом PLANNING.
+  // Створює новий проєкт клієнта; на біржу він потрапить після модерації.
   async create(user: CurrentUser, data: CreateProjectDto) {
     if (user.role !== 'CLIENT')
       throw new ForbiddenException('Проєкти створює клієнт.');
@@ -172,7 +181,7 @@ export class ProjectsService {
       budgetMin: data.budgetMin ?? null,
       budgetMax: data.budgetMax ?? null,
       categoryId: data.categoryId ?? null,
-      status: 'PLANNING',
+      status: 'MODERATION',
       createdAt: now,
       updatedAt: now,
     });
@@ -193,13 +202,29 @@ export class ProjectsService {
       ...this.getProgress(tasks),
       skills: await this.getProjectSkills(id),
       category: await this.findCategory(project.categoryId),
+      moderationNote:
+        project.status === 'REJECTED'
+          ? await this.findRejectionReason(id)
+          : null,
     };
+  }
+
+  // Причина останнього відхилення зберігається в історії проєкту
+  async findRejectionReason(projectId: string) {
+    const log = await this.db.ActivityLog.where({
+      projectId,
+      type: 'PROJECT_REJECTED',
+    })
+      .orderBy((item) => item.createdAt.desc())
+      .first();
+    return log?.message ?? null;
   }
 
   // Змінює проєкт; доступно лише власнику або адміністратору.
   async update(user: CurrentUser, id: string, data: UpdateProjectDto) {
     const project = await this.requireOwner(user, id);
     this.ensureWritable(project);
+    if (data.status !== undefined) this.ensureModerated(project);
     this.validateDeadline(data.deadline);
     // Якщо передано лише одну межу бюджету, другу беремо зі збереженого проєкту.
     validateBudget(
@@ -215,9 +240,10 @@ export class ProjectsService {
     await this.resolveNamedCategoryAndSkills(data);
     await this.ensureCategoryExists(data.categoryId ?? undefined);
 
-    const updated = await this.db.Project.where({ id }).update(
-      this.buildProjectChanges(data),
-    );
+    const changes = this.buildProjectChanges(data);
+    // Виправлений після відхилення проєкт знову йде на модерацію
+    if (project.status === 'REJECTED') changes.status = 'MODERATION';
+    const updated = await this.db.Project.where({ id }).update(changes);
     if (data.skillIds !== undefined)
       await this.replaceProjectSkills(id, data.skillIds);
     return updated;
@@ -363,7 +389,9 @@ export class ProjectsService {
   }
 
   async addMember(user: CurrentUser, projectId: string, userId: string) {
-    this.ensureWritable(await this.requireOwner(user, projectId));
+    const project = await this.requireOwner(user, projectId);
+    this.ensureWritable(project);
+    this.ensureModerated(project);
     const freelancer = await this.prisma.client.orm.public.User.where({
       id: userId,
     }).first();

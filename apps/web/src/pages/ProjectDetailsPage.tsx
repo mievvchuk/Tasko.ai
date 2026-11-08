@@ -46,7 +46,7 @@ export function ProjectDetailsPage() {
         if (status) query.set("status", status);
         if (priority) query.set("priority", priority);
         if (search) query.set("search", search);
-              if (overdue) query.set("overdue", "true");
+        if (overdue) query.set("overdue", "true");
         const [detail, people, items] = await Promise.all([
           request<Project>(`/projects/${id}`, { signal: controller.signal }),
           request<ProjectMember[]>(`/projects/${id}/members`, {
@@ -145,6 +145,28 @@ export function ProjectDetailsPage() {
           </button>
         </div>
       </div>
+      {project.status === "MODERATION" && (
+        <p className="notice" role="status">
+          {tr(
+            "Проєкт на модерації. Після схвалення адміністратором він з'явиться на біржі, і фрілансери зможуть подавати заявки.",
+          )}
+        </p>
+      )}
+      {project.status === "REJECTED" && (
+        <div className="notice error" role="status">
+          <p>
+            <strong>{tr("Модератор відхилив проєкт.")}</strong>{" "}
+            {project.moderationNote &&
+              tr("Причина: {0}", project.moderationNote)}
+          </p>
+          {canEdit && (
+            <p>
+              <Link to={`/projects/${id}/edit`}>{tr("Виправте проєкт")}</Link>{" "}
+              {tr("— після збереження він знову піде на модерацію.")}
+            </p>
+          )}
+        </div>
+      )}
       <nav className="project-links" aria-label={tr("Розділи проєкту")}>
         <Link to={`/tasks?project=${id}`}>
           <i className="bi bi-list-check" aria-hidden="true"></i>

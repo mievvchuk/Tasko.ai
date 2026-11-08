@@ -4750,3 +4750,22 @@ tbody tr:nth-child(n + 6) {
     bottom: calc(76px + 56px + env(safe-area-inset-bottom));
   }
 }
+
+/* Модерація проєктів в адмінці */
+.moderation-card {
+  display: grid;
+  gap: var(--space-sm);
+}
+.moderation-card-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.moderation-card-heading h2 {
+  margin: 0;
+}
+.moderation-reject {
+  display: grid;
+  gap: var(--space-xs);
+}

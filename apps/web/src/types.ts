@@ -35,10 +35,18 @@ export const roleNames: Record<UserRole, string> = {
 };
 
 export type ProjectStatus =
-  "PLANNING" | "ACTIVE" | "PAUSED" | "COMPLETED" | "CANCELLED";
+  | "MODERATION"
+  | "REJECTED"
+  | "PLANNING"
+  | "ACTIVE"
+  | "PAUSED"
+  | "COMPLETED"
+  | "CANCELLED";
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
 
 export const projectStatusNames: Record<ProjectStatus, string> = {
+  MODERATION: "На модерації",
+  REJECTED: "Відхилено модератором",
   PLANNING: "Пошук виконавця",
   ACTIVE: "У процесі",
   PAUSED: "Призупинено",
@@ -69,6 +77,22 @@ export interface Project {
   categoryId?: string | null;
   skills?: Skill[];
   category?: ProjectCategory | null;
+  // Причина відхилення модератором (лише для статусу REJECTED)
+  moderationNote?: string | null;
+}
+
+// Статуси, які встановлює модератор, а не клієнт
+export const inModeration = (status: ProjectStatus) =>
+  status === "MODERATION" || status === "REJECTED";
+
+export interface ModerationProject extends Project {
+  client: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string | null;
+  } | null;
+  previousRejection: string | null;
 }
 
 export type ApplicationStatus = "PENDING" | "ACCEPTED" | "REJECTED";
@@ -319,7 +343,12 @@ export interface AdminReport {
     projects: number;
     complaints: number;
     applications: number;
-    days: { day: string; users: number; projects: number; complaints: number }[];
+    days: {
+      day: string;
+      users: number;
+      projects: number;
+      complaints: number;
+    }[];
   };
   // Середній час у годинах; null — даних ще немає
   averageHours: {
