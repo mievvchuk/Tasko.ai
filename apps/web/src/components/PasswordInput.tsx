@@ -7,6 +7,9 @@ interface PasswordInputProps {
   onChange: (value: string) => void;
   label?: string;
   autoComplete: "current-password" | "new-password";
+  placeholder?: string;
+  // Повідомлення під полем; поле підсвічується як помилкове
+  error?: string;
 }
 
 export function PasswordInput({
@@ -15,6 +18,8 @@ export function PasswordInput({
   onChange,
   label,
   autoComplete,
+  placeholder,
+  error,
 }: PasswordInputProps) {
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
@@ -30,13 +35,16 @@ export function PasswordInput({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete={autoComplete}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
           required
           minLength={8}
           maxLength={128}
           placeholder={
-            displayLabel === t("password")
+            placeholder ??
+            (displayLabel === t("password")
               ? t("enterPassword")
-              : t("enterPasswordAgain")
+              : t("enterPasswordAgain"))
           }
         />
         <button
@@ -52,6 +60,11 @@ export function PasswordInput({
           ></i>
         </button>
       </div>
+      {error && (
+        <p className="form-error" id={`${id}-error`}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

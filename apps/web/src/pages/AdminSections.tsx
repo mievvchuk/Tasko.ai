@@ -323,47 +323,44 @@ export function AdminDialog({
 
 // Діалог зміни ролі та стану облікового запису (лише замовники й фрілансери;
 // адміністраторів панель не змінює, а нові адміни — окремі акаунти з AdminCreateDialog).
+export type UserAction = "role" | "status" | "delete";
+
+// Одна дія над користувачем: зміна ролі, блокування/розблокування або видалення
 export function UserDialog({
   user,
+  action,
   onSaved,
   onClose,
 }: {
   user: AdminUser;
+  action: UserAction;
   onSaved: () => void;
   onClose: () => void;
 }) {
   const { tr } = useLanguage();
   const [role, setRole] = useState<UserRole>(user.role);
-  const [status, setStatus] = useState(user.status);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const unchanged = role === user.role && status === user.status;
+  const blocked = user.status === "BLOCKED";
 
-  async function remove() {
-    if (busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      await request(`/admin/users/${user.id}`, { method: "DELETE" });
-      onSaved();
-      onClose();
-    } catch (error) {
-      setError(errorMessage(error));
-      setBusy(false);
-    }
-  }
-
-  async function save(event: FormEvent<HTMLFormElement>) {
+  async function run(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
     setBusy(true);
     setError("");
     try {
-      await request(`/admin/users/${user.id}`, {
-        method: "PATCH",
-        body: { role, status },
-      });
+      await request(
+        `/admin/users/${user.id}`,
+        action === "delete"
+          ? { method: "DELETE" }
+          : {
+              method: "PATCH",
+              body:
+                action === "role"
+                  ? { role }
+                  : { status: blocked ? "ACTIVE" : "BLOCKED" },
+            },
+      );
       onSaved();
       onClose();
     } catch (error) {
@@ -372,84 +369,61 @@ export function UserDialog({
     }
   }
 
+  const titles: Record<UserAction, string> = {
+    role: tr("Змінити роль"),
+    status: blocked
+      ? tr("Розблокувати користувача")
+      : tr("Заблокувати користувача"),
+    delete: tr("Видалити користувача"),
+  };
+
   return (
     <AdminDialog
-      title={tr("Редагувати користувача")}
+      title={titles[action]}
       description={`${user.name} · ${user.email}`}
       onClose={onClose}
     >
-      <form onSubmit={save} className="work-form admin-dialog-form">
-        <fieldset disabled={busy} className="user-controls">
-          <div>
-            <label htmlFor={`user-role-${user.id}`}>
-              {tr("Роль користувача")}
-            </label>
-            <select
-              id={`user-role-${user.id}`}
-              value={role}
-              onChange={(event) => setRole(event.target.value as UserRole)}
-            >
-              <option value="CLIENT">{tr(roleNames.CLIENT)}</option>
-              <option value="FREELANCER">{tr(roleNames.FREELANCER)}</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor={`user-status-${user.id}`}>
-              {tr("Стан користувача")}
-            </label>
-            <select
-              id={`user-status-${user.id}`}
-              value={status}
-              onChange={(event) =>
-                setStatus(event.target.value as AccountStatus)
-              }
-            >
-              <AccountStatusOptions />
-            </select>
-          </div>
-        </fieldset>
-        <p className="form-note">
-          {tr(
-            "Роль адміністратора так не видається — створіть окремий акаунт адміністратора.",
-          )}
-        </p>
-        {confirmDelete ? (
-          <div className="notice error admin-delete-confirm" role="alert">
-            <p>
-              <strong>{tr("Видалити {0}?", user.name)}</strong>{" "}
+      <form onSubmit={run} className="work-form admin-dialog-form">
+        {action === "role" && (
+          <>
+            <fieldset disabled={busy} className="user-controls">
+              <div>
+                <label htmlFor={`user-role-${user.id}`}>
+                  {tr("Роль користувача")}
+                </label>
+                <select
+                  id={`user-role-${user.id}`}
+                  value={role}
+                  onChange={(event) => setRole(event.target.value as UserRole)}
+                >
+                  <option value="CLIENT">{tr(roleNames.CLIENT)}</option>
+                  <option value="FREELANCER">{tr(roleNames.FREELANCER)}</option>
+                </select>
+              </div>
+            </fieldset>
+            <p className="form-note">
               {tr(
-                "Обліковий запис буде видалено повністю разом з його проєктами, повідомленнями, заявками, відгуками й файлами. У чужих проєктах завдання лишаться без виконавця. Дію не можна скасувати.",
+                "Роль адміністратора так не видається — створіть окремий акаунт адміністратора.",
               )}
             </p>
-            <div className="admin-dialog-actions">
-              <button
-                className="button secondary"
-                type="button"
-                disabled={busy}
-                onClick={() => setConfirmDelete(false)}
-              >
-                {tr("Скасувати")}
-              </button>
-              <button
-                className="button danger-outline"
-                type="button"
-                disabled={busy}
-                onClick={() => void remove()}
-              >
-                {busy ? tr("Видаляємо…") : tr("Так, видалити")}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            className="button danger-outline admin-delete-user"
-            type="button"
-            disabled={busy}
-            onClick={() => setConfirmDelete(true)}
-          >
-            <i className="bi bi-trash3" aria-hidden="true"></i>
-            {tr("Видалити користувача")}
-          </button>
+          </>
+        )}
+        {action === "status" && (
+          <p className={blocked ? "notice" : "notice error"}>
+            {blocked
+              ? tr("Користувач знову зможе входити й працювати на платформі.")
+              : tr(
+                  "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.",
+                )}
+          </p>
+        )}
+        {action === "delete" && (
+          <p className="notice error admin-delete-confirm">
+            <strong>{tr("Видалити {0}?", user.name)}</strong>{" "}
+            {tr(
+              "Обліковий запис буде видалено повністю разом з його проєктами, повідомленнями, заявками, відгуками й файлами. У чужих проєктах завдання лишаться без виконавця. Дію не можна скасувати.",
+            )}
+          </p>
         )}
         {error && (
           <p className="notice error" role="alert">
@@ -460,9 +434,27 @@ export function UserDialog({
           <button className="button secondary" type="button" onClick={onClose}>
             {tr("Скасувати")}
           </button>
-          <button className="button primary" disabled={unchanged || busy}>
-            {busy ? tr("Зберігаємо…") : tr("Зберегти користувача")}
-          </button>
+          {action === "role" && (
+            <button
+              className="button primary"
+              disabled={role === user.role || busy}
+            >
+              {busy ? tr("Зберігаємо…") : tr("Зберегти роль")}
+            </button>
+          )}
+          {action === "status" && (
+            <button
+              className={blocked ? "button primary" : "button danger-outline"}
+              disabled={busy}
+            >
+              {blocked ? tr("Розблокувати") : tr("Заблокувати")}
+            </button>
+          )}
+          {action === "delete" && (
+            <button className="button danger-outline" disabled={busy}>
+              {busy ? tr("Видаляємо…") : tr("Так, видалити")}
+            </button>
+          )}
         </div>
       </form>
     </AdminDialog>
