@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AdminModule } from '../admin/admin.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { ProjectsModule } from '../projects/projects.module.js';
 import { AnalyticsModule } from '../analytics/analytics.module.js';
@@ -12,6 +13,7 @@ import { ProjectPlanningService } from './project-planning.service.js';
 
 @Module({
   imports: [
+    AdminModule,
     AuthModule,
     ProjectsModule,
     AnalyticsModule,

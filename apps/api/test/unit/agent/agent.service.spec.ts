@@ -11,6 +11,7 @@ import type { TasksService } from '../../../src/tasks/tasks.service.js';
 import type { CollaborationService } from '../../../src/collaboration/collaboration.service.js';
 import type { MilestonesService } from '../../../src/projects/milestones.service.js';
 import type { NotificationsService } from '../../../src/notifications/notifications.service.js';
+import type { AdminService } from '../../../src/admin/admin.service.js';
 import { ForbiddenException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 
@@ -50,6 +51,10 @@ describe('AI through MCP', () => {
   const collaboration = { submissions: vi.fn(), messages: vi.fn() };
   const milestones = { list: vi.fn() };
   const notifications = { list: vi.fn() };
+  const admin = {
+    list: vi.fn().mockResolvedValue([{ name: 'Олена Коваль', role: 'CLIENT' }]),
+    report: vi.fn().mockResolvedValue({ users: 56 }),
+  };
   const mcp = new McpService(
     projects as unknown as ProjectsService,
     analytics as unknown as AnalyticsService,
@@ -57,6 +62,7 @@ describe('AI through MCP', () => {
     collaboration as unknown as CollaborationService,
     milestones as unknown as MilestonesService,
     notifications as unknown as NotificationsService,
+    admin as unknown as AdminService,
   );
   const config = {
     databaseUrl: 'postgresql://localhost/test',
@@ -198,6 +204,44 @@ describe('AI through MCP', () => {
     expect(tools.some((tool) => tool.name === 'draft_project')).toBe(false);
     await client.close();
     await server.close();
+  });
+  it('gives admins user search and platform statistics, and only them', async () => {
+    async function connect(role: 'ADMIN' | 'CLIENT') {
+      const server = mcp.createServer({ ...user, role });
+      const client = new Client({ name: 'test', version: '1.0.0' });
+      const [clientTransport, serverTransport] =
+        InMemoryTransport.createLinkedPair();
+      await server.connect(serverTransport);
+      await client.connect(clientTransport);
+      return { server, client };
+    }
+    const asAdmin = await connect('ADMIN');
+    const names = (await asAdmin.client.listTools()).tools.map((t) => t.name);
+    expect(names).toEqual(
+      expect.arrayContaining(['search_users', 'platform_report']),
+    );
+    const found = await asAdmin.client.callTool({
+      name: 'search_users',
+      arguments: { search: 'Олена', role: 'CLIENT' },
+    });
+    expect(JSON.stringify(found.content)).toContain('Олена Коваль');
+    expect(admin.list).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'ADMIN' }),
+      expect.objectContaining({ search: 'Олена', role: 'CLIENT', page: 1 }),
+    );
+    await asAdmin.client.callTool({ name: 'platform_report', arguments: {} });
+    expect(admin.report).toHaveBeenCalledOnce();
+    await asAdmin.client.close();
+    await asAdmin.server.close();
+
+    const asClient = await connect('CLIENT');
+    const clientNames = (await asClient.client.listTools()).tools.map(
+      (t) => t.name,
+    );
+    expect(clientNames).not.toContain('search_users');
+    expect(clientNames).not.toContain('platform_report');
+    await asClient.client.close();
+    await asClient.server.close();
   });
   it('refuses off-topic questions without calling tools', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(topicResponse(false));
