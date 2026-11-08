@@ -54,7 +54,8 @@ export class ProjectsService {
     return this.prisma.client.orm.public;
   }
 
-  // Адміністратор бачить усі проєкти; для приватного (листування) — adminBypass = false
+  // Адміністратор може переглянути будь-який проєкт (з адмін-панелі, напр. через скаргу);
+  // для змін і приватного (листування, файли) — adminBypass = false: лише власник чи учасник
   async requireAccess(user: CurrentUser, id: string, adminBypass = true) {
     const project = await this.prisma.client.orm.public.Project.where({
       id,
@@ -73,7 +74,8 @@ export class ProjectsService {
 
   async requireOwner(user: CurrentUser, id: string) {
     const project = await this.requireAccess(user, id);
-    if (user.role !== 'ADMIN' && project.clientId !== user.id)
+    // Без винятку для адміністратора: чужі проєкти він лише переглядає
+    if (project.clientId !== user.id)
       throw new ForbiddenException('Операція доступна власнику проєкту.');
     return project;
   }
@@ -108,9 +110,15 @@ export class ProjectsService {
   async list(user: CurrentUser, page: ProjectQueryDto) {
     let query = this.db.Project;
     if (page.status) query = query.where({ status: page.status });
+    if (page.search?.trim()) {
+      // Символи LIKE у введеному тексті шукаємо буквально
+      const search = `%${page.search.trim().replace(/[\\%_]/g, '\\$&')}%`;
+      query = query.where((project) => project.title.ilike(search));
+    }
     if (user.role === 'CLIENT') query = query.where({ clientId: user.id });
-    // «Мої» для адміністратора: лише проєкти, де він замовник або учасник
-    if (user.role === 'ADMIN' && page.mine) {
+    // У робочому просторі адміністратор бачить лише свої проєкти (замовник або учасник);
+    // усі — тільки з адмін-панелі (all=true)
+    if (user.role === 'ADMIN' && !page.all) {
       const owned = await this.db.Project.where({ clientId: user.id })
         .select('id')
         .all();

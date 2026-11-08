@@ -1750,8 +1750,15 @@ dd {
   border-bottom: 0;
 }
 .data-panel.simple-list,
-.data-panel > .simple-list {
+.data-panel > .simple-list,
+.data-panel > .review-list {
   padding: var(--space-2xs) var(--space-lg);
+}
+/* Зірки й ім'я клієнта у відгуку не злипаються */
+.review-list > li > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 .list-card {
   display: grid;

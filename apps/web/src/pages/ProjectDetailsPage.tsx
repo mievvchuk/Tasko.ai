@@ -23,7 +23,6 @@ export function ProjectDetailsPage() {
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
   const search = params.get("search") || "";
-  const assigneeId = params.get("assigneeId") || "";
   const overdue = params.get("overdue") === "true";
   const rawStatus = params.get("status") || "";
   const status = Object.hasOwn(taskStatusNames, rawStatus) ? rawStatus : "";
@@ -47,8 +46,7 @@ export function ProjectDetailsPage() {
         if (status) query.set("status", status);
         if (priority) query.set("priority", priority);
         if (search) query.set("search", search);
-        if (assigneeId) query.set("assigneeId", assigneeId);
-        if (overdue) query.set("overdue", "true");
+              if (overdue) query.set("overdue", "true");
         const [detail, people, items] = await Promise.all([
           request<Project>(`/projects/${id}`, { signal: controller.signal }),
           request<ProjectMember[]>(`/projects/${id}/members`, {
@@ -74,7 +72,7 @@ export function ProjectDetailsPage() {
       active = false;
       controller.abort();
     };
-  }, [id, page, status, priority, search, assigneeId, overdue, attempt]);
+  }, [id, page, status, priority, search, overdue, attempt]);
 
   function changeFilter(name: string, value: string) {
     const query = new URLSearchParams(params);
@@ -104,7 +102,7 @@ export function ProjectDetailsPage() {
     );
   if (!project || project.id !== id) return null;
   const canEdit =
-    (user?.role === "ADMIN" || project.clientId === user?.id) &&
+    project.clientId === user?.id &&
     !["COMPLETED", "CANCELLED"].includes(project.status);
 
   return (
@@ -233,9 +231,7 @@ export function ProjectDetailsPage() {
           <div className="task-filters">
             <TaskSearchFilters
               search={search}
-              assigneeId={assigneeId}
               overdue={overdue}
-              members={members}
               onChange={changeFilter}
             />
             <div className="filter-field">

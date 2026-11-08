@@ -39,9 +39,7 @@ function ProjectPlanEditor() {
   // Скасовуємо незавершений запит, коли користувач іде зі сторінки.
   useEffect(() => () => controller.current?.abort(), []);
 
-  const owner =
-    user?.role === "ADMIN" ||
-    (Boolean(user) && project.data?.clientId === user?.id);
+  const owner = Boolean(user) && project.data?.clientId === user?.id;
   const writable =
     project.data && !["COMPLETED", "CANCELLED"].includes(project.data.status);
   const editingLocked = Boolean(busy) || saveAttempted;

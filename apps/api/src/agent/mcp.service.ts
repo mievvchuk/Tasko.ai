@@ -91,7 +91,7 @@ export class McpService {
       async (args) =>
         result(async () => {
           if (args.projectId)
-            await this.projects.requireAccess(user, args.projectId);
+            await this.projects.requireAccess(user, args.projectId, false);
           const tasks = await this.analytics.visibleTasks(user);
           const titles = new Map(
             (await this.analytics.visibleProjects(user)).map((project) => [

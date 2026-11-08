@@ -205,13 +205,17 @@ export class TasksService {
     columnId?: string,
   ) {
     const task = await this.find(user, id);
-    const project = await this.projects.requireAccess(user, task.projectId);
+    const project = await this.projects.requireAccess(
+      user,
+      task.projectId,
+      false,
+    );
     if (project.status !== 'ACTIVE')
       throw new ConflictException(
         'Працювати із завданнями можна лише в активному проєкті.',
       );
     // Картку пересуває виконавець або власник проєкту (напр. з беклогу в роботу)
-    const isOwner = user.role === 'ADMIN' || project.clientId === user.id;
+    const isOwner = project.clientId === user.id;
     if (task.assigneeId !== user.id && !isOwner)
       throw new ForbiddenException(
         'Статус змінює виконавець або власник проєкту.',

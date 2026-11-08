@@ -53,7 +53,7 @@ export function ProjectFormPage() {
     );
   if (id && (!project || project.id !== id)) return null;
   const canEdit =
-    project && (user?.role === "ADMIN" || project.clientId === user?.id);
+    project && project.clientId === user?.id;
   const closed =
     project?.status === "COMPLETED" || project?.status === "CANCELLED";
   if ((!id && user?.role !== "CLIENT") || (id && !canEdit) || closed) {

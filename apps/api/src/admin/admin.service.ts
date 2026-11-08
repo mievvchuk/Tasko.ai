@@ -8,6 +8,9 @@ import {
 } from '@nestjs/common';
 import ExcelJS from 'exceljs';
 import { randomUUID } from 'node:crypto';
+import { unlink } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { or } from '@prisma/orm-postgres/orm-client';
 import { hashPassword, verifyPassword } from '../auth/password.js';
 import { verifyTotp } from '../auth/totp.js';
@@ -21,6 +24,11 @@ import type {
   UpdateUserDto,
   UserQueryDto,
 } from './admin.dto.js';
+
+// Той самий каталог, що у FilesService (вкладення) і UsersService (avatars/)
+const storageDirectory = fileURLToPath(
+  new URL('../../storage/', import.meta.url),
+);
 
 const duplicateEmail = 'Ця електронна пошта вже зареєстрована.';
 
@@ -80,13 +88,16 @@ export class AdminService {
         });
     });
   }
-  // Видалення: без історії — запис стирається повністю; з історією (проєкти, повідомлення, заявки…)
-  // стираються особисті дані, а в історії лишається «Видалений користувач», щоб не ламати проєкти інших.
+  // Повне видалення: користувач зникає разом з усім своїм — його проєктами (з завданнями, файлами,
+  // листуванням), заявками, повідомленнями, відгуками, скаргами. У чужих завданнях лише знімається з виконавця.
   async remove(user: CurrentUser, id: string) {
     this.requireAdmin(user);
     if (id === user.id)
-      throw new BadRequestException('Власний обліковий запис видалити не можна.');
-    return this.prisma.client.transaction(async (tx) => {
+      throw new BadRequestException(
+        'Власний обліковий запис видалити не можна.',
+      );
+    const files: string[] = [];
+    const result = await this.prisma.client.transaction(async (tx) => {
       const db = tx.orm.public;
       const target = await db.User.where({ id }).first();
       if (!target) throw new NotFoundException('Користувача не знайдено.');
@@ -94,56 +105,78 @@ export class AdminService {
         throw new ForbiddenException(
           'Адміністраторів видаляти з панелі не можна.',
         );
-      const history = [
-        db.Project.where({ clientId: id }),
-        db.ProjectMember.where({ userId: id }),
-        db.Task.where({ assigneeId: id }),
-        db.ProjectApplication.where({ freelancerId: id }),
-        db.Message.where({ senderId: id }),
-        db.WorkSubmission.where({ submittedBy: id }),
-        db.WorkSubmission.where({ reviewerId: id }),
-        db.FreelancerReview.where({ clientId: id }),
-        db.FreelancerReview.where({ freelancerId: id }),
-        db.Complaint.where({ reporterId: id }),
-        db.Complaint.where({ targetUserId: id }),
-        db.FileAttachment.where({ uploadedBy: id }),
-        db.ActivityLog.where({ actorId: id }),
-      ];
-      let hasHistory = false;
-      for (const rows of history)
-        if (await rows.first()) {
-          hasHistory = true;
-          break;
-        }
+      if (target.avatarUrl)
+        files.push(`avatars/${target.avatarUrl.split('/').pop()}`);
 
-      // Особисті дані зникають в обох випадках
+      // Проєкти, де користувач замовник, — разом з усім вмістом (спершу дочірні записи)
+      for (const project of await db.Project.where({ clientId: id }).all()) {
+        const projectId = project.id;
+        for (const file of await db.FileAttachment.where({ projectId }).all())
+          files.push(file.storagePath);
+        await db.FileAttachment.where({ projectId }).deleteAll();
+        await db.Notification.where({ projectId }).deleteAll();
+        for (const task of await db.Task.where({ projectId }).all()) {
+          await db.Notification.where({ taskId: task.id }).deleteAll();
+          await db.WorkSubmission.where({ taskId: task.id }).deleteAll();
+        }
+        await db.Task.where({ projectId }).deleteAll();
+        await db.BoardColumn.where({ projectId }).deleteAll();
+        await db.ActivityLog.where({ projectId }).deleteAll();
+        await db.Message.where({ projectId }).deleteAll();
+        await db.ProjectApplication.where({ projectId }).deleteAll();
+        await db.FreelancerReview.where({ projectId }).deleteAll();
+        await db.ProjectMember.where({ projectId }).deleteAll();
+        await db.ProjectSkill.where({ projectId }).deleteAll();
+        await db.FavoriteProject.where({ projectId }).deleteAll();
+        await db.ProjectMilestone.where({ projectId }).deleteAll();
+        await db.Order.where({ projectId }).deleteAll();
+        await db.Complaint.where({ projectId }).deleteAll();
+        await db.Project.where({ id: projectId }).delete();
+      }
+
+      // Сліди в чужих проєктах
+      for (const submission of await db.WorkSubmission.where({
+        submittedBy: id,
+      }).all())
+        await db.FileAttachment.where({
+          submissionId: submission.id,
+        }).updateAll({ submissionId: null });
+      await db.WorkSubmission.where({ submittedBy: id }).deleteAll();
+      await db.WorkSubmission.where({ reviewerId: id }).updateAll({
+        reviewerId: null,
+      });
+      for (const file of await db.FileAttachment.where({
+        uploadedBy: id,
+      }).all())
+        files.push(file.storagePath);
+      await db.FileAttachment.where({ uploadedBy: id }).deleteAll();
+      await db.Task.where({ assigneeId: id }).updateAll({ assigneeId: null });
+      await db.Message.where({ senderId: id }).deleteAll();
+      await db.ActivityLog.where({ actorId: id }).deleteAll();
+      await db.ProjectApplication.where({ freelancerId: id }).deleteAll();
+      await db.FreelancerReview.where({ clientId: id }).deleteAll();
+      await db.FreelancerReview.where({ freelancerId: id }).deleteAll();
+      await db.ProjectMember.where({ userId: id }).deleteAll();
+      await db.Complaint.where({ reporterId: id }).deleteAll();
+      await db.Complaint.where({ targetUserId: id }).deleteAll();
+
+      // Особисті дані
       await db.AuthSession.where({ userId: id }).deleteAll();
       await db.Notification.where({ userId: id }).deleteAll();
       await db.FavoriteProject.where({ userId: id }).deleteAll();
       await db.FreelancerSkill.where({ userId: id }).deleteAll();
-      await db.ProjectApplication.where({ freelancerId: id }).updateAll({
-        portfolioItemId: null,
-      });
       await db.PortfolioItem.where({ userId: id }).deleteAll();
       await db.FreelancerProfile.where({ userId: id }).deleteAll();
-
-      if (!hasHistory) {
-        await db.User.where({ id }).delete();
-        return { id, mode: 'deleted' as const };
-      }
-      await db.User.where({ id }).update({
-        name: 'Видалений користувач',
-        email: `deleted-${id}@deleted.tasko`,
-        // Випадковий хеш: увійти під цим акаунтом більше неможливо
-        passwordHash: await hashPassword(randomUUID()),
-        status: 'BLOCKED',
-        avatarUrl: null,
-        twoFactorEnabled: false,
-        twoFactorSecret: null,
-        updatedAt: new Date(),
-      });
-      return { id, mode: 'anonymized' as const };
+      await db.User.where({ id }).delete();
+      return { id, deleted: true };
     });
+    // Файли — лише після успішного коміту; якийсь уже відсутній — не біда
+    await Promise.all(
+      files.map((file) =>
+        unlink(join(storageDirectory, file)).catch(() => undefined),
+      ),
+    );
+    return result;
   }
   // Новий адміністратор — завжди окремий акаунт; той, хто створює, підтверджує дію своїм паролем і кодом 2FA
   async createAdmin(user: CurrentUser, data: CreateAdminDto) {
@@ -285,8 +318,9 @@ export class AdminService {
           day,
           users: users.filter((person) => dayOf(person.createdAt) === day)
             .length,
-          projects: projects.filter((project) => dayOf(project.createdAt) === day)
-            .length,
+          projects: projects.filter(
+            (project) => dayOf(project.createdAt) === day,
+          ).length,
           complaints: complaints.filter((c) => dayOf(c.createdAt) === day)
             .length,
         })),
@@ -392,7 +426,10 @@ export class AdminService {
       { label: 'Замовники', value: report.usersByRole.CLIENT },
       { label: 'Фрілансери', value: report.usersByRole.FREELANCER },
       { label: 'Адміністратори', value: report.usersByRole.ADMIN },
-      { label: 'Скарги: очікують розгляду', value: report.complaintsByStatus.OPEN },
+      {
+        label: 'Скарги: очікують розгляду',
+        value: report.complaintsByStatus.OPEN,
+      },
       { label: 'Скарги: вирішено', value: report.complaintsByStatus.RESOLVED },
       { label: 'Скарги: відхилено', value: report.complaintsByStatus.REJECTED },
       { label: 'Нові користувачі за 7 днів', value: report.week.users },

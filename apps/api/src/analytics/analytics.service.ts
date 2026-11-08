@@ -43,16 +43,21 @@ export class AnalyticsService {
   }
 
   async visibleProjects(user: CurrentUser) {
-    if (user.role === 'ADMIN') return this.db.Project.all();
     if (user.role === 'CLIENT')
       return this.db.Project.where({ clientId: user.id }).all();
     const memberships = await this.db.ProjectMember.where({
       userId: user.id,
     }).all();
-    if (!memberships.length) return [];
-    return this.db.Project.where((project) =>
-      project.id.in(memberships.map((membership) => membership.projectId)),
-    ).all();
+    const ids = memberships.map((membership) => membership.projectId);
+    // Адміністратор у робочому просторі — як звичайний учасник: лише свої проєкти
+    if (user.role === 'ADMIN')
+      ids.push(
+        ...(await this.db.Project.where({ clientId: user.id }).all()).map(
+          (project) => project.id,
+        ),
+      );
+    if (!ids.length) return [];
+    return this.db.Project.where((project) => project.id.in(ids)).all();
   }
   async visibleTasks(user: CurrentUser) {
     const projects = await this.visibleProjects(user);

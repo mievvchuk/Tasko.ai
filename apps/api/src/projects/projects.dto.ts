@@ -52,6 +52,17 @@ export class ProjectQueryDto extends PageDto {
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')
   mine?: boolean;
+  @ApiPropertyOptional({
+    description: 'Усі проєкти платформи (лише для адміністратора, з адмін-панелі)',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  all?: boolean;
+  @ApiPropertyOptional({ description: 'Пошук за частиною назви' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 200)
+  search?: string;
 }
 
 export class MarketplaceQueryDto extends PageDto {

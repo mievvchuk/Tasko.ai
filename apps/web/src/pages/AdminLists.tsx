@@ -33,7 +33,8 @@ export function AdminProjectsPage() {
     params.get("status"),
     Object.keys(projectStatusNames),
   );
-  const query = new URLSearchParams({ page: String(page), limit: "20" });
+  // all=true: в адмін-панелі — усі проєкти платформи (у робочому просторі адмін бачить лише свої)
+  const query = new URLSearchParams({ page: String(page), limit: "20", all: "true" });
   if (status) query.set("status", status);
   const projects = useApi<Project[]>(`/projects?${query}`);
   const rows =

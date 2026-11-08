@@ -72,11 +72,9 @@ export function ProjectsPage() {
       <div className="page-heading heading-with-action">
         <div>
           <h1>
-            {user?.role === "ADMIN"
-              ? tr("Проєкти")
-              : user?.role === "FREELANCER"
-                ? tr("Робочі проєкти")
-                : tr("Мої проєкти")}
+            {user?.role === "FREELANCER"
+              ? tr("Робочі проєкти")
+              : tr("Мої проєкти")}
           </h1>
           <p>{tr("Доступні вам проєкти, їхній стан і прогрес виконання.")}</p>
         </div>
