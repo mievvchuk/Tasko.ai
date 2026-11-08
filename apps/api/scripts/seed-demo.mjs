@@ -24,39 +24,39 @@ const id = (number) =>
 const users = [
   {
     id: id(1),
-    name: 'Олена Коваль (демо)',
+    name: 'Олена Коваль',
     // Прості пошти для трьох головних акаунтів — їх зручно вводити на захисті
-    email: 'client@tasko.demo',
+    email: 'olena.koval@tasko.example',
     role: 'CLIENT',
   },
   {
     id: id(2),
-    name: 'Микола Шевченко (демо)',
-    email: 'client2@demo.tasko.example',
+    name: 'Микола Шевченко',
+    email: 'mykola.shevchenko@tasko.example',
     role: 'CLIENT',
   },
   {
     id: id(3),
-    name: 'Андрій Мельник (демо)',
-    email: 'freelancer@tasko.demo',
+    name: 'Андрій Мельник',
+    email: 'andrii.melnyk@tasko.example',
     role: 'FREELANCER',
   },
   {
     id: id(4),
-    name: 'Ірина Бондар (демо)',
-    email: 'freelancer2@demo.tasko.example',
+    name: 'Ірина Бондар',
+    email: 'iryna.bondar@tasko.example',
     role: 'FREELANCER',
   },
   {
     id: id(5),
-    name: 'Дмитро Савчук (демо)',
-    email: 'freelancer3@demo.tasko.example',
+    name: 'Дмитро Савчук',
+    email: 'dmytro.savchuk@tasko.example',
     role: 'FREELANCER',
   },
   {
     id: id(6),
-    name: 'Адміністратор (демо)',
-    email: 'admin@tasko.demo',
+    name: 'Адміністратор',
+    email: 'admin@tasko.example',
     role: 'ADMIN',
   },
 ];
@@ -139,12 +139,16 @@ try {
           `Пошта ${user.email} вже використовується. Наявний обліковий запис не змінено.`,
         );
       }
-      // Якщо демо-акаунт уже є, але зі старою поштою, — оновлюємо лише пошту.
+      // Якщо демо-акаунт уже є, але зі старою поштою чи іменем, — оновлюємо пошту й ім’я.
       // Дані акаунта (проєкти, завдання, повідомлення) залишаються за ним.
       const sameAccount = await models.User.where({ id: user.id }).first();
-      if (sameAccount && sameAccount.email !== user.email) {
+      if (
+        sameAccount &&
+        (sameAccount.email !== user.email || sameAccount.name !== user.name)
+      ) {
         await models.User.where({ id: user.id }).update({
           email: user.email,
+          name: user.name,
           updatedAt: new Date(),
         });
         created.UserEmail = (created.UserEmail || 0) + 1;
@@ -164,7 +168,7 @@ try {
       {
         id: id(101),
         clientId: client1.id,
-        title: '[Демо] Лендінг для кав’ярні',
+        title: 'Лендінг для кав’ярні',
         description:
           'Потрібен адаптивний сайт із меню, фотографіями та формою бронювання. Проєкт відкритий для заявок.',
         status: 'PLANNING',
@@ -175,7 +179,7 @@ try {
       {
         id: id(102),
         clientId: client1.id,
-        title: '[Демо] Інтернет-магазин крафтових виробів',
+        title: 'Інтернет-магазин крафтових виробів',
         description:
           'Каталог товарів, кошик і оформлення замовлень. Два виконавці працюють над розробкою й дизайном.',
         status: 'ACTIVE',
@@ -186,7 +190,7 @@ try {
       {
         id: id(103),
         clientId: client2.id,
-        title: '[Демо] Макет мобільного застосунку',
+        title: 'Макет мобільного застосунку',
         description:
           'Дизайн застосунку для запису на послуги. Є прострочене завдання для перевірки аналітики ризиків.',
         status: 'ACTIVE',
@@ -197,7 +201,7 @@ try {
       {
         id: id(104),
         clientId: client1.id,
-        title: '[Демо] Фірмовий стиль пекарні',
+        title: 'Фірмовий стиль пекарні',
         description:
           'Завершений проєкт: логотип, палітра та оформлення пакування. Клієнт залишив відгук.',
         status: 'COMPLETED',
@@ -208,7 +212,7 @@ try {
       {
         id: id(105),
         clientId: client2.id,
-        title: '[Демо] Каталог послуг майстерні',
+        title: 'Каталог послуг майстерні',
         description:
           'Завершений вебкаталог із пошуком послуг і контактною формою.',
         status: 'COMPLETED',
@@ -410,7 +414,7 @@ try {
         projectId: task.project.id,
         assigneeId: task.user.id,
         title: task.title,
-        description: `Демонстраційне завдання: ${task.title.toLowerCase()}. Результат передати клієнту на перевірку.`,
+        description: `${task.title}. Результат передати клієнту на перевірку.`,
         priority: task.priority,
         status: task.status,
         deadline: date(task.days),
@@ -550,7 +554,7 @@ try {
         title: ['Інтернет-магазин', 'Мобільний дизайн', 'Аналітичний звіт'][
           index
         ],
-        description: 'Демонстраційна робота для профілю.',
+        description: 'Робота з портфоліо виконавця.',
         url: `https://example.com/portfolio/${index + 1}`,
         createdAt: date(-20 + index),
         updatedAt: date(-5),
@@ -585,7 +589,7 @@ try {
       id: id(941),
       userId: freelancer1.id,
       type: 'TASK_ASSIGNED',
-      message: 'Вам призначено демонстраційне завдання.',
+      message: 'Вам призначено нове завдання.',
       projectId: shop.id,
       taskId: null,
       readAt: null,
@@ -596,7 +600,7 @@ try {
       projectId: shop.id,
       actorId: client1.id,
       type: 'PROJECT_UPDATED',
-      message: 'Оновлено демонстраційний проєкт.',
+      message: 'Проєкт оновлено.',
       createdAt: date(-1),
     });
     await add('Complaint', {
@@ -605,8 +609,7 @@ try {
       targetUserId: null,
       projectId: design.id,
       reason: 'Потрібне уточнення вимог',
-      description:
-        'Прошу адміністратора допомогти уточнити обсяг демонстраційного проєкту.',
+      description: 'Прошу адміністратора допомогти уточнити обсяг проєкту.',
       status: 'OPEN',
       adminNote: null,
       createdAt: date(-1),
@@ -639,7 +642,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1101),
       clientId: client2.id,
-      title: '[Демо] CRM для студії йоги',
+      title: 'CRM для студії йоги',
       description:
         'Облік клієнтів, розклад занять, абонементи й онлайн-оплата. Над проєктом працюють розробник і дизайнер.',
       status: 'ACTIVE',
@@ -655,7 +658,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1102),
       clientId: client1.id,
-      title: '[Демо] Телеграм-бот для служби доставки',
+      title: 'Телеграм-бот для служби доставки',
       description:
         'Бот приймає замовлення, показує статус доставки й надсилає сповіщення клієнтам.',
       status: 'ACTIVE',
@@ -671,7 +674,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1103),
       clientId: client1.id,
-      title: '[Демо] Мобільний застосунок для фітнес-клубу',
+      title: 'Мобільний застосунок для фітнес-клубу',
       description:
         'Запис на тренування, абонементи та push-нагадування. Шукаємо виконавця з досвідом мобільного дизайну.',
       status: 'PLANNING',
@@ -687,7 +690,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1104),
       clientId: client2.id,
-      title: '[Демо] SEO-аудит сайту стоматології',
+      title: 'SEO-аудит сайту стоматології',
       description:
         'Потрібно перевірити технічний стан сайту, швидкість і структуру сторінок та скласти план покращень.',
       status: 'PLANNING',
@@ -703,7 +706,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1105),
       clientId: client2.id,
-      title: '[Демо] Редизайн корпоративного блогу',
+      title: 'Редизайн корпоративного блогу',
       description:
         'Нова сітка статей і типографіка. Проєкт тимчасово призупинено до погодження контенту.',
       status: 'PAUSED',
@@ -719,7 +722,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1106),
       clientId: client1.id,
-      title: '[Демо] Лендінг онлайн-курсу з фотографії',
+      title: 'Лендінг онлайн-курсу з фотографії',
       description:
         'Завершений проєкт: лендінг із програмою курсу, відгуками та формою оплати.',
       status: 'COMPLETED',
