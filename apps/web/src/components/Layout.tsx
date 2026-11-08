@@ -25,12 +25,9 @@ export function Layout() {
 
   const close = () => setMenuOpen(false);
   const unread = notifications.data?.unreadCount ?? 0;
+  // Адміністратор у робочому просторі бачить лише свої проєкти, як і клієнт
   const projectsLabel =
-    user.role === "FREELANCER"
-      ? t("workProjects")
-      : user.role === "ADMIN"
-        ? t("projects")
-        : t("myProjects");
+    user.role === "FREELANCER" ? t("workProjects") : t("myProjects");
 
   return (
     <div className="app-shell">

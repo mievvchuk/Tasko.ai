@@ -123,6 +123,28 @@ describe('ProjectsService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('lets an admin view but not manage a project they do not own', async () => {
+    const project = { id: 'project-id', clientId: client.id, status: 'ACTIVE' };
+    db.Project = { where: vi.fn(() => chain(project)) };
+    db.ProjectMember = { where: vi.fn(() => chain(null)) };
+    await expect(service.requireAccess(admin, project.id)).resolves.toBe(project);
+    await expect(service.requireOwner(admin, project.id)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    await expect(service.requireOwner(client, project.id)).resolves.toBe(project);
+  });
+
+  it('lists only own projects for an admin in the workspace, all from the admin panel', async () => {
+    const everyone = [{ id: 'project-id', clientId: client.id, status: 'ACTIVE' }];
+    // Без where (all=true) — усі проєкти; where({ clientId: admin }) — жодного
+    db.Project = { ...chain(everyone), where: vi.fn(() => chain([])) };
+    db.ProjectMember = { where: vi.fn(() => chain([])) };
+    db.Task = { where: vi.fn(() => chain([])) };
+    await expect(service.list(admin, { page: 1, limit: 20 })).resolves.toEqual([]);
+    const all = await service.list(admin, { page: 1, limit: 20, all: true });
+    expect(all.map((p) => p.id)).toEqual(['project-id']);
+  });
+
   it('only lets a client create a planning project', async () => {
     db.Project = { create: vi.fn(async (data: unknown) => data) };
 

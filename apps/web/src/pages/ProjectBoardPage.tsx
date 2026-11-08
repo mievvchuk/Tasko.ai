@@ -66,7 +66,7 @@ export function ProjectBoardPage() {
   const lanes = boardLanes(columns.data ?? []);
   const tasks = data ?? [];
   // Колонки додає й видаляє власник проєкту (або адміністратор)
-  const isOwner = user?.role === "ADMIN" || project.data?.clientId === user?.id;
+  const isOwner = project.data?.clientId === user?.id;
 
   // Пересувати картку може виконавець або власник проєкту
   function canMove(task: Task) {

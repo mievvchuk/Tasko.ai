@@ -69,7 +69,7 @@ export class ProjectPlanningService {
         const current = await tx.orm.public.Project.where({
           id: projectId,
         }).first();
-        if (!current || (user.role !== 'ADMIN' && current.clientId !== user.id))
+        if (!current || current.clientId !== user.id)
           throw new ConflictException('Проєкт змінився. Оновіть сторінку.');
         this.projects.ensureWritable(current);
         // A unique activity ID makes retries safe, including a lost HTTP response.

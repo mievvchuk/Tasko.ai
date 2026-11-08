@@ -55,7 +55,7 @@ function TaskFormContext({
       />
     );
   if (
-    (user?.role !== "ADMIN" && project.data.clientId !== user?.id) ||
+    project.data.clientId !== user?.id ||
     ["COMPLETED", "CANCELLED"].includes(project.data.status) ||
     (task && ["REVIEW", "DONE"].includes(task.status))
   )

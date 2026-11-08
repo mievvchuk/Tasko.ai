@@ -1,18 +1,13 @@
 import type { FormEvent } from "react";
-import type { ProjectMember } from "../types";
 
 import { useLanguage } from "../i18n";
 export function TaskSearchFilters({
   search,
-  assigneeId,
   overdue,
-  members,
   onChange,
 }: {
   search: string;
-  assigneeId: string;
   overdue: boolean;
-  members: ProjectMember[];
   onChange: (name: string, value: string) => void;
 }) {
   const { tr } = useLanguage();
@@ -41,21 +36,6 @@ export function TaskSearchFilters({
           </button>
         </div>
       </form>
-      <div className="filter-field">
-        <label htmlFor="task-assignee-filter">{tr("Виконавець")}</label>
-        <select
-          id="task-assignee-filter"
-          value={assigneeId}
-          onChange={(event) => onChange("assigneeId", event.target.value)}
-        >
-          <option value="">{tr("Усі виконавці")}</option>
-          {members.map((member) => (
-            <option key={member.userId} value={member.userId}>
-              {member.user?.name || tr("Учасник недоступний")}
-            </option>
-          ))}
-        </select>
-      </div>
       <label className="checkbox-field" htmlFor="task-overdue-filter">
         <input
           id="task-overdue-filter"

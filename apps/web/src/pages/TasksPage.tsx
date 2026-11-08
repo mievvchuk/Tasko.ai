@@ -17,7 +17,6 @@ export function TasksPage() {
   const projectId = params.get("project") || "";
   const page = parsePage(params.get("page"));
   const search = params.get("search") || "";
-  const assigneeId = params.get("assigneeId") || "";
   const overdue = params.get("overdue") === "true";
   const status = Object.hasOwn(taskStatusNames, params.get("status") || "")
     ? params.get("status") || ""
@@ -33,7 +32,6 @@ export function TasksPage() {
   if (status) query.set("status", status);
   if (priority) query.set("priority", priority);
   if (search) query.set("search", search);
-  if (assigneeId) query.set("assigneeId", assigneeId);
   if (overdue) query.set("overdue", "true");
   const tasks = useApi<Task[]>(
     project.data ? `/projects/${projectId}/tasks?${query}` : null,
@@ -48,7 +46,7 @@ export function TasksPage() {
   const canCreate =
     project.data &&
     !["COMPLETED", "CANCELLED"].includes(project.data.status) &&
-    (user?.role === "ADMIN" || project.data.clientId === user?.id);
+    project.data.clientId === user?.id;
   return (
     <>
       <div className="page-heading">
@@ -93,9 +91,7 @@ export function TasksPage() {
           <div className="task-filters padded">
             <TaskSearchFilters
               search={search}
-              assigneeId={assigneeId}
               overdue={overdue}
-              members={members.data || []}
               onChange={change}
             />
             <div className="filter-field">

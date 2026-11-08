@@ -326,6 +326,8 @@ export const enText: Record<string, string> = {
   "Опис не додано.": "No description added.",
   "Виконання проєкту ": "Project progress ",
   "Пошук за назвою": "Search by title",
+  "Пошук проєкту": "Find a project",
+  "Не знайдено проєктів за цими умовами.": "No projects match these filters.",
   "Введіть частину назви": "Enter part of the title",
   Виконавець: "Assignee",
   "Усі виконавці": "All assignees",
@@ -1062,7 +1064,7 @@ export const enText: Record<string, string> = {
   "{0} дн.": "{0} d",
   // Видалення користувача адміністратором
   "Видалити {0}?": "Delete {0}?",
-  "Якщо в користувача немає проєктів, повідомлень чи заявок, обліковий запис зникне повністю. Інакше зітремо ім'я, пошту, фото й профіль, а в історії проєктів лишиться «Видалений користувач». Дію не можна скасувати.": "If the user has no projects, messages or applications, the account is removed completely. Otherwise we erase the name, email, photo and profile, and project history keeps \"Deleted user\". This cannot be undone.",
+  "Обліковий запис буде видалено повністю разом з його проєктами, повідомленнями, заявками, відгуками й файлами. У чужих проєктах завдання лишаться без виконавця. Дію не можна скасувати.": "The account is deleted completely together with its projects, messages, applications, reviews and files. In other people's projects its tasks stay unassigned. This cannot be undone.",
   "Видаляємо…": "Deleting…",
   "Так, видалити": "Yes, delete",
   "Видалити користувача": "Delete user",

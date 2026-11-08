@@ -78,9 +78,13 @@ export class MilestonesService {
   async update(user: CurrentUser, id: string, data: UpdateMilestoneDto) {
     const item = await this.db.ProjectMilestone.where({ id }).first();
     if (!item) throw new NotFoundException('Етап не знайдено.');
-    const project = await this.projects.requireAccess(user, item.projectId);
+    const project = await this.projects.requireAccess(
+      user,
+      item.projectId,
+      false,
+    );
     this.projects.ensureWritable(project);
-    const owner = user.role === 'ADMIN' || project.clientId === user.id;
+    const owner = project.clientId === user.id;
     if (
       !owner &&
       (data.title !== undefined ||

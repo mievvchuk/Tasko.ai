@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { useApi } from "../useApi";
 import { projectStatusNames } from "../types";
 import type { Project } from "../types";
@@ -18,9 +19,57 @@ export function ProjectPicker({
 }) {
   const { tr } = useLanguage();
   const [page, setPage] = useState(1);
-  const projects = useApi<Project[]>(`/projects?page=${page}&limit=20`);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const query = new URLSearchParams({ page: String(page), limit: "20" });
+  if (search) query.set("search", search);
+  if (status) query.set("status", status);
+  const projects = useApi<Project[]>(`/projects?${query}`);
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPage(1);
+    setSearch(
+      String(new FormData(event.currentTarget).get("search") || "").trim(),
+    );
+  }
   return (
     <section className="project-picker" aria-label={tr("Проєкт")}>
+      <div className="task-filters">
+        <form className="task-search" onSubmit={submit}>
+          <label htmlFor="project-picker-search">{tr("Пошук проєкту")}</label>
+          <div>
+            <input
+              id="project-picker-search"
+              name="search"
+              type="search"
+              maxLength={200}
+              defaultValue={search}
+              placeholder={tr("Введіть частину назви")}
+            />
+            <button className="button secondary" type="submit">
+              {tr("Знайти")}
+            </button>
+          </div>
+        </form>
+        <div className="filter-field">
+          <label htmlFor="project-picker-status">{tr("Статус")}</label>
+          <select
+            id="project-picker-status"
+            value={status}
+            onChange={(event) => {
+              setPage(1);
+              setStatus(event.target.value);
+            }}
+          >
+            <option value="">{tr("Усі статуси")}</option>
+            {Object.entries(projectStatusNames).map(([key, label]) => (
+              <option key={key} value={key}>
+                {tr(label)}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       <ResourceState
         loading={projects.loading}
         error={projects.error}
@@ -45,7 +94,9 @@ export function ProjectPicker({
           </div>
           {!projects.data.length && (
             <p className="form-note">
-              {tr("На цій сторінці немає доступних проєктів.")}
+              {search || status
+                ? tr("Не знайдено проєктів за цими умовами.")
+                : tr("На цій сторінці немає доступних проєктів.")}
             </p>
           )}
           {(page > 1 || projects.data.length === 20) && (

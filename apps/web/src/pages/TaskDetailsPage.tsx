@@ -73,7 +73,7 @@ export function TaskDetailsPage() {
 
   const currentTask = task.data;
   const currentProject = project.data;
-  const owner = user?.role === "ADMIN" || currentProject.clientId === user?.id;
+  const owner = currentProject.clientId === user?.id;
   const closed = ["COMPLETED", "CANCELLED"].includes(currentProject.status);
   const projectActive = currentProject.status === "ACTIVE";
   const isAssignee = currentTask.assigneeId === user?.id;
@@ -84,7 +84,7 @@ export function TaskDetailsPage() {
   const canChangeStatus =
     projectActive &&
     ["TODO", "IN_PROGRESS"].includes(currentTask.status) &&
-    (isAssignee || user?.role === "ADMIN");
+    isAssignee;
   const canSubmit =
     projectActive && currentTask.status === "IN_PROGRESS" && isAssignee;
   const canReview = owner && !closed && currentTask.status === "REVIEW";

@@ -138,7 +138,7 @@ export function ProjectMilestonesPage() {
   const [editingId, setEditingId] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
-  const owner = user?.role === "ADMIN" || project.data?.clientId === user?.id;
+  const owner = project.data?.clientId === user?.id;
   async function create(fields: MilestoneFields) {
     setError("");
     setNotice("");

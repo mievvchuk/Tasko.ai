@@ -97,7 +97,7 @@ export class FilesService {
     file: UploadedFile | undefined,
   ) {
     this.projects.ensureWritable(
-      await this.projects.requireAccess(user, projectId),
+      await this.projects.requireAccess(user, projectId, false),
     );
     if (!file) throw new BadRequestException('Додайте файл у поле file.');
     const { extension, mime } = validateFile(file);
