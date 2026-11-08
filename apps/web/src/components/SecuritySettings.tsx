@@ -5,6 +5,7 @@ import { describeDevice, formatDate } from "../format";
 import type { AuthSession, User } from "../types";
 import { useApi } from "../useApi";
 import { PasswordInput } from "./PasswordInput";
+import { PasswordStrength } from "./PasswordStrength";
 import { ResourceState } from "./ResourceState";
 
 import { useLanguage } from "../i18n";
@@ -14,6 +15,11 @@ export function SecuritySettings({ user }: { user: User }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  // Помилка поточного пароля від сервера показується під цим полем
+  const [currentError, setCurrentError] = useState("");
+  const sameAsCurrent =
+    newPassword.length > 0 && newPassword === currentPassword;
+  const mismatch = confirmation.length > 0 && confirmation !== newPassword;
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(
     user.twoFactorEnabled,
   );
@@ -28,11 +34,12 @@ export function SecuritySettings({ user }: { user: User }) {
 
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (newPassword !== confirmation) {
-      setError(tr("Нові паролі не збігаються."));
-      return;
-    }
-    await run(async () => {
+    if (sameAsCurrent || newPassword !== confirmation) return;
+    setError("");
+    setMessage("");
+    setCurrentError("");
+    setSubmitting(true);
+    try {
       const response = await request<{ message: string }>("/auth/password", {
         method: "PATCH",
         body: { currentPassword, newPassword },
@@ -42,7 +49,14 @@ export function SecuritySettings({ user }: { user: User }) {
       setConfirmation("");
       setMessage(response.message);
       sessions.refresh();
-    });
+    } catch (error) {
+      const text = errorMessage(error);
+      // Неправильний поточний пароль показуємо під його полем
+      if (text === tr("Поточний пароль неправильний.")) setCurrentError(text);
+      else setError(text);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function beginTwoFactor() {
@@ -130,8 +144,13 @@ export function SecuritySettings({ user }: { user: User }) {
               id="current-password"
               label={tr("Поточний пароль")}
               value={currentPassword}
-              onChange={setCurrentPassword}
+              onChange={(value) => {
+                setCurrentPassword(value);
+                setCurrentError("");
+              }}
               autoComplete="current-password"
+              placeholder={tr("Введіть поточний пароль")}
+              error={currentError}
             />
             <PasswordInput
               id="profile-new-password"
@@ -139,15 +158,26 @@ export function SecuritySettings({ user }: { user: User }) {
               value={newPassword}
               onChange={setNewPassword}
               autoComplete="new-password"
+              placeholder={tr("Придумайте новий пароль")}
+              error={
+                sameAsCurrent
+                  ? tr("Новий пароль має відрізнятися від поточного.")
+                  : ""
+              }
             />
+            <PasswordStrength password={newPassword} />
             <PasswordInput
               id="profile-new-password-confirmation"
               label={tr("Повторіть новий пароль")}
               value={confirmation}
               onChange={setConfirmation}
               autoComplete="new-password"
+              error={mismatch ? tr("Нові паролі не збігаються.") : ""}
             />
-            <button className="button primary" disabled={submitting}>
+            <button
+              className="button primary"
+              disabled={submitting || sameAsCurrent || mismatch}
+            >
               {tr("Змінити пароль")}
             </button>
           </form>

@@ -147,6 +147,31 @@ describe('authentication', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
+  it('rejects a wrong current password without ending the session', async () => {
+    users.findById.mockResolvedValue(user);
+    const actor = { ...user, sessionId } as never;
+    // 400, не 401: на 401 інтерфейс розлогінює користувача
+    await expect(
+      auth.changePassword(actor, {
+        currentPassword: 'wrong-password',
+        newPassword: 'New-password-456',
+      }),
+    ).rejects.toThrow('Поточний пароль неправильний.');
+    await expect(
+      auth.changePassword(actor, {
+        currentPassword: 'wrong-password',
+        newPassword: 'New-password-456',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      auth.changePassword(actor, {
+        currentPassword: credentials.password,
+        newPassword: credentials.password,
+      }),
+    ).rejects.toThrow('Новий пароль має відрізнятися від поточного.');
+    expect(db.User.where).not.toHaveBeenCalled();
+  });
+
   it('rejects blocked accounts even with an active session', async () => {
     users.findById.mockResolvedValue({ ...user, status: 'BLOCKED' });
     await expect(auth.authenticate(user.id, sessionId)).rejects.toBeInstanceOf(

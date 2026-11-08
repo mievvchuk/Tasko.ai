@@ -24,7 +24,7 @@ import {
   allowedOrEmpty,
   useListParams,
 } from "./AdminSections";
-import type { Column } from "./AdminSections";
+import type { Column, UserAction } from "./AdminSections";
 
 import { useLanguage } from "../i18n";
 
@@ -95,7 +95,10 @@ export function AdminUsersPage() {
   const { params, page, search, set, reset } = useListParams();
   const role = allowedOrEmpty(params.get("role"), Object.keys(roleNames));
   const status = allowedOrEmpty(params.get("status"), ["ACTIVE", "BLOCKED"]);
-  const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [editing, setEditing] = useState<{
+    user: AdminUser;
+    action: UserAction;
+  } | null>(null);
   const [creating, setCreating] = useState(false);
 
   const query = new URLSearchParams({ page: String(page), limit: "20" });
@@ -156,14 +159,47 @@ export function AdminUsersPage() {
             {tr("Захищено")}
           </span>
         ) : (
-          <button
-            className="button secondary"
-            aria-label={tr("Редагувати {0}", row.name)}
-            onClick={() => setEditing(row)}
-          >
-            <i className="bi bi-pencil" aria-hidden="true"></i>
-            {tr("Редагувати")}
-          </button>
+          <span className="admin-row-actions">
+            <button
+              className="icon-action"
+              aria-label={tr("Змінити роль {0}", row.name)}
+              data-tip={tr("Змінити роль")}
+              onClick={() => setEditing({ user: row, action: "role" })}
+            >
+              <i className="bi bi-person-gear" aria-hidden="true"></i>
+            </button>
+            <button
+              className="icon-action"
+              aria-label={
+                row.status === "BLOCKED"
+                  ? tr("Розблокувати {0}", row.name)
+                  : tr("Заблокувати {0}", row.name)
+              }
+              data-tip={
+                row.status === "BLOCKED"
+                  ? tr("Розблокувати")
+                  : tr("Заблокувати")
+              }
+              onClick={() => setEditing({ user: row, action: "status" })}
+            >
+              <i
+                className={
+                  row.status === "BLOCKED"
+                    ? "bi bi-unlock"
+                    : "bi bi-slash-circle"
+                }
+                aria-hidden="true"
+              ></i>
+            </button>
+            <button
+              className="icon-action danger"
+              aria-label={tr("Видалити {0}", row.name)}
+              data-tip={tr("Видалити")}
+              onClick={() => setEditing({ user: row, action: "delete" })}
+            >
+              <i className="bi bi-trash3" aria-hidden="true"></i>
+            </button>
+          </span>
         ),
     },
   ];
@@ -232,7 +268,8 @@ export function AdminUsersPage() {
       </section>
       {editing && (
         <UserDialog
-          user={editing}
+          user={editing.user}
+          action={editing.action}
           onSaved={users.refresh}
           onClose={() => setEditing(null)}
         />
