@@ -25,6 +25,7 @@ import { AiAssistantPage } from "./pages/AiAssistantPage";
 import { AdminLayout } from "./components/AdminLayout";
 import { AdminPage, AdminUsersPage } from "./pages/AdminPage";
 import { AdminComplaintsPage, AdminProjectsPage } from "./pages/AdminLists";
+import { AdminModerationPage } from "./pages/AdminModeration";
 import { MarketplacePage } from "./pages/MarketplacePage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
@@ -112,6 +113,7 @@ export function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="moderation" element={<AdminModerationPage />} />
           <Route path="projects" element={<AdminProjectsPage />} />
           <Route path="complaints" element={<AdminComplaintsPage />} />
         </Route>

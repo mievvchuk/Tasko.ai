@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { hashPassword } from '../../../src/auth/password.js';
 import type { PrismaService } from '../../../src/prisma/prisma.service.js';
+import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
 import { AdminService, lastMonths } from '../../../src/admin/admin.service.js';
 
@@ -73,7 +74,10 @@ describe('AdminService reports', () => {
     },
   };
   const prisma = { client: { orm: { public: db } } };
-  const service = new AdminService(prisma as unknown as PrismaService);
+  const service = new AdminService(
+    prisma as unknown as PrismaService,
+    {} as ProjectsService,
+  );
 
   it('builds system totals and protects them from non-admins', async () => {
     const report = await service.report(admin);
@@ -139,12 +143,15 @@ describe('AdminService reports', () => {
       }),
     };
     const tx = { orm: { public: { User } } };
-    const service = new AdminService({
-      client: {
-        orm: { public: { User } },
-        transaction: (run: (t: typeof tx) => unknown) => run(tx),
-      },
-    } as unknown as PrismaService);
+    const service = new AdminService(
+      {
+        client: {
+          orm: { public: { User } },
+          transaction: (run: (t: typeof tx) => unknown) => run(tx),
+        },
+      } as unknown as PrismaService,
+      {} as ProjectsService,
+    );
 
     beforeAll(async () => {
       people.admin = {
@@ -253,12 +260,16 @@ describe('AdminService reports', () => {
     const orm = {
       public: Object.fromEntries(names.map((name) => [name, table(name)])),
     };
-    const service = new AdminService({
-      client: {
-        orm,
-        transaction: (run: (t: { orm: typeof orm }) => unknown) => run({ orm }),
-      },
-    } as unknown as PrismaService);
+    const service = new AdminService(
+      {
+        client: {
+          orm,
+          transaction: (run: (t: { orm: typeof orm }) => unknown) =>
+            run({ orm }),
+        },
+      } as unknown as PrismaService,
+      {} as ProjectsService,
+    );
 
     beforeEach(() => {
       tables = {
@@ -349,5 +360,76 @@ describe('AdminService reports', () => {
       '2025-12',
       '2026-01',
     ]);
+  });
+});
+
+describe('AdminService project moderation', () => {
+  const admin = { id: 'admin-id', role: 'ADMIN' } as CurrentUser;
+  function setup(status: string) {
+    const update = vi.fn(async (data: object) => ({ id: 'p1', ...data }));
+    const db = {
+      Project: {
+        where: vi.fn(() => ({
+          first: vi.fn(async () => ({
+            id: 'p1',
+            clientId: 'client-id',
+            title: 'Сайт',
+            status,
+          })),
+          update,
+        })),
+      },
+    };
+    const projects = { logActivity: vi.fn(), notify: vi.fn() };
+    const service = new AdminService(
+      { client: { orm: { public: db } } } as unknown as PrismaService,
+      projects as unknown as ProjectsService,
+    );
+    return { service, update, projects };
+  }
+
+  it('approves a project into the marketplace and notifies the client', async () => {
+    const { service, update, projects } = setup('MODERATION');
+    await service.moderate(admin, 'p1', { decision: 'APPROVE' });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'PLANNING' }),
+    );
+    expect(projects.notify).toHaveBeenCalledWith(
+      'client-id',
+      'admin-id',
+      'PROJECT_APPROVED',
+      expect.any(String),
+      'p1',
+    );
+  });
+
+  it('rejects with a reason kept in the project history', async () => {
+    const { service, update, projects } = setup('MODERATION');
+    await service.moderate(admin, 'p1', {
+      decision: 'REJECT',
+      reason: 'Опишіть обсяг робіт',
+    });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'REJECTED' }),
+    );
+    expect(projects.logActivity).toHaveBeenCalledWith(
+      'admin-id',
+      'p1',
+      'PROJECT_REJECTED',
+      'Опишіть обсяг робіт',
+    );
+  });
+
+  it('refuses projects outside the queue and non-admins', async () => {
+    const { service, update } = setup('PLANNING');
+    await expect(
+      service.moderate(admin, 'p1', { decision: 'APPROVE' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(
+      service.moderate({ ...admin, role: 'CLIENT' }, 'p1', {
+        decision: 'APPROVE',
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(update).not.toHaveBeenCalled();
   });
 });

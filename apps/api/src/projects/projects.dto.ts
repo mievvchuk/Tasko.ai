@@ -22,6 +22,9 @@ export const projectStatuses = [
   'COMPLETED',
   'CANCELLED',
 ] as const;
+// Новий проєкт спершу чекає на модерацію; відхилений клієнт виправляє й надсилає знову
+export const moderationStatuses = ['MODERATION', 'REJECTED'] as const;
+const allProjectStatuses = [...projectStatuses, ...moderationStatuses];
 
 export class PageDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
@@ -42,10 +45,10 @@ export class PageDto {
 }
 
 export class ProjectQueryDto extends PageDto {
-  @ApiPropertyOptional({ enum: projectStatuses })
+  @ApiPropertyOptional({ enum: allProjectStatuses })
   @IsOptional()
-  @IsIn(projectStatuses)
-  status?: (typeof projectStatuses)[number];
+  @IsIn(allProjectStatuses)
+  status?: (typeof allProjectStatuses)[number];
   @ApiPropertyOptional({
     description: 'Лише проєкти, де користувач — замовник або учасник',
   })
@@ -53,7 +56,8 @@ export class ProjectQueryDto extends PageDto {
   @Transform(({ value }) => value === true || value === 'true')
   mine?: boolean;
   @ApiPropertyOptional({
-    description: 'Усі проєкти платформи (лише для адміністратора, з адмін-панелі)',
+    description:
+      'Усі проєкти платформи (лише для адміністратора, з адмін-панелі)',
   })
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')

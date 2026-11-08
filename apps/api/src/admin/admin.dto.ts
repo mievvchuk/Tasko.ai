@@ -52,3 +52,15 @@ export class ReportExportQueryDto {
   @IsIn(['json', 'csv', 'xlsx', 'pdf'])
   format: 'json' | 'csv' | 'xlsx' | 'pdf' = 'json';
 }
+
+// Рішення модератора щодо нового проєкту; причина обов'язкова для відхилення
+export class ModerationDecisionDto {
+  @ApiProperty({ enum: ['APPROVE', 'REJECT'] })
+  @IsIn(['APPROVE', 'REJECT'])
+  decision!: 'APPROVE' | 'REJECT';
+  @ApiPropertyOptional({ description: 'Причина відхилення' })
+  @ValidateIf((dto: ModerationDecisionDto) => dto.decision === 'REJECT')
+  @IsString()
+  @Length(5, 1000)
+  reason?: string;
+}

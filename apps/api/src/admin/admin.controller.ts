@@ -1,4 +1,17 @@
-import {Body,Controller,Delete,Get,Inject,Param,ParseUUIDPipe,Patch,Post,Query,Res,UseGuards,} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Actor } from '../auth/current-user.decorator.js';
@@ -6,6 +19,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { CurrentUser } from '../users/users.service.js';
 import {
   CreateAdminDto,
+  ModerationDecisionDto,
   ReportExportQueryDto,
   UpdateUserDto,
   UserQueryDto,
@@ -42,6 +56,16 @@ export class AdminController {
     @Body() data: CreateAdminDto,
   ) {
     return this.admin.createAdmin(user, data);
+  }
+  @Get('moderation/projects') moderationQueue(@Actor() user: CurrentUser) {
+    return this.admin.moderationQueue(user);
+  }
+  @Post('moderation/projects/:id') moderate(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: ModerationDecisionDto,
+  ) {
+    return this.admin.moderate(user, id, data);
   }
   @Get('report') report(@Actor() user: CurrentUser) {
     return this.admin.report(user);

@@ -5,7 +5,7 @@ import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { LoadError } from "../components/LoadError";
 import { dateInputEnd, toDateInput } from "../format";
-import { projectStatusNames } from "../types";
+import { inModeration, projectStatusNames } from "../types";
 import type { Project, ProjectStatus, ProjectCategory, Skill } from "../types";
 import { useApi } from "../useApi";
 
@@ -52,8 +52,7 @@ export function ProjectFormPage() {
       <LoadError message={error} onRetry={() => setAttempt(attempt + 1)} />
     );
   if (id && (!project || project.id !== id)) return null;
-  const canEdit =
-    project && project.clientId === user?.id;
+  const canEdit = project && project.clientId === user?.id;
   const closed =
     project?.status === "COMPLETED" || project?.status === "CANCELLED";
   if ((!id && user?.role !== "CLIENT") || (id && !canEdit) || closed) {
@@ -160,7 +159,7 @@ function ProjectForm({ project }: { project: Project | null }) {
       if (budgetMax !== "") body.budgetMax = Number(budgetMax);
       if (categoryName.trim()) body.categoryName = categoryName.trim();
       body.skillNames = skillNames;
-      if (project) body.status = status;
+      if (project && !inModeration(project.status)) body.status = status;
       // Незмінений дедлайн не перезаписуємо, щоб зберегти точність часу в БД.
       if (deadlineChanged)
         body.deadline = deadline ? dateInputEnd(deadline).toISOString() : null;
@@ -325,7 +324,18 @@ function ProjectForm({ project }: { project: Project | null }) {
                 </button>
               </div>
             </fieldset>
-            {project && (
+            {project && inModeration(project.status) && (
+              <p className="form-note">
+                {project.status === "REJECTED"
+                  ? tr(
+                      "Після збереження змін проєкт знову піде на модерацію адміністратору.",
+                    )
+                  : tr(
+                      "Проєкт на модерації. Статус можна буде змінити після схвалення адміністратором.",
+                    )}
+              </p>
+            )}
+            {project && !inModeration(project.status) && (
               <div className="project-form-field">
                 <label htmlFor="edit-project-status">{tr("Статус")}</label>
                 <select
@@ -335,18 +345,20 @@ function ProjectForm({ project }: { project: Project | null }) {
                     setStatus(event.target.value as ProjectStatus)
                   }
                 >
-                  {Object.entries(projectStatusNames).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {tr(label)}
-                    </option>
-                  ))}
+                  {Object.entries(projectStatusNames)
+                    .filter(([value]) => !inModeration(value as ProjectStatus))
+                    .map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {tr(label)}
+                      </option>
+                    ))}
                 </select>
               </div>
             )}
             {!project && (
               <p className="form-note">
                 {tr(
-                  "Новий проєкт матиме статус «Пошук виконавця» і буде доступний фрілансерам.",
+                  "Спершу проєкт перевірить адміністратор. Після схвалення він отримає статус «Пошук виконавця» і з'явиться на біржі для фрілансерів.",
                 )}
               </p>
             )}
