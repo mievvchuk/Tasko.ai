@@ -336,6 +336,7 @@ export const enText: Record<string, string> = {
     "Change the filters or create a task.",
   "Таблиця завдань": "Tasks table",
   Пріоритет: "Priority",
+  "Не задано": "Not set",
   "Не призначено": "Unassigned",
   "Доступні вам проєкти, їхній стан і прогрес виконання.":
     "Projects available to you, their status and progress.",

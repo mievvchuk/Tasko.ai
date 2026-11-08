@@ -136,6 +136,8 @@ model Task {
   title     String
   description String?
   priority  String   // LOW, MEDIUM, HIGH
+  // Рейтинг завдання від клієнта, 1–5; null — не задано
+  rating    Int?
   status    String   // TODO, IN_PROGRESS, REVIEW, DONE
   deadline  TimestamptzJsDate?
   // Додаткова колонка канбану (етап «До виконання» або «У процесі»); null — звичайна колонка
