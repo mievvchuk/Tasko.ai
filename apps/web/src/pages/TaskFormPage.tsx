@@ -243,6 +243,8 @@ function TaskForm({
                   id="task-form-deadline"
                   type="date"
                   value={deadline}
+                  // onInput ловить дату, вставлену в поле напряму: React тоді пропускає onChange
+                  onInput={(event) => setDeadline(event.currentTarget.value)}
                   onChange={(event) => setDeadline(event.target.value)}
                 />
               </div>

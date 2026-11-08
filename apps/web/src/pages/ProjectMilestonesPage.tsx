@@ -97,6 +97,8 @@ function MilestoneForm({
         <input
           type="date"
           value={deadline}
+          // onInput ловить дату, вставлену в поле напряму: React тоді пропускає onChange
+          onInput={(e) => setDeadline(e.currentTarget.value)}
           onChange={(e) => setDeadline(e.target.value)}
         />
       </label>
