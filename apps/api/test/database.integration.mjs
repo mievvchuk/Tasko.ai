@@ -338,6 +338,56 @@ try {
           amount: 5000,
         },
       );
+      // Дедлайн етапу має пережити створення, редагування й повторне відкриття
+      const milestoneDeadline = new Date(
+        Date.now() + 3 * 86400000,
+      ).toISOString();
+      const datedMilestone = await call(
+        'post',
+        `/projects/${project.id}/milestones`,
+        201,
+        client.token,
+        {
+          title: 'Етап з дедлайном',
+          position: 2,
+          amount: 100,
+          deadline: milestoneDeadline,
+        },
+      );
+      const reopenMilestone = async () =>
+        (
+          await call(
+            'get',
+            `/projects/${project.id}/milestones`,
+            200,
+            client.token,
+          )
+        ).find((item) => item.id === datedMilestone.id);
+      assert.equal((await reopenMilestone()).deadline, milestoneDeadline);
+      const movedMilestoneDeadline = new Date(
+        Date.now() + 4 * 86400000,
+      ).toISOString();
+      await call(
+        'patch',
+        `/milestones/${datedMilestone.id}`,
+        200,
+        client.token,
+        {
+          deadline: movedMilestoneDeadline,
+        },
+      );
+      assert.equal((await reopenMilestone()).deadline, movedMilestoneDeadline);
+      await call(
+        'patch',
+        `/milestones/${datedMilestone.id}`,
+        200,
+        client.token,
+        {
+          deadline: null,
+        },
+      );
+      assert.equal((await reopenMilestone()).deadline, null);
+      checks++;
       await call(
         'patch',
         `/milestones/${milestone.id}`,
@@ -422,6 +472,22 @@ try {
           deadline: new Date(Date.now() + 86400000).toISOString(),
         },
       );
+      // Дедлайн завдання має пережити повторне відкриття й редагування
+      const reopenTask = () =>
+        call('get', `/tasks/${task.id}`, 200, client.token);
+      assert.equal((await reopenTask()).deadline, task.deadline);
+      const movedTaskDeadline = new Date(
+        Date.now() + 2 * 86400000,
+      ).toISOString();
+      await call('patch', `/tasks/${task.id}`, 200, client.token, {
+        deadline: movedTaskDeadline,
+      });
+      assert.equal((await reopenTask()).deadline, movedTaskDeadline);
+      await call('patch', `/tasks/${task.id}`, 200, client.token, {
+        deadline: task.deadline,
+      });
+      assert.equal((await reopenTask()).deadline, task.deadline);
+      checks++;
       const filteredTasks = await call(
         'get',
         `/projects/${project.id}/tasks?search=PREPARE&assigneeId=${freelancer.id}&status=TODO&priority=HIGH`,
