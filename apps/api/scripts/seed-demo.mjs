@@ -24,43 +24,103 @@ const id = (number) =>
 const users = [
   {
     id: id(1),
-    name: 'Олена Коваль (демо)',
+    name: 'Олена Коваль',
     // Прості пошти для трьох головних акаунтів — їх зручно вводити на захисті
-    email: 'client@tasko.demo',
+    email: 'olena.koval@tasko.ai',
     role: 'CLIENT',
   },
   {
     id: id(2),
-    name: 'Микола Шевченко (демо)',
-    email: 'client2@demo.tasko.example',
+    name: 'Микола Шевченко',
+    email: 'mykola.shevchenko@tasko.ai',
     role: 'CLIENT',
   },
   {
     id: id(3),
-    name: 'Андрій Мельник (демо)',
-    email: 'freelancer@tasko.demo',
+    name: 'Андрій Мельник',
+    email: 'andrii.melnyk@tasko.ai',
     role: 'FREELANCER',
   },
   {
     id: id(4),
-    name: 'Ірина Бондар (демо)',
-    email: 'freelancer2@demo.tasko.example',
+    name: 'Ірина Бондар',
+    email: 'iryna.bondar@tasko.ai',
     role: 'FREELANCER',
   },
   {
     id: id(5),
-    name: 'Дмитро Савчук (демо)',
-    email: 'freelancer3@demo.tasko.example',
+    name: 'Дмитро Савчук',
+    email: 'dmytro.savchuk@tasko.ai',
     role: 'FREELANCER',
   },
   {
     id: id(6),
-    name: 'Адміністратор (демо)',
-    email: 'admin@tasko.demo',
+    name: 'Адміністратор',
+    email: 'admin@tasko.ai',
     role: 'ADMIN',
   },
 ];
 const [client1, client2, freelancer1, freelancer2, freelancer3, admin] = users;
+
+// Ще 50 акаунтів: 15 клієнтів і 35 фрілансерів (у них профіль і навички нижче)
+const extraPeople = [
+  ['Оксана Ткаченко', 'oksana.tkachenko', 'CLIENT'],
+  ['Віталій Кравченко', 'vitalii.kravchenko', 'CLIENT'],
+  ['Людмила Бойко', 'liudmyla.boiko', 'CLIENT'],
+  ['Сергій Поліщук', 'serhii.polishchuk', 'CLIENT'],
+  ['Тетяна Лисенко', 'tetiana.lysenko', 'CLIENT'],
+  ['Олександр Руденко', 'oleksandr.rudenko', 'CLIENT'],
+  ['Наталія Мороз', 'nataliia.moroz', 'CLIENT'],
+  ['Ігор Марченко', 'ihor.marchenko', 'CLIENT'],
+  ['Світлана Павленко', 'svitlana.pavlenko', 'CLIENT'],
+  ['Роман Козак', 'roman.kozak', 'CLIENT'],
+  ['Галина Литвин', 'halyna.lytvyn', 'CLIENT'],
+  ['Володимир Гриценко', 'volodymyr.hrytsenko', 'CLIENT'],
+  ['Марія Карпенко', 'mariia.karpenko', 'CLIENT'],
+  ['Юрій Остапчук', 'yurii.ostapchuk', 'CLIENT'],
+  ['Ольга Захарченко', 'olha.zakharchenko', 'CLIENT'],
+  ['Максим Савченко', 'maksym.savchenko', 'FREELANCER'],
+  ['Аліса Гуменюк', 'alisa.humeniuk', 'FREELANCER'],
+  ['Богдан Ковальчук', 'bohdan.kovalchuk', 'FREELANCER'],
+  ['Катерина Петренко', 'kateryna.petrenko', 'FREELANCER'],
+  ['Данило Остапенко', 'danylo.ostapenko', 'FREELANCER'],
+  ['Соломія Савчин', 'solomiia.savchyn', 'FREELANCER'],
+  ['Арсен Ковтун', 'arsen.kovtun', 'FREELANCER'],
+  ['Юлія Шевчук', 'yuliia.shevchuk', 'FREELANCER'],
+  ['Назар Бондаренко', 'nazar.bondarenko', 'FREELANCER'],
+  ['Дарина Коваленко', 'daryna.kovalenko', 'FREELANCER'],
+  ['Тарас Мельничук', 'taras.melnychuk', 'FREELANCER'],
+  ['Вікторія Сидоренко', 'viktoriia.sydorenko', 'FREELANCER'],
+  ['Олег Гончар', 'oleh.honchar', 'FREELANCER'],
+  ['Ірина Федоренко', 'iryna.fedorenko', 'FREELANCER'],
+  ['Євген Клименко', 'yevhen.klymenko', 'FREELANCER'],
+  ['Аліна Демченко', 'alina.demchenko', 'FREELANCER'],
+  ['Павло Василенко', 'pavlo.vasylenko', 'FREELANCER'],
+  ['Христина Іваненко', 'khrystyna.ivanenko', 'FREELANCER'],
+  ['Станіслав Зінченко', 'stanislav.zinchenko', 'FREELANCER'],
+  ['Діана Кузьменко', 'diana.kuzmenko', 'FREELANCER'],
+  ['Микита Пономаренко', 'mykyta.ponomarenko', 'FREELANCER'],
+  ['Валерія Тимошенко', 'valeriia.tymoshenko', 'FREELANCER'],
+  ['Кирило Нестеренко', 'kyrylo.nesterenko', 'FREELANCER'],
+  ['Яна Гаврилюк', 'yana.havryliuk', 'FREELANCER'],
+  ['Ростислав Яковенко', 'rostyslav.yakovenko', 'FREELANCER'],
+  ['Мирослава Лук’яненко', 'myroslava.lukianenko', 'FREELANCER'],
+  ['Андрій Прокопенко', 'andrii.prokopenko', 'FREELANCER'],
+  ['Олена Семенюк', 'olena.semeniuk', 'FREELANCER'],
+  ['Владислав Дорошенко', 'vladyslav.doroshenko', 'FREELANCER'],
+  ['Зоряна Мартинюк', 'zoriana.martyniuk', 'FREELANCER'],
+  ['Ілля Білоус', 'illia.bilous', 'FREELANCER'],
+  ['Ангеліна Чорновол', 'anhelina.chornovol', 'FREELANCER'],
+  ['Віктор Довженко', 'viktor.dovzhenko', 'FREELANCER'],
+  ['Уляна Кушнір', 'uliana.kushnir', 'FREELANCER'],
+  ['Георгій Соловйов', 'heorhii.soloviov', 'FREELANCER'],
+].map(([name, local, role], index) => ({
+  id: id(2001 + index),
+  name,
+  email: `${local}@tasko.ai`,
+  role,
+}));
+users.push(...extraPeople);
 // Каталог, у якому API зберігає завантажені файли (див. files.service.ts).
 const storageDirectory = new URL('../storage/', import.meta.url);
 const credentialsDirectory = new URL('../../../.tmp/', import.meta.url);
@@ -129,6 +189,17 @@ try {
       created[model] = (created[model] || 0) + 1;
     }
 
+    // Акаунти з попередніх заповнень (@tasko.example) переходять на @tasko.ai
+    for (const old of await models.User.select('id', 'email').all()) {
+      if (!old.email.endsWith('@tasko.example')) continue;
+      const email = old.email.replace(/@tasko\.example$/, '@tasko.ai');
+      if (await models.User.where({ email }).first()) continue;
+      await models.User.where({ id: old.id }).update({
+        email,
+        updatedAt: new Date(),
+      });
+      created.UserEmail = (created.UserEmail || 0) + 1;
+    }
     for (const user of users) {
       const existing = await models.User.where({ email: user.email }).first();
       if (
@@ -139,12 +210,16 @@ try {
           `Пошта ${user.email} вже використовується. Наявний обліковий запис не змінено.`,
         );
       }
-      // Якщо демо-акаунт уже є, але зі старою поштою, — оновлюємо лише пошту.
+      // Якщо демо-акаунт уже є, але зі старою поштою чи іменем, — оновлюємо пошту й ім’я.
       // Дані акаунта (проєкти, завдання, повідомлення) залишаються за ним.
       const sameAccount = await models.User.where({ id: user.id }).first();
-      if (sameAccount && sameAccount.email !== user.email) {
+      if (
+        sameAccount &&
+        (sameAccount.email !== user.email || sameAccount.name !== user.name)
+      ) {
         await models.User.where({ id: user.id }).update({
           email: user.email,
+          name: user.name,
           updatedAt: new Date(),
         });
         created.UserEmail = (created.UserEmail || 0) + 1;
@@ -164,7 +239,7 @@ try {
       {
         id: id(101),
         clientId: client1.id,
-        title: '[Демо] Лендінг для кав’ярні',
+        title: 'Лендінг для кав’ярні',
         description:
           'Потрібен адаптивний сайт із меню, фотографіями та формою бронювання. Проєкт відкритий для заявок.',
         status: 'PLANNING',
@@ -175,7 +250,7 @@ try {
       {
         id: id(102),
         clientId: client1.id,
-        title: '[Демо] Інтернет-магазин крафтових виробів',
+        title: 'Інтернет-магазин крафтових виробів',
         description:
           'Каталог товарів, кошик і оформлення замовлень. Два виконавці працюють над розробкою й дизайном.',
         status: 'ACTIVE',
@@ -186,7 +261,7 @@ try {
       {
         id: id(103),
         clientId: client2.id,
-        title: '[Демо] Макет мобільного застосунку',
+        title: 'Макет мобільного застосунку',
         description:
           'Дизайн застосунку для запису на послуги. Є прострочене завдання для перевірки аналітики ризиків.',
         status: 'ACTIVE',
@@ -197,7 +272,7 @@ try {
       {
         id: id(104),
         clientId: client1.id,
-        title: '[Демо] Фірмовий стиль пекарні',
+        title: 'Фірмовий стиль пекарні',
         description:
           'Завершений проєкт: логотип, палітра та оформлення пакування. Клієнт залишив відгук.',
         status: 'COMPLETED',
@@ -208,7 +283,7 @@ try {
       {
         id: id(105),
         clientId: client2.id,
-        title: '[Демо] Каталог послуг майстерні',
+        title: 'Каталог послуг майстерні',
         description:
           'Завершений вебкаталог із пошуком послуг і контактною формою.',
         status: 'COMPLETED',
@@ -410,7 +485,7 @@ try {
         projectId: task.project.id,
         assigneeId: task.user.id,
         title: task.title,
-        description: `Демонстраційне завдання: ${task.title.toLowerCase()}. Результат передати клієнту на перевірку.`,
+        description: `${task.title}. Результат передати клієнту на перевірку.`,
         priority: task.priority,
         status: task.status,
         deadline: date(task.days),
@@ -550,7 +625,7 @@ try {
         title: ['Інтернет-магазин', 'Мобільний дизайн', 'Аналітичний звіт'][
           index
         ],
-        description: 'Демонстраційна робота для профілю.',
+        description: 'Робота з портфоліо виконавця.',
         url: `https://example.com/portfolio/${index + 1}`,
         createdAt: date(-20 + index),
         updatedAt: date(-5),
@@ -563,6 +638,41 @@ try {
       [freelancer2.id, skills[3].id],
     ])
       await addBy('FreelancerSkill', { userId, skillId }, { userId, skillId });
+    const bios = [
+      'Фронтенд-розробник: React, TypeScript, адаптивна верстка.',
+      'Бекенд на Node.js і NestJS, проєктую REST API та бази даних.',
+      'UI/UX-дизайнер, працюю у Figma від прототипу до дизайн-системи.',
+      'Full-stack розробник, доводжу проєкти від ідеї до запуску.',
+      'Дизайнер інтерфейсів мобільних застосунків.',
+    ];
+    const skillSets = [
+      [skills[0], skills[1]],
+      [skills[0], skills[2]],
+      [skills[3]],
+      [skills[0], skills[1], skills[2]],
+      [skills[1], skills[3]],
+    ];
+    for (const [index, person] of extraPeople
+      .filter((person) => person.role === 'FREELANCER')
+      .entries()) {
+      await addBy(
+        'FreelancerProfile',
+        { userId: person.id },
+        {
+          userId: person.id,
+          bio: bios[index % bios.length],
+          hourlyRate: 300 + ((index * 70) % 900),
+          availability: ['AVAILABLE', 'AVAILABLE', 'BUSY'][index % 3],
+          updatedAt: date(0),
+        },
+      );
+      for (const skill of skillSets[index % skillSets.length])
+        await addBy(
+          'FreelancerSkill',
+          { userId: person.id, skillId: skill.id },
+          { userId: person.id, skillId: skill.id },
+        );
+    }
     await addBy(
       'FavoriteProject',
       { userId: freelancer3.id, projectId: design.id },
@@ -585,7 +695,7 @@ try {
       id: id(941),
       userId: freelancer1.id,
       type: 'TASK_ASSIGNED',
-      message: 'Вам призначено демонстраційне завдання.',
+      message: 'Вам призначено нове завдання.',
       projectId: shop.id,
       taskId: null,
       readAt: null,
@@ -596,7 +706,7 @@ try {
       projectId: shop.id,
       actorId: client1.id,
       type: 'PROJECT_UPDATED',
-      message: 'Оновлено демонстраційний проєкт.',
+      message: 'Проєкт оновлено.',
       createdAt: date(-1),
     });
     await add('Complaint', {
@@ -605,8 +715,7 @@ try {
       targetUserId: null,
       projectId: design.id,
       reason: 'Потрібне уточнення вимог',
-      description:
-        'Прошу адміністратора допомогти уточнити обсяг демонстраційного проєкту.',
+      description: 'Прошу адміністратора допомогти уточнити обсяг проєкту.',
       status: 'OPEN',
       adminNote: null,
       createdAt: date(-1),
@@ -639,7 +748,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1101),
       clientId: client2.id,
-      title: '[Демо] CRM для студії йоги',
+      title: 'CRM для студії йоги',
       description:
         'Облік клієнтів, розклад занять, абонементи й онлайн-оплата. Над проєктом працюють розробник і дизайнер.',
       status: 'ACTIVE',
@@ -655,7 +764,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1102),
       clientId: client1.id,
-      title: '[Демо] Телеграм-бот для служби доставки',
+      title: 'Телеграм-бот для служби доставки',
       description:
         'Бот приймає замовлення, показує статус доставки й надсилає сповіщення клієнтам.',
       status: 'ACTIVE',
@@ -671,7 +780,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1103),
       clientId: client1.id,
-      title: '[Демо] Мобільний застосунок для фітнес-клубу',
+      title: 'Мобільний застосунок для фітнес-клубу',
       description:
         'Запис на тренування, абонементи та push-нагадування. Шукаємо виконавця з досвідом мобільного дизайну.',
       status: 'PLANNING',
@@ -687,7 +796,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1104),
       clientId: client2.id,
-      title: '[Демо] SEO-аудит сайту стоматології',
+      title: 'SEO-аудит сайту стоматології',
       description:
         'Потрібно перевірити технічний стан сайту, швидкість і структуру сторінок та скласти план покращень.',
       status: 'PLANNING',
@@ -703,7 +812,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1105),
       clientId: client2.id,
-      title: '[Демо] Редизайн корпоративного блогу',
+      title: 'Редизайн корпоративного блогу',
       description:
         'Нова сітка статей і типографіка. Проєкт тимчасово призупинено до погодження контенту.',
       status: 'PAUSED',
@@ -719,7 +828,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     {
       id: id(1106),
       clientId: client1.id,
-      title: '[Демо] Лендінг онлайн-курсу з фотографії',
+      title: 'Лендінг онлайн-курсу з фотографії',
       description:
         'Завершений проєкт: лендінг із програмою курсу, відгуками та формою оплати.',
       status: 'COMPLETED',

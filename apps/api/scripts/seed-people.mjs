@@ -24,7 +24,7 @@ const day = (date) => new Date(`${date}T23:59:59`).toISOString();
 const clients = [
   {
     name: 'Наталія Гончаренко',
-    email: 'natalia.honcharenko@tasko.example',
+    email: 'natalia.honcharenko@tasko.ai',
     color: [214, 120, 96],
     projects: [
       {
@@ -61,7 +61,7 @@ const clients = [
   },
   {
     name: 'Віктор Литвиненко',
-    email: 'viktor.lytvynenko@tasko.example',
+    email: 'viktor.lytvynenko@tasko.ai',
     color: [86, 132, 190],
     projects: [
       {
@@ -122,7 +122,7 @@ const clients = [
   },
   {
     name: 'Оксана Дячук',
-    email: 'oksana.diachuk@tasko.example',
+    email: 'oksana.diachuk@tasko.ai',
     color: [150, 110, 180],
     projects: [
       {
@@ -153,7 +153,7 @@ const clients = [
   },
   {
     name: 'Артем Кравець',
-    email: 'artem.kravets@tasko.example',
+    email: 'artem.kravets@tasko.ai',
     color: [90, 160, 120],
     projects: [
       {
@@ -193,7 +193,7 @@ const clients = [
 const freelancers = [
   {
     name: 'Максим Ткаченко',
-    email: 'maksym.tkachenko@tasko.example',
+    email: 'maksym.tkachenko@tasko.ai',
     color: [70, 110, 160],
     bio: 'Fullstack-розробник, 5 років досвіду. Пишу на TypeScript: React на фронтенді, NestJS і PostgreSQL на бекенді. Люблю чистий код і зрозумілі дедлайни.',
     hourlyRate: 650,
@@ -209,7 +209,7 @@ const freelancers = [
   },
   {
     name: 'Софія Романенко',
-    email: 'sofia.romanenko@tasko.example',
+    email: 'sofia.romanenko@tasko.ai',
     color: [200, 100, 140],
     bio: 'UI/UX-дизайнерка. Роблю інтерфейси вебсайтів і застосунків, фірмові стилі та дизайн-системи у Figma. Працюю від досліджень до готових макетів.',
     hourlyRate: 500,
@@ -225,7 +225,7 @@ const freelancers = [
   },
   {
     name: 'Денис Олійник',
-    email: 'denys.oliinyk@tasko.example',
+    email: 'denys.oliinyk@tasko.ai',
     color: [120, 130, 90],
     bio: 'Backend-розробник і автор Telegram-ботів. Інтеграції з платіжками, CRM та Google Sheets. Більше 40 запущених ботів для малого бізнесу.',
     hourlyRate: 550,
@@ -238,7 +238,7 @@ const freelancers = [
   },
   {
     name: 'Юлія Мороз',
-    email: 'yulia.moroz@tasko.example',
+    email: 'yulia.moroz@tasko.ai',
     color: [210, 150, 70],
     bio: 'SEO-спеціалістка та контент-маркетологиня. Аудити, семантика, контент-плани, аналітика. Вивожу сайти малого бізнесу в топ за локальними запитами.',
     hourlyRate: 400,
@@ -251,7 +251,7 @@ const freelancers = [
   },
   {
     name: 'Ігор Бойко',
-    email: 'ihor.boiko@tasko.example',
+    email: 'ihor.boiko@tasko.ai',
     color: [100, 90, 150],
     bio: 'Frontend-розробник. React, TypeScript, адаптивна верстка, анімації. Перетворюю макети Figma на швидкі та доступні інтерфейси.',
     hourlyRate: 450,
@@ -264,7 +264,7 @@ const freelancers = [
   },
   {
     name: 'Анастасія Левченко',
-    email: 'anastasia.levchenko@tasko.example',
+    email: 'anastasia.levchenko@tasko.ai',
     color: [80, 150, 160],
     bio: 'Початківиця у веброзробці: завершила курс Fullstack, маю кілька власних проєктів. Відповідальна, швидко вчуся, ціна нижча за ринкову.',
     hourlyRate: 250,
