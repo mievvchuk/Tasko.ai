@@ -31,6 +31,8 @@
 }
 .kpi-grid.compact {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Усі плитки групи однакової висоти */
+  grid-auto-rows: 1fr;
 }
 .kpi-tile {
   display: flex;
@@ -42,8 +44,13 @@
     inset -1px 0 var(--color-rule),
     inset 0 -1px var(--color-rule);
 }
+/* Іконка над підписом: тексту вистачає ширини, підписи не переносяться по складах */
 .kpi-grid.compact .kpi-tile {
+  flex-direction: column;
   padding: var(--space-md);
+}
+.kpi-grid.compact .kpi-label {
+  hyphens: manual;
 }
 .kpi-icon {
   display: grid;
@@ -145,6 +152,11 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: var(--space-lg);
+}
+/* Групи в одному ряду тягнуться до спільної висоти */
+.admin-kpi-groups > section {
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 .admin-kpi-groups h2 {
   margin: 0 0 var(--space-xs);
