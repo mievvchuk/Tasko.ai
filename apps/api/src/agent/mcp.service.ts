@@ -16,6 +16,7 @@ import { MilestonesService } from '../projects/milestones.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
 import { CollaborationService } from '../collaboration/collaboration.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { AdminService } from '../admin/admin.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 
 @Injectable()
@@ -30,6 +31,7 @@ export class McpService {
     @Inject(MilestonesService) private readonly milestones: MilestonesService,
     @Inject(NotificationsService)
     private readonly notifications: NotificationsService,
+    @Inject(AdminService) private readonly admin: AdminService,
   ) {}
 
   createServer(user: CurrentUser) {
@@ -285,6 +287,37 @@ export class McpService {
             return draft;
           }),
       );
+    // Інструменти адміністратора: ті самі запити, що й адмін-панель (AdminService сам перевіряє роль)
+    if (user.role === 'ADMIN') {
+      server.registerTool(
+        'search_users',
+        {
+          description:
+            "Пошук користувачів платформи за ім'ям або email, роллю (CLIENT, FREELANCER, ADMIN) і станом (ACTIVE, BLOCKED). Лише для адміністратора.",
+          inputSchema: z
+            .object({
+              search: z.string().trim().max(100).optional(),
+              role: z.enum(['CLIENT', 'FREELANCER', 'ADMIN']).optional(),
+              status: z.enum(['ACTIVE', 'BLOCKED']).optional(),
+              ...pagination,
+            })
+            .strict(),
+          annotations,
+        },
+        async (filters) =>
+          result(async () => await this.admin.list(user, filters)),
+      );
+      server.registerTool(
+        'platform_report',
+        {
+          description:
+            'Повна статистика платформи: користувачі за ролями й станами, проєкти й завдання за статусами, прострочені завдання, скарги, заявки, активність за 7 днів, зростання за 6 місяців, середні часи. Лише для адміністратора.',
+          inputSchema: z.object({}).strict(),
+          annotations,
+        },
+        async () => result(() => this.admin.report(user)),
+      );
+    }
     return server;
   }
 }
