@@ -2532,6 +2532,16 @@ dd {
 .register-card .form-fields {
   gap: var(--space-sm);
 }
+/* Вхід і реєстрація вміщаються в екран без скролу: стискаємо шапку, підвал і відступи */
+.auth-shell .public-header {
+  padding-block: var(--space-sm);
+}
+.auth-shell .public-footer {
+  padding-block: var(--space-sm);
+}
+.auth-shell .auth-main {
+  padding-block: var(--space-xs);
+}
 .auth-card h2 {
   font-size: var(--text-xl);
 }
