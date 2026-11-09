@@ -57,6 +57,37 @@ export class CollaborationController {
   ) {
     return this.collaboration.message(user, id, data);
   }
+  @Get('applications/conversations') applicationConversations(
+    @Actor() user: CurrentUser,
+  ) {
+    return this.collaboration.applicationConversations(user);
+  }
+  @Get('applications/:id/chat') applicationChat(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.collaboration.applicationChatInfo(user, id);
+  }
+  @Get('applications/:id/messages') applicationMessages(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() page: PageDto,
+  ) {
+    return this.collaboration.applicationMessages(user, id, page);
+  }
+  @Sse('applications/:id/messages/stream') applicationMessageStream(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.collaboration.applicationMessageStream(user, id);
+  }
+  @Post('applications/:id/messages') applicationMessage(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: MessageDto,
+  ) {
+    return this.collaboration.applicationMessage(user, id, data);
+  }
   @Get('projects/:id/files') listFiles(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,

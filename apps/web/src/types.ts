@@ -109,6 +109,7 @@ export interface MarketplaceProject {
   createdAt: string;
   client: { id: string; name: string } | null;
   applicationStatus: ApplicationStatus | null;
+  applicationId?: string | null;
   budgetMin: number | null;
   budgetMax: number | null;
   isFavorite: boolean;
@@ -298,6 +299,19 @@ export interface ProjectMessage {
   senderId: string;
   content: string;
   createdAt: string;
+}
+
+// Розмова клієнта з автором заявки (GET /applications/:id/chat і /applications/conversations)
+export interface ApplicationChat {
+  id: string;
+  status: ApplicationStatus;
+  projectId: string;
+  projectTitle: string;
+  clientId: string;
+  clientName: string | null;
+  freelancerId: string;
+  freelancerName: string | null;
+  lastMessageAt?: string;
 }
 
 export type OrderStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";

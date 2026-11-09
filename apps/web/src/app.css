@@ -4831,3 +4831,8 @@ tbody tr:nth-child(n + 6) {
 .icon-action:focus-visible::after {
   opacity: 1;
 }
+.application-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}

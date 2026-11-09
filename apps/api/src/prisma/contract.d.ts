@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ee2fb6a4ff5ea8a18141c1de10e085722df5b44b52c5e332c5fd98bce3b8d396'>;
+  StorageHashBase<'9bcae3790fa8964b13476b349d05218944db2b2177f09400bbc898e9c176f1cd'>;
 export type ExecutionHash =
   ExecutionHashBase<'e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06'>;
 export type ProfileHash =
@@ -242,6 +242,13 @@ export type FieldOutputTypes = {
       readonly projectId: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
     };
+    readonly ApplicationMessage: {
+      readonly applicationId: CodecTypes['pg/text@1']['output'];
+      readonly content: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly senderId: CodecTypes['pg/text@1']['output'];
+    };
     readonly AuthSession: {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly expiresAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -456,6 +463,13 @@ export type FieldInputTypes = {
       readonly message: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
+    };
+    readonly ApplicationMessage: {
+      readonly applicationId: CodecTypes['pg/text@1']['input'];
+      readonly content: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly senderId: CodecTypes['pg/text@1']['input'];
     };
     readonly AuthSession: {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -672,6 +686,13 @@ export type StorageColumnTypes = {
       readonly projectId: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
     };
+    readonly ApplicationMessage: {
+      readonly applicationId: CodecTypes['pg/text@1']['output'];
+      readonly content: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly senderId: CodecTypes['pg/text@1']['output'];
+    };
     readonly AuthSession: {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly expiresAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -886,6 +907,13 @@ export type StorageColumnInputTypes = {
       readonly message: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
+    };
+    readonly ApplicationMessage: {
+      readonly applicationId: CodecTypes['pg/text@1']['input'];
+      readonly content: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly senderId: CodecTypes['pg/text@1']['input'];
     };
     readonly AuthSession: {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -1105,6 +1133,15 @@ export namespace Models {
     project: public_Project;
     readonly [RelationKeys]?: 'actor' | 'project';
   };
+  export type public_ApplicationMessage = {
+    applicationId: CodecTypes['pg/text@1']['output'];
+    content: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    senderId: CodecTypes['pg/text@1']['output'];
+    application: public_ProjectApplication;
+    readonly [RelationKeys]?: 'application';
+  };
   export type public_AuthSession = {
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     expiresAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -1300,10 +1337,11 @@ export namespace Models {
     proposedDays: CodecTypes['pg/int4@1']['output'];
     status: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
+    chatMessages: public_ApplicationMessage[];
     freelancer: public_User;
     portfolioItem: public_PortfolioItem | null;
     project: public_Project;
-    readonly [RelationKeys]?: 'freelancer' | 'portfolioItem' | 'project';
+    readonly [RelationKeys]?: 'chatMessages' | 'freelancer' | 'portfolioItem' | 'project';
   };
   export type public_ProjectCategory = {
     id: CodecTypes['pg/text@1']['output'];
@@ -1445,6 +1483,7 @@ export namespace Models {
 export declare const models: {
   public: {
     ActivityLog: Models.public_ActivityLog;
+    ApplicationMessage: Models.public_ApplicationMessage;
     AuthSession: Models.public_AuthSession;
     BoardColumn: Models.public_BoardColumn;
     Complaint: Models.public_Complaint;
@@ -1567,6 +1606,65 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ApplicationMessage: {
+              columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly content: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly senderId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'ApplicationMessage_applicationId_idx_8158f91a';
+                  readonly prefix: 'ApplicationMessage_applicationId_idx';
+                  readonly columns: readonly ['applicationId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ApplicationMessage';
+                    readonly columns: readonly ['applicationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ProjectApplication';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -3476,6 +3574,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'ActivityLog';
     };
+    readonly ApplicationMessage: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ApplicationMessage';
+    };
     readonly AuthSession: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AuthSession';
@@ -3615,6 +3717,58 @@ type ContractBase = Omit<
                 readonly message: { readonly column: 'message' };
                 readonly projectId: { readonly column: 'projectId' };
                 readonly type: { readonly column: 'type' };
+              };
+            };
+          };
+          readonly ApplicationMessage: {
+            readonly fields: {
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly content: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly senderId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly application: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProjectApplication';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['applicationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ApplicationMessage';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly content: { readonly column: 'content' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly senderId: { readonly column: 'senderId' };
               };
             };
           };
@@ -4751,6 +4905,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly chatMessages: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ApplicationMessage';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['applicationId'];
+                };
+              };
               readonly freelancer: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';

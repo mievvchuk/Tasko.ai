@@ -257,6 +257,7 @@ describe('AdminService reports', () => {
       'ProjectMilestone',
       'Order',
       'StoredFile',
+      'ApplicationMessage',
     ];
     const orm = {
       public: Object.fromEntries(names.map((name) => [name, table(name)])),
@@ -307,7 +308,19 @@ describe('AdminService reports', () => {
         ],
         ProjectMember: [{ projectId: 'own', userId: 'someone' }],
         ProjectApplication: [
-          { projectId: 'foreign', freelancerId: 'busy', portfolioItemId: 'p1' },
+          {
+            id: 'app-busy',
+            projectId: 'foreign',
+            freelancerId: 'busy',
+            portfolioItemId: 'p1',
+          },
+          { id: 'app-own', projectId: 'own', freelancerId: 'someone' },
+          { id: 'app-other', projectId: 'foreign', freelancerId: 'someone' },
+        ],
+        ApplicationMessage: [
+          { applicationId: 'app-busy' },
+          { applicationId: 'app-own' },
+          { applicationId: 'app-other' },
         ],
         PortfolioItem: [{ id: 'p1', userId: 'busy' }],
         AuthSession: [{ userId: 'busy' }, { userId: 'fresh' }],
@@ -349,7 +362,9 @@ describe('AdminService reports', () => {
       expect(tables.Message).toEqual([
         { projectId: 'foreign', senderId: 'someone' },
       ]);
-      expect(tables.ProjectApplication).toHaveLength(0);
+      expect(tables.ProjectApplication.map((a) => a.id)).toEqual(['app-other']);
+      // Переписка щодо видалених заявок зникає, чужа — лишається
+      expect(tables.ApplicationMessage).toEqual([{ applicationId: 'app-other' }]);
       expect(tables.PortfolioItem).toHaveLength(0);
       expect(tables.AuthSession.some((s) => s.userId === 'busy')).toBe(false);
       // Вміст файлів і фото видаляється разом з акаунтом, чужі файли лишаються

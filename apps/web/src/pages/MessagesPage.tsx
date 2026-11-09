@@ -6,25 +6,43 @@ import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
 import { Pagination, ResourceState } from "../components/ResourceState";
-import { projectStatusNames } from "../types";
-import type { Project, ProjectMember, ProjectMessage } from "../types";
+import { applicationStatusNames, projectStatusNames } from "../types";
+import type {
+  ApplicationChat,
+  Project,
+  ProjectMember,
+  ProjectMessage,
+} from "../types";
 
 import { useLanguage } from "../i18n";
 export function MessagesPage() {
   const { tr } = useLanguage();
+  const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const projectId = params.get("project") || "";
+  const applicationId = projectId ? "" : params.get("application") || "";
   const project = useApi<Project>(projectId ? `/projects/${projectId}` : null);
+  const application = useApi<ApplicationChat>(
+    applicationId ? `/applications/${applicationId}/chat` : null,
+  );
   // Лише проєкти, де користувач — замовник або учасник (навіть для адміністратора)
   const mine = useApi<Project[]>("/projects?mine=true&limit=50");
+  const chats = useApi<ApplicationChat[]>(
+    user?.role === "ADMIN" ? null : "/applications/conversations",
+  );
+  const current = project.data ? project : application;
   return (
     <>
       <div className="page-heading">
         <h1>{tr("Повідомлення")}</h1>
-        <p>{tr("Обговорення доступні лише учасникам відповідного проєкту.")}</p>
+        <p>
+          {tr(
+            "Обговорення проєктів доступні лише учасникам, а переписка щодо заявки — клієнту й автору заявки.",
+          )}
+        </p>
       </div>
       <div className="messenger">
-        <nav className="data-panel messenger-list" aria-label={tr("Мої проєкти")}>
+        <nav className="data-panel messenger-list" aria-label={tr("Розмови")}>
           <h2>{tr("Мої проєкти")}</h2>
           <ResourceState
             loading={mine.loading}
@@ -50,21 +68,53 @@ export function MessagesPage() {
               </li>
             ))}
           </ul>
+          {!!chats.data?.length && (
+            <>
+              <h2>{tr("Заявки")}</h2>
+              <ul>
+                {chats.data.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      aria-current={
+                        item.id === applicationId ? "true" : undefined
+                      }
+                      onClick={() => setParams({ application: item.id })}
+                    >
+                      <strong>
+                        {user?.id === item.clientId
+                          ? item.freelancerName
+                          : item.clientName}
+                      </strong>
+                      <small>{item.projectTitle}</small>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </nav>
         <div className="messenger-chat">
-          {!projectId && (
+          {!projectId && !applicationId && (
             <div className="data-panel empty-state">
               <i className="bi bi-chat-dots" aria-hidden="true"></i>
-              <h3>{tr("Оберіть проєкт зліва, щоб відкрити обговорення")}</h3>
+              <h3>{tr("Оберіть розмову зліва")}</h3>
             </div>
           )}
           <ResourceState
-            loading={project.loading}
-            error={project.error}
-            onRetry={project.refresh}
+            loading={current.loading}
+            error={current.error}
+            onRetry={current.refresh}
           />
           {project.data && (
             <ProjectMessages key={projectId} project={project.data} />
+          )}
+          {application.data && (
+            <ApplicationMessages
+              key={applicationId}
+              chat={application.data}
+              onFirstMessage={chats.refresh}
+            />
           )}
         </div>
       </div>
@@ -75,17 +125,106 @@ export function MessagesPage() {
 function ProjectMessages({ project }: { project: Project }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
+  const members = useApi<ProjectMember[]>(`/projects/${project.id}/members`);
+  return (
+    <Chat
+      path={`/projects/${project.id}`}
+      param={{ project: project.id }}
+      title={project.title}
+      link={{ to: `/projects/${project.id}`, label: tr("До проєкту") }}
+      readOnly={
+        ["COMPLETED", "CANCELLED"].includes(project.status)
+          ? tr("Проєкт закрито. Обговорення доступне для читання.")
+          : ""
+      }
+      extra={members}
+      senderName={(id) => {
+        if (id === user?.id) return user.name + tr(" (ви)");
+        if (id === project.clientId) return tr("Клієнт проєкту");
+        return (
+          members.data?.find((member) => member.userId === id)?.user?.name ||
+          tr("Користувач ") + id.slice(0, 8)
+        );
+      }}
+    />
+  );
+}
+
+function ApplicationMessages({
+  chat,
+  onFirstMessage,
+}: {
+  chat: ApplicationChat;
+  onFirstMessage: () => void;
+}) {
+  const { tr } = useLanguage();
+  const { user } = useAuth();
+  const isClient = user?.id === chat.clientId;
+  const readOnly =
+    chat.status === "ACCEPTED"
+      ? tr("Фрілансера прийнято до команди — продовжуйте в чаті проєкту.")
+      : chat.status === "REJECTED"
+        ? tr("Заявку відхилено. Переписка доступна для читання.")
+        : "";
+  return (
+    <Chat
+      path={`/applications/${chat.id}`}
+      param={{ application: chat.id }}
+      title={tr(
+        "Заявка на «{0}» · {1}",
+        chat.projectTitle,
+        tr(applicationStatusNames[chat.status]),
+      )}
+      link={
+        isClient
+          ? {
+              to: `/projects/${chat.projectId}/applications`,
+              label: tr("До заявок"),
+            }
+          : { to: "/marketplace", label: tr("До біржі") }
+      }
+      readOnly={readOnly}
+      onSent={onFirstMessage}
+      senderName={(id) =>
+        id === user?.id
+          ? (user?.name ?? "") + tr(" (ви)")
+          : (id === chat.clientId ? chat.clientName : chat.freelancerName) ||
+            tr("Користувач ") + id.slice(0, 8)
+      }
+    />
+  );
+}
+
+// Спільний чат: історія сторінками, нові повідомлення наживо через SSE
+function Chat({
+  path,
+  param,
+  title,
+  link,
+  readOnly,
+  senderName,
+  extra,
+  onSent,
+}: {
+  path: string;
+  param: Record<string, string>;
+  title: string;
+  link: { to: string; label: string };
+  readOnly: string;
+  senderName: (id: string) => string;
+  extra?: { loading: boolean; error: string; refresh: () => void };
+  onSent?: () => void;
+}) {
+  const { tr } = useLanguage();
+  const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
   const messages = useApi<ProjectMessage[]>(
-    `/projects/${project.id}/messages?page=${page}&limit=20`,
+    `${path}/messages?page=${page}&limit=20`,
   );
-  const members = useApi<ProjectMember[]>(`/projects/${project.id}/members`);
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const closed = ["COMPLETED", "CANCELLED"].includes(project.status);
-  // Нові повідомлення приходять одразу (SSE) і дописуються в кінець списку
   const [live, setLive] = useState<ProjectMessage[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => setLive([]), [messages.data]);
@@ -93,7 +232,7 @@ function ProjectMessages({ project }: { project: Project }) {
     if (page !== 1) return;
     const controller = new AbortController();
     void subscribe(
-      `/projects/${project.id}/messages/stream`,
+      `${path}/messages/stream`,
       (type, data) => {
         if (type !== "message") return;
         const message = JSON.parse(data) as ProjectMessage;
@@ -106,7 +245,7 @@ function ProjectMessages({ project }: { project: Project }) {
       controller.signal,
     );
     return () => controller.abort();
-  }, [project.id, page]);
+  }, [path, page]);
   const shown = messages.data
     ? [
         ...[...messages.data].reverse(),
@@ -119,6 +258,10 @@ function ProjectMessages({ project }: { project: Project }) {
     const list = listRef.current;
     if (list) list.scrollTop = list.scrollHeight;
   }, [shown.length]);
+  function refresh() {
+    messages.refresh();
+    extra?.refresh();
+  }
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -129,59 +272,41 @@ function ProjectMessages({ project }: { project: Project }) {
     }
     setBusy(true);
     try {
-      await request(`/projects/${project.id}/messages`, {
+      await request(`${path}/messages`, {
         method: "POST",
         body: { content: content.trim() },
       });
       setContent("");
-      setParams({ project: project.id });
+      setParams(param);
       messages.refresh();
+      onSent?.();
     } catch (error) {
       setError(errorMessage(error));
     } finally {
       setBusy(false);
     }
   }
-  function senderName(id: string) {
-    if (id === user?.id) return user.name + tr(" (ви)");
-    if (id === project.clientId) return tr("Клієнт проєкту");
-    return (
-      members.data?.find((member) => member.userId === id)?.user?.name ||
-      tr("Користувач ") + id.slice(0, 8)
-    );
-  }
+  const loading = messages.loading || Boolean(extra?.loading);
+  const loadError = messages.error || extra?.error || "";
   return (
     <section className="data-panel">
       <div className="panel-heading">
         <div>
-          <h2>{project.title}</h2>
+          <h2>{title}</h2>
           <span className="live-badge">
             <i aria-hidden="true"></i>
             {tr("Нові повідомлення з'являються одразу")}
           </span>
-          <Link to={`/projects/${project.id}`}>{tr("До проєкту")}</Link>
+          <Link to={link.to}>{link.label}</Link>
         </div>
-        <button
-          className="button secondary"
-          onClick={() => {
-            messages.refresh();
-            members.refresh();
-          }}
-        >
+        <button className="button secondary" onClick={refresh}>
           <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
 
           {tr("Оновити повідомлення")}
         </button>
       </div>
-      <ResourceState
-        loading={messages.loading || members.loading}
-        error={messages.error || members.error}
-        onRetry={() => {
-          messages.refresh();
-          members.refresh();
-        }}
-      />
-      {messages.data && !members.loading && !members.error && (
+      <ResourceState loading={loading} error={loadError} onRetry={refresh} />
+      {messages.data && !loading && !loadError && (
         <>
           <div className="message-list padded" aria-live="polite" ref={listRef}>
             {!shown.length && (
@@ -214,17 +339,13 @@ function ProjectMessages({ project }: { project: Project }) {
           <Pagination
             page={page}
             count={messages.data.length}
-            onChange={(value) =>
-              setParams({ project: project.id, page: String(value) })
-            }
+            onChange={(value) => setParams({ ...param, page: String(value) })}
           />
         </>
       )}
       <div className="padded">
-        {closed ? (
-          <p className="form-note">
-            {tr("Проєкт закрито. Обговорення доступне для читання.")}
-          </p>
+        {readOnly ? (
+          <p className="form-note">{readOnly}</p>
         ) : (
           <form className="work-form" onSubmit={send}>
             <label htmlFor="message-content">{tr("Нове повідомлення")}</label>

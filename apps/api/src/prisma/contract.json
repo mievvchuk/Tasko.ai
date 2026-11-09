@@ -8,6 +8,10 @@
       "model": "ActivityLog",
       "namespace": "public"
     },
+    "ApplicationMessage": {
+      "model": "ApplicationMessage",
+      "namespace": "public"
+    },
     "AuthSession": {
       "model": "AuthSession",
       "namespace": "public"
@@ -207,6 +211,84 @@
               },
               "namespaceId": "public",
               "table": "ActivityLog"
+            }
+          },
+          "ApplicationMessage": {
+            "fields": {
+              "applicationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "content": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "senderId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "application": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "applicationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "ProjectApplication",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "applicationId": {
+                  "column": "applicationId"
+                },
+                "content": {
+                  "column": "content"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "senderId": {
+                  "column": "senderId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ApplicationMessage"
             }
           },
           "AuthSession": {
@@ -1955,6 +2037,21 @@
               }
             },
             "relations": {
+              "chatMessages": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "applicationId"
+                  ]
+                },
+                "to": {
+                  "model": "ApplicationMessage",
+                  "namespace": "public"
+                }
+              },
               "freelancer": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -3335,6 +3432,76 @@
                   ],
                   "name": "ActivityLog_projectId_idx_a96e4d92",
                   "prefix": "ActivityLog_projectId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "ApplicationMessage": {
+              "columns": {
+                "applicationId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "content": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "senderId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "ApplicationMessage_applicationId_idx_8158f91a"
+                  },
+                  "source": {
+                    "columns": [
+                      "applicationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ApplicationMessage"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ProjectApplication"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "applicationId"
+                  ],
+                  "name": "ApplicationMessage_applicationId_idx_8158f91a",
+                  "prefix": "ApplicationMessage_applicationId_idx",
                   "unique": false
                 }
               ],
@@ -5634,7 +5801,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ee2fb6a4ff5ea8a18141c1de10e085722df5b44b52c5e332c5fd98bce3b8d396"
+    "storageHash": "9bcae3790fa8964b13476b349d05218944db2b2177f09400bbc898e9c176f1cd"
   },
   "execution": {
     "executionHash": "e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06",

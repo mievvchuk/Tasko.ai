@@ -529,8 +529,23 @@ export const enText: Record<string, string> = {
 
   // Повідомлення й сповіщення
   Повідомлення: "Messages",
-  "Обговорення доступні лише учасникам відповідного проєкту.":
-    "Discussions are only available to members of the project.",
+  "Обговорення проєктів доступні лише учасникам, а переписка щодо заявки — клієнту й автору заявки.":
+    "Project discussions are for members only; an application chat is between the client and the applicant.",
+  Розмови: "Conversations",
+  "Оберіть розмову зліва": "Choose a conversation on the left",
+  "Фрілансера прийнято до команди — продовжуйте в чаті проєкту.":
+    "The freelancer joined the team — continue in the project chat.",
+  "Заявку відхилено. Переписка доступна для читання.":
+    "The application was declined. The chat is read-only.",
+  "Заявка на «{0}» · {1}": "Application for “{0}” · {1}",
+  "До заявок": "To applications",
+  "До біржі": "To marketplace",
+  "Відкрити повідомлення": "Open messages",
+  "Написати фрілансеру": "Message the freelancer",
+  "Написати клієнту": "Message the client",
+  "Переписка з клієнтом": "Chat with the client",
+  Переписка: "Chat",
+  "Повідомлення щодо заявки": "Application message",
   "Напишіть повідомлення.": "Write a message.",
   "Клієнт проєкту": "Project client",
   "Користувач ": "User ",
@@ -1001,8 +1016,6 @@ export const enText: Record<string, string> = {
   Завантажити: "Download",
   "Ви ще не берете участі в жодному проєкті.":
     "You are not taking part in any project yet.",
-  "Оберіть проєкт зліва, щоб відкрити обговорення":
-    "Choose a project on the left to open its discussion",
   Показати: "Show",
   Непрочитані: "Unread",
   "Відкрити обговорення": "Open discussion",

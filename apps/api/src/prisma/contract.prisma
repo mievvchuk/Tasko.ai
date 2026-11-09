@@ -98,8 +98,19 @@ model ProjectApplication {
   aiRankedAt TimestamptzJsDate?
   createdAt    TimestamptzJsDate @default(now())
   updatedAt    TimestamptzJsDate
+  chatMessages ApplicationMessage[]
 
   @@unique([projectId, freelancerId])
+}
+
+// Переписка клієнта з фрілансером щодо заявки (до найму; далі — чат проєкту)
+model ApplicationMessage {
+  id            String   @id
+  applicationId String
+  application   ProjectApplication @relation(fields: [applicationId], references: [id])
+  senderId      String
+  content       String
+  createdAt     TimestamptzJsDate @default(now())
 }
 
 model FreelancerReview {
