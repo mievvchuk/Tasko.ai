@@ -48,6 +48,12 @@ export class TasksController {
   ) {
     return this.tasks.create(user, id, data);
   }
+  @Post('projects/:id/tasks/next') takeNext(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.tasks.takeNext(user, id);
+  }
   @Get('tasks/:id') detail(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,
