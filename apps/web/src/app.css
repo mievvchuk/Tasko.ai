@@ -4824,3 +4824,18 @@ tbody tr:nth-child(n + 6) {
 .icon-action:focus-visible::after {
   opacity: 1;
 }
+
+/* Черга завдань для фрілансера на сторінці проєкту */
+.take-next-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.take-next-panel h2 {
+  margin: 0 0 var(--space-2xs);
+}
+.take-next-panel > div {
+  flex: 1 1 320px;
+}

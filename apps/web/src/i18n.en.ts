@@ -1109,4 +1109,10 @@ export const enText: Record<string, string> = {
   "Зберегти роль": "Save role",
   "Користувач знову зможе входити й працювати на платформі.": "The user will be able to sign in and work on the platform again.",
   "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.": "The user won't be able to sign in, and their active sessions end. Account data is kept.",
+  "Черга завдань": "Task queue",
+  "Беріть завдання по черзі: спершу з найближчим дедлайном і вищим пріоритетом. Нове можна взяти, коли попереднє передано на перевірку.": "Take tasks in order: the nearest deadline and higher priority come first. You can take a new one once the previous one is sent for review.",
+  "Беремо…": "Taking…",
+  "Взяти наступне завдання": "Take the next task",
+  "Брати завдання з черги може фрілансер.": "Only a freelancer can take tasks from the queue.",
+  "Вільних завдань у черзі немає.": "There are no free tasks in the queue.",
 };

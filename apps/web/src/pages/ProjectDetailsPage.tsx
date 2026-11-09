@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { LoadError } from "../components/LoadError";
@@ -35,6 +35,24 @@ export function ProjectDetailsPage() {
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [memberNotice, setMemberNotice] = useState("");
+  const navigate = useNavigate();
+  const [taking, setTaking] = useState(false);
+  const [takeError, setTakeError] = useState("");
+
+  // Фрілансер бере наступне вільне завдання з черги проєкту
+  async function takeNext() {
+    setTaking(true);
+    setTakeError("");
+    try {
+      const task = await request<Task>(`/projects/${id}/tasks/next`, {
+        method: "POST",
+      });
+      await navigate(`/tasks/${task.id}`);
+    } catch (error) {
+      setTakeError(errorMessage(error));
+      setTaking(false);
+    }
+  }
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
@@ -244,6 +262,33 @@ export function ProjectDetailsPage() {
           </div>
         </dl>
       </section>
+      {user?.role === "FREELANCER" &&
+        project.status === "ACTIVE" &&
+        members.some((member) => member.userId === user.id) && (
+          <section className="data-panel take-next-panel">
+            <div>
+              <h2>{tr("Черга завдань")}</h2>
+              <p className="form-note">
+                {tr(
+                  "Беріть завдання по черзі: спершу з найближчим дедлайном і вищим пріоритетом. Нове можна взяти, коли попереднє передано на перевірку.",
+                )}
+              </p>
+              {takeError && (
+                <p className="form-error" role="alert">
+                  {takeError}
+                </p>
+              )}
+            </div>
+            <button
+              className="button primary"
+              disabled={taking}
+              onClick={() => void takeNext()}
+            >
+              <i className="bi bi-box-arrow-in-down" aria-hidden="true"></i>
+              {taking ? tr("Беремо…") : tr("Взяти наступне завдання")}
+            </button>
+          </section>
+        )}
       <section
         className="data-panel projects-panel"
         aria-labelledby="project-tasks-heading"
