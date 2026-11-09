@@ -81,6 +81,14 @@ export class ProjectsService {
     return project;
   }
 
+  // Заявки приймаються до першого найму (PLANNING) і далі, поки клієнт не закрив набір
+  isHiring(project: { status: string; hiringOpen: boolean }) {
+    return (
+      project.status === 'PLANNING' ||
+      (project.status === 'ACTIVE' && project.hiringOpen)
+    );
+  }
+
   ensureWritable(project: { status: string }) {
     if (closedStatuses.includes(project.status))
       throw new ConflictException('Проєкт уже закрито.');
@@ -468,11 +476,11 @@ export class ProjectsService {
       throw new ForbiddenException(
         'Біржа проєктів призначена для фрілансерів.',
       );
-    let projects = await this.prisma.client.orm.public.Project.where({
-      status: 'PLANNING',
-    })
-      .orderBy((project) => project.createdAt.desc())
-      .all();
+    let projects = (
+      await this.prisma.client.orm.public.Project.orderBy((project) =>
+        project.createdAt.desc(),
+      ).all()
+    ).filter((project) => this.isHiring(project));
     const allLinks = await this.prisma.client.orm.public.ProjectSkill.all();
     const favorites =
       user.role === 'FREELANCER'
@@ -601,7 +609,7 @@ export class ProjectsService {
       id: projectId,
     }).first();
     if (!project) throw new NotFoundException('Проєкт не знайдено.');
-    if (project.status !== 'PLANNING')
+    if (!this.isHiring(project))
       throw new ConflictException('Прийом заявок уже завершено.');
     if (data.portfolioItemId) {
       const portfolio = await this.prisma.client.orm.public.PortfolioItem.where(
@@ -677,41 +685,38 @@ export class ProjectsService {
       }).first();
     if (!application) throw new NotFoundException('Заявку не знайдено.');
     const project = await this.requireOwner(user, application.projectId);
-    if (project.status !== 'PLANNING')
-      throw new ConflictException('Виконавця для проєкту вже обрано.');
+    if (!this.isHiring(project))
+      throw new ConflictException('Набір у команду вже закрито.');
     if (application.status !== 'PENDING')
       throw new ConflictException('Цю заявку вже опрацьовано.');
     return this.prisma.client.transaction(async (tx) => {
-      const current = await tx.orm.public.ProjectApplication.where({
+      // Умовне оновлення: дві одночасні спроби не приймуть заявку двічі
+      const accepted = await tx.orm.public.ProjectApplication.where({
         id,
-      }).first();
-      if (!current || current.status !== 'PENDING')
-        throw new ConflictException('Цю заявку вже опрацьовано.');
-      await tx.orm.public.ProjectMember.create({
-        id: randomUUID(),
+        status: 'PENDING',
+      }).update({ status: 'ACCEPTED', updatedAt: new Date() });
+      if (!accepted) throw new ConflictException('Цю заявку вже опрацьовано.');
+      const current = application;
+      // Фрілансера могли вже додати до команди вручну
+      const alreadyMember = await tx.orm.public.ProjectMember.where({
         projectId: current.projectId,
         userId: current.freelancerId,
-        role: 'MEMBER',
-        joinedAt: new Date(),
-      });
-      await tx.orm.public.ProjectApplication.where({ id }).update({
-        status: 'ACCEPTED',
-        updatedAt: new Date(),
-      });
-      const otherApplications = await tx.orm.public.ProjectApplication.where({
-        projectId: current.projectId,
-        status: 'PENDING',
-      }).all();
-      for (const other of otherApplications) {
-        await tx.orm.public.ProjectApplication.where({ id: other.id }).update({
-          status: 'REJECTED',
+      }).first();
+      if (!alreadyMember)
+        await tx.orm.public.ProjectMember.create({
+          id: randomUUID(),
+          projectId: current.projectId,
+          userId: current.freelancerId,
+          role: 'MEMBER',
+          joinedAt: new Date(),
+        });
+      // Інші заявки лишаються: клієнт може найняти ще людей або закрити набір
+      if (project.status === 'PLANNING')
+        await tx.orm.public.Project.where({ id: current.projectId }).update({
+          status: 'ACTIVE',
+          hiringOpen: true,
           updatedAt: new Date(),
         });
-      }
-      await tx.orm.public.Project.where({ id: current.projectId }).update({
-        status: 'ACTIVE',
-        updatedAt: new Date(),
-      });
       await tx.orm.public.Notification.create({
         id: randomUUID(),
         userId: current.freelancerId,
@@ -727,7 +732,7 @@ export class ProjectsService {
         actorId: user.id,
         projectId: current.projectId,
         type: 'APPLICATION_ACCEPTED',
-        message: 'Клієнт обрав виконавця.',
+        message: 'Клієнт прийняв фрілансера до команди.',
         createdAt: new Date(),
       });
       return {
@@ -735,6 +740,66 @@ export class ProjectsService {
         freelancerId: current.freelancerId,
       };
     });
+  }
+
+  async rejectApplication(user: CurrentUser, id: string) {
+    const application =
+      await this.prisma.client.orm.public.ProjectApplication.where({
+        id,
+      }).first();
+    if (!application) throw new NotFoundException('Заявку не знайдено.');
+    await this.requireOwner(user, application.projectId);
+    const rejected =
+      await this.prisma.client.orm.public.ProjectApplication.where({
+        id,
+        status: 'PENDING',
+      }).update({ status: 'REJECTED', updatedAt: new Date() });
+    if (!rejected) throw new ConflictException('Цю заявку вже опрацьовано.');
+    await this.notify(
+      application.freelancerId,
+      user.id,
+      'APPLICATION_REJECTED',
+      'Вашу заявку відхилено.',
+      application.projectId,
+    );
+    return rejected;
+  }
+
+  // Закриває набір: проєкт зникає з біржі, заявки, що лишилися, відхиляються
+  async closeHiring(user: CurrentUser, projectId: string) {
+    const project = await this.requireOwner(user, projectId);
+    if (project.status !== 'ACTIVE' || !project.hiringOpen)
+      throw new ConflictException('Набір у команду вже закрито.');
+    const rest = await this.prisma.client.transaction(async (tx) => {
+      await tx.orm.public.Project.where({ id: projectId }).update({
+        hiringOpen: false,
+        updatedAt: new Date(),
+      });
+      const pending = await tx.orm.public.ProjectApplication.where({
+        projectId,
+        status: 'PENDING',
+      }).all();
+      for (const application of pending)
+        await tx.orm.public.ProjectApplication.where({
+          id: application.id,
+        }).update({ status: 'REJECTED', updatedAt: new Date() });
+      return pending;
+    });
+    for (const application of rest)
+      await this.notify(
+        application.freelancerId,
+        user.id,
+        'APPLICATION_REJECTED',
+        'Набір у команду проєкту закрито.',
+        projectId,
+      );
+    await this.logActivity(
+      user.id,
+      projectId,
+      'HIRING_CLOSED',
+      'Клієнт закрив набір у команду.',
+    );
+    return { hiringOpen: false, rejected: rest.length };
   }
 
   async freelancerProfile(_user: CurrentUser, id: string) {

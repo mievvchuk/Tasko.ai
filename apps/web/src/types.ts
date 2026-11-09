@@ -75,6 +75,8 @@ export interface Project {
   budgetMin?: number | null;
   budgetMax?: number | null;
   categoryId?: string | null;
+  // Команду добирають: після першого найму проєкт лишається на біржі
+  hiringOpen?: boolean;
   skills?: Skill[];
   category?: ProjectCategory | null;
   // Причина відхилення модератором (лише для статусу REJECTED)

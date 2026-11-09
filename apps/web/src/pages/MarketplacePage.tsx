@@ -215,6 +215,12 @@ export function MarketplacePage() {
                   <i className="bi bi-calendar-event" aria-hidden="true"></i>
                   {formatDate(project.deadline)}
                 </span>
+                {project.status === "ACTIVE" && (
+                  <span>
+                    <i className="bi bi-people" aria-hidden="true"></i>
+                    {tr("Добирають команду")}
+                  </span>
+                )}
               </div>
               {project.applicationStatus && (
                 <span className="application-chip">

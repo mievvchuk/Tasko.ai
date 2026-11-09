@@ -1802,7 +1802,14 @@ dd {
 
 /* Картки заявок, етапів, скарг і здач */
 .application-tools {
-  margin-bottom: var(--space-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 var(--space-md);
+}
+.application-tools + .form-error,
+.page-heading + .notice + .notice {
+  margin-top: var(--space-xs);
 }
 .application-list {
   display: grid;

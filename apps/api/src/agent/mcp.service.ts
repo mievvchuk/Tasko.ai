@@ -221,7 +221,7 @@ export class McpService {
       'search_open_projects',
       {
         description:
-          'Відкриті проєкти на біржі (статус PLANNING) з бюджетом і навичками. Для фрілансерів.',
+          'Відкриті проєкти на біржі (шукають виконавців або добирають команду) з бюджетом і навичками. Для фрілансерів.',
         inputSchema: z
           .object({
             search: z.string().min(1).max(200).optional(),

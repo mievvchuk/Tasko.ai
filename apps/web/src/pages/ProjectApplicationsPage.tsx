@@ -4,7 +4,7 @@ import { errorMessage, request } from "../api";
 import { Pagination, ResourceState } from "../components/ResourceState";
 import { formatDate, parsePage } from "../format";
 import { applicationStatusNames } from "../types";
-import type { ProjectApplication } from "../types";
+import type { Project, ProjectApplication } from "../types";
 import { useApi } from "../useApi";
 
 import { useLanguage } from "../i18n";
@@ -17,8 +17,16 @@ export function ProjectApplicationsPage() {
   const { data, error, loading, refresh } = useApi<ProjectApplication[]>(
     id ? `/projects/${id}/applications?page=${page}&limit=10` : null,
   );
+  const project = useApi<Project>(id ? `/projects/${id}` : null);
   const [actionError, setActionError] = useState("");
+  const [notice, setNotice] = useState("");
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
+  const status = project.data?.status;
+  // Як isHiring в API: до першого найму або поки клієнт не закрив набір
+  const hiring =
+    status === "PLANNING" ||
+    (status === "ACTIVE" && Boolean(project.data?.hiringOpen));
   const [ranking, setRanking] = useState(false);
 
   async function rank() {
@@ -37,18 +45,41 @@ export function ProjectApplicationsPage() {
     }
   }
 
-  async function accept(applicationId: string) {
+  async function decide(applicationId: string, action: "accept" | "reject") {
     setAcceptingId(applicationId);
     setActionError("");
+    setNotice("");
     try {
-      await request(`/applications/${applicationId}/accept`, {
+      await request(`/applications/${applicationId}/${action}`, {
         method: "POST",
       });
+      setNotice(
+        action === "accept"
+          ? tr("Фрілансера прийнято до команди.")
+          : tr("Заявку відхилено."),
+      );
       refresh();
+      project.refresh();
     } catch (error) {
       setActionError(errorMessage(error));
     } finally {
       setAcceptingId(null);
+    }
+  }
+
+  async function closeHiring() {
+    setClosing(true);
+    setActionError("");
+    setNotice("");
+    try {
+      await request(`/projects/${id}/close-hiring`, { method: "POST" });
+      setNotice(tr("Набір закрито. Проєкт більше не показується на біржі."));
+      refresh();
+      project.refresh();
+    } catch (error) {
+      setActionError(errorMessage(error));
+    } finally {
+      setClosing(false);
     }
   }
 
@@ -65,7 +96,35 @@ export function ProjectApplicationsPage() {
           )}
         </p>
       </div>
+      {project.data && (
+        <p className="notice" role="status">
+          {status === "PLANNING"
+            ? tr(
+                "Можна прийняти кількох фрілансерів — кожен стане учасником команди.",
+              )
+            : hiring
+              ? tr(
+                  "Набір у команду відкрито: проєкт видно на біржі, нові заявки надходять.",
+                )
+              : tr("Набір у команду закрито.")}
+        </p>
+      )}
+      {notice && (
+        <p className="notice success" role="status">
+          {notice}
+        </p>
+      )}
       <div className="application-tools">
+        {status === "ACTIVE" && hiring && (
+          <button
+            className="button secondary"
+            disabled={closing}
+            onClick={() => void closeHiring()}
+          >
+            <i className="bi bi-door-closed" aria-hidden="true"></i>
+            {closing ? tr("Закриваємо…") : tr("Закрити набір")}
+          </button>
+        )}
         <button
           className="button secondary"
           disabled={ranking || !data?.length}
@@ -148,16 +207,27 @@ export function ProjectApplicationsPage() {
                     <dd>{formatDate(application.createdAt, true)}</dd>
                   </div>
                 </dl>
-                {application.status === "PENDING" && (
-                  <button
-                    className="button primary"
-                    disabled={acceptingId !== null}
-                    onClick={() => void accept(application.id)}
-                  >
-                    {acceptingId === application.id
-                      ? tr("Обираємо…")
-                      : tr("Обрати виконавця")}
-                  </button>
+                {application.status === "PENDING" && hiring && (
+                  <div className="page-actions">
+                    <button
+                      className="button primary"
+                      disabled={acceptingId !== null}
+                      onClick={() => void decide(application.id, "accept")}
+                    >
+                      <i className="bi bi-person-check" aria-hidden="true"></i>
+                      {acceptingId === application.id
+                        ? tr("Зберігаємо…")
+                        : tr("Прийняти в команду")}
+                    </button>
+                    <button
+                      className="button secondary"
+                      disabled={acceptingId !== null}
+                      onClick={() => void decide(application.id, "reject")}
+                    >
+                      <i className="bi bi-x-lg" aria-hidden="true"></i>
+                      {tr("Відхилити")}
+                    </button>
+                  </div>
                 )}
               </article>
             ))}
