@@ -138,6 +138,6 @@ export class AvatarsController {
     response.setHeader('X-Content-Type-Options', 'nosniff');
     // Нове фото — нове ім'я файлу, тож старе можна кешувати надовго
     response.setHeader('Cache-Control', 'public, max-age=604800, immutable');
-    response.sendFile(file.path);
+    response.send(file.content);
   }
 }

@@ -2,11 +2,10 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { basename, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ProjectsService } from '../projects/projects.service.js';
@@ -60,9 +59,29 @@ export function validateFile(file: UploadedFile) {
   return { extension, mime: format.mime };
 }
 
+// Вміст файлу з БД; файли, збережені до переходу на БД, ще читаємо з диска (локальна розробка)
+export async function readStoredFile(
+  db: {
+    StoredFile: {
+      where: (filter: { id: string }) => {
+        first: () => PromiseLike<{ content: Uint8Array } | null>;
+      };
+    };
+  },
+  key: string,
+  legacyPath: string,
+) {
+  const stored = await db.StoredFile.where({ id: key }).first();
+  if (stored) return Buffer.from(stored.content);
+  try {
+    return await readFile(legacyPath);
+  } catch {
+    return null;
+  }
+}
+
 @Injectable()
 export class FilesService {
-  private readonly logger = new Logger(FilesService.name);
   private readonly directory = fileURLToPath(
     new URL('../../storage/', import.meta.url),
   );
@@ -111,32 +130,31 @@ export class FilesService {
       )
       .join('')
       .slice(0, 200);
-    await mkdir(this.directory, { recursive: true });
-    await writeFile(join(this.directory, storagePath), file.buffer, {
-      flag: 'wx',
+    // Вміст і запис про файл — в одній транзакції: або обидва, або нічого
+    return this.projects.prisma.client.transaction(async (tx) => {
+      await tx.orm.public.StoredFile.create({
+        id: storagePath,
+        content: file.buffer,
+        createdAt: new Date(),
+      });
+      return tx.orm.public.FileAttachment.select(
+        'id',
+        'fileName',
+        'mimeType',
+        'size',
+        'uploadedAt',
+      ).create({
+        id: randomUUID(),
+        projectId,
+        uploadedBy: user.id,
+        fileName,
+        storagePath,
+        mimeType: mime,
+        size: file.size,
+        uploadedAt: new Date(),
+        submissionId: null,
+      });
     });
-    try {
-      return await this.files
-        .select('id', 'fileName', 'mimeType', 'size', 'uploadedAt')
-        .create({
-          id: randomUUID(),
-          projectId,
-          uploadedBy: user.id,
-          fileName,
-          storagePath,
-          mimeType: mime,
-          size: file.size,
-          uploadedAt: new Date(),
-          submissionId: null,
-        });
-    } catch (error) {
-      try {
-        await unlink(join(this.directory, storagePath));
-      } catch {
-        this.logger.error('Не вдалося прибрати незбережений файл.');
-      }
-      throw error;
-    }
   }
   async download(user: CurrentUser, id: string) {
     const file = await this.files.where({ id }).first();
@@ -144,12 +162,12 @@ export class FilesService {
     await this.projects.requireAccess(user, file.projectId);
     if (!/^[a-f0-9-]{36}\.[a-z]+$/.test(file.storagePath))
       throw new NotFoundException('Файл недоступний.');
-    const path = join(this.directory, file.storagePath);
-    try {
-      await stat(path);
-    } catch {
-      throw new NotFoundException('Файл відсутній у сховищі.');
-    }
-    return { path, name: file.fileName };
+    const content = await readStoredFile(
+      this.projects.prisma.client.orm.public,
+      file.storagePath,
+      join(this.directory, file.storagePath),
+    );
+    if (!content) throw new NotFoundException('Файл відсутній у сховищі.');
+    return { content, name: file.fileName, mime: file.mimeType };
   }
 }

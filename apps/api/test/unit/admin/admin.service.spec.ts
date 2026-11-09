@@ -256,6 +256,7 @@ describe('AdminService reports', () => {
       'ProjectSkill',
       'ProjectMilestone',
       'Order',
+      'StoredFile',
     ];
     const orm = {
       public: Object.fromEntries(names.map((name) => [name, table(name)])),
@@ -310,6 +311,19 @@ describe('AdminService reports', () => {
         ],
         PortfolioItem: [{ id: 'p1', userId: 'busy' }],
         AuthSession: [{ userId: 'busy' }, { userId: 'fresh' }],
+        FileAttachment: [
+          {
+            id: 'f1',
+            projectId: 'own',
+            uploadedBy: 'busy',
+            storagePath: 'f1.pdf',
+          },
+        ],
+        StoredFile: [
+          { id: 'f1.pdf' },
+          { id: 'avatars/a.png' },
+          { id: 'someone-else.pdf' },
+        ],
       };
     });
 
@@ -338,6 +352,8 @@ describe('AdminService reports', () => {
       expect(tables.ProjectApplication).toHaveLength(0);
       expect(tables.PortfolioItem).toHaveLength(0);
       expect(tables.AuthSession.some((s) => s.userId === 'busy')).toBe(false);
+      // Вміст файлів і фото видаляється разом з акаунтом, чужі файли лишаються
+      expect(tables.StoredFile).toEqual([{ id: 'someone-else.pdf' }]);
     });
 
     it('never deletes admins, yourself, or for non-admins', async () => {

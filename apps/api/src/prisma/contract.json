@@ -84,6 +84,10 @@
       "model": "Skill",
       "namespace": "public"
     },
+    "StoredFile": {
+      "model": "StoredFile",
+      "namespace": "public"
+    },
     "Task": {
       "model": "Task",
       "namespace": "public"
@@ -2439,6 +2443,47 @@
               },
               "namespaceId": "public",
               "table": "Skill"
+            }
+          },
+          "StoredFile": {
+            "fields": {
+              "content": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bytea@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "content": {
+                  "column": "content"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "StoredFile"
             }
           },
           "Task": {
@@ -5149,6 +5194,37 @@
                 }
               ]
             },
+            "StoredFile": {
+              "columns": {
+                "content": {
+                  "codecId": "pg/bytea@1",
+                  "dataType": "pg/bytea",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "Task": {
               "columns": {
                 "assigneeId": {
@@ -5539,7 +5615,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0e90408e916176318083817556d3fcf052d5296942d495ba28e0410d62fded15"
+    "storageHash": "ab1afb8068329f2a44043eb2be833f102b82f392472d850617d674edb1aaf4cf"
   },
   "execution": {
     "executionHash": "e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06",
