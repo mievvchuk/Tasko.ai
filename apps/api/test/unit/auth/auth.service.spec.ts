@@ -140,6 +140,24 @@ describe('authentication', () => {
     expect(result.user).not.toHaveProperty('passwordHash');
   });
 
+  it('issues a 30-day session when "remember me" is checked', async () => {
+    users.findByEmail.mockResolvedValue(user);
+    const before = Date.now();
+    const result = await auth.login({ ...credentials, rememberMe: true });
+    const payload = await jwt.verifyAsync<{ exp: number; iat: number }>(
+      String(result.accessToken),
+    );
+    const days30 = 30 * 24 * 60 * 60;
+    expect(payload.exp - payload.iat).toBe(days30);
+    expect(result.expiresIn).toBe(days30);
+    const [session] = db.AuthSession.create.mock.calls.at(-1) as [
+      { expiresAt: Date },
+    ];
+    expect(session.expiresAt.getTime() - before).toBeGreaterThanOrEqual(
+      days30 * 1000,
+    );
+  });
+
   it('rejects the wrong password', async () => {
     users.findByEmail.mockResolvedValue(user);
     await expect(
