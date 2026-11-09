@@ -94,7 +94,9 @@ export class CollaborationController {
   ) {
     const file = await this.files.download(user, id);
     response.setHeader('X-Content-Type-Options', 'nosniff');
-    response.download(file.path, file.name);
+    response.attachment(file.name);
+    response.type(file.mime);
+    response.send(file.content);
   }
   @Get('tasks/:id/submissions') submissions(
     @Actor() user: CurrentUser,

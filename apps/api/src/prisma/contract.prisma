@@ -331,3 +331,11 @@ model WorkSubmission {
   reviewer    User?    @relation("WorkSubmissionReviewer", fields: [reviewerId], references: [id])
   feedback    String?
 }
+
+// Вміст завантажених файлів і фото профілів. Диск на Render тимчасовий, тому файли
+// зберігаються в БД. id — той самий ключ, що й FileAttachment.storagePath або «avatars/<ім'я>»
+model StoredFile {
+  id        String @id
+  content   Bytes
+  createdAt TimestamptzJsDate @default(now())
+}

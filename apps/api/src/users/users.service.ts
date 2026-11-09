@@ -3,14 +3,13 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { mkdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { readStoredFile } from '../collaboration/files.service.js';
 import type { UploadedFile } from '../collaboration/files.service.js';
 import { avatarFilePattern, avatarMime, validateAvatar } from './avatar.js';
 import type {
@@ -61,7 +60,6 @@ export function toPublicUser(user: {
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
   // Фото профілів лежать окремо від файлів проєктів: storage/avatars
   private readonly avatarDirectory = fileURLToPath(
     new URL('../../storage/avatars/', import.meta.url),
@@ -87,7 +85,8 @@ export class UsersService {
   async updateRole(user: CurrentUser, data: UpdateRoleDto) {
     if (user.role === 'ADMIN')
       throw new ForbiddenException('Роль адміністратора не змінюється тут.');
-    if (user.role === data.role) return toPublicUser(await this.requireUser(user.id));
+    if (user.role === data.role)
+      return toPublicUser(await this.requireUser(user.id));
     const db = this.prisma.client.orm.public;
     const [project, application, membership] = await Promise.all([
       db.Project.where({ clientId: user.id }).first(),
@@ -105,24 +104,22 @@ export class UsersService {
     return toPublicUser(updated!);
   }
 
-  // Зберігає файл фото на диску, а в БД записує лише посилання на нього
+  // Вміст фото — у StoredFile (ключ «avatars/<ім'я>»), у профілі — лише посилання на нього
   async setAvatar(user: CurrentUser, file: UploadedFile | undefined) {
     const format = validateAvatar(file);
     const current = await this.requireUser(user.id);
     const fileName = `${randomUUID()}.${format.extension}`;
-    await mkdir(this.avatarDirectory, { recursive: true });
-    await writeFile(join(this.avatarDirectory, fileName), file!.buffer, {
-      flag: 'wx',
+    const updated = await this.prisma.client.transaction(async (tx) => {
+      await tx.orm.public.StoredFile.create({
+        id: `avatars/${fileName}`,
+        content: file!.buffer,
+        createdAt: new Date(),
+      });
+      return tx.orm.public.User.where({ id: user.id }).update({
+        avatarUrl: `/avatars/${fileName}`,
+        updatedAt: new Date(),
+      });
     });
-    let updated;
-    try {
-      updated = await this.prisma.client.orm.public.User.where({
-        id: user.id,
-      }).update({ avatarUrl: `/avatars/${fileName}`, updatedAt: new Date() });
-    } catch (error) {
-      await this.removeAvatarFile(`/avatars/${fileName}`);
-      throw error;
-    }
     await this.removeAvatarFile(current.avatarUrl);
     return toPublicUser(updated!);
   }
@@ -141,23 +138,21 @@ export class UsersService {
     const mime = avatarMime(fileName);
     if (!avatarFilePattern.test(fileName) || !mime)
       throw new NotFoundException('Фото не знайдено.');
-    const path = join(this.avatarDirectory, fileName);
-    try {
-      await stat(path);
-    } catch {
-      throw new NotFoundException('Фото не знайдено.');
-    }
-    return { path, mime };
+    const content = await readStoredFile(
+      this.prisma.client.orm.public,
+      `avatars/${fileName}`,
+      join(this.avatarDirectory, fileName),
+    );
+    if (!content) throw new NotFoundException('Фото не знайдено.');
+    return { content, mime };
   }
 
   private async removeAvatarFile(avatarUrl: string | null) {
     const fileName = avatarUrl?.replace(/^\/avatars\//, '');
     if (!fileName || !avatarFilePattern.test(fileName)) return;
-    try {
-      await unlink(join(this.avatarDirectory, fileName));
-    } catch {
-      this.logger.warn('Не вдалося видалити старе фото профілю.');
-    }
+    await this.prisma.client.orm.public.StoredFile.where({
+      id: `avatars/${fileName}`,
+    }).delete();
   }
 
   findByEmail(email: string) {

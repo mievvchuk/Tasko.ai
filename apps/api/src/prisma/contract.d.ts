@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'0e90408e916176318083817556d3fcf052d5296942d495ba28e0410d62fded15'>;
+  StorageHashBase<'ab1afb8068329f2a44043eb2be833f102b82f392472d850617d674edb1aaf4cf'>;
 export type ExecutionHash =
   ExecutionHashBase<'e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06'>;
 export type ProfileHash =
@@ -401,6 +401,11 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
     };
+    readonly StoredFile: {
+      readonly content: CodecTypes['pg/bytea@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+    };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['output'] | null;
       readonly columnId: CodecTypes['pg/text@1']['output'] | null;
@@ -609,6 +614,11 @@ export type FieldInputTypes = {
     readonly Skill: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+    };
+    readonly StoredFile: {
+      readonly content: CodecTypes['pg/bytea@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
     };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['input'] | null;
@@ -819,6 +829,11 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
     };
+    readonly StoredFile: {
+      readonly content: CodecTypes['pg/bytea@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+    };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['output'] | null;
       readonly columnId: CodecTypes['pg/text@1']['output'] | null;
@@ -1027,6 +1042,11 @@ export type StorageColumnInputTypes = {
     readonly Skill: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+    };
+    readonly StoredFile: {
+      readonly content: CodecTypes['pg/bytea@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
     };
     readonly Task: {
       readonly assigneeId: CodecTypes['pg/text@1']['input'] | null;
@@ -1325,6 +1345,12 @@ export namespace Models {
     projectSkills: public_ProjectSkill[];
     readonly [RelationKeys]?: 'freelancerSkills' | 'projectSkills';
   };
+  export type public_StoredFile = {
+    content: CodecTypes['pg/bytea@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_Task = {
     assigneeId: CodecTypes['pg/text@1']['output'] | null;
     columnId: CodecTypes['pg/text@1']['output'] | null;
@@ -1433,6 +1459,7 @@ export declare const models: {
     ProjectMilestone: Models.public_ProjectMilestone;
     ProjectSkill: Models.public_ProjectSkill;
     Skill: Models.public_Skill;
+    StoredFile: Models.public_StoredFile;
     Task: Models.public_Task;
     User: Models.public_User;
     WorkSubmission: Models.public_WorkSubmission;
@@ -3057,6 +3084,33 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly StoredFile: {
+              columns: {
+                readonly content: {
+                  readonly dataType: 'pg/bytea';
+                  readonly codecId: 'pg/bytea@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly Task: {
               columns: {
                 readonly assigneeId: {
@@ -3468,6 +3522,10 @@ type ContractBase = Omit<
       readonly model: 'ProjectSkill';
     };
     readonly Skill: { readonly namespace: 'public' & NamespaceId; readonly model: 'Skill' };
+    readonly StoredFile: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'StoredFile';
+    };
     readonly Task: { readonly namespace: 'public' & NamespaceId; readonly model: 'Task' };
     readonly User: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
     readonly WorkSubmission: {
@@ -4996,6 +5054,35 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
+              };
+            };
+          };
+          readonly StoredFile: {
+            readonly fields: {
+              readonly content: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bytea@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'StoredFile';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly content: { readonly column: 'content' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
               };
             };
           };

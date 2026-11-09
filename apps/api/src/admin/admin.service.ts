@@ -245,6 +245,7 @@ export class AdminService {
       await db.PortfolioItem.where({ userId: id }).deleteAll();
       await db.FreelancerProfile.where({ userId: id }).deleteAll();
       await db.User.where({ id }).delete();
+      for (const key of files) await db.StoredFile.where({ id: key }).delete();
       return { id, deleted: true };
     });
     // Файли — лише після успішного коміту; якийсь уже відсутній — не біда

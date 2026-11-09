@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../dist/config/config.js';
 import { createDb } from '../dist/prisma/db.js';
@@ -121,8 +121,6 @@ const extraPeople = [
   role,
 }));
 users.push(...extraPeople);
-// Каталог, у якому API зберігає завантажені файли (див. files.service.ts).
-const storageDirectory = new URL('../storage/', import.meta.url);
 const credentialsDirectory = new URL('../../../.tmp/', import.meta.url);
 const credentialsFile = new URL('demo-accounts.json', credentialsDirectory);
 const db = createDb(config.databaseUrl);
@@ -1218,7 +1216,6 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       null,
     ],
   ];
-  await mkdir(storageDirectory, { recursive: true });
   for (const [
     index,
     [project, uploader, fileName, text, submissionTask],
@@ -1226,12 +1223,12 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     const fileId = id(1971 + index);
     const storagePath = `${fileId}.txt`;
     const content = Buffer.from(`${text}\n`, 'utf8');
-    const path = new URL(storagePath, storageDirectory);
-    try {
-      await access(path);
-    } catch {
-      await writeFile(path, content);
-    }
+    // Вміст файлу — у БД (StoredFile), як і в завантажень через API
+    await add('StoredFile', {
+      id: storagePath,
+      content,
+      createdAt: project.updatedAt,
+    });
     await add('FileAttachment', {
       id: fileId,
       projectId: project.id,
