@@ -40,6 +40,8 @@ const duplicateEmailMessage = 'Ця електронна пошта вже за�
 @Injectable()
 export class AuthService {
   private readonly sessionLifetime = 60 * 60 * 1000;
+  // «Запам'ятати мене»: сеанс на 30 днів
+  private readonly rememberedSessionLifetime = 30 * 24 * 60 * 60 * 1000;
 
   constructor(
     @Inject(UsersService) private readonly users: UsersService,
@@ -89,12 +91,18 @@ export class AuthService {
         );
     }
 
-    const sessionId = await this.createSession(user.id, metadata);
+    const lifetime = data.rememberMe
+      ? this.rememberedSessionLifetime
+      : this.sessionLifetime;
+    const sessionId = await this.createSession(user.id, metadata, lifetime);
     return {
       requiresTwoFactor: false,
-      accessToken: await this.jwt.signAsync({ sub: user.id, sid: sessionId }),
+      accessToken: await this.jwt.signAsync(
+        { sub: user.id, sid: sessionId },
+        { expiresIn: lifetime / 1000 },
+      ),
       tokenType: 'Bearer',
-      expiresIn: this.sessionLifetime / 1000,
+      expiresIn: lifetime / 1000,
       user: this.publicUser(user),
     };
   }
@@ -238,7 +246,11 @@ export class AuthService {
     return verifyTotp(secret, code);
   }
 
-  private async createSession(userId: string, metadata: LoginMetadata) {
+  private async createSession(
+    userId: string,
+    metadata: LoginMetadata,
+    lifetime: number,
+  ) {
     const sessionId = randomUUID();
     await this.db.AuthSession.create({
       id: sessionId,
@@ -247,7 +259,7 @@ export class AuthService {
       userAgent: metadata.userAgent?.slice(0, 500) || null,
       ipAddress: metadata.ipAddress?.slice(0, 100) || null,
       createdAt: new Date(),
-      expiresAt: new Date(Date.now() + this.sessionLifetime),
+      expiresAt: new Date(Date.now() + lifetime),
       revokedAt: null,
     });
     return sessionId;

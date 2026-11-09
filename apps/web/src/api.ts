@@ -27,8 +27,13 @@ export function apiUrl(path: string) {
   return baseUrl.replace(/\/$/, "") + "/" + path.replace(/^\//, "");
 }
 
+// Без «Запам'ятати мене» токен у sessionStorage (живе до закриття вкладки), з ним — у localStorage
 export function getToken() {
-  return sessionStorage.getItem(tokenKey);
+  return (
+    sessionStorage.getItem(tokenKey) ??
+    globalThis.localStorage?.getItem(tokenKey) ??
+    null
+  );
 }
 
 export function errorMessage(error: unknown) {
