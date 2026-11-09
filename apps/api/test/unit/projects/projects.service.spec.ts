@@ -319,7 +319,14 @@ describe('ProjectsService', () => {
       clientId: client.id,
       status: 'PLANNING',
     };
-    db.Project = { where: vi.fn(() => chain([project])) };
+    // Команда, що добирає людей, — на біржі; закритий набір і чернетка модерації — ні
+    const projects = [
+      project,
+      { id: 'hiring', clientId: client.id, status: 'ACTIVE', hiringOpen: true },
+      { id: 'closed', clientId: client.id, status: 'ACTIVE', hiringOpen: false },
+      { id: 'draft', clientId: client.id, status: 'MODERATION' },
+    ];
+    db.Project = { orderBy: vi.fn(() => chain(projects)) };
     db.ProjectApplication = {
       where: vi.fn(() => chain([{ projectId: project.id, status: 'PENDING' }])),
     };
@@ -331,13 +338,14 @@ describe('ProjectsService', () => {
       page: 1,
       limit: 20,
     });
+    expect(result.map((item) => item.id)).toEqual(['project-id', 'hiring']);
     expect(result[0]).toMatchObject({ applicationStatus: 'PENDING' });
     await expect(
       service.marketplace(client, { page: 1, limit: 20 }),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('accepts one application and rejects remaining candidates', async () => {
+  it('hires the first freelancer, keeps other applications and opens hiring', async () => {
     const application = {
       id: 'application-id',
       projectId: 'project-id',
@@ -349,13 +357,14 @@ describe('ProjectsService', () => {
       id: application.projectId,
       clientId: client.id,
       status: 'PLANNING',
+      hiringOpen: false,
     });
     db.ProjectApplication = { where: vi.fn(() => applicationQuery) };
     db.Project = { where: vi.fn(() => projectQuery) };
-    db.ProjectMember = { create: vi.fn(async (data: unknown) => data) };
-    applicationQuery.all.mockResolvedValue([
-      { id: 'other-id', status: 'PENDING' },
-    ]);
+    db.ProjectMember = {
+      where: vi.fn(() => chain(null)),
+      create: vi.fn(async (data: unknown) => data),
+    };
     prisma.client.transaction.mockImplementation(
       async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
         action({ orm: { public: db } }),
@@ -367,9 +376,97 @@ describe('ProjectsService', () => {
       freelancerId: freelancer.id,
     });
     expect(db.ProjectMember.create).toHaveBeenCalledOnce();
-    expect(applicationQuery.update).toHaveBeenCalled();
+    // Оновлено лише прийняту заявку — інших не відхиляємо
+    expect(applicationQuery.update).toHaveBeenCalledOnce();
+    expect(db.ProjectApplication.where).toHaveBeenCalledWith({
+      id: application.id,
+      status: 'PENDING',
+    });
     expect(projectQuery.update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'ACTIVE' }),
+      expect.objectContaining({ status: 'ACTIVE', hiringOpen: true }),
     );
+  });
+
+  it('adds one more freelancer to an active team without re-adding a member', async () => {
+    const application = {
+      id: 'second',
+      projectId: 'project-id',
+      freelancerId: freelancer.id,
+      status: 'PENDING',
+    };
+    const projectQuery = chain({
+      id: 'project-id',
+      clientId: client.id,
+      status: 'ACTIVE',
+      hiringOpen: true,
+    });
+    db.ProjectApplication = { where: vi.fn(() => chain<unknown>(application)) };
+    db.Project = { where: vi.fn(() => projectQuery) };
+    db.ProjectMember = {
+      where: vi.fn(() => chain({ id: 'existing-member' })),
+      create: vi.fn(),
+    };
+    prisma.client.transaction.mockImplementation(
+      async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
+        action({ orm: { public: db } }),
+    );
+
+    await service.acceptApplication(client, application.id);
+    expect(db.ProjectMember.create).not.toHaveBeenCalled();
+    expect(projectQuery.update).not.toHaveBeenCalled();
+  });
+
+  it('refuses to accept after hiring is closed', async () => {
+    db.ProjectApplication = {
+      where: vi.fn(() =>
+        chain({ id: 'a', projectId: 'project-id', status: 'PENDING' }),
+      ),
+    };
+    db.Project = {
+      where: vi.fn(() =>
+        chain({
+          id: 'project-id',
+          clientId: client.id,
+          status: 'ACTIVE',
+          hiringOpen: false,
+        }),
+      ),
+    };
+    await expect(
+      service.acceptApplication(client, 'a'),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('closes hiring and rejects the remaining applications', async () => {
+    const projectQuery = chain({
+      id: 'project-id',
+      clientId: client.id,
+      status: 'ACTIVE',
+      hiringOpen: true,
+    });
+    const applicationQuery = chain<unknown>([
+      { id: 'left-1', freelancerId: 'f1' },
+      { id: 'left-2', freelancerId: 'f2' },
+    ]);
+    db.Project = { where: vi.fn(() => projectQuery) };
+    db.ProjectApplication = { where: vi.fn(() => applicationQuery) };
+    prisma.client.transaction.mockImplementation(
+      async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
+        action({ orm: { public: db } }),
+    );
+
+    expect(await service.closeHiring(client, 'project-id')).toEqual({
+      hiringOpen: false,
+      rejected: 2,
+    });
+    expect(projectQuery.update).toHaveBeenCalledWith(
+      expect.objectContaining({ hiringOpen: false }),
+    );
+    expect(applicationQuery.update).toHaveBeenCalledTimes(2);
+    expect(db.Notification.create).toHaveBeenCalledTimes(2);
+    db.ProjectMember = { where: vi.fn(() => chain({ id: 'member-id' })) };
+    await expect(
+      service.closeHiring(freelancer, 'project-id'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

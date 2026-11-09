@@ -28,6 +28,7 @@ export function ProjectDetailsPage() {
   const status = Object.hasOwn(taskStatusNames, rawStatus) ? rawStatus : "";
   const rawPriority = params.get("priority") || "";
   const priority = Object.hasOwn(priorityNames, rawPriority) ? rawPriority : "";
+  const assignee = params.get("assignee") || "";
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -47,6 +48,7 @@ export function ProjectDetailsPage() {
         if (priority) query.set("priority", priority);
         if (search) query.set("search", search);
         if (overdue) query.set("overdue", "true");
+        if (assignee) query.set("assigneeId", assignee);
         const [detail, people, items] = await Promise.all([
           request<Project>(`/projects/${id}`, { signal: controller.signal }),
           request<ProjectMember[]>(`/projects/${id}/members`, {
@@ -72,7 +74,7 @@ export function ProjectDetailsPage() {
       active = false;
       controller.abort();
     };
-  }, [id, page, status, priority, search, overdue, attempt]);
+  }, [id, page, status, priority, search, overdue, assignee, attempt]);
 
   function changeFilter(name: string, value: string) {
     const query = new URLSearchParams(params);
@@ -286,6 +288,25 @@ export function ProjectDetailsPage() {
                     {tr(label)}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div className="filter-field">
+              <label htmlFor="task-assignee">{tr("Виконавець")}</label>
+              <select
+                id="task-assignee"
+                value={assignee}
+                onChange={(event) =>
+                  changeFilter("assignee", event.target.value)
+                }
+              >
+                <option value="">{tr("Усі виконавці")}</option>
+                {members
+                  .filter((member) => member.user?.role === "FREELANCER")
+                  .map((member) => (
+                    <option key={member.userId} value={member.userId}>
+                      {member.user?.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>

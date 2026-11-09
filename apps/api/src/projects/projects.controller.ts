@@ -124,6 +124,22 @@ export class ProjectsController {
     return this.projects.acceptApplication(user, id);
   }
 
+  @Post('applications/:id/reject')
+  rejectApplication(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projects.rejectApplication(user, id);
+  }
+
+  @Post('projects/:id/close-hiring')
+  closeHiring(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projects.closeHiring(user, id);
+  }
+
   @Get('freelancers/:id/profile')
   freelancerProfile(
     @Actor() user: CurrentUser,

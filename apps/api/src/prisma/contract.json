@@ -1552,6 +1552,13 @@
                   "kind": "scalar"
                 }
               },
+              "hiringOpen": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -1832,6 +1839,9 @@
                 },
                 "description": {
                   "column": "description"
+                },
+                "hiringOpen": {
+                  "column": "hiringOpen"
                 },
                 "id": {
                   "column": "id"
@@ -4591,6 +4601,15 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "hiringOpen": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -5615,7 +5634,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ab1afb8068329f2a44043eb2be833f102b82f392472d850617d674edb1aaf4cf"
+    "storageHash": "ee2fb6a4ff5ea8a18141c1de10e085722df5b44b52c5e332c5fd98bce3b8d396"
   },
   "execution": {
     "executionHash": "e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06",

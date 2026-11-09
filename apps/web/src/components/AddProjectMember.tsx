@@ -54,7 +54,7 @@ export function AddProjectMember({
     <div className="padded">
       <p className="form-note">
         {tr(
-          "Основного виконавця обрано через заявку. За потреби додайте інших фрілансерів для окремих завдань: вони отримають доступ до даних цього проєкту.",
+          "Команду наймають через заявки на біржі. Можна також додати фрілансера напряму: він отримає доступ до даних цього проєкту.",
         )}
       </p>
       <ResourceState
@@ -66,7 +66,7 @@ export function AddProjectMember({
         <>
           <form className="member-form" onSubmit={add}>
             <label htmlFor="new-project-member">
-              {tr("Додатковий виконавець")}
+              {tr("Додати фрілансера")}
             </label>
             <select
               id="new-project-member"

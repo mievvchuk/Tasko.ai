@@ -58,6 +58,8 @@ model Project {
   budgetMin Int?
   budgetMax Int?
   categoryId String?
+  // Набір у команду після першого найму: проєкт лишається на біржі, поки клієнт не закриє набір
+  hiringOpen Boolean @default(false)
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
 

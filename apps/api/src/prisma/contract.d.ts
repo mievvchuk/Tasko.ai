@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ab1afb8068329f2a44043eb2be833f102b82f392472d850617d674edb1aaf4cf'>;
+  StorageHashBase<'ee2fb6a4ff5ea8a18141c1de10e085722df5b44b52c5e332c5fd98bce3b8d396'>;
 export type ExecutionHash =
   ExecutionHashBase<'e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06'>;
 export type ProfileHash =
@@ -349,6 +349,7 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly hiringOpen: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
@@ -563,6 +564,7 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly hiringOpen: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
@@ -777,6 +779,7 @@ export type StorageColumnTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly hiringOpen: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
@@ -991,6 +994,7 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly hiringOpen: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
@@ -1245,6 +1249,7 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
     description: CodecTypes['pg/text@1']['output'] | null;
+    hiringOpen: CodecTypes['pg/bool@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     status: CodecTypes['pg/text@1']['output'];
     title: CodecTypes['pg/text@1']['output'];
@@ -2601,6 +2606,16 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly hiringOpen: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
                   readonly many: false;
                 };
                 readonly id: {
@@ -4465,6 +4480,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly hiringOpen: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4659,6 +4678,7 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deadline: { readonly column: 'deadline' };
                 readonly description: { readonly column: 'description' };
+                readonly hiringOpen: { readonly column: 'hiringOpen' };
                 readonly id: { readonly column: 'id' };
                 readonly status: { readonly column: 'status' };
                 readonly title: { readonly column: 'title' };

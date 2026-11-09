@@ -210,9 +210,9 @@ export const enText: Record<string, string> = {
   "Завантажити файл": "Upload file",
   "Отримуємо файл…": "Getting the file…",
   "Фрілансера додано до команди.": "Freelancer added to the team.",
-  "Основного виконавця обрано через заявку. За потреби додайте інших фрілансерів для окремих завдань: вони отримають доступ до даних цього проєкту.":
-    "The main freelancer was chosen through an application. Add other freelancers for separate tasks if needed: they'll get access to this project's data.",
-  "Додатковий виконавець": "Additional freelancer",
+  "Команду наймають через заявки на біржі. Можна також додати фрілансера напряму: він отримає доступ до даних цього проєкту.":
+    "The team is hired through marketplace applications. You can also add a freelancer directly: they'll get access to this project's data.",
+  "Додати фрілансера": "Add a freelancer",
   "Оберіть фрілансера": "Choose a freelancer",
   "Додаємо…": "Adding…",
   "Додати до команди": "Add to team",
@@ -579,8 +579,19 @@ export const enText: Record<string, string> = {
   "Середній строк": "Average time",
   "Ще немає даних": "No data yet",
   "Заявка надіслана": "Application sent",
-  "Обираємо…": "Choosing…",
-  "Обрати виконавця": "Choose freelancer",
+  "Прийняти в команду": "Add to team",
+  "Закрити набір": "Close hiring",
+  "Закриваємо…": "Closing…",
+  "Добирають команду": "Building a team",
+  "Фрілансера прийнято до команди.": "The freelancer joined the team.",
+  "Заявку відхилено.": "Application declined.",
+  "Набір закрито. Проєкт більше не показується на біржі.":
+    "Hiring closed. The project is no longer listed on the marketplace.",
+  "Можна прийняти кількох фрілансерів — кожен стане учасником команди.":
+    "You can accept several freelancers — each one joins the team.",
+  "Набір у команду відкрито: проєкт видно на біржі, нові заявки надходять.":
+    "Hiring is open: the project is listed on the marketplace and new applications keep coming.",
+  "Набір у команду закрито.": "Hiring is closed.",
   "Заявок ще немає": "No applications yet",
   "Фрілансери побачать проєкт на біржі та зможуть відгукнутися.":
     "Freelancers will see the project on the marketplace and can apply.",

@@ -13,6 +13,7 @@ import { useLanguage } from "../i18n";
 const kinds: Record<string, [string, string]> = {
   NEW_APPLICATION: ["Нова заявка", "bi-person-plus"],
   APPLICATION_ACCEPTED: ["Заявку прийнято", "bi-check2-circle"],
+  APPLICATION_REJECTED: ["Заявку відхилено", "bi-x-circle"],
   NEW_MESSAGE: ["Нове повідомлення", "bi-chat-dots"],
   TASK_ASSIGNED: ["Призначено завдання", "bi-check2-square"],
   WORK_SUBMITTED: ["Роботу здано", "bi-upload"],
