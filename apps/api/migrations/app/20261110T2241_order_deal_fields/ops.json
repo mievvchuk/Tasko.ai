@@ -1,0 +1,128 @@
+[
+  {
+    "id": "column.public.Order.amount",
+    "label": "Add column \"amount\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "amount",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"amount\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "amount"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"amount\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"amount\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"amount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "amount"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Order.deadline",
+    "label": "Add column \"deadline\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deadline",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deadline\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deadline"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deadline\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"deadline\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deadline\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deadline"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Order.freelancerId",
+    "label": "Add column \"freelancerId\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "freelancerId",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"freelancerId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "freelancerId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"freelancerId\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"freelancerId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"freelancerId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "freelancerId"
+        ]
+      }
+    ]
+  }
+]

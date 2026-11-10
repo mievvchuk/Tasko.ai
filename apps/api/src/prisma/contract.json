@@ -1384,6 +1384,13 @@
           },
           "Order": {
             "fields": {
+              "amount": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "clientId": {
                 "nullable": false,
                 "type": {
@@ -1395,6 +1402,20 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "deadline": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "freelancerId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1447,11 +1468,20 @@
             },
             "storage": {
               "fields": {
+                "amount": {
+                  "column": "amount"
+                },
                 "clientId": {
                   "column": "clientId"
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "deadline": {
+                  "column": "deadline"
+                },
+                "freelancerId": {
+                  "column": "freelancerId"
                 },
                 "id": {
                   "column": "id"
@@ -4584,6 +4614,11 @@
             },
             "Order": {
               "columns": {
+                "amount": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
                 "clientId": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -4597,6 +4632,16 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "deadline": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "freelancerId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/text@1",
@@ -5821,7 +5866,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ec8f65b76eb7d99539b0b12d6c15235dd7d29dffdfd98709152e1c767c28cd11"
+    "storageHash": "660f56e8093469123a97f93917eee71c2984bb62f03cf1b0c1cd13847e9751f9"
   },
   "execution": {
     "executionHash": "e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06",

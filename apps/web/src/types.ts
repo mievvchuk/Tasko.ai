@@ -322,6 +322,10 @@ export type OrderStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 export interface Order {
   id: string;
   status: OrderStatus;
+  // null у замовлень, створених до появи угод з виконавцями
+  freelancer: { id: string; name: string; avatarUrl: string | null } | null;
+  amount: number | null;
+  deadline: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -357,6 +361,8 @@ export interface AdminReport {
   growth: { month: string; users: number; projects: number }[];
   complaintsByStatus: Record<Complaint["status"], number>;
   applicationsByStatus: Record<"PENDING" | "ACCEPTED" | "REJECTED", number>;
+  ordersByStatus: Record<OrderStatus, number>;
+  completedOrdersAmount: number;
   // Останні 7 днів; day — «2026-11-07»
   week: {
     users: number;

@@ -214,6 +214,10 @@ export function ProjectDetailsPage() {
           <i className="bi bi-kanban" aria-hidden="true"></i>
           Kanban
         </Link>
+        <Link to={`/projects/${id}/orders`}>
+          <i className="bi bi-receipt" aria-hidden="true"></i>
+          {tr("Замовлення")}
+        </Link>
         <Link to={`/projects/${id}/milestones`}>
           <i className="bi bi-flag" aria-hidden="true"></i>
           {tr("Етапи")}

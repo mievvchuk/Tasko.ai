@@ -399,27 +399,24 @@ export class TasksService {
     });
   }
 
+  // Замовлення створюються лише під час прийняття заявки (ProjectsService.acceptApplication)
   async orders(user: CurrentUser, projectId: string, page: PageDto) {
     await this.projects.requireAccess(user, projectId);
-    return this.db.Order.where({ projectId })
+    const orders = await this.db.Order.where({ projectId })
       .orderBy((order) => order.createdAt.desc())
       .offset((page.page - 1) * page.limit)
       .limit(page.limit)
       .all();
-  }
-
-  async createOrder(user: CurrentUser, projectId: string) {
-    const project = await this.projects.requireOwner(user, projectId);
-    this.projects.ensureWritable(project);
-    const now = new Date();
-    return this.db.Order.create({
-      id: randomUUID(),
-      projectId,
-      clientId: project.clientId,
-      status: 'PENDING',
-      createdAt: now,
-      updatedAt: now,
-    });
+    return Promise.all(
+      orders.map(async (order) => ({
+        ...order,
+        freelancer: order.freelancerId
+          ? await this.db.User.where({ id: order.freelancerId })
+              .select('id', 'name', 'avatarUrl')
+              .first()
+          : null,
+      })),
+    );
   }
 
   async updateOrder(user: CurrentUser, id: string, status: string) {
@@ -435,11 +432,21 @@ export class TasksService {
     if (!transitions[order.status]?.includes(status))
       throw new ConflictException('Недозволена зміна статусу замовлення.');
     if (status === 'COMPLETED') {
-      const tasks = await this.db.Task.where({ projectId: order.projectId })
+      // Угода з виконавцем закривається, коли прийнято всі його завдання;
+      // старі замовлення без виконавця — коли прийнято всі завдання проєкту.
+      const tasks = await this.db.Task.where(
+        order.freelancerId
+          ? { projectId: order.projectId, assigneeId: order.freelancerId }
+          : { projectId: order.projectId },
+      )
         .select('status')
         .all();
       if (tasks.some((task) => task.status !== 'DONE'))
-        throw new ConflictException('Спочатку завершіть завдання проєкту.');
+        throw new ConflictException(
+          order.freelancerId
+            ? 'Спочатку прийміть усі завдання цього виконавця.'
+            : 'Спочатку завершіть завдання проєкту.',
+        );
     }
     return this.db.Order.where({ id, status: order.status }).update({
       status,

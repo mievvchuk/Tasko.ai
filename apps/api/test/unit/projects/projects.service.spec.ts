@@ -351,6 +351,8 @@ describe('ProjectsService', () => {
       projectId: 'project-id',
       freelancerId: freelancer.id,
       status: 'PENDING',
+      proposedBudget: 1200,
+      proposedDays: 10,
     };
     const applicationQuery = chain<unknown>(application);
     const projectQuery = chain({
@@ -365,6 +367,7 @@ describe('ProjectsService', () => {
       where: vi.fn(() => chain(null)),
       create: vi.fn(async (data: unknown) => data),
     };
+    db.Order = { create: vi.fn(async (data: unknown) => data) };
     prisma.client.transaction.mockImplementation(
       async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
         action({ orm: { public: db } }),
@@ -376,6 +379,21 @@ describe('ProjectsService', () => {
       freelancerId: freelancer.id,
     });
     expect(db.ProjectMember.create).toHaveBeenCalledOnce();
+    // Угода з виконавцем на умовах його заявки
+    const order = db.Order.create.mock.calls[0][0] as {
+      deadline: Date;
+      createdAt: Date;
+    };
+    expect(order).toMatchObject({
+      projectId: application.projectId,
+      clientId: client.id,
+      freelancerId: freelancer.id,
+      amount: 1200,
+      status: 'IN_PROGRESS',
+    });
+    expect(order.deadline.getTime() - order.createdAt.getTime()).toBe(
+      10 * 86_400_000,
+    );
     // Оновлено лише прийняту заявку — інших не відхиляємо
     expect(applicationQuery.update).toHaveBeenCalledOnce();
     expect(db.ProjectApplication.where).toHaveBeenCalledWith({
@@ -406,6 +424,7 @@ describe('ProjectsService', () => {
       where: vi.fn(() => chain({ id: 'existing-member' })),
       create: vi.fn(),
     };
+    db.Order = { create: vi.fn() };
     prisma.client.transaction.mockImplementation(
       async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
         action({ orm: { public: db } }),
