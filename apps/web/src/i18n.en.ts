@@ -1,32 +1,23 @@
-// Переклад інтерфейсу за українським текстом (як у gettext): ключ — текст
-// із tr("…"), {0}, {1} — місця для значень. Повноту перевіряє test/i18n.test.mjs.
+// Переклад інтерфейсу на i18next. Ключ — український текст із виклику tr()
+// (як у gettext), {0}, {1} — місця для значень. Повноту перевіряє test/i18n.test.mjs.
+import i18next from "i18next";
 
 export type Language = "uk" | "en";
 
-// Поточна мова для коду поза React (api.ts, format.ts). LanguageProvider
-// записує її в <html lang> одразу при перемиканні, ще до перемальовування.
+// Спільний екземпляр: його бачать і React (LanguageProvider), і код поза ним (api.ts, format.ts)
+export const i18n = i18next.createInstance();
+
 export function uiLanguage(): Language {
-  return globalThis.document?.documentElement.lang === "en" ? "en" : "uk";
+  return i18n.language === "en" ? "en" : "uk";
 }
 
 export function uiLocale() {
   return uiLanguage() === "en" ? "en-GB" : "uk-UA";
 }
 
-// Якщо перекладу немає, лишається український текст
-export function translate(
-  language: Language,
-  text: string,
-  args: (string | number)[] = [],
-) {
-  const result = language === "en" ? (enText[text] ?? text) : text;
-  return result.replace(/\{(\d+)\}/g, (match, index: string) =>
-    index in args ? String(args[Number(index)]) : match,
-  );
-}
-
+// Позиційні значення (2, 5) стають {0: 2, 1: 5} для i18next
 export function trNow(text: string, ...args: (string | number)[]) {
-  return translate(uiLanguage(), text, args);
+  return i18n.t(text, { ...args });
 }
 
 export const enText: Record<string, string> = {
@@ -477,6 +468,9 @@ export const enText: Record<string, string> = {
   "Останні активні проєкти, до яких ви маєте доступ":
     "Recent active projects you have access to",
   "Усі проєкти": "All projects",
+  "Усі проєкти системи. Ви можете переглядати їх, але не змінювати.":
+    "All projects in the system. You can view them but not change them.",
+  "Проєкти на сайті": "Projects on the site",
   "Активних проєктів поки немає": "No active projects yet",
   "Проєкти у плануванні та з іншими статусами доступні в загальному списку.":
     "Projects in planning or other statuses are in the full list.",
@@ -1142,3 +1136,34 @@ export const enText: Record<string, string> = {
   "Брати завдання з черги може фрілансер.": "Only a freelancer can take tasks from the queue.",
   "Вільних завдань у черзі немає.": "There are no free tasks in the queue.",
 };
+
+function storedLanguage(): Language {
+  try {
+    return localStorage.getItem("tasko.language") === "en" ? "en" : "uk";
+  } catch {
+    return "uk";
+  }
+}
+
+void i18n.init({
+  lng: storedLanguage(),
+  // Українського словника немає: без перекладу показуємо сам ключ — український текст
+  resources: { en: { translation: enText } },
+  fallbackLng: false,
+  // У ключах-реченнях є крапки й двокрапки, тож роздільники вимкнено
+  keySeparator: false,
+  nsSeparator: false,
+  interpolation: { prefix: "{", suffix: "}", escapeValue: false },
+  initAsync: false,
+});
+
+// <html lang> міняємо одразу при перемиканні: з нього читають formatDate() і скрінрідери
+i18n.on("languageChanged", (language) => {
+  if (globalThis.document) document.documentElement.lang = language;
+  try {
+    localStorage.setItem("tasko.language", language);
+  } catch {
+    // Мова працює і без збереження, якщо сховище браузера недоступне.
+  }
+});
+if (globalThis.document) document.documentElement.lang = i18n.language;

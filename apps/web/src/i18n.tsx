@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { translate } from "./i18n.en";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import { i18n } from "./i18n.en";
 import type { Language } from "./i18n.en";
 import { IconMenu } from "./components/IconMenu";
 
@@ -135,56 +135,26 @@ const en: Record<keyof typeof uk, string> = {
 
 type TranslationKey = keyof typeof uk;
 
-interface LanguageContextValue {
-  language: Language;
-  t: (key: TranslationKey) => string;
-  // Переклад за українським текстом (як у gettext): tr("Сторінка {0}", page)
-  tr: (text: string, ...args: (string | number)[]) => string;
-  toggleLanguage: () => void;
-}
-
-const LanguageContext = createContext<LanguageContextValue | null>(null);
+// Короткі ключі t("login") живуть у тому ж словнику, що й тексти tr("…")
+i18n.addResourceBundle("uk", "translation", uk);
+i18n.addResourceBundle("en", "translation", en);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(() => {
-    try {
-      return localStorage.getItem("tasko.language") === "en" ? "en" : "uk";
-    } catch {
-      return "uk";
-    }
-  });
-
-  // Мову в <html lang> ставимо ще під час рендеру: з неї читають trNow() і
-  // formatDate() у дочірніх компонентах, які малюються одразу після цього
-  document.documentElement.lang = language;
-  useEffect(() => {
-    try {
-      localStorage.setItem("tasko.language", language);
-    } catch {
-      // Мова працює і без збереження, якщо сховище браузера недоступне.
-    }
-  }, [language]);
-
-  const dictionary = language === "uk" ? uk : en;
-  return (
-    <LanguageContext.Provider
-      value={{
-        language,
-        t: (key) => dictionary[key],
-        tr: (text, ...args) => translate(language, text, args),
-        toggleLanguage: () =>
-          setLanguage((current) => (current === "uk" ? "en" : "uk")),
-      }}
-    >
-      {children}
-    </LanguageContext.Provider>
-  );
+  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
 }
 
+// Компонент перемальовується, коли i18next змінює мову
 export function useLanguage() {
-  const context = useContext(LanguageContext);
-  if (!context) throw new Error("LanguageProvider is missing.");
-  return context;
+  const { i18n: current } = useTranslation();
+  const language: Language = current.language === "en" ? "en" : "uk";
+  return {
+    language,
+    t: (key: TranslationKey) => current.t(key),
+    tr: (text: string, ...args: (string | number)[]) =>
+      current.t(text, { ...args }),
+    toggleLanguage: () =>
+      void current.changeLanguage(language === "uk" ? "en" : "uk"),
+  };
 }
 
 // Глобус зі списком мов; назви мов — кожна своєю мовою

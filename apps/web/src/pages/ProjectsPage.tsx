@@ -35,6 +35,7 @@ export function ProjectsPage() {
           limit: String(pageSize),
         });
         if (status) query.set("status", status);
+        if (user?.role === "ADMIN") query.set("all", "true");
         const result = await request<Project[]>(
           "/projects?" + query.toString(),
           { signal: controller.signal },
@@ -51,7 +52,7 @@ export function ProjectsPage() {
       active = false;
       controller.abort();
     };
-  }, [page, status, attempt]);
+  }, [page, status, attempt, user?.role]);
 
   function changePage(nextPage: number) {
     const query = new URLSearchParams();
@@ -72,11 +73,19 @@ export function ProjectsPage() {
       <div className="page-heading heading-with-action">
         <div>
           <h1>
-            {user?.role === "FREELANCER"
-              ? tr("Робочі проєкти")
-              : tr("Мої проєкти")}
+            {user?.role === "ADMIN"
+              ? tr("Усі проєкти")
+              : user?.role === "FREELANCER"
+                ? tr("Робочі проєкти")
+                : tr("Мої проєкти")}
           </h1>
-          <p>{tr("Доступні вам проєкти, їхній стан і прогрес виконання.")}</p>
+          <p>
+            {user?.role === "ADMIN"
+              ? tr(
+                  "Усі проєкти системи. Ви можете переглядати їх, але не змінювати.",
+                )
+              : tr("Доступні вам проєкти, їхній стан і прогрес виконання.")}
+          </p>
         </div>
         <div className="page-actions">
           {user?.role === "CLIENT" && (
