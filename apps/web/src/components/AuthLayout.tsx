@@ -40,7 +40,11 @@ export function AuthLayout() {
         </div>
         <Outlet />
       </main>
-      <footer className="public-footer">Tasko.ai · {t("footer")}</footer>
+      <footer className="public-footer">
+        Tasko.ai · {t("footer")} ·{" "}
+        {/* Статична сторінка в public/privacy: її читає й перевірка Google OAuth */}
+        <a href="/privacy/">{tr("Політика конфіденційності")}</a>
+      </footer>
     </div>
   );
 }
