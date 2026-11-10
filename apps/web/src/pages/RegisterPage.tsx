@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
 import { justRegisteredKey } from "./GettingStartedPage";
@@ -10,9 +10,6 @@ import { useLanguage } from "../i18n";
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  // Фрілансер, що прийшов з вітальної сторінки (?role=FREELANCER), одразу отримує свою роль
-  const [params] = useSearchParams();
-  const role = params.get("role") === "FREELANCER" ? "FREELANCER" : "CLIENT";
   const { login } = useAuth();
   const { t } = useLanguage();
   const [name, setName] = useState("");
@@ -38,12 +35,12 @@ export function RegisterPage() {
     try {
       await request("/auth/register", {
         method: "POST",
-        // Роль не питаємо: стартова — клієнт (або фрілансер із вітальної сторінки), змінити можна пізніше
+        // Роль не питаємо: стартова — клієнт, людина обирає її на вітальній сторінці
         body: {
           name: name.trim(),
           email: email.trim(),
           password,
-          role,
+          role: "CLIENT",
         },
         auth: false,
         timeoutMs: 45000,
