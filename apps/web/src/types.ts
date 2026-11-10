@@ -6,6 +6,8 @@ export interface User {
   email: string;
   role: UserRole;
   twoFactorEnabled: boolean;
+  // false — акаунт створено через Google і пароля ще немає
+  hasPassword?: boolean;
   // Посилання на фото профілю відносно API (напр. /avatars/<uuid>.jpg)
   avatarUrl?: string | null;
   createdAt?: string;
@@ -17,6 +19,8 @@ export interface LoginResponse {
   tokenType?: string;
   expiresIn?: number;
   user?: User;
+  // Лише для входу через Google: акаунт щойно створено
+  created?: boolean;
 }
 
 export interface AuthSession {

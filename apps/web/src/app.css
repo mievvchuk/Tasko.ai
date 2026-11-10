@@ -2574,6 +2574,16 @@ dd {
   color: var(--color-ink-2);
   font-size: var(--text-sm);
 }
+/* Кнопка Google під основною формою входу й реєстрації */
+.google-sign-in {
+  display: grid;
+  gap: var(--space-sm);
+}
+.google-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
 .auth-switch {
   color: var(--color-ink-2);
   font-size: var(--text-sm);

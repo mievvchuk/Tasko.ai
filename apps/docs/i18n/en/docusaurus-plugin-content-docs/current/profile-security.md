@@ -31,6 +31,16 @@ The theme (light, dark or system) and language (Ukrainian or English) switches a
 - With it, you stay signed in on this device for **30 days**. Don't use it on someone else's computer.
 - After 10 failed sign-in attempts in a row, signing in is blocked for 15 minutes.
 
+## Sign in with Google
+
+The sign-in and sign-up pages have a **Sign in with Google** (**Sign up with Google**) button.
+
+- If there is no account with that email yet, Tasko.ai creates one with the name and email from Google. You pick the role on the welcome page, as after a normal sign-up.
+- If an account with that email already exists, Google is linked to it: from then on you can sign in with the password or with Google.
+- An account created with Google has no password. You can **set** one in the security block of your profile to sign in with your email as well.
+- If two-factor sign-in is on, the app code is still requested after Google.
+- **Remember me** works for Google sign-in too.
+
 ## Two-factor sign-in (2FA)
 
 Two-factor sign-in protects the account even if someone learns your password.

@@ -21,6 +21,9 @@ export function trNow(text: string, ...args: (string | number)[]) {
 }
 
 export const enText: Record<string, string> = {
+  "Не вдалося завантажити вхід через Google.": "Couldn't load Google sign-in.",
+  "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.": "You sign in with Google. Set a password to sign in with your email as well.",
+  "Встановити пароль": "Set password",
   "Замовляю": "I'm hiring",
   "Працюю": "I'm working",
   "Хто ви": "Who you are",

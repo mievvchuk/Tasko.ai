@@ -12,6 +12,7 @@ import type { PrismaService } from '../../../src/prisma/prisma.service.js';
 import type { UsersService } from '../../../src/users/users.service.js';
 import { AuthService } from '../../../src/auth/auth.service.js';
 import { hashPassword } from '../../../src/auth/password.js';
+import type { GoogleVerifier } from '../../../src/auth/google.js';
 
 describe('authentication', () => {
   const jwt = new JwtService({
@@ -55,6 +56,7 @@ describe('authentication', () => {
     jwt,
     prisma as unknown as PrismaService,
     config,
+    { verify: vi.fn() } as unknown as GoogleVerifier,
   );
   const credentials = {
     email: 'client@example.com',

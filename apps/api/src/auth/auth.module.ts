@@ -12,6 +12,7 @@ import {
   UsersController,
 } from '../users/users.controller.js';
 import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
+import { GoogleVerifier } from './google.js';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
     AuthService,
     JwtAuthGuard,
     AuthEmailRateLimitGuard,
+    GoogleVerifier,
   ],
   exports: [UsersService, AuthService, JwtAuthGuard, JwtModule],
 })

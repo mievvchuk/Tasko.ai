@@ -8,7 +8,7 @@ description: Answers to common questions about sign-in, roles, the marketplace, 
 
 ### I forgot my password — what now?
 
-There is no self-service password reset yet. Contact the platform administrator: they will help you get access back.
+There is no self-service password reset yet. If the account email is your Google account, just click **Sign in with Google**. Otherwise contact the platform administrator: they will help you get access back.
 
 ### Why do I get signed out?
 

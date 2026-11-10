@@ -27,6 +27,8 @@ export interface PublicUser {
   email: string;
   role: UserRole;
   twoFactorEnabled: boolean;
+  // false — акаунт створено через Google і пароля ще немає
+  hasPassword?: boolean;
   avatarUrl?: string | null;
   createdAt?: Date;
 }
@@ -42,6 +44,7 @@ export function toPublicUser(user: {
   email: string;
   role: string;
   twoFactorEnabled: boolean;
+  passwordHash: string | null;
   avatarUrl: string | null;
   createdAt: Date;
 }): PublicUser {
@@ -53,6 +56,7 @@ export function toPublicUser(user: {
     email: user.email,
     role: user.role as UserRole,
     twoFactorEnabled: user.twoFactorEnabled,
+    hasPassword: Boolean(user.passwordHash),
     avatarUrl: user.avatarUrl,
     createdAt: user.createdAt,
   };
@@ -166,12 +170,14 @@ export class UsersService {
   create(data: {
     name: string;
     email: string;
-    passwordHash: string;
+    passwordHash: string | null;
+    googleId?: string;
     role: 'CLIENT' | 'FREELANCER';
   }) {
     const now = new Date();
     return this.prisma.client.orm.public.User.create({
       ...data,
+      googleId: data.googleId ?? null,
       id: randomUUID(),
       status: 'ACTIVE',
       createdAt: now,

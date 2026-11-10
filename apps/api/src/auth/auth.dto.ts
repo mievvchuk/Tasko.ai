@@ -45,11 +45,36 @@ export class LoginDto {
   rememberMe?: boolean;
 }
 
+export class GoogleLoginDto {
+  @ApiProperty({ description: 'ID-токен (credential) від кнопки Google' })
+  @IsString()
+  @Length(20, 4096)
+  credential: string;
+
+  @ApiProperty({ required: false, example: '123456' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{6}$/)
+  twoFactorCode?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
+}
+
 export class ChangePasswordDto {
-  @ApiProperty({ minLength: 8, maxLength: 128, format: 'password' })
+  // Не потрібен, якщо акаунт створено через Google і пароля ще немає
+  @ApiProperty({
+    required: false,
+    minLength: 8,
+    maxLength: 128,
+    format: 'password',
+  })
+  @IsOptional()
   @IsString()
   @Length(8, 128)
-  currentPassword: string;
+  currentPassword?: string;
 
   @ApiProperty({ minLength: 8, maxLength: 128, format: 'password' })
   @IsString()
@@ -65,10 +90,17 @@ export class TwoFactorCodeDto {
 }
 
 export class DisableTwoFactorDto extends TwoFactorCodeDto {
-  @ApiProperty({ minLength: 8, maxLength: 128, format: 'password' })
+  // Не потрібен акаунту без пароля (вхід лише через Google)
+  @ApiProperty({
+    required: false,
+    minLength: 8,
+    maxLength: 128,
+    format: 'password',
+  })
+  @IsOptional()
   @IsString()
   @Length(8, 128)
-  password: string;
+  password?: string;
 }
 
 export class RegisterDto extends LoginDto {

@@ -10,6 +10,8 @@ export interface AppConfig {
   aiApiKey?: string;
   aiBaseUrl?: string;
   aiModel?: string;
+  // OAuth Client ID для «Увійти через Google»; без нього вхід через Google вимкнено
+  googleClientId?: string;
 }
 
 export function loadEnvironment() {
@@ -60,6 +62,7 @@ export function readConfig(env: NodeJS.ProcessEnv): AppConfig {
     aiApiKey: env.AI_API_KEY || env.OPENAI_API_KEY,
     aiBaseUrl: env.AI_BASE_URL || 'https://api.openai.com/v1',
     aiModel: env.OPENAI_MODEL,
+    googleClientId: env.GOOGLE_CLIENT_ID?.trim() || undefined,
   };
 }
 

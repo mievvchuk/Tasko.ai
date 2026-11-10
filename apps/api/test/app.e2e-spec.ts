@@ -132,6 +132,7 @@ describe('API authorization (e2e)', () => {
       email: user.email,
       role: user.role,
       twoFactorEnabled: false,
+      hasPassword: true,
     });
     users.findById.mockResolvedValue({ ...user, status: 'BLOCKED' });
     await request(app.getHttpServer())

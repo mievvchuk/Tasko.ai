@@ -6,6 +6,7 @@ import { useAuth } from "../auth";
 import { justRegisteredKey } from "./GettingStartedPage";
 import { PasswordInput } from "../components/PasswordInput";
 import { PasswordStrength } from "../components/PasswordStrength";
+import { GoogleSignIn } from "../components/GoogleSignIn";
 import { useLanguage } from "../i18n";
 
 export function RegisterPage() {
@@ -133,6 +134,7 @@ export function RegisterPage() {
           </button>
         </fieldset>
       </form>
+      <GoogleSignIn mode="signup" />
       <p className="auth-switch">
         {t("hasAccount")} <Link to="/login">{t("signIn")}</Link>
       </p>
