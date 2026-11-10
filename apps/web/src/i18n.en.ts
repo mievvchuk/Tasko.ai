@@ -21,6 +21,8 @@ export function trNow(text: string, ...args: (string | number)[]) {
 }
 
 export const enText: Record<string, string> = {
+  "Відкрити сайт довідки": "Open the help site",
+  "відкриється в новій вкладці": "opens in a new tab",
   // Загальне, помилки, сеанс
   "Запит скасовано.": "Request cancelled.",
   "Не вдалося виконати дію. Спробуйте ще раз.":

@@ -1,4 +1,4 @@
-# Render Blueprint: база PostgreSQL, API (NestJS) і сайт (React) з одного репозиторію.
+# Render Blueprint: база PostgreSQL, API (NestJS), сайт (React) і довідка (Docusaurus) з одного репозиторію.
 # Секрети (AI_API_KEY) вводяться в панелі Render під час створення Blueprint.
 # Якщо Render дасть сервісам інші адреси, ніж tasko-ai-api / tasko-ai-web,
 # виправте WEB_ORIGIN і VITE_API_URL нижче (або в панелі) та передеплойте.
@@ -48,8 +48,26 @@ services:
         value: "24"
       - key: VITE_API_URL
         value: https://tasko-ai-api.onrender.com
+      # Сайт довідки (сервіс tasko-ai-docs нижче); кнопка «?» і пункт «Довідка» ведуть туди
+      - key: VITE_DOCS_URL
+        value: https://tasko-ai-docs.onrender.com
     # Усі адреси сайту віддають index.html — маршрутизацію робить React Router
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+
+  # Довідка на Docusaurus: окремий статичний сайт, українська в корені, англійська в /en/
+  - type: web
+    name: tasko-ai-docs
+    runtime: static
+    rootDir: apps/docs
+    buildCommand: npm ci && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: APP_URL
+        value: https://taskoai.pp.ua
+      - key: DOCS_URL
+        value: https://tasko-ai-docs.onrender.com

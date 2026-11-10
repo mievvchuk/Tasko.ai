@@ -4699,7 +4699,7 @@ tbody tr:nth-child(n + 6) {
   padding: 0;
   list-style: none;
 }
-.help-list button {
+.help-list a {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
@@ -4708,17 +4708,19 @@ tbody tr:nth-child(n + 6) {
   border: 0;
   border-radius: var(--radius-input);
   background: transparent;
+  color: var(--color-ink);
   text-align: left;
+  text-decoration: none !important;
 }
-.help-list button:hover,
-.help-list button[aria-current="page"] {
+.help-list a:hover,
+.help-list a:focus-visible {
   background: var(--color-accent-soft);
   color: var(--color-accent-text);
 }
-.help-list button span {
+.help-list a span {
   flex: 1;
 }
-.help-list .bi-chevron-right {
+.help-list .bi-box-arrow-up-right {
   color: var(--color-muted);
 }
 .help-all {
@@ -4729,27 +4731,6 @@ tbody tr:nth-child(n + 6) {
 }
 .help-empty {
   color: var(--color-muted);
-}
-.help-article h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-top: 0;
-}
-.help-layout {
-  display: grid;
-  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
-  gap: var(--space-lg);
-  align-items: start;
-}
-.help-nav {
-  display: grid;
-  gap: var(--space-md);
-}
-@media (max-width: 60rem) {
-  .help-layout {
-    grid-template-columns: 1fr;
-  }
 }
 @media (max-width: 40rem) {
   .help-fab {
