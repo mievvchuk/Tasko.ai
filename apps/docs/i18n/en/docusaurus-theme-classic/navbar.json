@@ -1,0 +1,22 @@
+{
+  "title": {
+    "message": "Tasko.ai",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Tasko.ai",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Довідка": {
+    "message": "Help",
+    "description": "Navbar item with label Довідка"
+  },
+  "item.label.Часті запитання": {
+    "message": "FAQ",
+    "description": "Navbar item with label Часті запитання"
+  },
+  "item.label.Відкрити Tasko.ai": {
+    "message": "Open Tasko.ai",
+    "description": "Navbar item with label Відкрити Tasko.ai"
+  }
+}

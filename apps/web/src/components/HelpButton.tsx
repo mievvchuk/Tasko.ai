@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { useAuth } from "../auth";
-import { articlesFor, articlesForPage, searchArticles } from "../help";
-import type { HelpArticle } from "../help";
+import { articlesFor, articlesForPage, docsUrl, searchArticles } from "../help";
 import { useLanguage } from "../i18n";
-import { HelpArticleList, HelpArticleView } from "./HelpArticleView";
+import { HelpArticleList } from "./HelpArticleList";
 
 // Плаваюча кнопка «?» над кнопкою Ади: підказки до поточної сторінки, пошук і перехід до повної довідки
 export function HelpButton() {
@@ -13,15 +12,12 @@ export function HelpButton() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [article, setArticle] = useState<HelpArticle | null>(null);
 
-  // Інша сторінка — інші підказки
-  useEffect(() => setArticle(null), [pathname]);
   useEffect(() => {
-    if (open && !article) document.getElementById("help-search")?.focus();
-  }, [open, article]);
+    if (open) document.getElementById("help-search")?.focus();
+  }, [open]);
 
-  if (!user || pathname.startsWith("/help")) return null;
+  if (!user) return null;
 
   const close = () => setOpen(false);
   const onPage = articlesForPage(pathname, user.role);
@@ -64,33 +60,23 @@ export function HelpButton() {
             }}
           >
             <header className="ai-drawer-head">
-              {article ? (
-                <button
-                  type="button"
-                  className="ai-drawer-action"
-                  aria-label={tr("Назад до списку")}
-                  onClick={() => setArticle(null)}
-                >
-                  <i className="bi bi-arrow-left" aria-hidden="true"></i>
-                </button>
-              ) : (
-                <span className="ai-drawer-mark" aria-hidden="true">
-                  <i className="bi bi-question-lg"></i>
-                </span>
-              )}
+              <span className="ai-drawer-mark" aria-hidden="true">
+                <i className="bi bi-question-lg"></i>
+              </span>
               <div>
                 <strong>{tr("Довідка")}</strong>
                 <small>{tr("Підказки до цієї сторінки")}</small>
               </div>
-              <Link
+              <a
                 className="ai-drawer-action"
-                to={article ? `/help/${article.id}` : "/help"}
-                aria-label={tr("Відкрити на всю сторінку")}
-                title={tr("Відкрити на всю сторінку")}
-                onClick={close}
+                href={docsUrl(language)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={tr("Відкрити сайт довідки")}
+                title={tr("Відкрити сайт довідки")}
               >
-                <i className="bi bi-arrows-angle-expand" aria-hidden="true"></i>
-              </Link>
+                <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+              </a>
               <button
                 type="button"
                 className="ai-drawer-action"
@@ -101,54 +87,56 @@ export function HelpButton() {
               </button>
             </header>
             <div className="ai-drawer-body help-drawer-body">
-              {article ? (
-                <HelpArticleView article={article} onNavigate={close} />
-              ) : (
-                <>
-                  <input
-                    id="help-search"
-                    type="search"
-                    aria-label={tr("Пошук у довідці")}
-                    placeholder={tr("Пошук у довідці")}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                  {found ? (
-                    found.length > 0 ? (
-                      <HelpArticleList articles={found} onSelect={setArticle} />
-                    ) : (
-                      <p className="help-empty">
-                        {tr("Нічого не знайдено. Спробуйте інші слова або запитайте Аду.")}
-                      </p>
-                    )
+              <>
+                <input
+                  id="help-search"
+                  type="search"
+                  aria-label={tr("Пошук у довідці")}
+                  placeholder={tr("Пошук у довідці")}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                {found ? (
+                  found.length > 0 ? (
+                    <HelpArticleList articles={found} />
                   ) : (
-                    <>
-                      {onPage.length > 0 && (
-                        <section>
-                          <h3 className="help-heading">
-                            {tr("На цій сторінці")}
-                          </h3>
-                          <HelpArticleList
-                            articles={onPage}
-                            onSelect={setArticle}
-                          />
-                        </section>
+                    <p className="help-empty">
+                      {tr(
+                        "Нічого не знайдено. Спробуйте інші слова або запитайте Аду.",
                       )}
+                    </p>
+                  )
+                ) : (
+                  <>
+                    {onPage.length > 0 && (
                       <section>
-                        <h3 className="help-heading">{tr("Корисне")}</h3>
-                        <HelpArticleList
-                          articles={popular.filter((a) => !onPage.includes(a))}
-                          onSelect={setArticle}
-                        />
+                        <h3 className="help-heading">
+                          {tr("На цій сторінці")}
+                        </h3>
+                        <HelpArticleList articles={onPage} />
                       </section>
-                      <Link className="help-all" to="/help" onClick={close}>
-                        {tr("Уся довідка та база знань")}
-                        <i className="bi bi-arrow-right" aria-hidden="true"></i>
-                      </Link>
-                    </>
-                  )}
-                </>
-              )}
+                    )}
+                    <section>
+                      <h3 className="help-heading">{tr("Корисне")}</h3>
+                      <HelpArticleList
+                        articles={popular.filter((a) => !onPage.includes(a))}
+                      />
+                    </section>
+                    <a
+                      className="help-all"
+                      href={docsUrl(language)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {tr("Уся довідка та база знань")}
+                      <i
+                        className="bi bi-box-arrow-up-right"
+                        aria-hidden="true"
+                      ></i>
+                    </a>
+                  </>
+                )}
+              </>
             </div>
           </aside>
         </>

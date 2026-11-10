@@ -1,0 +1,97 @@
+/* Кольори й шрифт довідки — з дизайн-системи застосунку (apps/web/src/tokens.css):
+   папір і чорнило, кораловий акцент для посилань, шрифт Manrope. */
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-Variable.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+:root {
+  --ifm-font-family-base: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ifm-heading-font-family: var(--ifm-font-family-base);
+  --ifm-font-size-base: 100%;
+  --ifm-line-height-base: 1.65;
+  --ifm-heading-font-weight: 700;
+
+  --ifm-color-primary: oklch(50% 0.16 29);
+  --ifm-color-primary-dark: oklch(46% 0.15 29);
+  --ifm-color-primary-darker: oklch(43% 0.14 29);
+  --ifm-color-primary-darkest: oklch(38% 0.12 29);
+  --ifm-color-primary-light: oklch(55% 0.16 29);
+  --ifm-color-primary-lighter: oklch(59% 0.15 29);
+  --ifm-color-primary-lightest: oklch(65% 0.13 29);
+
+  --ifm-background-color: oklch(97% 0.006 55);
+  --ifm-background-surface-color: oklch(98.8% 0.0045 80);
+  --ifm-font-color-base: oklch(21% 0.012 38);
+  --ifm-color-emphasis-300: oklch(87% 0.009 55);
+  --ifm-toc-border-color: oklch(87% 0.009 55);
+  --ifm-hr-border-color: oklch(87% 0.009 55);
+  --ifm-navbar-background-color: oklch(97% 0.006 55 / 0.9);
+  --ifm-navbar-shadow: 0 1px 0 oklch(87% 0.009 55);
+  --ifm-footer-background-color: oklch(21% 0.012 38);
+  --ifm-global-radius: 8px;
+  --ifm-code-font-size: 90%;
+  --ifm-menu-color-background-active: oklch(93.5% 0.028 40);
+  --ifm-table-stripe-background: oklch(94.5% 0.007 55);
+  --docusaurus-highlighted-code-line-bg: oklch(93.5% 0.028 40);
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: oklch(78% 0.12 32);
+  --ifm-color-primary-dark: oklch(74% 0.12 32);
+  --ifm-color-primary-darker: oklch(71% 0.12 32);
+  --ifm-color-primary-darkest: oklch(65% 0.12 32);
+  --ifm-color-primary-light: oklch(82% 0.1 32);
+  --ifm-color-primary-lighter: oklch(85% 0.09 32);
+  --ifm-color-primary-lightest: oklch(90% 0.06 32);
+
+  --ifm-background-color: oklch(17% 0.01 40);
+  --ifm-background-surface-color: oklch(22.5% 0.011 42);
+  --ifm-font-color-base: oklch(96.5% 0.006 70);
+  --ifm-color-emphasis-300: oklch(29% 0.012 40);
+  --ifm-toc-border-color: oklch(29% 0.012 40);
+  --ifm-hr-border-color: oklch(29% 0.012 40);
+  --ifm-navbar-background-color: oklch(17% 0.01 40 / 0.9);
+  --ifm-navbar-shadow: 0 1px 0 oklch(29% 0.012 40);
+  --ifm-footer-background-color: oklch(20% 0.011 40);
+  --ifm-menu-color-background-active: oklch(30% 0.045 32);
+  --ifm-table-stripe-background: oklch(20% 0.011 40);
+  --docusaurus-highlighted-code-line-bg: oklch(30% 0.045 32);
+}
+
+.navbar {
+  backdrop-filter: blur(10px);
+}
+.navbar__title {
+  font-weight: 700;
+}
+.menu__link {
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+.menu__list-item-collapsible .menu__link--sublist {
+  font-weight: 700;
+}
+/* Заголовки категорій у бічній панелі — дрібні підписи, як у застосунку */
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.markdown h1 {
+  font-size: 2.1rem;
+  letter-spacing: -0.01em;
+}
+.markdown h2 {
+  margin-top: 2.2rem;
+}
+.markdown table {
+  display: table;
+  width: 100%;
+}
+.pagination-nav__link {
+  border-radius: 8px;
+}

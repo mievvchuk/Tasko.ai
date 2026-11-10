@@ -39,3 +39,19 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run build
+
+  docs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/docs
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/docs/package-lock.json
+      - run: npm ci --ignore-scripts
+      # Збірка падає на битих посиланнях між статтями (onBrokenLinks: throw)
+      - run: npm run build
