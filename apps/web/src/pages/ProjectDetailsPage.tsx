@@ -125,11 +125,16 @@ export function ProjectDetailsPage() {
     project.clientId === user?.id &&
     !["COMPLETED", "CANCELLED"].includes(project.status);
 
+  const isAdmin = user?.role === "ADMIN";
   return (
     <>
       <Link className="breadcrumb" to="/projects">
         ←{" "}
-        {user?.role === "FREELANCER" ? tr("Робочі проєкти") : tr("Мої проєкти")}
+        {user?.role === "ADMIN"
+          ? tr("Усі проєкти")
+          : user?.role === "FREELANCER"
+            ? tr("Робочі проєкти")
+            : tr("Мої проєкти")}
       </Link>
       <div className="page-heading heading-with-action">
         <div>
@@ -192,14 +197,19 @@ export function ProjectDetailsPage() {
           <i className="bi bi-list-check" aria-hidden="true"></i>
           {tr("Усі завдання")}
         </Link>
-        <Link to={`/messages?project=${id}`}>
-          <i className="bi bi-chat-dots" aria-hidden="true"></i>
-          {tr("Повідомлення")}
-        </Link>
-        <Link to={`/projects/${id}/files`}>
-          <i className="bi bi-folder2" aria-hidden="true"></i>
-          {tr("Файли")}
-        </Link>
+        {/* Листування й файли — приватні, адміністратору недоступні */}
+        {!isAdmin && (
+          <>
+            <Link to={`/messages?project=${id}`}>
+              <i className="bi bi-chat-dots" aria-hidden="true"></i>
+              {tr("Повідомлення")}
+            </Link>
+            <Link to={`/projects/${id}/files`}>
+              <i className="bi bi-folder2" aria-hidden="true"></i>
+              {tr("Файли")}
+            </Link>
+          </>
+        )}
         <Link to={`/projects/${id}/board`}>
           <i className="bi bi-kanban" aria-hidden="true"></i>
           Kanban
@@ -212,10 +222,12 @@ export function ProjectDetailsPage() {
           <i className="bi bi-clock-history" aria-hidden="true"></i>
           {tr("Історія")}
         </Link>
-        <Link to={`/ai?project=${id}`}>
-          <i className="bi bi-graph-up" aria-hidden="true"></i>
-          {tr("Аналіз AI")}
-        </Link>
+        {!isAdmin && (
+          <Link to={`/ai?project=${id}`}>
+            <i className="bi bi-graph-up" aria-hidden="true"></i>
+            {tr("Аналіз AI")}
+          </Link>
+        )}
         {canEdit && (
           <Link to={`/projects/${id}/plan`}>
             <i className="bi bi-stars" aria-hidden="true"></i>

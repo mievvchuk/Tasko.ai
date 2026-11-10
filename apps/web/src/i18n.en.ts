@@ -475,6 +475,9 @@ export const enText: Record<string, string> = {
   "Останні активні проєкти, до яких ви маєте доступ":
     "Recent active projects you have access to",
   "Усі проєкти": "All projects",
+  "Усі проєкти системи. Ви можете переглядати їх, але не змінювати.":
+    "All projects in the system. You can view them but not change them.",
+  "Проєкти на сайті": "Projects on the site",
   "Активних проєктів поки немає": "No active projects yet",
   "Проєкти у плануванні та з іншими статусами доступні в загальному списку.":
     "Projects in planning or other statuses are in the full list.",
