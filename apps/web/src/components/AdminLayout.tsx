@@ -77,9 +77,9 @@ export function AdminLayout() {
             </NavLink>
           ))}
           <span className="admin-nav-title">{tr("Інше")}</span>
-          <NavLink to="/" onClick={close}>
-            <i className="bi bi-box-arrow-left" aria-hidden="true"></i>
-            {tr("До робочого простору")}
+          <NavLink to="/projects" onClick={close}>
+            <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+            {tr("Проєкти на сайті")}
           </NavLink>
         </nav>
       </aside>
