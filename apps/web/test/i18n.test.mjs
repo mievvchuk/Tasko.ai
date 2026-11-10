@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { enText, translate } from "../src/i18n.en.ts";
+import { enText, i18n, trNow } from "../src/i18n.en.ts";
 import * as types from "../src/types.ts";
 
 // Усі тексти з tr("…") і trNow("…") у src, а також значення словників статусів з types.ts
@@ -43,12 +43,14 @@ test("translations keep their {0} placeholders", () => {
     assert.deepEqual(slots(en), slots(uk), uk);
 });
 
-test("translate falls back to Ukrainian and fills values", () => {
-  assert.equal(
-    translate("en", "Немає такого тексту {0}", [5]),
-    "Немає такого тексту 5",
-  );
-  assert.equal(translate("uk", "Скасовано"), "Скасовано");
+test("i18next falls back to Ukrainian and fills values", async () => {
+  await i18n.changeLanguage("en");
+  assert.equal(trNow("Немає такого тексту {0}", 5), "Немає такого тексту 5");
+  assert.equal(trNow("Скасовано"), "Cancelled");
+  assert.equal(trNow("Причина: {0}", "дубль"), "Reason: дубль");
+  await i18n.changeLanguage("uk");
+  assert.equal(trNow("Скасовано"), "Скасовано");
+  assert.equal(trNow("Причина: {0}", "дубль"), "Причина: дубль");
 });
 
 // Список ключів без перекладу: node test/i18n.test.mjs --missing
