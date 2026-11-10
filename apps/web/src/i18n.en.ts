@@ -30,6 +30,22 @@ export function trNow(text: string, ...args: (string | number)[]) {
 }
 
 export const enText: Record<string, string> = {
+  "Замовляю": "I'm hiring",
+  "Працюю": "I'm working",
+  "Хто ви": "Who you are",
+  "Для кого": "Who it's for",
+  "Нове": "New",
+  "Детальніше": "Learn more",
+  "Ада складає план проєкту з етапами й завданнями з опису": "Ada turns a project description into a plan with milestones and tasks",
+  "Опублікуйте проєкт, оберіть фрілансера із заявок і стежте за роботою на канбан-дошці. Ада, AI-помічниця, нагадає про дедлайни й ризики.": "Publish a project, pick a freelancer from the applications and follow the work on a Kanban board. Ada, the AI assistant, reminds you about deadlines and risks.",
+  "Знаходьте проєкти й здавайте роботу без хаосу": "Find projects and deliver work without chaos",
+  "Відкриті проєкти з бюджетом і строком, заявка в кілька полів і зрозумілі етапи. Ада підкаже, за що братися сьогодні.": "Open projects with a budget and a deadline, an application in a few fields and clear milestones. Ada suggests what to pick up today.",
+  "Знайти роботу": "Find work",
+  "Інтернет-магазин кераміки": "Ceramics online store",
+  "18 000–25 000 грн": "UAH 18,000–25,000",
+  "Лендинг для кав'ярні": "Coffee shop landing page",
+  "6 000–9 000 грн": "UAH 6,000–9,000",
+  "Інтернет-магазин збігається з вашими навичками на 90%.": "The online store matches your skills by 90%.",
   // Загальне, помилки, сеанс
   "Запит скасовано.": "Request cancelled.",
   "Не вдалося виконати дію. Спробуйте ще раз.":
