@@ -22,6 +22,12 @@ interface AuthState {
     code?: string,
     rememberMe?: boolean,
   ) => Promise<boolean>;
+  // false — потрібен код 2FA (повторіть виклик з тим самим credential і кодом)
+  loginWithGoogle: (
+    credential: string,
+    code?: string,
+    rememberMe?: boolean,
+  ) => Promise<boolean>;
   logout: () => void;
   retry: () => void;
   // Оновлює дані користувача після зміни імені чи фото на сторінці профілю
@@ -119,6 +125,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: { email, password, twoFactorCode: code || undefined, rememberMe },
       auth: false,
     });
+    return startSession(response, rememberMe);
+  }
+
+  async function loginWithGoogle(
+    credential: string,
+    code?: string,
+    rememberMe = false,
+  ) {
+    const response = await request<LoginResponse>("/auth/google", {
+      method: "POST",
+      body: { credential, twoFactorCode: code || undefined, rememberMe },
+      auth: false,
+    });
+    // Новий акаунт через Google, як і звичайна реєстрація, веде на вітальну сторінку з вибором ролі
+    if (response.created) {
+      try {
+        // той самий ключ, що justRegisteredKey у GettingStartedPage (без імпорту, щоб не було циклу)
+        sessionStorage.setItem("tasko.justRegistered", "1");
+      } catch {
+        // без сховища просто відкриється головна
+      }
+    }
+    return startSession(response, rememberMe);
+  }
+
+  function startSession(response: LoginResponse, rememberMe: boolean) {
     if (response.requiresTwoFactor) return false;
     if (!response.accessToken || !response.user) {
       throw new ApiError(502, tr("Сервер не повернув дані для входу."));
@@ -151,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         connectionError,
         notice,
         login,
+        loginWithGoogle,
         logout,
         retry: () => setAttempt((value) => value + 1),
         updateUser: setUser,

@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router";
 import { useAuth } from "../auth";
 import { errorMessage } from "../api";
 import { PasswordInput } from "../components/PasswordInput";
+import { GoogleSignIn } from "../components/GoogleSignIn";
 import { useLanguage } from "../i18n";
 
 export function LoginPage() {
@@ -118,6 +119,7 @@ export function LoginPage() {
           </button>
         </fieldset>
       </form>
+      <GoogleSignIn mode="signin" rememberMe={rememberMe} />
       <p className="auth-switch">
         {t("noAccount")} <Link to="/register">{t("createAccount")}</Link>
       </p>

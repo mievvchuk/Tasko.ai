@@ -36,6 +36,9 @@ services:
         value: openai/gpt-oss-120b
       - key: AI_API_KEY
         sync: false
+      # OAuth Client ID з Google Cloud Console (той самий, що й VITE_GOOGLE_CLIENT_ID)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
 
   - type: web
     name: tasko-ai-web
@@ -51,6 +54,9 @@ services:
       # Сайт довідки (сервіс tasko-ai-docs нижче); кнопка «?» і пункт «Довідка» ведуть туди
       - key: VITE_DOCS_URL
         value: https://tasko-ai-docs.onrender.com
+      # Без нього кнопка «Увійти через Google» не показується
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
     # Усі адреси сайту віддають index.html — маршрутизацію робить React Router
     routes:
       - type: rewrite

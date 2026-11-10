@@ -13,6 +13,8 @@ Tasko.ai is a freelance marketplace and a workspace in one place. A client publi
 2. Enter your name, email and a password (8 to 128 characters). The meter under the field shows how strong the password is.
 3. After signing up you are logged in right away and see the welcome page.
 
+Instead of an email and password you can click **Sign up with Google** — Tasko.ai takes your name and email from your Google account. See [Profile and security](./profile-security.md#sign-in-with-google).
+
 ## Pick a role
 
 On the welcome page Tasko.ai asks what you plan to do:

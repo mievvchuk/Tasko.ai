@@ -274,7 +274,10 @@ export class AdminService {
     const me = await this.prisma.client.orm.public.User.where({
       id: user.id,
     }).first();
-    if (!me || !(await verifyPassword(data.currentPassword, me.passwordHash)))
+    if (
+      !me?.passwordHash ||
+      !(await verifyPassword(data.currentPassword, me.passwordHash))
+    )
       throw new BadRequestException('Ваш пароль неправильний.');
     if (
       me.twoFactorEnabled &&

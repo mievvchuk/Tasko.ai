@@ -6,7 +6,10 @@ model User {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
-  passwordHash String
+  // Немає в акаунтів, створених через Google
+  passwordHash String?
+  // Ідентифікатор користувача в Google (поле sub з ID-токена)
+  googleId  String?  @unique
   role      String   // CLIENT, FREELANCER, ADMIN
   status    String   // ACTIVE, BLOCKED
   twoFactorSecret String?

@@ -23,10 +23,13 @@ import {
 import type {
   ChangePasswordDto,
   DisableTwoFactorDto,
+  GoogleLoginDto,
   LoginDto,
   RegisterDto,
   TwoFactorCodeDto,
 } from './auth.dto.js';
+import { GoogleVerifier } from './google.js';
+import { nameWithoutEmoji } from './auth.dto.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { createTotpSecret, createTotpUri, verifyTotp } from './totp.js';
 
@@ -48,6 +51,7 @@ export class AuthService {
     @Inject(JwtService) private readonly jwt: JwtService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(GoogleVerifier) private readonly google: GoogleVerifier,
   ) {}
 
   private get db() {
@@ -78,8 +82,61 @@ export class AuthService {
   // Перевіряє пароль (і код 2FA, якщо увімкнено) та видає JWT нового сеансу.
   async login(data: LoginDto, metadata: LoginMetadata = {}) {
     const user = await this.users.findByEmail(data.email);
-    if (!user || !(await verifyPassword(data.password, user.passwordHash)))
+    // Акаунт без пароля (створений через Google) отримує ту саму відповідь: не підказуємо, які пошти є
+    if (
+      !user?.passwordHash ||
+      !(await verifyPassword(data.password, user.passwordHash))
+    )
       throw new UnauthorizedException('Неправильна пошта або пароль.');
+    return this.startSession(user, data, metadata);
+  }
+
+  // Вхід і реєстрація через Google: знаходить акаунт за Google ID або підтвердженою поштою,
+  // інакше створює нового клієнта (роль він обере на вітальній сторінці)
+  async loginWithGoogle(data: GoogleLoginDto, metadata: LoginMetadata = {}) {
+    const profile = await this.google.verify(data.credential);
+    let user =
+      (await this.db.User.where({ googleId: profile.googleId }).first()) ??
+      (await this.users.findByEmail(profile.email));
+    let created = false;
+    if (!user) {
+      try {
+        user = await this.users.create({
+          name: googleName(profile.name, profile.email),
+          email: profile.email,
+          role: 'CLIENT',
+          passwordHash: null,
+          googleId: profile.googleId,
+        });
+        created = true;
+      } catch (error) {
+        if (hasDatabaseCode(error, '23505'))
+          throw new ConflictException(
+            'Акаунт створюється в іншій вкладці. Спробуйте ще раз.',
+          );
+        throw error;
+      }
+    } else if (!user.googleId) {
+      // Пошта збігається з наявним акаунтом: прив'язуємо Google до нього
+      user =
+        (await this.db.User.where({ id: user.id }).update({
+          googleId: profile.googleId,
+          updatedAt: new Date(),
+        })) ?? user;
+    } else if (user.googleId !== profile.googleId) {
+      throw new ConflictException(
+        "Ця пошта вже прив'язана до іншого акаунта Google.",
+      );
+    }
+    return { ...(await this.startSession(user, data, metadata)), created };
+  }
+
+  // Спільний кінець входу: блокування, 2FA і новий сеанс
+  private async startSession(
+    user: NonNullable<Awaited<ReturnType<UsersService['findById']>>>,
+    data: { twoFactorCode?: string; rememberMe?: boolean },
+    metadata: LoginMetadata,
+  ) {
     this.ensureActive(user);
 
     if (user.twoFactorEnabled) {
@@ -168,14 +225,17 @@ export class AuthService {
   // Змінює пароль і завершує всі інші сеанси користувача.
   async changePassword(user: CurrentUser, data: ChangePasswordDto) {
     const account = await this.users.findById(user.id);
+    if (!account)
+      throw new BadRequestException('Поточний пароль неправильний.');
+    // Акаунт із Google без пароля може встановити пароль, не вводячи поточного
     if (
-      !account ||
-      !(await verifyPassword(data.currentPassword, account.passwordHash))
+      account.passwordHash &&
+      !(await verifyPassword(data.currentPassword ?? '', account.passwordHash))
     ) {
       // 400, а не 401: інакше інтерфейс вважає сеанс завершеним і виходить з акаунта
       throw new BadRequestException('Поточний пароль неправильний.');
     }
-    if (data.currentPassword === data.newPassword)
+    if (account.passwordHash && data.currentPassword === data.newPassword)
       throw new BadRequestException(
         'Новий пароль має відрізнятися від поточного.',
       );
@@ -219,7 +279,8 @@ export class AuthService {
     const account = await this.users.findById(user.id);
     if (
       !account ||
-      !(await verifyPassword(data.password, account.passwordHash))
+      (account.passwordHash &&
+        !(await verifyPassword(data.password ?? '', account.passwordHash)))
     )
       throw new BadRequestException('Пароль неправильний.');
     if (!this.isValidTotp(account.twoFactorSecret, data.code))
@@ -284,4 +345,19 @@ export class AuthService {
   private publicUser(user: Parameters<typeof toPublicUser>[0]): PublicUser {
     return toPublicUser(user);
   }
+}
+
+// Ім'я з Google може містити емодзі або бути порожнім — тоді беремо початок пошти
+export function googleName(name: string | undefined, email: string) {
+  const strip = (value: string) =>
+    [...value]
+      .filter((char) => nameWithoutEmoji.test(char))
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 100);
+  const fromName = strip(name ?? '');
+  if (fromName.length >= 2) return fromName;
+  const fromEmail = strip(email.split('@')[0]);
+  return fromEmail.length >= 2 ? fromEmail : 'Користувач';
 }

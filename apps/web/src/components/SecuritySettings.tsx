@@ -18,7 +18,9 @@ export function SecuritySettings({ user }: { user: User }) {
   // Помилка поточного пароля від сервера показується під цим полем
   const [currentError, setCurrentError] = useState("");
   const sameAsCurrent =
-    newPassword.length > 0 && newPassword === currentPassword;
+    user.hasPassword !== false &&
+    newPassword.length > 0 &&
+    newPassword === currentPassword;
   const mismatch = confirmation.length > 0 && confirmation !== newPassword;
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(
     user.twoFactorEnabled,
@@ -31,6 +33,8 @@ export function SecuritySettings({ user }: { user: User }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Акаунт із Google без пароля: пароль можна встановити, поточного не питаємо
+  const [hasPassword, setHasPassword] = useState(user.hasPassword !== false);
 
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,8 +46,9 @@ export function SecuritySettings({ user }: { user: User }) {
     try {
       const response = await request<{ message: string }>("/auth/password", {
         method: "PATCH",
-        body: { currentPassword, newPassword },
+        body: hasPassword ? { currentPassword, newPassword } : { newPassword },
       });
+      setHasPassword(true);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmation("");
@@ -88,7 +93,7 @@ export function SecuritySettings({ user }: { user: User }) {
     await run(async () => {
       const response = await request<{ message: string }>("/auth/2fa/disable", {
         method: "POST",
-        body: { code, password: disablePassword },
+        body: hasPassword ? { code, password: disablePassword } : { code },
       });
       setTwoFactorEnabled(false);
       setCode("");
@@ -135,23 +140,29 @@ export function SecuritySettings({ user }: { user: User }) {
       >
         <h2 id="security-title">{tr("Безпека")}</h2>
         <div className="security-section">
-          <h3>{tr("Зміна пароля")}</h3>
+          <h3>{hasPassword ? tr("Зміна пароля") : tr("Пароль")}</h3>
           <p className="form-note">
-            {tr("Після зміни інші активні сеанси завершаться.")}
+            {hasPassword
+              ? tr("Після зміни інші активні сеанси завершаться.")
+              : tr(
+                  "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.",
+                )}
           </p>
           <form onSubmit={changePassword} className="security-form">
-            <PasswordInput
-              id="current-password"
-              label={tr("Поточний пароль")}
-              value={currentPassword}
-              onChange={(value) => {
-                setCurrentPassword(value);
-                setCurrentError("");
-              }}
-              autoComplete="current-password"
-              placeholder={tr("Введіть поточний пароль")}
-              error={currentError}
-            />
+            {hasPassword && (
+              <PasswordInput
+                id="current-password"
+                label={tr("Поточний пароль")}
+                value={currentPassword}
+                onChange={(value) => {
+                  setCurrentPassword(value);
+                  setCurrentError("");
+                }}
+                autoComplete="current-password"
+                placeholder={tr("Введіть поточний пароль")}
+                error={currentError}
+              />
+            )}
             <PasswordInput
               id="profile-new-password"
               label={tr("Новий пароль")}
@@ -178,7 +189,7 @@ export function SecuritySettings({ user }: { user: User }) {
               className="button primary"
               disabled={submitting || sameAsCurrent || mismatch}
             >
-              {tr("Змінити пароль")}
+              {hasPassword ? tr("Змінити пароль") : tr("Встановити пароль")}
             </button>
           </form>
         </div>
@@ -240,13 +251,15 @@ export function SecuritySettings({ user }: { user: User }) {
               onSubmit={disableTwoFactor}
               className="security-form narrow-form"
             >
-              <PasswordInput
-                id="disable-2fa-password"
-                label={tr("Пароль")}
-                value={disablePassword}
-                onChange={setDisablePassword}
-                autoComplete="current-password"
-              />
+              {hasPassword && (
+                <PasswordInput
+                  id="disable-2fa-password"
+                  label={tr("Пароль")}
+                  value={disablePassword}
+                  onChange={setDisablePassword}
+                  autoComplete="current-password"
+                />
+              )}
               <div className="field">
                 <label htmlFor="disable-2fa-code">
                   {tr("Код із застосунку")}

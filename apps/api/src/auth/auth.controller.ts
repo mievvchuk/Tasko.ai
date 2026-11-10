@@ -18,6 +18,7 @@ import { AuthService } from './auth.service.js';
 import {
   ChangePasswordDto,
   DisableTwoFactorDto,
+  GoogleLoginDto,
   LoginDto,
   RegisterDto,
   TwoFactorCodeDto,
@@ -46,6 +47,17 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   login(@Body() data: LoginDto, @Req() request: Request) {
     return this.auth.login(data, {
+      userAgent: request.get('user-agent'),
+      ipAddress: request.ip,
+    });
+  }
+
+  @Post('google')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Вхід або реєстрація через Google (ID-токен)' })
+  @ApiBody({ type: GoogleLoginDto })
+  google(@Body() data: GoogleLoginDto, @Req() request: Request) {
+    return this.auth.loginWithGoogle(data, {
       userAgent: request.get('user-agent'),
       ipAddress: request.ip,
     });
