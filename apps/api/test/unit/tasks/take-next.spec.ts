@@ -20,7 +20,17 @@ describe('taking the next task from the queue', () => {
     twoFactorEnabled: false,
   };
   const day = (n: number) => new Date(Date.UTC(2026, 11, n));
-  const task = (data: Record<string, unknown>) => ({
+  interface Row {
+    id: string;
+    title?: string;
+    projectId: string;
+    assigneeId: string | null;
+    status: string;
+    priority: string;
+    deadline: Date | null;
+    createdAt: Date;
+  }
+  const task = (data: Partial<Row> & { id: string }): Row => ({
     projectId: 'project-id',
     assigneeId: null,
     status: 'TODO',
@@ -29,7 +39,7 @@ describe('taking the next task from the queue', () => {
     createdAt: day(1),
     ...data,
   });
-  let rows: ReturnType<typeof task>[] = [];
+  let rows: Row[] = [];
   // Імітує умовне оновлення: null, якщо завдання вже хтось узяв
   const update = vi.fn();
   const db = {
