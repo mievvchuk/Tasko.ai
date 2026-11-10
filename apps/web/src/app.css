@@ -4836,3 +4836,18 @@ tbody tr:nth-child(n + 6) {
   flex-wrap: wrap;
   gap: var(--space-sm);
 }
+
+/* Черга завдань для фрілансера на сторінці проєкту */
+.take-next-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.take-next-panel h2 {
+  margin: 0 0 var(--space-2xs);
+}
+.take-next-panel > div {
+  flex: 1 1 320px;
+}

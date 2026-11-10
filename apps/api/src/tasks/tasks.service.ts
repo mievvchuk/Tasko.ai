@@ -18,6 +18,22 @@ import type {
 
 const maxBoardColumns = 8;
 
+// Черга вільних завдань: спершу з найближчим дедлайном (без дедлайну — у кінці),
+// далі вищий пріоритет, далі давніше створені
+const priorityRank: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+export function compareQueue(
+  a: { deadline: Date | null; priority: string; createdAt: Date },
+  b: { deadline: Date | null; priority: string; createdAt: Date },
+) {
+  const due = (task: { deadline: Date | null }) =>
+    task.deadline?.getTime() ?? Infinity;
+  return (
+    due(a) - due(b) ||
+    (priorityRank[a.priority] ?? 3) - (priorityRank[b.priority] ?? 3) ||
+    a.createdAt.getTime() - b.createdAt.getTime()
+  );
+}
+
 // Місце колонки на дошці. Стандартні «До виконання» й «У процесі» стоять на 1000 і 2000,
 // власні колонки — між ними за позицією; усе до 2000 належить етапу «До виконання».
 // Старі колонки «У процесі» мали малі позиції, тож їх зсуваємо за 2000.
@@ -243,6 +259,57 @@ export class TasksService {
       `Статус завдання «${task.title}» змінено на ${status}.`,
     );
     return updated;
+  }
+
+  // Фрілансер-учасник бере наступне вільне завдання з черги проєкту.
+  // Поки в нього є незавершене завдання (до виконання чи в роботі), нове взяти не можна.
+  async takeNext(user: CurrentUser, projectId: string) {
+    if (user.role !== 'FREELANCER')
+      throw new ForbiddenException('Брати завдання з черги може фрілансер.');
+    const project = await this.projects.requireAccess(user, projectId, false);
+    if (project.status !== 'ACTIVE')
+      throw new ConflictException(
+        'Працювати із завданнями можна лише в активному проєкті.',
+      );
+    await this.projects.requireAssignee(projectId, user.id);
+    const tasks = await this.db.Task.where({ projectId }).all();
+    const unfinished = tasks.find(
+      (task) =>
+        task.assigneeId === user.id &&
+        ['TODO', 'IN_PROGRESS'].includes(task.status),
+    );
+    if (unfinished)
+      throw new ConflictException(
+        `Спершу завершіть або передайте на перевірку «${unfinished.title}».`,
+      );
+    const queue = tasks
+      .filter((task) => task.status === 'TODO' && !task.assigneeId)
+      .sort(compareQueue);
+    // Інший фрілансер міг узяти завдання одночасно: беремо наступне в черзі
+    for (const task of queue) {
+      const taken = await this.db.Task.where({
+        id: task.id,
+        assigneeId: null,
+        status: 'TODO',
+      }).update({ assigneeId: user.id, updatedAt: new Date() });
+      if (!taken) continue;
+      await this.projects.logActivity(
+        user.id,
+        projectId,
+        'TASK_TAKEN',
+        `${user.name} узяв завдання «${task.title}» з черги.`,
+      );
+      await this.projects.notify(
+        project.clientId,
+        user.id,
+        'TASK_TAKEN',
+        `${user.name} узяв завдання «${task.title}».`,
+        projectId,
+        task.id,
+      );
+      return taken;
+    }
+    throw new NotFoundException('Вільних завдань у черзі немає.');
   }
 
   // Власні колонки канбану проєкту в порядку на дошці

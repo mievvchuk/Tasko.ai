@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsOptional,
@@ -34,6 +35,14 @@ export class LoginDto {
   @IsString()
   @Matches(/^\d{6}$/)
   twoFactorCode?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Довгий сеанс (30 днів) замість 1 години',
+  })
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }
 
 export class ChangePasswordDto {

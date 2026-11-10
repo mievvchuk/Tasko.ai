@@ -16,7 +16,12 @@ interface AuthState {
   loading: boolean;
   connectionError: string;
   notice: string;
-  login: (email: string, password: string, code?: string) => Promise<boolean>;
+  login: (
+    email: string,
+    password: string,
+    code?: string,
+    rememberMe?: boolean,
+  ) => Promise<boolean>;
   logout: () => void;
   retry: () => void;
   // Оновлює дані користувача після зміни імені чи фото на сторінці профілю
@@ -39,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       sessionStorage.removeItem(tokenKey);
+      localStorage.removeItem(tokenKey);
     } catch {
       setNotice(
         tr(
@@ -102,10 +108,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(sessionEndedEvent, endSession);
   }, []);
 
-  async function login(email: string, password: string, code?: string) {
+  async function login(
+    email: string,
+    password: string,
+    code?: string,
+    rememberMe = false,
+  ) {
     const response = await request<LoginResponse>("/auth/login", {
       method: "POST",
-      body: { email, password, twoFactorCode: code || undefined },
+      body: { email, password, twoFactorCode: code || undefined, rememberMe },
       auth: false,
     });
     if (response.requiresTwoFactor) return false;
@@ -113,7 +124,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new ApiError(502, tr("Сервер не повернув дані для входу."));
     }
     try {
-      sessionStorage.setItem(tokenKey, response.accessToken);
+      sessionStorage.removeItem(tokenKey);
+      localStorage.removeItem(tokenKey);
+      (rememberMe ? localStorage : sessionStorage).setItem(
+        tokenKey,
+        response.accessToken,
+      );
     } catch {
       throw new ApiError(
         0,

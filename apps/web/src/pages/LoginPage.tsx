@@ -17,6 +17,7 @@ export function LoginPage() {
   const [email, setEmail] = useState(registration?.email || "");
   const [password, setPassword] = useState("");
   const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +32,7 @@ export function LoginPage() {
         email.trim(),
         password,
         requiresTwoFactor ? twoFactorCode : undefined,
+        rememberMe,
       );
       if (!authenticated) setRequiresTwoFactor(true);
     } catch (error) {
@@ -97,6 +99,14 @@ export function LoginPage() {
               />
             </div>
           )}
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => setRememberMe(event.target.checked)}
+            />
+            {t("rememberMe")}
+          </label>
           {error && (
             <div className="notice error" role="alert">
               {error}
