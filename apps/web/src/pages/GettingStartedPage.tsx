@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../auth";
 import { BrandMark } from "../components/BrandMark";
@@ -8,6 +8,8 @@ import { useLanguage } from "../i18n";
 
 // Позначка «щойно зареєструвався»: після входу GuestRoute веде сюди, а не на головну
 export const justRegisteredKey = "tasko.justRegistered";
+// Значення позначки, коли роль уже обрано під час реєстрації: тоді тут її не перепитуємо
+export const roleChosen = "role-chosen";
 
 const steps = {
   CLIENT: [
@@ -61,6 +63,13 @@ const steps = {
 export function GettingStartedPage() {
   const { tr } = useLanguage();
   const { user } = useAuth();
+  const [askRole] = useState(() => {
+    try {
+      return sessionStorage.getItem(justRegisteredKey) !== roleChosen;
+    } catch {
+      return true;
+    }
+  });
   useEffect(() => {
     try {
       sessionStorage.removeItem(justRegisteredKey);
@@ -84,7 +93,7 @@ export function GettingStartedPage() {
           <i className="bi bi-stars"></i>
         </div>
         <h1>{tr("Вітаємо в Tasko.ai, {0}!", firstName)}</h1>
-        <RoleSwitch />
+        {askRole && <RoleSwitch />}
         <p className="onboarding-lead">
           {role === "CLIENT"
             ? tr(

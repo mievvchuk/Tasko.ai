@@ -59,7 +59,7 @@ function GuestRoute() {
   if (user) {
     let fresh = false;
     try {
-      fresh = sessionStorage.getItem(justRegisteredKey) === "1";
+      fresh = sessionStorage.getItem(justRegisteredKey) !== null;
     } catch {
       // без сховища просто йдемо на головну
     }

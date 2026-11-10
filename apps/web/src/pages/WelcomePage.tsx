@@ -163,7 +163,10 @@ export function WelcomePage() {
             <h1>{tr(current.title)}</h1>
             <p>{tr(current.text)}</p>
             <div className="welcome-actions">
-              <Link className="button hero-primary" to="/register">
+              <Link
+                className="button hero-primary"
+                to={`/register?role=${audience}`}
+              >
                 {tr(current.action)}
                 <i className="bi bi-arrow-right" aria-hidden="true"></i>
               </Link>

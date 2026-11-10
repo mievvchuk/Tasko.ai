@@ -51,6 +51,15 @@ export class GoogleLoginDto {
   @Length(20, 4096)
   credential: string;
 
+  @ApiProperty({
+    required: false,
+    enum: ['CLIENT', 'FREELANCER'],
+    description: 'Роль нового акаунта (обрана на головній); існуючим не змінюється',
+  })
+  @IsOptional()
+  @IsIn(['CLIENT', 'FREELANCER'])
+  role?: 'CLIENT' | 'FREELANCER';
+
   @ApiProperty({ required: false, example: '123456' })
   @IsOptional()
   @IsString()

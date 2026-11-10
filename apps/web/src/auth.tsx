@@ -27,6 +27,7 @@ interface AuthState {
     credential: string,
     code?: string,
     rememberMe?: boolean,
+    role?: "CLIENT" | "FREELANCER",
   ) => Promise<boolean>;
   logout: () => void;
   retry: () => void;
@@ -132,17 +133,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     credential: string,
     code?: string,
     rememberMe = false,
+    role?: "CLIENT" | "FREELANCER",
   ) {
     const response = await request<LoginResponse>("/auth/google", {
       method: "POST",
-      body: { credential, twoFactorCode: code || undefined, rememberMe },
+      body: { credential, twoFactorCode: code || undefined, rememberMe, role },
       auth: false,
     });
     // Новий акаунт через Google, як і звичайна реєстрація, веде на вітальну сторінку з вибором ролі
     if (response.created) {
       try {
         // той самий ключ, що justRegisteredKey у GettingStartedPage (без імпорту, щоб не було циклу)
-        sessionStorage.setItem("tasko.justRegistered", "1");
+        // "role-chosen" = roleChosen: роль обрано під час реєстрації, вдруге не питаємо
+        sessionStorage.setItem("tasko.justRegistered", role ? "role-chosen" : "1");
       } catch {
         // без сховища просто відкриється головна
       }

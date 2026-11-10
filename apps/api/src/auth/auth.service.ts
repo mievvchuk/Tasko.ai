@@ -92,7 +92,7 @@ export class AuthService {
   }
 
   // Вхід і реєстрація через Google: знаходить акаунт за Google ID або підтвердженою поштою,
-  // інакше створює нового клієнта (роль він обере на вітальній сторінці)
+  // інакше створює новий акаунт з роллю, обраною на головній (за замовчуванням — клієнт)
   async loginWithGoogle(data: GoogleLoginDto, metadata: LoginMetadata = {}) {
     const profile = await this.google.verify(data.credential);
     let user =
@@ -104,7 +104,7 @@ export class AuthService {
         user = await this.users.create({
           name: googleName(profile.name, profile.email),
           email: profile.email,
-          role: 'CLIENT',
+          role: data.role ?? 'CLIENT',
           passwordHash: null,
           googleId: profile.googleId,
         });
