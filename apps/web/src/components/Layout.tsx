@@ -5,6 +5,7 @@ import { Link, NavLink, Outlet } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { useApi } from "../useApi";
+import { docsUrl } from "../help";
 import type { Notification } from "../types";
 import { ThemePicker } from "./ThemePicker";
 import { AiChatProvider } from "../aiChat";
@@ -16,7 +17,7 @@ import { HelpButton } from "./HelpButton";
 // Логіка (ролі, сповіщення, вихід) залишилась такою самою.
 export function Layout() {
   const { user } = useAuth();
-  const { t, tr } = useLanguage();
+  const { t, tr, language } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const notifications = useApi<{ items: Notification[]; unreadCount: number }>(
     "/notifications?limit=1",
@@ -100,10 +101,15 @@ export function Layout() {
               <i className="bi bi-person" aria-hidden="true"></i>
               <span className="nav-label">{t("profile")}</span>
             </NavLink>
-            <NavLink to="/help" onClick={close}>
+            <a
+              href={docsUrl(language)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={close}
+            >
               <i className="bi bi-question-circle" aria-hidden="true"></i>
               <span className="nav-label">{tr("Довідка")}</span>
-            </NavLink>
+            </a>
           </nav>
           <div className="topbar-actions">
             <ThemePicker />

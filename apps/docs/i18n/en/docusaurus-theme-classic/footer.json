@@ -1,0 +1,38 @@
+{
+  "link.title.Почати": {
+    "message": "Start",
+    "description": "The title of the footer links column with title=Почати in the footer"
+  },
+  "link.title.Довідка": {
+    "message": "Help",
+    "description": "The title of the footer links column with title=Довідка in the footer"
+  },
+  "link.title.Tasko.ai": {
+    "message": "Tasko.ai",
+    "description": "The title of the footer links column with title=Tasko.ai in the footer"
+  },
+  "link.item.label.Перші кроки": {
+    "message": "First steps",
+    "description": "The label of footer link with label=Перші кроки linking to /getting-started"
+  },
+  "link.item.label.Ролі на платформі": {
+    "message": "Roles on the platform",
+    "description": "The label of footer link with label=Ролі на платформі linking to /kb-roles"
+  },
+  "link.item.label.Статуси": {
+    "message": "Statuses",
+    "description": "The label of footer link with label=Статуси linking to /kb-statuses"
+  },
+  "link.item.label.Правила платформи": {
+    "message": "Platform rules",
+    "description": "The label of footer link with label=Правила платформи linking to /kb-rules"
+  },
+  "link.item.label.Відкрити застосунок": {
+    "message": "Open the app",
+    "description": "The label of footer link with label=Відкрити застосунок linking to https://taskoai.pp.ua"
+  },
+  "copyright": {
+    "message": "Tasko.ai · 2026",
+    "description": "The footer copyright"
+  }
+}

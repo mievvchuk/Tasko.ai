@@ -1,0 +1,26 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.help.category.Початок роботи": {
+    "message": "Getting started",
+    "description": "The label for category 'Початок роботи' in sidebar 'help'"
+  },
+  "sidebar.help.category.Для клієнта": {
+    "message": "For clients",
+    "description": "The label for category 'Для клієнта' in sidebar 'help'"
+  },
+  "sidebar.help.category.Для фрілансера": {
+    "message": "For freelancers",
+    "description": "The label for category 'Для фрілансера' in sidebar 'help'"
+  },
+  "sidebar.help.category.Робота над проєктом": {
+    "message": "Working on a project",
+    "description": "The label for category 'Робота над проєктом' in sidebar 'help'"
+  },
+  "sidebar.help.category.База знань": {
+    "message": "Knowledge base",
+    "description": "The label for category 'База знань' in sidebar 'help'"
+  }
+}
