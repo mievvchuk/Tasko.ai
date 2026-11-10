@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Navigate, useSearchParams } from "react-router";
+import { Link, Navigate, useSearchParams } from "react-router";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
 import { Pagination, ResourceState } from "../components/ResourceState";
@@ -349,6 +349,16 @@ function ProjectDialog({
         <p className="application-notice">
           {tr("Статус заявки:")}{" "}
           {tr(applicationStatusNames[project.applicationStatus])}
+          {project.applicationId && (
+            <>
+              {" · "}
+              <Link to={`/messages?application=${project.applicationId}`}>
+                {project.applicationStatus === "PENDING"
+                  ? tr("Написати клієнту")
+                  : tr("Переписка з клієнтом")}
+              </Link>
+            </>
+          )}
         </p>
       ) : applying ? (
         <form className="application-form" onSubmit={(e) => void submit(e)}>

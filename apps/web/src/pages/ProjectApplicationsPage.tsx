@@ -151,9 +151,17 @@ export function ProjectApplicationsPage() {
                       {tr(applicationStatusNames[application.status])}
                     </span>
                   </div>
-                  <Link to={`/freelancers/${application.freelancerId}`}>
-                    {tr("Переглянути профіль")}
-                  </Link>
+                  <span className="application-links">
+                    <Link to={`/freelancers/${application.freelancerId}`}>
+                      {tr("Переглянути профіль")}
+                    </Link>
+                    <Link to={`/messages?application=${application.id}`}>
+                      <i className="bi bi-chat-dots" aria-hidden="true"></i>{" "}
+                      {application.status === "PENDING"
+                        ? tr("Написати фрілансеру")
+                        : tr("Переписка")}
+                    </Link>
+                  </span>
                 </div>
                 <p>{application.message}</p>
                 {application.aiScore !== null && (

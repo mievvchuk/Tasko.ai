@@ -15,6 +15,7 @@ const kinds: Record<string, [string, string]> = {
   APPLICATION_ACCEPTED: ["Заявку прийнято", "bi-check2-circle"],
   APPLICATION_REJECTED: ["Заявку відхилено", "bi-x-circle"],
   NEW_MESSAGE: ["Нове повідомлення", "bi-chat-dots"],
+  APPLICATION_MESSAGE: ["Повідомлення щодо заявки", "bi-chat-left-text"],
   TASK_ASSIGNED: ["Призначено завдання", "bi-check2-square"],
   WORK_SUBMITTED: ["Роботу здано", "bi-upload"],
   WORK_REVIEWED: ["Роботу перевірено", "bi-clipboard-check"],
@@ -202,6 +203,12 @@ export function NotificationsPage() {
                           >
                             <i className="bi bi-chat-dots" aria-hidden="true"></i>
                             {tr("Відкрити обговорення")}
+                          </Link>
+                        )}
+                        {item.type === "APPLICATION_MESSAGE" && (
+                          <Link className="button secondary" to="/messages">
+                            <i className="bi bi-chat-dots" aria-hidden="true"></i>
+                            {tr("Відкрити повідомлення")}
                           </Link>
                         )}
                         {item.type === "NEW_COMPLAINT" &&

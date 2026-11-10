@@ -25,10 +25,20 @@ export class CollaborationService {
     @Inject(TasksService) private readonly tasks: TasksService,
   ) {}
   // shortcut: події живуть у пам'яті одного процесу API; для кількох інстансів потрібен Redis pub/sub
+  // key: `project:<id>` або `application:<id>`
   private readonly posted = new Subject<{
-    projectId: string;
+    key: string;
     message: unknown;
   }>();
+  private stream(key: string): Observable<{ type: string; data: unknown }> {
+    return merge(
+      this.posted.pipe(
+        filter((event) => event.key === key),
+        map((event) => ({ type: 'message', data: event.message })),
+      ),
+      interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
+    );
+  }
   private get client() {
     return this.projects.prisma.client;
   }
@@ -38,13 +48,7 @@ export class CollaborationService {
     projectId: string,
   ): Promise<Observable<{ type: string; data: unknown }>> {
     await this.projects.requireAccess(user, projectId, false);
-    return merge(
-      this.posted.pipe(
-        filter((event) => event.projectId === projectId),
-        map((event) => ({ type: 'message', data: event.message })),
-      ),
-      interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
-    );
+    return this.stream(`project:${projectId}`);
   }
 
   async messages(user: CurrentUser, projectId: string, page: PageDto) {
@@ -79,7 +83,146 @@ export class CollaborationService {
         'Нове повідомлення у проєкті.',
         projectId,
       );
-    this.posted.next({ projectId, message });
+    this.posted.next({ key: `project:${projectId}`, message });
+    return message;
+  }
+
+  // Чат заявки бачать лише клієнт-власник проєкту та автор заявки (адміністратор — ні)
+  private async applicationChat(user: CurrentUser, applicationId: string) {
+    const db = this.client.orm.public;
+    const application = await db.ProjectApplication.where({
+      id: applicationId,
+    }).first();
+    if (!application) throw new NotFoundException('Заявку не знайдено.');
+    const project = await db.Project.where({
+      id: application.projectId,
+    }).first();
+    if (!project) throw new NotFoundException('Проєкт не знайдено.');
+    if (user.id !== project.clientId && user.id !== application.freelancerId)
+      throw new ForbiddenException('Чат доступний клієнту й автору заявки.');
+    return { application, project };
+  }
+
+  private async chatSummary(
+    application: { id: string; status: string; freelancerId: string },
+    project: { id: string; title: string; clientId: string },
+  ) {
+    const people = await this.client.orm.public.User.where((user) =>
+      user.id.in([project.clientId, application.freelancerId]),
+    )
+      .select('id', 'name')
+      .all();
+    const name = (id: string) =>
+      people.find((person) => person.id === id)?.name ?? null;
+    return {
+      id: application.id,
+      status: application.status,
+      projectId: project.id,
+      projectTitle: project.title,
+      clientId: project.clientId,
+      clientName: name(project.clientId),
+      freelancerId: application.freelancerId,
+      freelancerName: name(application.freelancerId),
+    };
+  }
+
+  async applicationChatInfo(user: CurrentUser, applicationId: string) {
+    const { application, project } = await this.applicationChat(
+      user,
+      applicationId,
+    );
+    return this.chatSummary(application, project);
+  }
+
+  // Розмови щодо заявок, де вже є хоч одне повідомлення
+  async applicationConversations(user: CurrentUser) {
+    const db = this.client.orm.public;
+    const ownProjectIds =
+      user.role === 'CLIENT'
+        ? (await db.Project.where({ clientId: user.id }).all()).map(
+            (project) => project.id,
+          )
+        : [];
+    const applications =
+      user.role === 'FREELANCER'
+        ? await db.ProjectApplication.where({ freelancerId: user.id }).all()
+        : ownProjectIds.length
+          ? await db.ProjectApplication.where((application) =>
+              application.projectId.in(ownProjectIds),
+            ).all()
+          : [];
+    const result = [];
+    for (const application of applications) {
+      const last = await db.ApplicationMessage.where({
+        applicationId: application.id,
+      })
+        .orderBy((message) => message.createdAt.desc())
+        .first();
+      if (!last) continue;
+      const project = await db.Project.where({
+        id: application.projectId,
+      }).first();
+      if (!project) continue;
+      result.push({
+        ...(await this.chatSummary(application, project)),
+        lastMessageAt: last.createdAt,
+      });
+    }
+    return result.sort(
+      (a, b) =>
+        new Date(b.lastMessageAt).getTime() -
+        new Date(a.lastMessageAt).getTime(),
+    );
+  }
+
+  async applicationMessages(
+    user: CurrentUser,
+    applicationId: string,
+    page: PageDto,
+  ) {
+    await this.applicationChat(user, applicationId);
+    return this.client.orm.public.ApplicationMessage.where({ applicationId })
+      .orderBy((message) => message.createdAt.desc())
+      .offset((page.page - 1) * page.limit)
+      .limit(page.limit)
+      .all();
+  }
+
+  async applicationMessageStream(user: CurrentUser, applicationId: string) {
+    await this.applicationChat(user, applicationId);
+    return this.stream(`application:${applicationId}`);
+  }
+
+  async applicationMessage(
+    user: CurrentUser,
+    applicationId: string,
+    data: MessageDto,
+  ) {
+    const { application, project } = await this.applicationChat(
+      user,
+      applicationId,
+    );
+    if (application.status !== 'PENDING')
+      throw new ConflictException(
+        application.status === 'ACCEPTED'
+          ? 'Фрілансера вже прийнято — спілкуйтеся в чаті проєкту.'
+          : 'Заявку відхилено, переписку закрито.',
+      );
+    const message = await this.client.orm.public.ApplicationMessage.create({
+      id: randomUUID(),
+      applicationId,
+      senderId: user.id,
+      content: data.content,
+      createdAt: new Date(),
+    });
+    await this.projects.notify(
+      user.id === project.clientId ? application.freelancerId : project.clientId,
+      user.id,
+      'APPLICATION_MESSAGE',
+      `Нове повідомлення щодо заявки на «${project.title}».`,
+      // без projectId: до найму фрілансер не має доступу до сторінки проєкту
+    );
+    this.posted.next({ key: `application:${applicationId}`, message });
     return message;
   }
   async submissions(user: CurrentUser, taskId: string, page: PageDto) {

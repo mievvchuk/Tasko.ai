@@ -1,0 +1,122 @@
+[
+  {
+    "id": "table.ApplicationMessage",
+    "label": "Create table \"ApplicationMessage\"",
+    "summary": "Creates table \"ApplicationMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ApplicationMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ApplicationMessage\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ApplicationMessage\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ApplicationMessage\"",
+        "sql": "CREATE TABLE \"public\".\"ApplicationMessage\" (\n  \"applicationId\" text NOT NULL,\n  \"content\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"senderId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ApplicationMessage\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ApplicationMessage\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ApplicationMessage.ApplicationMessage_applicationId_idx_8158f91a",
+    "label": "Create index \"ApplicationMessage_applicationId_idx_8158f91a\" on \"ApplicationMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ApplicationMessage_applicationId_idx_8158f91a",
+        "table": "ApplicationMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ApplicationMessage_applicationId_idx_8158f91a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ApplicationMessage_applicationId_idx_8158f91a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ApplicationMessage_applicationId_idx_8158f91a\"",
+        "sql": "CREATE INDEX \"ApplicationMessage_applicationId_idx_8158f91a\" ON \"public\".\"ApplicationMessage\" (\"applicationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ApplicationMessage_applicationId_idx_8158f91a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ApplicationMessage_applicationId_idx_8158f91a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ApplicationMessage.ApplicationMessage_applicationId_fkey",
+    "label": "Add foreign key \"ApplicationMessage_applicationId_fkey\" on \"ApplicationMessage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ApplicationMessage_applicationId_fkey",
+        "table": "ApplicationMessage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ApplicationMessage_applicationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ApplicationMessage_applicationId_fkey",
+          "public",
+          "\"public\".\"ApplicationMessage\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ApplicationMessage_applicationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ApplicationMessage\"\nADD CONSTRAINT \"ApplicationMessage_applicationId_fkey\"\nFOREIGN KEY (\"applicationId\")\nREFERENCES \"public\".\"ProjectApplication\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ApplicationMessage_applicationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ApplicationMessage_applicationId_fkey",
+          "public",
+          "\"public\".\"ApplicationMessage\""
+        ]
+      }
+    ]
+  }
+]

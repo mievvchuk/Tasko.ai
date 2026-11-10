@@ -541,6 +541,10 @@ export class ProjectsService {
           applications.find(
             (application) => application.projectId === project.id,
           )?.status ?? null,
+        applicationId:
+          applications.find(
+            (application) => application.projectId === project.id,
+          )?.id ?? null,
         isFavorite: favorites.some(
           (favorite) => favorite.projectId === project.id,
         ),

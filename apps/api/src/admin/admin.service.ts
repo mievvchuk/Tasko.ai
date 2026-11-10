@@ -200,6 +200,12 @@ export class AdminService {
         await db.BoardColumn.where({ projectId }).deleteAll();
         await db.ActivityLog.where({ projectId }).deleteAll();
         await db.Message.where({ projectId }).deleteAll();
+        for (const application of await db.ProjectApplication.where({
+          projectId,
+        }).all())
+          await db.ApplicationMessage.where({
+            applicationId: application.id,
+          }).deleteAll();
         await db.ProjectApplication.where({ projectId }).deleteAll();
         await db.FreelancerReview.where({ projectId }).deleteAll();
         await db.ProjectMember.where({ projectId }).deleteAll();
@@ -230,6 +236,12 @@ export class AdminService {
       await db.Task.where({ assigneeId: id }).updateAll({ assigneeId: null });
       await db.Message.where({ senderId: id }).deleteAll();
       await db.ActivityLog.where({ actorId: id }).deleteAll();
+      for (const application of await db.ProjectApplication.where({
+        freelancerId: id,
+      }).all())
+        await db.ApplicationMessage.where({
+          applicationId: application.id,
+        }).deleteAll();
       await db.ProjectApplication.where({ freelancerId: id }).deleteAll();
       await db.FreelancerReview.where({ clientId: id }).deleteAll();
       await db.FreelancerReview.where({ freelancerId: id }).deleteAll();
