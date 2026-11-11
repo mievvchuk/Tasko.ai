@@ -4646,16 +4646,56 @@ tbody tr:nth-child(n + 6) {
   .welcome-header-inner {
     grid-template-columns: auto auto;
     justify-content: space-between;
+    gap: var(--space-sm);
+    padding-top: var(--space-xs);
+    padding-bottom: var(--space-xs);
+  }
+  .welcome-brand {
+    font-size: var(--text-lg);
+  }
+  .welcome-header-actions {
+    gap: var(--space-2xs);
+  }
+  .welcome-header-actions .button {
+    padding-right: var(--space-sm);
+    padding-left: var(--space-sm);
   }
   .welcome-nav,
   .welcome-login {
     display: none;
   }
-  .welcome-hero {
-    padding: var(--space-lg);
+  /* Банер: мітка й «Детальніше» в одному рядку, текст під ними */
+  .welcome-news {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-sm);
+    margin-top: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--text-sm);
   }
-  .welcome-news-link {
-    margin-left: 0;
+  .welcome-news > span:nth-child(2) {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+  .welcome-news-tag {
+    justify-self: start;
+  }
+  .welcome-hero {
+    gap: var(--space-lg);
+    margin: var(--space-sm) 0 var(--space-xl);
+    padding: var(--space-lg) var(--space-md);
+    border-radius: calc(var(--radius-card) * 1.5);
+  }
+  .welcome-hero-text {
+    gap: var(--space-sm);
+  }
+  .welcome-hero h1 {
+    font-size: clamp(1.625rem, 1rem + 3.5vw, 2.2rem);
+    line-height: 1.12;
+  }
+  .welcome-hero-text > p {
+    font-size: var(--text-md);
   }
   .welcome-cta {
     padding: var(--space-xl) var(--space-lg);
@@ -5106,4 +5146,14 @@ tbody tr:nth-child(n + 6) {
 }
 .take-next-panel > div {
   flex: 1 1 320px;
+}
+/* Найвужчі телефони (320 px): логотип і кнопки інакше не вміщаються в шапку */
+@media (max-width: 22rem) {
+  .welcome-brand {
+    font-size: var(--text-md);
+  }
+  .welcome-header-actions .button {
+    padding-right: var(--space-xs);
+    padding-left: var(--space-xs);
+  }
 }
