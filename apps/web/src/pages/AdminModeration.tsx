@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router";
-import { errorMessage, request } from "../api";
+import { errorMessage, moderationChangedEvent, request } from "../api";
 import { formatDate } from "../format";
 import { ResourceState } from "../components/ResourceState";
 import { UserAvatar } from "../components/UserAvatar";
@@ -89,6 +89,7 @@ function ModerationCard({
             ? { decision }
             : { decision, reason: reason.trim() },
       });
+      window.dispatchEvent(new Event(moderationChangedEvent));
       onDecided(
         decision === "APPROVE"
           ? tr("Проєкт «{0}» схвалено й опубліковано на біржі.", project.title)
