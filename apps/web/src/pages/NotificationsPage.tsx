@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { errorMessage, request } from "../api";
+import { errorMessage, notificationsChangedEvent, request } from "../api";
 import { useAuth } from "../auth";
 import { ResourceState } from "../components/ResourceState";
 import { formatDate } from "../format";
@@ -44,6 +44,7 @@ export function NotificationsPage() {
         { method: id ? "PATCH" : "POST" },
       );
       refresh();
+      window.dispatchEvent(new Event(notificationsChangedEvent));
     } catch (error) {
       alert(errorMessage(error));
     }
