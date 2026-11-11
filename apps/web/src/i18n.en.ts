@@ -995,6 +995,8 @@ export const enText: Record<string, string> = {
   "В обраному": "In favourites",
   "До обраного": "Add to favourites",
   "Нові повідомлення з'являються одразу": "New messages appear instantly",
+  "{0} пише…": "{0} is typing…",
+  "{0} пишуть…": "{0} are typing…",
   Подія: "Event",
   Отримано: "Received",
   "Прочитано {0}": "Read {0}",

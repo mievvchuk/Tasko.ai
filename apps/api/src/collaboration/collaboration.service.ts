@@ -26,15 +26,26 @@ export class CollaborationService {
   ) {}
   // shortcut: події живуть у пам'яті одного процесу API; для кількох інстансів потрібен Redis pub/sub
   // key: `project:<id>` або `application:<id>`
+  // type: 'message' (нове повідомлення) або 'typing' (хтось набирає, у базі не зберігається)
   private readonly posted = new Subject<{
     key: string;
-    message: unknown;
+    type: 'message' | 'typing';
+    data: unknown;
+    senderId: string;
   }>();
-  private stream(key: string): Observable<{ type: string; data: unknown }> {
+  private stream(
+    key: string,
+    userId: string,
+  ): Observable<{ type: string; data: unknown }> {
     return merge(
       this.posted.pipe(
-        filter((event) => event.key === key),
-        map((event) => ({ type: 'message', data: event.message })),
+        // власний набір автору назад не шлемо
+        filter(
+          (event) =>
+            event.key === key &&
+            !(event.type === 'typing' && event.senderId === userId),
+        ),
+        map(({ type, data }) => ({ type, data })),
       ),
       interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
     );
@@ -48,7 +59,27 @@ export class CollaborationService {
     projectId: string,
   ): Promise<Observable<{ type: string; data: unknown }>> {
     await this.projects.requireAccess(user, projectId, false);
-    return this.stream(`project:${projectId}`);
+    return this.stream(`project:${projectId}`, user.id);
+  }
+
+  // «Пише…»: доступ той самий, що й до потоку повідомлень проєкту
+  async typing(user: CurrentUser, projectId: string) {
+    await this.projects.requireAccess(user, projectId, false);
+    this.emitTyping(`project:${projectId}`, user);
+  }
+
+  async applicationTyping(user: CurrentUser, applicationId: string) {
+    await this.applicationChat(user, applicationId);
+    this.emitTyping(`application:${applicationId}`, user);
+  }
+
+  private emitTyping(key: string, user: CurrentUser) {
+    this.posted.next({
+      key,
+      type: 'typing',
+      data: { userId: user.id, name: user.name },
+      senderId: user.id,
+    });
   }
 
   async messages(user: CurrentUser, projectId: string, page: PageDto) {
@@ -83,7 +114,12 @@ export class CollaborationService {
         'Нове повідомлення у проєкті.',
         projectId,
       );
-    this.posted.next({ key: `project:${projectId}`, message });
+    this.posted.next({
+      key: `project:${projectId}`,
+      type: 'message',
+      data: message,
+      senderId: user.id,
+    });
     return message;
   }
 
@@ -190,7 +226,7 @@ export class CollaborationService {
 
   async applicationMessageStream(user: CurrentUser, applicationId: string) {
     await this.applicationChat(user, applicationId);
-    return this.stream(`application:${applicationId}`);
+    return this.stream(`application:${applicationId}`, user.id);
   }
 
   async applicationMessage(
@@ -222,7 +258,12 @@ export class CollaborationService {
       `Нове повідомлення щодо заявки на «${project.title}».`,
       // без projectId: до найму фрілансер не має доступу до сторінки проєкту
     );
-    this.posted.next({ key: `application:${applicationId}`, message });
+    this.posted.next({
+      key: `application:${applicationId}`,
+      type: 'message',
+      data: message,
+      senderId: user.id,
+    });
     return message;
   }
   async submissions(user: CurrentUser, taskId: string, page: PageDto) {

@@ -93,4 +93,24 @@ describe('application chat', () => {
       data: { applicationId: 'app', content: 'Є питання' },
     });
   });
+
+  it('relays typing to the other side only, and keeps strangers out', async () => {
+    const clientStream = await service.applicationMessageStream(client, 'app');
+    const applicantStream = await service.applicationMessageStream(applicant, 'app');
+    const seenByApplicant: unknown[] = [];
+    const seenByClient: unknown[] = [];
+    const subs = [
+      applicantStream.subscribe((event) => seenByApplicant.push(event)),
+      clientStream.subscribe((event) => seenByClient.push(event)),
+    ];
+    await service.applicationTyping(client, 'app');
+    subs.forEach((sub) => sub.unsubscribe());
+    expect(seenByApplicant).toEqual([
+      { type: 'typing', data: { userId: client.id, name: client.name } },
+    ]);
+    expect(seenByClient).toEqual([]);
+    await expect(
+      service.applicationTyping(stranger, 'app'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
 });
