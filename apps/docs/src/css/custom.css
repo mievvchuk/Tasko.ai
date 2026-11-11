@@ -95,3 +95,77 @@
 .pagination-nav__link {
   border-radius: 8px;
 }
+
+/* Скриншоти в статтях */
+.markdown img {
+  display: block;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  margin: 0.5rem 0 1.25rem;
+}
+
+/* Пошук у навбарі (src/theme/SearchBar.js) */
+.help-search {
+  position: relative;
+  margin-left: 0.5rem;
+}
+.help-search__input {
+  width: 13rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.help-search__input:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 1px;
+}
+.help-search__results {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 300;
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  background: var(--ifm-background-surface-color);
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.16);
+}
+.help-search__results ul {
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+}
+.help-search__results a {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  color: var(--ifm-font-color-base);
+}
+.help-search__results a:hover,
+.help-search__results a:focus-visible {
+  background: var(--ifm-menu-color-background-active);
+  text-decoration: none;
+}
+.help-search__results span {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.help-search__empty {
+  margin: 0;
+  padding: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+}
+@media (max-width: 996px) {
+  .help-search__input {
+    width: 9.5rem;
+  }
+}
