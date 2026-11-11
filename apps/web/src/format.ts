@@ -87,3 +87,37 @@ export function passwordStrength(password: string): 0 | 1 | 2 | 3 | 4 {
   ].filter(Boolean).length;
   return points <= 2 ? 1 : points === 3 ? 2 : points === 4 ? 3 : 4;
 }
+
+// IP сеансу для людини: локальні адреси (::1, 127.x, 192.168.x тощо) — «Локальна мережа»,
+// IPv4 у формі IPv6 (::ffff:1.2.3.4) — без префікса
+export function describeAddress(ip: string | null) {
+  if (!ip) return trNow("IP невідомий");
+  const address = ip.replace(/^::ffff:/i, "");
+  const local =
+    address === "::1" ||
+    /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/.test(address) ||
+    /^f[cd]|^fe80:/i.test(address);
+  return local ? trNow("Локальна мережа") : address;
+}
+
+// Квадрат для обрізання фото: зображення накриває рамку size×size,
+// offset — зсув верхнього лівого кута зображення від рамки (≤ 0), zoom ≥ 1
+export function cropFrame(
+  image: { width: number; height: number },
+  size: number,
+  zoom: number,
+  offset: { x: number; y: number },
+) {
+  const scale = (size / Math.min(image.width, image.height)) * zoom;
+  const clamp = (value: number, shown: number) =>
+    Math.min(0, Math.max(size - shown, value));
+  const x = clamp(offset.x, image.width * scale);
+  const y = clamp(offset.y, image.height * scale);
+  // source — ділянка оригіналу, яка потрапить у кругле фото
+  return {
+    scale,
+    x,
+    y,
+    source: { x: (0 - x) / scale, y: (0 - y) / scale, size: size / scale },
+  };
+}

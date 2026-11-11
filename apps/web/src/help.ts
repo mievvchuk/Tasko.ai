@@ -11,9 +11,31 @@ const docsBase = (
   import.meta.env?.VITE_DOCS_URL || "https://tasko-ai-docs.onrender.com"
 ).replace(/\/$/, "");
 
+// Довідка на іншому домені й не бачить localStorage застосунку, тож тему передаємо
+// параметром ?docusaurus-theme=, який Docusaurus читає сам ще до першого малювання
 export function docsUrl(language: Language, articleId = "getting-started") {
-  return `${docsBase}${language === "en" ? "/en" : ""}/${articleId}`;
+  const theme = globalThis.document?.documentElement.dataset.theme;
+  const query = theme === "dark" || theme === "light" ? `?docusaurus-theme=${theme}` : "";
+  return `${docsBase}${language === "en" ? "/en" : ""}/${articleId}${query}`;
 }
+
+// Тему могли змінити вже після того, як посилання намалювалось, тож оновлюємо її в момент кліку
+for (const type of ["click", "auxclick"])
+  globalThis.document?.addEventListener(
+    type,
+    (event) => {
+      const link = (event.target as Element | null)?.closest?.("a[href]");
+      if (!(link instanceof HTMLAnchorElement) || !link.href.startsWith(docsBase))
+        return;
+      const url = new URL(link.href);
+      url.searchParams.set(
+        "docusaurus-theme",
+        document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+      );
+      link.href = url.href;
+    },
+    true,
+  );
 
 export interface HelpArticle {
   id: string;

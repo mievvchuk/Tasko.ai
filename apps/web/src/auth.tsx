@@ -6,6 +6,7 @@ import {
   getToken,
   request,
   sessionEndedEvent,
+  tokenFromOtherTabs,
   tokenKey,
 } from "./api";
 import type { LoginResponse, User } from "./types";
@@ -72,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setConnectionError("");
       try {
-        if (!getToken()) return;
+        if (!getToken() && !(await tokenFromOtherTabs())) return;
         const currentUser = await request<User>("/auth/me", {
           signal: controller.signal,
         });
