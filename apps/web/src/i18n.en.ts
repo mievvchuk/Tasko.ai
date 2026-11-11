@@ -101,6 +101,7 @@ export const enText: Record<string, string> = {
   Із: "Of",
   грн: "UAH",
   "{0} грн": "{0} UAH",
+  "Чекають на модерацію: {0}": "Awaiting moderation: {0}",
   "{0}–{1} грн": "{0}–{1} UAH",
   КБ: "KB",
   днів: "days",

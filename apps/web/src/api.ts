@@ -1,6 +1,8 @@
 import { trNow } from "./i18n.en.ts";
 export const tokenKey = "tasko.accessToken";
 export const sessionEndedEvent = "tasko:session-ended";
+// Адмін ухвалив рішення щодо проєкту — меню адмінки оновлює лічильник черги
+export const moderationChangedEvent = "tasko:moderation-changed";
 // Сторінки, що позначають сповіщення прочитаними, кажуть меню оновити лічильники
 export const notificationsChangedEvent = "tasko:notifications-changed";
 
