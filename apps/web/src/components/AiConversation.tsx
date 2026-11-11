@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ChangeEvent, FormEvent, KeyboardEvent } from "react";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
@@ -79,6 +86,26 @@ function Thinking() {
   );
 }
 
+function UserBubble({ question, files }: { question: string; files?: string[] }) {
+  const { tr } = useLanguage();
+  return (
+    <div className="ai-bubble user">
+      <h2 className="visually-hidden">{tr("Ваше запитання")}</h2>
+      <p className="preserve-lines ai-question">{question}</p>
+      {files && files.length > 0 && (
+        <ul className="ai-files" aria-label={tr("Прикріплені файли")}>
+          {files.map((name) => (
+            <li key={name}>
+              <i className="bi bi-paperclip" aria-hidden="true"></i>
+              {name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // Чернетка від Ади: проєкт створює сам клієнт через звичайний POST /projects
 function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
   const { tr } = useLanguage();
@@ -150,8 +177,21 @@ export function AiConversation({
 }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
-  const { exchanges, busy, error, send, cancel } = useAiChat();
+  const { exchanges, pending, busy, error, send, cancel } = useAiChat();
   const [message, setMessage] = useState("");
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  // Fallback для браузерів без field-sizing: висота за вмістом (межу ставить max-height у CSS)
+  useLayoutEffect(() => {
+    const field = textarea.current;
+    if (!field || CSS.supports("field-sizing", "content")) return;
+    field.style.height = "auto";
+    field.style.height = `${field.scrollHeight}px`;
+  }, [message]);
+  // Нове запитання чи відповідь — гортаємо стрічку донизу, щоб їх було видно
+  const history = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    history.current?.scrollTo({ top: history.current.scrollHeight });
+  }, [exchanges.length, pending]);
   const [localError, setLocalError] = useState("");
   // Матеріали до наступного запитання: сервер уже витягнув із них текст
   const [files, setFiles] = useState<AiAttachment[]>([]);
@@ -166,9 +206,13 @@ export function AiConversation({
       setLocalError(tr("Напишіть запитання."));
       return;
     }
-    if (await send(question.trim(), context, files)) {
-      setMessage("");
-      setFiles([]);
+    // Поле очищуємо одразу — запитання вже видно в стрічці; при збої повертаємо текст і файли
+    const sentFiles = files;
+    setMessage("");
+    setFiles([]);
+    if (!(await send(question.trim(), context, sentFiles))) {
+      setMessage(question);
+      setFiles(sentFiles);
     }
   }
 
@@ -214,7 +258,7 @@ export function AiConversation({
 
   return (
     <div className={`ai-conversation ${variant}`}>
-      <div className="ai-history" aria-live="polite">
+      <div className="ai-history" aria-live="polite" ref={history}>
         {!exchanges.length && !busy && variant === "panel" && (
           <div className="ai-welcome">
             <span className="ai-avatar" aria-hidden="true">
@@ -233,20 +277,7 @@ export function AiConversation({
             key={index}
             className={item.offTopic ? "ai-exchange off-topic" : "ai-exchange"}
           >
-            <div className="ai-bubble user">
-              <h2 className="visually-hidden">{tr("Ваше запитання")}</h2>
-              <p className="preserve-lines ai-question">{item.question}</p>
-              {item.files && item.files.length > 0 && (
-                <ul className="ai-files" aria-label={tr("Прикріплені файли")}>
-                  {item.files.map((name) => (
-                    <li key={name}>
-                      <i className="bi bi-paperclip" aria-hidden="true"></i>
-                      {name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <UserBubble question={item.question} files={item.files} />
             <div className="ai-reply">
               <span className="ai-avatar" aria-hidden="true">
                 <i className="bi bi-stars"></i>
@@ -275,7 +306,12 @@ export function AiConversation({
             </div>
           </article>
         ))}
-        {busy && <Thinking />}
+        {pending && (
+          <article className="ai-exchange">
+            <UserBubble question={pending.question} files={pending.files} />
+            <Thinking />
+          </article>
+        )}
       </div>
       {!exchanges.length && !busy && user && configured && (
         <div className="ai-suggestions">
@@ -322,8 +358,9 @@ export function AiConversation({
         )}
         <div className="ai-composer">
           <textarea
+            ref={textarea}
             id={inputId}
-            rows={2}
+            rows={1}
             required
             maxLength={1800}
             placeholder={tr("Напишіть повідомлення…")}
