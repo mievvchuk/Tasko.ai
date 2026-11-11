@@ -660,7 +660,8 @@ label {
   background: var(--color-accent-soft);
   color: var(--color-accent-text);
 }
-.topbar-nav .badge-count {
+.topbar-nav .badge-count,
+.admin-sidebar nav .badge-count {
   margin-left: auto;
 }
 /* На комп'ютері дії стоять у верхній смузі праворуч від бічної панелі */

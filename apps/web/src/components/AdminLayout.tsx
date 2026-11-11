@@ -1,11 +1,13 @@
 import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "./ThemePicker";
+import { useApi } from "../useApi";
+import { moderationChangedEvent } from "../api";
 import { AccountMenu } from "./AccountMenu";
 
 // Окремий каркас адмінки за зразком shadcn-admin (MIT, © Sat Naing,
@@ -17,6 +19,17 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const close = () => setMenuOpen(false);
+  const queue = useApi<unknown[]>(
+    user?.role === "ADMIN" ? "/admin/moderation/projects" : null,
+  );
+  const { refresh } = queue;
+  useEffect(() => {
+    window.addEventListener(moderationChangedEvent, refresh);
+    return () => window.removeEventListener(moderationChangedEvent, refresh);
+  }, [refresh]);
+  // Під час оновлення лишаємо попереднє число, щоб значок не блимав
+  const waiting = useRef(0);
+  if (queue.data) waiting.current = queue.data.length;
 
   if (user?.role !== "ADMIN")
     return (
@@ -74,6 +87,14 @@ export function AdminLayout() {
             <NavLink key={to} to={to} end={to === "/admin"} onClick={close}>
               <i className={`bi ${icon}`} aria-hidden="true"></i>
               {label}
+              {to === "/admin/moderation" && waiting.current > 0 && (
+                <span
+                  className="badge-count"
+                  aria-label={tr("Чекають на модерацію: {0}", waiting.current)}
+                >
+                  {waiting.current}
+                </span>
+              )}
             </NavLink>
           ))}
           <span className="admin-nav-title">{tr("Інше")}</span>
