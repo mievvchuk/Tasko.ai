@@ -7,6 +7,8 @@ description: What Ada can do, example questions, project analysis, application r
 
 ## Ada
 
+![A chat with Ada: a question about the nearest deadline and an answer listing tasks](/img/help/ai.en.webp)
+
 **Ada** is an AI assistant who knows your projects, tasks and deadlines. Open her with the **Ada** button in the bottom-right corner or on the [AI assistant](https://taskoai.pp.ua/ai) page. On a project or task page she knows what you are looking at.
 
 What you can ask:

@@ -6,6 +6,8 @@ description: Comparing applications, messaging a candidate, hiring one or severa
 
 ## Reviewing applications
 
+![The freelancer applications page with an AI score, budget, timeline and the Hire button](/img/help/choose-freelancer.en.webp)
+
 On the project page click **Applications**. Each application shows:
 
 - the proposed **budget** and **timeline** in days;

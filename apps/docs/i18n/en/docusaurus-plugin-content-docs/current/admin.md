@@ -8,6 +8,8 @@ Administrators work in the [admin panel](https://taskoai.pp.ua/admin). It opens 
 
 ## Overview
 
+![The admin dashboard overview: counters for users, projects and moderation](/img/help/admin.en.webp)
+
 The platform's analytics report: the number of users (and blocked ones), projects — active and completed, tasks — by status and overdue, plus the trend of sign-ups, new projects and complaints by day and month.
 
 ## Users

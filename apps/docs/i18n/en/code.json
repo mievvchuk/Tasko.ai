@@ -325,5 +325,13 @@
   "theme.tags.tagsPageTitle": {
     "message": "Tags",
     "description": "The title of the tag list page"
+  },
+  "help.search.label": {
+    "message": "Search help",
+    "description": "Label and placeholder of the help search field"
+  },
+  "help.search.empty": {
+    "message": "Nothing found. Try other words.",
+    "description": "Shown when the help search finds no articles"
   }
 }

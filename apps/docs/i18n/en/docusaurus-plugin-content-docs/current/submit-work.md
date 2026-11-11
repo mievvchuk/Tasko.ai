@@ -16,6 +16,8 @@ Explain how to check the result: where to look, what to click, which data to use
 
 ## Client: reviewing
 
+![A task page with a submission awaiting review and the client's decision form](/img/help/submit-work.en.webp)
+
 1. Open the task in review (it is also in your [notifications](./notifications-workload.md)).
 2. Check the result and choose:
    - **Accept** — the task is completed;

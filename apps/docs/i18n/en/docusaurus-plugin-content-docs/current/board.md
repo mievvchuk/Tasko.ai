@@ -6,6 +6,8 @@ description: Board columns, creating tasks, dragging cards, custom columns, risk
 
 ## Columns
 
+![The project kanban board with To do, In progress, In review and Done columns](/img/help/board.en.webp)
+
 The board shows project tasks by status:
 
 **To do → In progress → In review → Done**

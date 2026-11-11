@@ -9,6 +9,8 @@ Tasko.ai is a freelance marketplace and a workspace in one place. A client publi
 
 ## Sign up
 
+![Tasko.ai sign-up form: name, email and password](/img/help/register.en.webp)
+
 1. Open the [sign-up page](https://taskoai.pp.ua/register).
 2. Enter your name, email and a password (8 to 128 characters). The meter under the field shows how strong the password is.
 3. After signing up you are logged in right away and see the welcome page.
