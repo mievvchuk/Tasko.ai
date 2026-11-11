@@ -2,6 +2,9 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 
+// Сповіщення про листування рахуємо окремо: їхній лічильник стоїть біля «Повідомлень», а не «Сповіщень»
+export const messageTypes = ['NEW_MESSAGE', 'APPLICATION_MESSAGE'];
+
 @Injectable()
 export class NotificationsService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -65,6 +68,9 @@ export class NotificationsService {
         taskTitle: tasks.find((task) => task.id === item.taskId)?.title ?? null,
       })),
       unreadCount: all.filter((item) => !item.readAt).length,
+      unreadMessages: all.filter(
+        (item) => !item.readAt && messageTypes.includes(item.type),
+      ).length,
     };
   }
 
@@ -79,15 +85,17 @@ export class NotificationsService {
     });
   }
 
-  async readAll(userId: string) {
-    const items = await this.prisma.client.orm.public.Notification.where({
-      userId,
-    }).all();
+  async readAll(userId: string, types?: string[]) {
+    const items = (
+      await this.prisma.client.orm.public.Notification.where({
+        userId,
+      }).all()
+    ).filter((item) => !item.readAt && (!types || types.includes(item.type)));
     const readAt = new Date();
-    for (const item of items.filter((value) => !value.readAt))
+    for (const item of items)
       await this.prisma.client.orm.public.Notification.where({
         id: item.id,
       }).update({ readAt });
-    return { updated: items.filter((value) => !value.readAt).length };
+    return { updated: items.length };
   }
 }

@@ -1,10 +1,11 @@
 import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { useApi } from "../useApi";
+import { notificationsChangedEvent } from "../api";
 import { docsUrl } from "../help";
 import type { Notification } from "../types";
 import { ThemePicker } from "./ThemePicker";
@@ -24,9 +25,19 @@ export function Layout() {
   const { t, tr, language } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
-  const notifications = useApi<{ items: Notification[]; unreadCount: number }>(
-    "/notifications?limit=1",
-  );
+  const notifications = useApi<{
+    items: Notification[];
+    unreadCount: number;
+    unreadMessages: number;
+  }>("/notifications?limit=1");
+  const { refresh } = notifications;
+  useEffect(() => {
+    window.addEventListener(notificationsChangedEvent, refresh);
+    return () => window.removeEventListener(notificationsChangedEvent, refresh);
+  }, [refresh]);
+  // Під час оновлення показуємо попередні числа, щоб значок не блимав
+  const counts = useRef({ unreadCount: 0, unreadMessages: 0 });
+  if (notifications.data) counts.current = notifications.data;
   if (!user) return null;
   const admin = user.role === "ADMIN";
   // Решта сайту адміністратору не потрібна: його робоче місце — адмін-панель
@@ -34,7 +45,8 @@ export function Layout() {
     return <Navigate to="/admin" replace />;
 
   const close = () => setMenuOpen(false);
-  const unread = notifications.data?.unreadCount ?? 0;
+  const unreadMessages = counts.current.unreadMessages;
+  const unread = counts.current.unreadCount - unreadMessages;
   const projectsLabel = admin
     ? tr("Усі проєкти")
     : user.role === "FREELANCER"
@@ -96,6 +108,9 @@ export function Layout() {
                 <NavLink to="/messages" onClick={close}>
                   <i className="bi bi-chat-dots" aria-hidden="true"></i>
                   <span className="nav-label">{t("messages")}</span>
+                  {unreadMessages > 0 && (
+                    <span className="badge-count">{unreadMessages}</span>
+                  )}
                 </NavLink>
               </>
             )}
