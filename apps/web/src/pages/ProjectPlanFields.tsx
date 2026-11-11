@@ -5,12 +5,16 @@ export interface PlanTask {
   description: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
   acceptanceCriteria: string[];
+  // Значення полів форми: порожньо — «ні», ще не визначено
+  deadline?: string;
 }
 export interface PlanMilestone {
   title: string;
   description: string;
   acceptanceCriteria: string[];
   tasks: PlanTask[];
+  amount?: string;
+  deadline?: string;
 }
 export interface Plan {
   milestones: PlanMilestone[];
@@ -25,6 +29,55 @@ function createEmptyTask(): PlanTask {
     priority: "MEDIUM",
     acceptanceCriteria: [""],
   };
+}
+
+// Бюджет і дедлайн: необов'язкові, порожнє поле підписане «ні»
+function TermsFields({
+  id,
+  amount,
+  deadline,
+  onChange,
+}: {
+  id: string;
+  amount?: string;
+  deadline?: string;
+  onChange: (patch: { amount?: string; deadline?: string }) => void;
+}) {
+  const { tr } = useLanguage();
+  const unset = <small className="plan-unset">{tr("ні")}</small>;
+  return (
+    <div className="plan-terms">
+      {amount !== undefined && (
+        <label htmlFor={`${id}-amount`}>
+          <span>
+            {tr("Бюджет, грн")} {!amount && unset}
+          </span>
+          <input
+            id={`${id}-amount`}
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={10000000}
+            step={1}
+            placeholder={tr("ні")}
+            value={amount}
+            onChange={(e) => onChange({ amount: e.target.value })}
+          />
+        </label>
+      )}
+      <label htmlFor={`${id}-deadline`}>
+        <span>
+          {tr("Дедлайн")} {!deadline && unset}
+        </span>
+        <input
+          id={`${id}-deadline`}
+          type="date"
+          value={deadline ?? ""}
+          onChange={(e) => onChange({ deadline: e.target.value })}
+        />
+      </label>
+    </div>
+  );
 }
 
 // Критерії зберігаються як масив рядків, а в полі показуються по одному на рядок.
@@ -108,6 +161,11 @@ function PlanTaskFields({
           <option value="MEDIUM">{tr("Середній")}</option>
           <option value="HIGH">{tr("Високий")}</option>
         </select>
+        <TermsFields
+          id={`task-${idSuffix}`}
+          deadline={task.deadline}
+          onChange={onChange}
+        />
         <CriteriaField
           id={`task-criteria-${idSuffix}`}
           label={tr("Критерії приймання — по одному на рядок")}
@@ -182,6 +240,12 @@ export function PlanMilestoneFields({
           maxLength={3000}
           value={milestone.description}
           onChange={(e) => onChange({ description: e.target.value })}
+        />
+        <TermsFields
+          id={`milestone-${index}`}
+          amount={milestone.amount ?? ""}
+          deadline={milestone.deadline}
+          onChange={onChange}
         />
         <CriteriaField
           id={`milestone-criteria-${index}`}
