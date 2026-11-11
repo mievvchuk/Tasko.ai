@@ -227,6 +227,20 @@ function Chat({
   const [error, setError] = useState("");
   const [live, setLive] = useState<ProjectMessage[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
+  // Хто зараз пише: id → ім'я; кожен запис гасне через 5 с без нової події
+  const [typers, setTypers] = useState<Record<string, string>>({});
+  const typerTimers = useRef<Record<string, number>>({});
+  const lastTyping = useRef(0);
+  function stopTyping(id: string) {
+    window.clearTimeout(typerTimers.current[id]);
+    delete typerTimers.current[id];
+    setTypers((list) => {
+      if (!(id in list)) return list;
+      const rest = { ...list };
+      delete rest[id];
+      return rest;
+    });
+  }
   useEffect(() => setLive([]), [messages.data]);
   useEffect(() => {
     if (page !== 1) return;
@@ -234,8 +248,22 @@ function Chat({
     void subscribe(
       `${path}/messages/stream`,
       (type, data) => {
+        if (type === "typing") {
+          const { userId, name } = JSON.parse(data) as {
+            userId: string;
+            name: string;
+          };
+          setTypers((list) => ({ ...list, [userId]: name }));
+          window.clearTimeout(typerTimers.current[userId]);
+          typerTimers.current[userId] = window.setTimeout(
+            () => stopTyping(userId),
+            5000,
+          );
+          return;
+        }
         if (type !== "message") return;
         const message = JSON.parse(data) as ProjectMessage;
+        stopTyping(message.senderId);
         setLive((list) =>
           list.some((item) => item.id === message.id)
             ? list
@@ -244,8 +272,21 @@ function Chat({
       },
       controller.signal,
     );
-    return () => controller.abort();
+    const timers = typerTimers.current;
+    return () => {
+      controller.abort();
+      Object.values(timers).forEach((timer) => window.clearTimeout(timer));
+      setTypers({});
+    };
   }, [path, page]);
+  // Сповіщаємо співрозмовників, що пишемо, не частіше ніж раз на 2,5 с
+  function typed(value: string) {
+    setContent(value);
+    if (!value.trim() || Date.now() - lastTyping.current < 2500) return;
+    lastTyping.current = Date.now();
+    void request(`${path}/typing`, { method: "POST" }).catch(() => {});
+  }
+  const typerNames = Object.values(typers);
   const shown = messages.data
     ? [
         ...[...messages.data].reverse(),
@@ -277,6 +318,7 @@ function Chat({
         body: { content: content.trim() },
       });
       setContent("");
+      lastTyping.current = 0;
       setParams(param);
       messages.refresh();
       onSent?.();
@@ -331,6 +373,21 @@ function Chat({
               </article>
             ))}
           </div>
+          <p className="typing-indicator padded" aria-live="polite">
+            {typerNames.length > 0 && (
+              <>
+                <span className="typing-dots" aria-hidden="true">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                </span>
+                {tr(
+                  typerNames.length > 1 ? "{0} пишуть…" : "{0} пише…",
+                  typerNames.join(", "),
+                )}
+              </>
+            )}
+          </p>
           <p className="form-note padded">
             {tr(
               "Перша сторінка містить найновіші повідомлення. Наступні сторінки — раніші.",
@@ -356,7 +413,7 @@ function Chat({
               rows={4}
               value={content}
               disabled={busy}
-              onChange={(event) => setContent(event.target.value)}
+              onChange={(event) => typed(event.target.value)}
             />
             {error && (
               <p className="notice error" role="alert">
