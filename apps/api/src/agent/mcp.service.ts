@@ -19,6 +19,19 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { AdminService } from '../admin/admin.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 
+// Поля, які моделі не потрібні для відповіді (UUID і службові дати), та порожні значення:
+// у результатах інструментів вони займали левову частку токенів запиту
+const noiseKeys = new Set([
+  'clientId',
+  'categoryId',
+  'columnId',
+  'avatarUrl',
+  'updatedAt',
+]);
+export function withoutNoise(key: string, value: unknown) {
+  return value === null || noiseKeys.has(key) ? undefined : value;
+}
+
 @Injectable()
 export class McpService {
   private readonly logger = new Logger(McpService.name);
@@ -40,7 +53,10 @@ export class McpService {
       try {
         return {
           content: [
-            { type: 'text' as const, text: JSON.stringify(await run()) },
+            {
+              type: 'text' as const,
+              text: JSON.stringify(await run(), withoutNoise),
+            },
           ],
         };
       } catch (error) {

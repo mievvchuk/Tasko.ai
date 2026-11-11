@@ -19,6 +19,20 @@ import { maxTotalAttachmentChars } from './attachments.js';
 
 const maxPlanAttempts = 3;
 
+// JSON-схема параметрів інструмента для моделі без важких службових частин:
+// регулярний вираз UUID (~110 токенів на параметр) і $schema. Параметри
+// однаково повністю перевіряє zod у MCP-сервері під час виклику.
+export function compactSchema(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(compactSchema);
+  if (!schema || typeof schema !== 'object') return schema;
+  const entries = Object.entries(schema).filter(
+    ([key]) => key !== '$schema' && !(key === 'pattern' && 'format' in schema),
+  );
+  return Object.fromEntries(
+    entries.map(([key, value]) => [key, compactSchema(value)]),
+  );
+}
+
 // Провайдер сам відхилив відповідь моделі, бо вона не відповідала JSON-схемі
 // (у Groq — код json_validate_failed). Це збій моделі, а не налаштувань, тож
 // запит можна повторити.
@@ -315,7 +329,7 @@ export class AgentService {
         function: {
           name: tool.name,
           description: tool.description,
-          parameters: tool.inputSchema,
+          parameters: compactSchema(tool.inputSchema),
         },
       }));
       // Інструментів побільшало, тож даємо агенту до 6 кроків на складніші запитання
@@ -355,14 +369,16 @@ export class AgentService {
             name: call.function.name,
             arguments: args as Record<string, unknown>,
           });
+          // Текст результату як є: JSON.stringify усього результату MCP
+          // екранував би лапки вкладеного JSON і додавав зайві токени
+          const [content] = result.content as { text?: string }[];
           messages.push({
             role: 'tool',
             tool_call_id: call.id,
-            content: JSON.stringify(result),
+            content: `${result.isError ? 'Помилка: ' : ''}${content?.text ?? ''}`,
           });
           usedTools.push(call.function.name);
           // Чернетку вже перевірив інструмент; віддаємо її клієнту для кнопки
-          const [content] = result.content as { text?: string }[];
           if (call.function.name === 'draft_project' && !result.isError)
             projectDraft = JSON.parse(content?.text ?? 'null');
         }

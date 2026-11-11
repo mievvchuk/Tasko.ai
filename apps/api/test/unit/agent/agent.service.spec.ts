@@ -2,9 +2,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import {
   AgentService,
+  compactSchema,
   offTopicAnswer,
 } from '../../../src/agent/agent.service.js';
-import { McpService } from '../../../src/agent/mcp.service.js';
+import { McpService, withoutNoise } from '../../../src/agent/mcp.service.js';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { AnalyticsService } from '../../../src/analytics/analytics.service.js';
 import type { TasksService } from '../../../src/tasks/tasks.service.js';
@@ -133,6 +134,57 @@ describe('AI through MCP', () => {
           message.role === 'tool' && message.content.includes('Own project'),
       ),
     ).toBe(true);
+    // Результат інструмента — сам JSON даних, без обгортки MCP і екранованих лапок
+    const toolMessage = lastBody.messages.find(
+      (message: { role: string }) => message.role === 'tool',
+    );
+    expect(toolMessage.content).not.toContain('\\"');
+    expect(() => JSON.parse(toolMessage.content)).not.toThrow();
+    // Схеми інструментів без $schema і регулярних виразів UUID
+    const tools = JSON.stringify(lastBody.tools);
+    expect(tools).not.toContain('$schema');
+    expect(tools).not.toContain('"pattern"');
+    expect(tools).toContain('"format":"uuid"');
+  });
+
+  it('strips heavy schema parts and noisy result fields to save tokens', () => {
+    expect(
+      compactSchema({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          projectId: {
+            type: 'string',
+            format: 'uuid',
+            pattern: '^[0-9a-f-]+$',
+          },
+          code: { type: 'string', pattern: '^[A-Z]+$' },
+        },
+      }),
+    ).toEqual({
+      type: 'object',
+      properties: {
+        projectId: { type: 'string', format: 'uuid' },
+        code: { type: 'string', pattern: '^[A-Z]+$' },
+      },
+    });
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          [
+            {
+              id: 'p1',
+              title: 'Сайт',
+              deadline: null,
+              clientId: 'u1',
+              updatedAt: '2026-11-10',
+              createdAt: '2026-11-01',
+            },
+          ],
+          withoutNoise,
+        ),
+      ),
+    ).toEqual([{ id: 'p1', title: 'Сайт', createdAt: '2026-11-01' }]);
   });
   it('returns a project draft without creating the project', async () => {
     const toolCall = (args: object) =>
