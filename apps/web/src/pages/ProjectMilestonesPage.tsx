@@ -196,7 +196,7 @@ export function ProjectMilestonesPage() {
         }}
       />
       {owner && (
-        <section className="data-panel">
+        <section className="data-panel padded">
           <MilestoneForm submitLabel={tr("Додати етап")} onSubmit={create} />
         </section>
       )}

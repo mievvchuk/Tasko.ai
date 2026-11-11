@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import { useApi } from "../useApi";
 import { formatDate } from "../format";
@@ -15,20 +16,27 @@ const riskNames = {
 };
 
 // Рівень навантаження за кількістю незавершених завдань
+const overloadAt = 6;
 function loadLevel(active: number) {
-  if (active >= 6)
-    return { key: "high", label: "Перевантаження", percent: 100 };
-  if (active >= 3)
-    return {
-      key: "medium",
-      label: "Помірне навантаження",
-      percent: 30 + active * 10,
-    };
-  return {
-    key: "low",
-    label: "Легке навантаження",
-    percent: Math.max(8, active * 15),
-  };
+  if (active >= overloadAt) return { key: "high", label: "Перевантаження" };
+  if (active >= 3) return { key: "medium", label: "Помірне навантаження" };
+  return { key: "low", label: "Легке навантаження" };
+}
+
+// Кругова шкала навантаження: повне коло — 6 і більше незавершених завдань (перевантаження)
+function LoadRing({ active, label }: { active: number; label: string }) {
+  const { tr } = useLanguage();
+  const percent = Math.min(100, (active / overloadAt) * 100);
+  return (
+    <div
+      className="load-ring"
+      role="img"
+      aria-label={tr("{0}: незавершених завдань {1}", tr(label), active)}
+      style={{ "--load-percent": `${percent}%` } as CSSProperties}
+    >
+      <strong>{active}</strong>
+    </div>
+  );
 }
 
 export function WorkloadPage() {
@@ -91,11 +99,6 @@ export function WorkloadPage() {
               </strong>
             </article>
           </div>
-          <p className="form-note">
-            {tr(
-              "Показники враховують лише доступні вам дані. Вони не розкривають роботу фрілансера у чужих приватних проєктах.",
-            )}
-          </p>
           {!people.length && (
             <section className="data-panel empty-state">
               <h2>{tr("Виконавців поки немає")}</h2>
@@ -131,28 +134,27 @@ export function WorkloadPage() {
                       {formatDate(person.nearestDeadline, true)}
                     </span>
                   </div>
-                  <div className={"load-meter load-" + level.key}>
-                    <span>
+                  <div className={"workload-load load-" + level.key}>
+                    <LoadRing active={person.activeTasks} label={level.label} />
+                    <div>
                       <b>{tr(level.label)}</b>
-                      {person.activeTasks}
-                    </span>
-                    <i aria-hidden="true">
-                      <em style={{ width: `${level.percent}%` }}></em>
-                    </i>
+                      <dl className="workload-counts">
+                        <div className="count-active">
+                          <dt>{tr("Незавершені")}</dt>
+                          <dd>{person.activeTasks}</dd>
+                        </div>
+                        <div className="count-overdue">
+                          <dt>{tr("Прострочені")}</dt>
+                          <dd>{person.overdueTasks}</dd>
+                        </div>
+                        <div className="count-priority">
+                          <dt>{tr("Високий пріоритет")}</dt>
+                          <dd>{person.highPriorityTasks}</dd>
+                        </div>
+                      </dl>
+                    </div>
                   </div>
                 </div>
-                <ul className="workload-chips">
-                  <li className="chip-active">
-                    <strong>{person.activeTasks}</strong> {tr("Незавершені")}
-                  </li>
-                  <li className="chip-overdue">
-                    <strong>{person.overdueTasks}</strong> {tr("Прострочені")}
-                  </li>
-                  <li className="chip-priority">
-                    <strong>{person.highPriorityTasks}</strong>{" "}
-                    {tr("Високий пріоритет")}
-                  </li>
-                </ul>
                 {person.tasks.length ? (
                   <div
                     className="table-scroll"

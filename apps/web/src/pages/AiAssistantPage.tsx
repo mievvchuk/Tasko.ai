@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import { aiName, useAiChat } from "../aiChat";
 import { useApi } from "../useApi";
@@ -7,12 +8,28 @@ import { ResourceState } from "../components/ResourceState";
 import { useLanguage } from "../i18n";
 export function AiAssistantPage() {
   const { tr } = useLanguage();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const projectId = params.get("project");
+  // ?analyze=1 ставить вкладка «Аналіз AI» проєкту: інструменти MCP запускаються лише тепер, коли її відкрили
+  const analyze = params.get("analyze") === "1";
   const status = useApi<{ configured: boolean; toolsReadOnly: boolean }>(
     "/agent/status",
   );
-  const { exchanges, busy, clear } = useAiChat();
+  const { exchanges, busy, clear, send } = useAiChat();
+  const analysisStarted = useRef(false);
+  const configured = Boolean(status.data?.configured);
+  useEffect(() => {
+    if (!analyze || !projectId || !configured || analysisStarted.current) return;
+    analysisStarted.current = true;
+    // Прибираємо прапорець, щоб оновлення сторінки чи «Назад» не запускали аналіз удруге
+    setParams({ project: projectId }, { replace: true });
+    void send(
+      tr(
+        "Проаналізуй стан цього проєкту: прогрес, ризики й дедлайни, завантаження команди. Дай короткі рекомендації.",
+      ),
+      tr("Проєкт з ID {0}.", projectId),
+    );
+  }, [analyze, projectId, configured, send, setParams, tr]);
   return (
     <>
       {projectId && (

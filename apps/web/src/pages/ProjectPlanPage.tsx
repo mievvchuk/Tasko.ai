@@ -181,10 +181,13 @@ function ProjectPlanEditor() {
                 "AI використає назву й опис цього проєкту та запропонує етапи, завдання і критерії приймання. Перевірте та відредагуйте чернетку перед додаванням.",
               )}
             </p>
-            <p className="form-note">
-              {tr(
-                "Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0 грн. Призначити виконавців і строки завдань можна у формах їх редагування після збереження.",
-              )}
+            <p className="plan-note">
+              <i className="bi bi-info-circle" aria-hidden="true"></i>
+              <span>
+                {tr(
+                  "Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0 грн. Призначити виконавців і строки завдань можна у формах їх редагування після збереження.",
+                )}
+              </span>
             </p>
             {!provider.loading &&
               provider.data &&
@@ -210,18 +213,24 @@ function ProjectPlanEditor() {
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 maxLength={3000}
-                rows={3}
+                rows={2}
                 disabled={editingLocked}
                 placeholder={tr(
                   "Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP.",
                 )}
               />
-              <button
-                className="button primary"
-                disabled={editingLocked || !provider.data?.configured}
-              >
-                {tr(generateButtonLabel(busy, plan !== null))}
-              </button>
+              <div className="plan-form-bar">
+                <small className="form-note">
+                  {tr("{0} / 3000 символів", instructions.length)}
+                </small>
+                <button
+                  className="button primary"
+                  disabled={editingLocked || !provider.data?.configured}
+                >
+                  <i className="bi bi-stars" aria-hidden="true"></i>
+                  {tr(generateButtonLabel(busy, plan !== null))}
+                </button>
+              </div>
             </form>
           </section>
           {busy && (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { errorMessage, request } from "../api";
-import { describeDevice, formatDate } from "../format";
+import { describeAddress, describeDevice, formatDate } from "../format";
 import type { AuthSession, User } from "../types";
 import { useApi } from "../useApi";
 import { PasswordInput } from "./PasswordInput";
@@ -148,7 +148,7 @@ export function SecuritySettings({ user }: { user: User }) {
                   "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.",
                 )}
           </p>
-          <form onSubmit={changePassword} className="security-form">
+          <form onSubmit={changePassword} className="security-form password-form">
             {hasPassword && (
               <PasswordInput
                 id="current-password"
@@ -176,7 +176,6 @@ export function SecuritySettings({ user }: { user: User }) {
                   : ""
               }
             />
-            <PasswordStrength password={newPassword} />
             <PasswordInput
               id="profile-new-password-confirmation"
               label={tr("Повторіть новий пароль")}
@@ -185,6 +184,7 @@ export function SecuritySettings({ user }: { user: User }) {
               autoComplete="new-password"
               error={mismatch ? tr("Нові паролі не збігаються.") : ""}
             />
+            <PasswordStrength password={newPassword} />
             <button
               className="button primary"
               disabled={submitting || sameAsCurrent || mismatch}
@@ -240,9 +240,23 @@ export function SecuritySettings({ user }: { user: User }) {
                     }
                   />
                 </div>
-                <button className="button primary" disabled={submitting}>
-                  {tr("Підтвердити 2FA")}
-                </button>
+                <div className="form-actions">
+                  <button className="button primary" disabled={submitting}>
+                    {tr("Підтвердити 2FA")}
+                  </button>
+                  {/* Передумали: ховаємо QR; 2FA вмикається лише після коду, тож нічого не змінилось */}
+                  <button
+                    type="button"
+                    className="button secondary"
+                    disabled={submitting}
+                    onClick={() => {
+                      setSetup(null);
+                      setCode("");
+                    }}
+                  >
+                    {tr("Скасувати")}
+                  </button>
+                </div>
               </div>
             </form>
           )}
@@ -312,7 +326,7 @@ export function SecuritySettings({ user }: { user: User }) {
                       {describeDevice(session.userAgent)}
                     </span>
                     <small>
-                      {session.ipAddress || tr("IP невідомий")} ·{" "}
+                      {describeAddress(session.ipAddress)} ·{" "}
                       {formatDate(session.createdAt, true)}
                     </small>
                   </div>
