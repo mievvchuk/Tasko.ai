@@ -54,3 +54,26 @@ test("password strength grows with length and character variety", async () => {
   assert.equal(passwordStrength("Password1!"), 3);
   assert.equal(passwordStrength("Пароль-Довгий-2026"), 4);
 });
+
+test("session address hides loopback and private networks", async () => {
+  const { describeAddress } = await import("../src/format.ts");
+  assert.equal(describeAddress("::1"), "Локальна мережа");
+  assert.equal(describeAddress("::ffff:127.0.0.1"), "Локальна мережа");
+  assert.equal(describeAddress("192.168.0.12"), "Локальна мережа");
+  assert.equal(describeAddress("::ffff:93.170.12.4"), "93.170.12.4");
+  assert.equal(describeAddress(null), "IP невідомий");
+});
+
+test("crop frame keeps the photo covering the circle", async () => {
+  const { cropFrame } = await import("../src/format.ts");
+  const wide = { width: 400, height: 200 };
+  // Без зуму висота заповнює рамку, зсув по вертикалі неможливий
+  const centred = cropFrame(wide, 100, 1, { x: -50, y: -30 });
+  assert.equal(centred.scale, 0.5);
+  assert.deepEqual([centred.x, centred.y], [-50, 0]);
+  assert.deepEqual(centred.source, { x: 100, y: 0, size: 200 });
+  // Зсув за край обмежується
+  const dragged = cropFrame(wide, 100, 2, { x: 50, y: -500 });
+  assert.deepEqual([dragged.x, dragged.y], [0, -100]);
+  assert.deepEqual(dragged.source, { x: 0, y: 100, size: 100 });
+});
