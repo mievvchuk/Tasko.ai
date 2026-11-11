@@ -580,9 +580,17 @@ export const enText: Record<string, string> = {
 
   // Замовлення, історія
   Замовлення: "Orders",
-  "Створити замовлення": "Create order",
+  "Замовлень ще немає. Замовлення створюється, коли ви приймаєте заявку фрілансера.":
+    "No orders yet. An order is created when you accept a freelancer's application.",
+  "Сума:": "Amount:",
+  "Угоди з виконавцями, над якими зараз працюють.": "Deals with freelancers that are in progress.",
+  "Клієнт прийняв усю роботу виконавця.": "The client accepted all of the freelancer's work.",
+  "Угоди, які зірвалися або закриті разом зі скасованим проєктом.":
+    "Deals that fell through or closed with a cancelled project.",
+  "Сума виконаних, грн": "Completed amount, UAH",
+  "Сума угод, за якими роботу прийнято.": "Total of deals whose work was accepted.",
+  "Строк:": "Due:",
   "Замовлення проєкту": "Project orders",
-  "На цій сторінці замовлень немає.": "No orders on this page.",
   "Створено:": "Created:",
   "· Оновлено:": "· Updated:",
   "Розпочати замовлення": "Start order",

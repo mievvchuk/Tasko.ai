@@ -80,6 +80,17 @@ describe('sign-in with Google', () => {
     expect(result.user).toMatchObject({ hasPassword: false });
   });
 
+  it('creates the account with the role chosen on the landing page', async () => {
+    users.create.mockResolvedValue(account({ googleId: profile.googleId }));
+    await auth.loginWithGoogle({
+      credential: 'x'.repeat(40),
+      role: 'FREELANCER',
+    });
+    expect(users.create).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'FREELANCER' }),
+    );
+  });
+
   it('links Google to an existing account with the same email', async () => {
     const existing = account({
       passwordHash: await hashPassword('Secret-123'),

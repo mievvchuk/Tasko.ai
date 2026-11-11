@@ -107,12 +107,6 @@ export class TasksController {
   ) {
     return this.tasks.orders(user, id, page);
   }
-  @Post('projects/:id/orders') order(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    return this.tasks.createOrder(user, id);
-  }
   @Patch('orders/:id') updateOrder(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,

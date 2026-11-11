@@ -294,6 +294,17 @@ export async function buildReportPdf(report: Report) {
           4,
         ),
 
+        heading('Замовлення'),
+        tileGrid(
+          [
+            ['У роботі', report.ordersByStatus.IN_PROGRESS, color.blue],
+            ['Виконано', report.ordersByStatus.COMPLETED, color.green],
+            ['Скасовано', report.ordersByStatus.CANCELLED, color.red],
+            ['Сума виконаних', report.completedOrdersAmount, color.green],
+          ],
+          4,
+        ),
+
         heading('Середній час'),
         {
           table: {

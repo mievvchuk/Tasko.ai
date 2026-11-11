@@ -42,6 +42,7 @@ import { ProjectActivityPage } from "./pages/ProjectActivityPage";
 import { ComplaintsPage } from "./pages/ComplaintsPage";
 import { ProjectPlanPage } from "./pages/ProjectPlanPage";
 import { HelpPage } from "./pages/HelpPage";
+import { OrdersPage } from "./pages/OrdersPage";
 
 import { useLanguage } from "./i18n";
 function ProtectedRoute() {
@@ -58,7 +59,7 @@ function GuestRoute() {
   if (user) {
     let fresh = false;
     try {
-      fresh = sessionStorage.getItem(justRegisteredKey) === "1";
+      fresh = sessionStorage.getItem(justRegisteredKey) !== null;
     } catch {
       // без сховища просто йдемо на головну
     }
@@ -135,6 +136,7 @@ export function App() {
           <Route path="projects/:id/edit" element={<ProjectFormPage />} />
           <Route path="projects/:id/tasks/new" element={<TaskFormPage />} />
           <Route path="projects/:id/files" element={<FilesPage />} />
+          <Route path="projects/:id/orders" element={<OrdersPage />} />
           <Route
             path="projects/:id/applications"
             element={<ProjectApplicationsPage />}

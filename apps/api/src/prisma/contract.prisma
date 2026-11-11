@@ -313,6 +313,11 @@ model Order {
   clientId  String
   projectId String
   project   Project  @relation(fields: [projectId], references: [id])
+  // Угода з виконавцем: створюється, коли клієнт приймає заявку.
+  // У замовлень, створених до цієї зміни, полів угоди немає (null).
+  freelancerId String?
+  amount    Int?
+  deadline  TimestamptzJsDate?
   status    String   // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate

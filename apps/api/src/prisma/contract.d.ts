@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ec8f65b76eb7d99539b0b12d6c15235dd7d29dffdfd98709152e1c767c28cd11'>;
+  StorageHashBase<'660f56e8093469123a97f93917eee71c2984bb62f03cf1b0c1cd13847e9751f9'>;
 export type ExecutionHash =
   ExecutionHashBase<'e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06'>;
 export type ProfileHash =
@@ -332,8 +332,11 @@ export type FieldOutputTypes = {
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
     readonly Order: {
+      readonly amount: CodecTypes['pg/int4@1']['output'] | null;
       readonly clientId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
+      readonly freelancerId: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly projectId: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
@@ -555,8 +558,11 @@ export type FieldInputTypes = {
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
     readonly Order: {
+      readonly amount: CodecTypes['pg/int4@1']['input'] | null;
       readonly clientId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
+      readonly freelancerId: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
@@ -778,8 +784,11 @@ export type StorageColumnTypes = {
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
     readonly Order: {
+      readonly amount: CodecTypes['pg/int4@1']['output'] | null;
       readonly clientId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
+      readonly freelancerId: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly projectId: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
@@ -1001,8 +1010,11 @@ export type StorageColumnInputTypes = {
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
     readonly Order: {
+      readonly amount: CodecTypes['pg/int4@1']['input'] | null;
       readonly clientId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
+      readonly freelancerId: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
@@ -1261,8 +1273,11 @@ export namespace Models {
     readonly [RelationKeys]?: 'project' | 'task' | 'user';
   };
   export type public_Order = {
+    amount: CodecTypes['pg/int4@1']['output'] | null;
     clientId: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+    deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
+    freelancerId: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
     projectId: CodecTypes['pg/text@1']['output'];
     status: CodecTypes['pg/text@1']['output'];
@@ -2532,6 +2547,12 @@ type ContractBase = Omit<
             };
             readonly Order: {
               columns: {
+                readonly amount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly clientId: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -2543,6 +2564,18 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-date@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly deadline: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly freelancerId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly id: {
@@ -4481,6 +4514,10 @@ type ContractBase = Omit<
           };
           readonly Order: {
             readonly fields: {
+              readonly amount: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly clientId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4491,6 +4528,17 @@ type ContractBase = Omit<
                   readonly kind: 'scalar';
                   readonly codecId: 'pg/timestamptz-date@1';
                 };
+              };
+              readonly deadline: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly freelancerId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly id: {
                 readonly nullable: false;
@@ -4530,8 +4578,11 @@ type ContractBase = Omit<
               readonly table: 'Order';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly amount: { readonly column: 'amount' };
                 readonly clientId: { readonly column: 'clientId' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly deadline: { readonly column: 'deadline' };
+                readonly freelancerId: { readonly column: 'freelancerId' };
                 readonly id: { readonly column: 'id' };
                 readonly projectId: { readonly column: 'projectId' };
                 readonly status: { readonly column: 'status' };

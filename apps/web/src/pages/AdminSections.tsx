@@ -862,6 +862,36 @@ export function AdminStats({ report }: { report: AdminReport }) {
       hint: tr("Заявки, які клієнт відхилив."),
     },
   ];
+  const orders: KpiItem[] = [
+    {
+      label: tr("У роботі"),
+      value: report.ordersByStatus.IN_PROGRESS,
+      icon: "bi-briefcase",
+      tone: "primary",
+      hint: tr("Угоди з виконавцями, над якими зараз працюють."),
+    },
+    {
+      label: tr("Виконано"),
+      value: report.ordersByStatus.COMPLETED,
+      icon: "bi-check2-circle",
+      tone: "success",
+      hint: tr("Клієнт прийняв усю роботу виконавця."),
+    },
+    {
+      label: tr("Скасовано"),
+      value: report.ordersByStatus.CANCELLED,
+      icon: "bi-x-circle",
+      tone: "danger",
+      hint: tr("Угоди, які зірвалися або закриті разом зі скасованим проєктом."),
+    },
+    {
+      label: tr("Сума виконаних, грн"),
+      value: report.completedOrdersAmount.toLocaleString(uiLocale()),
+      icon: "bi-cash-coin",
+      tone: "success",
+      hint: tr("Сума угод, за якими роботу прийнято."),
+    },
+  ];
   const tasks: KpiItem[] = [
     {
       label: tr("У процесі"),
@@ -895,6 +925,7 @@ export function AdminStats({ report }: { report: AdminReport }) {
   const groups: [string, KpiItem[]][] = [
     [tr("Скарги"), complaints],
     [tr("Заявки"), applications],
+    [tr("Замовлення"), orders],
     [tr("Завдання"), tasks],
   ];
   const days = report.week.days;

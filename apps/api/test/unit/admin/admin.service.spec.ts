@@ -72,6 +72,15 @@ describe('AdminService reports', () => {
     ProjectApplication: {
       select: vi.fn(() => ({ all: vi.fn(async () => applicationRows) })),
     },
+    Order: {
+      select: vi.fn(() => ({
+        all: vi.fn(async () => [
+          { status: 'COMPLETED', amount: 1500 },
+          { status: 'COMPLETED', amount: null },
+          { status: 'IN_PROGRESS', amount: 800 },
+        ]),
+      })),
+    },
   };
   const prisma = { client: { orm: { public: db } } };
   const service = new AdminService(
@@ -101,6 +110,8 @@ describe('AdminService reports', () => {
     expect(report).toMatchObject({
       complaintsByStatus: { OPEN: 1, RESOLVED: 1, REJECTED: 0 },
       applicationsByStatus: { PENDING: 0, ACCEPTED: 1, REJECTED: 1 },
+      ordersByStatus: { PENDING: 0, IN_PROGRESS: 1, COMPLETED: 2, CANCELLED: 0 },
+      completedOrdersAmount: 1500,
       week: { users: 1, projects: 2, complaints: 2, applications: 2 },
       averageHours: { complaintResolution: 4, firstApplication: 2, hire: 6 },
     });

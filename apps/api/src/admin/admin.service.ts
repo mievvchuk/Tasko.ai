@@ -243,6 +243,7 @@ export class AdminService {
           applicationId: application.id,
         }).deleteAll();
       await db.ProjectApplication.where({ freelancerId: id }).deleteAll();
+      await db.Order.where({ freelancerId: id }).deleteAll();
       await db.FreelancerReview.where({ clientId: id }).deleteAll();
       await db.FreelancerReview.where({ freelancerId: id }).deleteAll();
       await db.ProjectMember.where({ userId: id }).deleteAll();
@@ -343,6 +344,10 @@ export class AdminService {
         'createdAt',
         'updatedAt',
       ).all();
+    const orders = await this.prisma.client.orm.public.Order.select(
+      'status',
+      'amount',
+    ).all();
     const days = lastDays(7);
     const weekStart = new Date(`${days[0]}T00:00:00Z`);
     const projectCreated = new Map(projects.map((p) => [p.id, p.createdAt]));
@@ -403,6 +408,15 @@ export class AdminService {
         applications,
         'status',
       ),
+      ordersByStatus: countBy(
+        ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+        orders,
+        'status',
+      ),
+      // Сума виконаних угод; у старих замовлень без суми рахуємо 0
+      completedOrdersAmount: orders
+        .filter((order) => order.status === 'COMPLETED')
+        .reduce((sum, order) => sum + (order.amount ?? 0), 0),
       // Останні 7 днів: підсумки й щоденні ряди для лінійної діаграми
       week: {
         users: users.filter((person) => person.createdAt >= weekStart).length,
@@ -529,6 +543,10 @@ export class AdminService {
       },
       { label: 'Скарги: вирішено', value: report.complaintsByStatus.RESOLVED },
       { label: 'Скарги: відхилено', value: report.complaintsByStatus.REJECTED },
+      { label: 'Замовлення: у роботі', value: report.ordersByStatus.IN_PROGRESS },
+      { label: 'Замовлення: виконано', value: report.ordersByStatus.COMPLETED },
+      { label: 'Замовлення: скасовано', value: report.ordersByStatus.CANCELLED },
+      { label: 'Сума виконаних замовлень', value: report.completedOrdersAmount },
       { label: 'Нові користувачі за 7 днів', value: report.week.users },
       { label: 'Нові проєкти за 7 днів', value: report.week.projects },
       { label: 'Нові заявки за 7 днів', value: report.week.applications },

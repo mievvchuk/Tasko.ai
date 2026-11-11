@@ -48,9 +48,12 @@ function loadGoogle() {
 export function GoogleSignIn({
   mode,
   rememberMe = false,
+  role,
 }: {
   mode: "signin" | "signup";
   rememberMe?: boolean;
+  // Лише для реєстрації: роль нового акаунта
+  role?: "CLIENT" | "FREELANCER";
 }) {
   const { loginWithGoogle } = useAuth();
   const { t, tr, language } = useLanguage();
@@ -58,6 +61,8 @@ export function GoogleSignIn({
   // Свіже значення для колбека Google, який створюється один раз
   const remember = useRef(rememberMe);
   remember.current = rememberMe;
+  const chosenRole = useRef(role);
+  chosenRole.current = role;
   const [credential, setCredential] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -71,6 +76,7 @@ export function GoogleSignIn({
         token,
         twoFactorCode,
         remember.current,
+        chosenRole.current,
       );
       // 2FA увімкнено: просимо код і повторюємо запит з тим самим токеном
       if (!done) setCredential(token);

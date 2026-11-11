@@ -252,6 +252,13 @@ export class ProjectsService {
     // Виправлений після відхилення проєкт знову йде на модерацію
     if (project.status === 'REJECTED') changes.status = 'MODERATION';
     const updated = await this.db.Project.where({ id }).update(changes);
+    // Закритий проєкт доступний лише для читання, тож відкриті угоди закриваємо разом із ним
+    if (data.status === 'COMPLETED' || data.status === 'CANCELLED')
+      for (const open of ['PENDING', 'IN_PROGRESS'])
+        await this.db.Order.where({ projectId: id, status: open }).updateAll({
+          status: data.status,
+          updatedAt: new Date(),
+        });
     if (data.skillIds !== undefined)
       await this.replaceProjectSkills(id, data.skillIds);
     return updated;
@@ -333,8 +340,7 @@ export class ProjectsService {
     }
   }
 
-  // Завершити проєкт можна, лише коли всі завдання завершені.
-  // Замовлення (Order) у інтерфейсі більше немає, тож на завершення вони не впливають.
+  // Завершити проєкт можна, лише коли всі завдання завершені (відкриті замовлення закриються разом із ним).
   private async ensureProjectCanBeCompleted(projectId: string) {
     const tasks = await this.db.Task.where({ projectId })
       .select('status')
@@ -714,6 +720,19 @@ export class ProjectsService {
           role: 'MEMBER',
           joinedAt: new Date(),
         });
+      // Замовлення — угода з цим виконавцем на умовах із його заявки
+      const now = new Date();
+      await tx.orm.public.Order.create({
+        id: randomUUID(),
+        projectId: current.projectId,
+        clientId: project.clientId,
+        freelancerId: current.freelancerId,
+        amount: current.proposedBudget,
+        deadline: new Date(now.getTime() + current.proposedDays * 86_400_000),
+        status: 'IN_PROGRESS',
+        createdAt: now,
+        updatedAt: now,
+      });
       // Інші заявки лишаються: клієнт може найняти ще людей або закрити набір
       if (project.status === 'PLANNING')
         await tx.orm.public.Project.where({ id: current.projectId }).update({
