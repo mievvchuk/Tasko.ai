@@ -15,7 +15,7 @@ import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { PageDto } from '../projects/projects.dto.js';
 import type { CurrentUser } from '../users/users.service.js';
-import { NotificationsService } from './notifications.service.js';
+import { messageTypes, NotificationsService } from './notifications.service.js';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -37,5 +37,11 @@ export class NotificationsController {
   }
   @Post('read-all') @HttpCode(200) readAll(@Actor() user: CurrentUser) {
     return this.notifications.readAll(user.id);
+  }
+  // Користувач відкрив «Повідомлення» — сповіщення про листування вважаємо прочитаними
+  @Post('read-messages') @HttpCode(200) readMessages(
+    @Actor() user: CurrentUser,
+  ) {
+    return this.notifications.readAll(user.id, messageTypes);
   }
 }

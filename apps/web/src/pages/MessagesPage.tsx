@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
-import { request, errorMessage, subscribe } from "../api";
+import {
+  request,
+  errorMessage,
+  subscribe,
+  notificationsChangedEvent,
+} from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
@@ -31,6 +36,13 @@ export function MessagesPage() {
     user?.role === "ADMIN" ? null : "/applications/conversations",
   );
   const current = project.data ? project : application;
+  // Відкрили листування — лічильник біля «Повідомлень» гасне
+  useEffect(() => {
+    if (user?.role === "ADMIN") return;
+    void request("/notifications/read-messages", { method: "POST" })
+      .then(() => window.dispatchEvent(new Event(notificationsChangedEvent)))
+      .catch(() => {});
+  }, [user?.role, projectId, applicationId]);
   return (
     <>
       <div className="page-heading">

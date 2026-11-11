@@ -1,6 +1,8 @@
 import { trNow } from "./i18n.en.ts";
 export const tokenKey = "tasko.accessToken";
 export const sessionEndedEvent = "tasko:session-ended";
+// Сторінки, що позначають сповіщення прочитаними, кажуть меню оновити лічильники
+export const notificationsChangedEvent = "tasko:notifications-changed";
 
 export class ApiError extends Error {
   status: number;
