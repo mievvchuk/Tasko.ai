@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import { ApiError, errorMessage, request } from "../api";
+import { dateInputEnd } from "../format";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { ResourceState } from "../components/ResourceState";
@@ -93,7 +94,7 @@ function ProjectPlanEditor() {
     try {
       await request(`/projects/${id}/ai-plan/apply`, {
         method: "POST",
-        body: { plan, requestId },
+        body: { plan: planPayload(plan), requestId },
         signal: abort.signal,
         timeoutMs: 30000,
       });
@@ -185,7 +186,7 @@ function ProjectPlanEditor() {
               <i className="bi bi-info-circle" aria-hidden="true"></i>
               <span>
                 {tr(
-                  "Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0 грн. Призначити виконавців і строки завдань можна у формах їх редагування після збереження.",
+                  "Бюджет і дедлайн кожного етапу та завдання можна вказати в чернетці. Не визначились — лишіть «ні», заповните пізніше у формах редагування. Виконавців призначають після збереження.",
                 )}
               </span>
             </p>
@@ -334,6 +335,23 @@ function updateAt<T extends object>(
   patch: Partial<T>,
 ): T[] {
   return items.map((item, i) => (i === index ? { ...item, ...patch } : item));
+}
+
+// Поля форми → запит: порожнє — null («ні»), дата — кінець дня за місцевим часом
+const deadlineOrNull = (value?: string) =>
+  value ? dateInputEnd(value).toISOString() : null;
+function planPayload(plan: Plan) {
+  return {
+    milestones: plan.milestones.map(({ amount, deadline, tasks, ...milestone }) => ({
+      ...milestone,
+      amount: amount ? Number(amount) : null,
+      deadline: deadlineOrNull(deadline),
+      tasks: tasks.map(({ deadline, ...task }) => ({
+        ...task,
+        deadline: deadlineOrNull(deadline),
+      })),
+    })),
+  };
 }
 
 function countTasks(plan: Plan) {

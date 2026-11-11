@@ -1,4 +1,7 @@
-import { parseProjectPlan, projectPlanSchema } from '../../../src/agent/project-plan.js';
+import {
+  parseProjectPlan,
+  projectPlanSchema,
+} from '../../../src/agent/project-plan.js';
 
 const plan = {
   milestones: [
@@ -53,6 +56,24 @@ describe('project plan validation', () => {
       const input = structuredClone(plan);
       Object.assign(input.milestones[0].tasks[0], patch);
       expect(projectPlanSchema.safeParse(input).success).toBe(false);
+    }
+  });
+  it('accepts budget and deadlines from the owner, null meaning not decided', () => {
+    const input = structuredClone(plan) as Record<string, any>;
+    Object.assign(input.milestones[0], {
+      amount: 5000,
+      deadline: '2026-12-01T21:59:59.000Z',
+    });
+    input.milestones[0].tasks[0].deadline = null;
+    expect(projectPlanSchema.safeParse(input).success).toBe(true);
+    for (const patch of [
+      { amount: -1 },
+      { amount: 1.5 },
+      { deadline: 'завтра' },
+    ]) {
+      const bad = structuredClone(input);
+      Object.assign(bad.milestones[0], patch);
+      expect(projectPlanSchema.safeParse(bad).success).toBe(false);
     }
   });
 });

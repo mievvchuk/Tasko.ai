@@ -777,8 +777,6 @@ export const enText: Record<string, string> = {
   "Від опису до конкретних кроків": "From description to concrete steps",
   "AI використає назву й опис цього проєкту та запропонує етапи, завдання і критерії приймання. Перевірте та відредагуйте чернетку перед додаванням.":
     "AI will use this project's title and description to propose milestones, tasks and acceptance criteria. Review and edit the draft before adding it.",
-  "Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0 грн. Призначити виконавців і строки завдань можна у формах їх редагування після збереження.":
-    "Tasks are created without assignees or deadlines, milestones with a 0 UAH amount. You can set assignees and deadlines in their edit forms after saving.",
   "Побажання до плану (необов’язково)": "Plan preferences (optional)",
   "Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP.":
     "For example: prototype first, then development and testing. Focus on the MVP.",
@@ -1177,6 +1175,9 @@ export const enText: Record<string, string> = {
   "Виконано командою": "Done by the team",
   "Виконано виконавцями": "Done by freelancers",
   "PNG, JPG або WEBP, до 10 МБ": "PNG, JPG or WEBP, up to 10 MB",
+  "Бюджет і дедлайн кожного етапу та завдання можна вказати в чернетці. Не визначились — лишіть «ні», заповните пізніше у формах редагування. Виконавців призначають після збереження.": "You can set a budget and deadline for each milestone and task in the draft. Not decided yet? Leave “no” and fill it in later in the edit forms. Assignees are added after saving.",
+  "ні": "no",
+  "Перевірте назви, описи, пріоритети, критерії приймання, бюджети й дедлайни плану.": "Check the plan titles, descriptions, priorities, acceptance criteria, budgets and deadlines.",
 };
 
 function storedLanguage(): Language {

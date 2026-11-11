@@ -3,12 +3,16 @@ import { z } from 'zod';
 
 const text = (max: number) => z.string().trim().min(2).max(max);
 const criteria = z.array(text(400)).min(1).max(6);
+// Бюджет і дедлайн вказує замовник у чернетці перед збереженням, а не AI; null чи відсутнє поле — «ні», ще не визначено
+const deadline = z.iso.datetime().nullable().optional();
+const amount = z.number().int().min(0).max(10000000).nullable().optional();
 const taskSchema = z
   .object({
     title: text(200),
     description: text(3000),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH']),
     acceptanceCriteria: criteria,
+    deadline,
   })
   .strict();
 
@@ -22,6 +26,8 @@ export const projectPlanSchema = z
             description: text(3000),
             acceptanceCriteria: criteria,
             tasks: z.array(taskSchema).min(1).max(8),
+            amount,
+            deadline,
           })
           .strict(),
       )

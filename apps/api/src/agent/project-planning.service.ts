@@ -39,7 +39,7 @@ export class ProjectPlanningService {
     const parsed = projectPlanSchema.safeParse(input);
     if (!parsed.success)
       throw new BadRequestException(
-        'Перевірте назви, описи, пріоритети та критерії приймання плану.',
+        'Перевірте назви, описи, пріоритети, критерії приймання, бюджети й дедлайни плану.',
       );
     const project = await this.projects.requireOwner(user, projectId);
     const client = this.projects.prisma.client;
@@ -99,8 +99,8 @@ export class ProjectPlanningService {
               milestone.acceptanceCriteria,
             ),
             position,
-            deadline: null,
-            amount: 0,
+            deadline: milestone.deadline ? new Date(milestone.deadline) : null,
+            amount: milestone.amount ?? 0,
             status: 'PLANNED',
             paymentStatus: 'UNPAID',
             createdAt: now,
@@ -118,7 +118,7 @@ export class ProjectPlanningService {
               assigneeId: null,
               priority: task.priority,
               status: 'TODO',
-              deadline: null,
+              deadline: task.deadline ? new Date(task.deadline) : null,
               createdAt: now,
               updatedAt: now,
             });
