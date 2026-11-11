@@ -3763,6 +3763,52 @@ dl.admin-details > dd {
   background: var(--data-green);
   animation: pulse 2s ease-in-out infinite;
 }
+/* «Олена пише…» під списком повідомлень; висота фіксована, щоб нічого не стрибало */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: 1.5em;
+  margin: var(--space-2xs) 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+.typing-dots {
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+}
+.typing-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: typing-dot 1.2s ease-in-out infinite;
+}
+.typing-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots i {
+    animation: none !important;
+  }
+}
 @keyframes pulse {
   50% {
     opacity: 0.35;
