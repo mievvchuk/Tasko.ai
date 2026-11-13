@@ -202,10 +202,11 @@ export class AgentService {
           model: this.config.aiModel,
           messages,
           ...(tools.length ? { tools, tool_choice: 'auto' } : {}),
-          // Нові моделі OpenAI приймають лише max_completion_tokens; OpenRouter та інші — max_tokens
-          [url.hostname === 'api.openai.com'
-            ? 'max_completion_tokens'
-            : 'max_tokens']: maxTokens,
+          // Нові моделі OpenAI приймають лише max_completion_tokens, а інструменти в
+          // /chat/completions — лише без «роздумів»; OpenRouter та інші — max_tokens
+          ...(url.hostname === 'api.openai.com'
+            ? { max_completion_tokens: maxTokens, reasoning_effort: 'none' }
+            : { max_tokens: maxTokens }),
           ...(responseFormat ? { response_format: responseFormat } : {}),
         }),
         signal: AbortSignal.timeout(30000),
