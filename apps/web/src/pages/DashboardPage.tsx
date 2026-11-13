@@ -6,7 +6,7 @@ import { LoadError } from "../components/LoadError";
 import { ProjectsTable } from "../components/ProjectsTable";
 import { useAuth } from "../auth";
 import { projectStatusNames, taskStatusNames } from "../types";
-import { BarChart, DonutChart } from "../components/Charts";
+import { DonutChart, ProgressRing, StatusColumns } from "../components/Charts";
 import type { ChartTone } from "../components/Charts";
 import type {
   DashboardSummary,
@@ -143,6 +143,12 @@ export function DashboardPage() {
               <span className="stat-note">
                 {tr("Із")} {data.summary.projects} {tr("доступних проєктів")}
               </span>
+              <ProgressRing
+                value={data.summary.activeProjects}
+                max={data.summary.projects}
+                tone="primary"
+                label={tr("Активні проєкти")}
+              />
             </Link>
             <Link className="stat-card" to="/tasks">
               <span className="stat-label">{tr("Усі завдання")}</span>
@@ -150,6 +156,11 @@ export function DashboardPage() {
               <span className="stat-note">
                 {tr("Завершено:")} {data.summary.completedTasks}
               </span>
+              <ProgressRing
+                value={data.summary.completedTasks}
+                max={data.summary.tasks}
+                label={tr("Завершено:")}
+              />
             </Link>
             <Link className="stat-card" to="/tasks?status=IN_PROGRESS">
               <span className="stat-label">{tr("У процесі")}</span>
@@ -157,6 +168,12 @@ export function DashboardPage() {
                 {data.summary.tasksByStatus.IN_PROGRESS}
               </strong>
               <span className="stat-note">{tr("Завдання у виконанні")}</span>
+              <ProgressRing
+                value={data.summary.tasksByStatus.IN_PROGRESS}
+                max={data.summary.tasks}
+                tone="primary"
+                label={tr("У процесі")}
+              />
             </Link>
             <Link className="stat-card deadline-card" to="/tasks?overdue=true">
               <span className="stat-label">{tr("Найближчий дедлайн")}</span>
@@ -168,19 +185,17 @@ export function DashboardPage() {
               <span className="stat-note">
                 {tr("Прострочених завдань:")} {data.summary.overdueTasks}
               </span>
+              <ProgressRing
+                value={data.summary.overdueTasks}
+                max={data.summary.tasks - data.summary.completedTasks}
+                tone="danger"
+                label={tr("Прострочених завдань:")}
+              />
             </Link>
           </section>
           <div className="dashboard-bottom dashboard-charts">
-            <DonutChart
+            <StatusColumns
               title={tr("Завдання за статусом")}
-              center={`${
-                data.summary.tasks
-                  ? Math.round(
-                      (data.summary.completedTasks / data.summary.tasks) * 100,
-                    )
-                  : 0
-              }%`}
-              centerNote={tr("виконано")}
               items={(Object.keys(taskStatusNames) as TaskStatus[]).map(
                 (status) => ({
                   label: tr(taskStatusNames[status]),
@@ -190,14 +205,17 @@ export function DashboardPage() {
                 }),
               )}
             />
-            <BarChart
+            <DonutChart
               title={tr("Проєкти за статусом")}
+              center={String(data.summary.projects)}
+              centerNote={tr("проєктів")}
               items={(Object.keys(projectStatusNames) as ProjectStatus[])
                 .filter((status) => data.summary.projectsByStatus?.[status])
                 .map((status) => ({
                   label: tr(projectStatusNames[status]),
                   value: data.summary.projectsByStatus[status],
                   tone: projectTones[status],
+                  to: `/projects?status=${status}`,
                 }))}
             />
             <section
@@ -212,7 +230,7 @@ export function DashboardPage() {
               </div>
               {data.deadlines.length ? (
                 <ul className="deadline-list">
-                  {data.deadlines.slice(0, 5).map((task) => (
+                  {data.deadlines.slice(0, 20).map((task) => (
                     <li key={task.id}>
                       <div>
                         <strong>

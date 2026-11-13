@@ -5,6 +5,9 @@ import { articlesFor, articlesForPage, docsUrl, searchArticles } from "../help";
 import { useLanguage } from "../i18n";
 import { HelpArticleList } from "./HelpArticleList";
 
+// Відкрити панель з іншого місця (меню «Ще» на телефоні)
+export const openHelpEvent = "tasko:open-help";
+
 // Плаваюча кнопка «?» над кнопкою Ади: підказки до поточної сторінки, пошук і перехід до повної довідки
 export function HelpButton() {
   const { tr, language } = useLanguage();
@@ -16,6 +19,11 @@ export function HelpButton() {
   useEffect(() => {
     if (open) document.getElementById("help-search")?.focus();
   }, [open]);
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(openHelpEvent, show);
+    return () => window.removeEventListener(openHelpEvent, show);
+  }, []);
 
   if (!user) return null;
 

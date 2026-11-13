@@ -170,3 +170,72 @@ export function DonutChart({
     </figure>
   );
 }
+
+// Маленьке кільце частки: «2 з 5» видно одразу, без смужки й відсотків окремо
+export function ProgressRing({
+  value,
+  max,
+  tone = "success",
+  label,
+}: {
+  value: number;
+  max: number;
+  tone?: ChartTone;
+  label: string;
+}) {
+  const percent = max ? Math.round((value / max) * 100) : 0;
+  return (
+    <span
+      className="progress-ring"
+      role="img"
+      aria-label={`${label}: ${value} / ${max}`}
+      title={`${value} / ${max} (${percent}%)`}
+      style={{
+        background: `conic-gradient(${toneColor[tone]} ${percent}%, var(--color-paper-3) 0)`,
+      }}
+    >
+      <span>{percent}%</span>
+    </span>
+  );
+}
+
+// Вертикальні стовпчики, кожен своїм кольором (наприклад, завдання за статусами)
+export function StatusColumns({
+  title,
+  items,
+}: {
+  title: string;
+  items: (ChartItem & { to?: string })[];
+}) {
+  const max = Math.max(1, ...items.map((item) => item.value));
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  return (
+    <figure className="chart-card">
+      <figcaption>
+        {title}
+        <span>{total}</span>
+      </figcaption>
+      <ol className="status-columns">
+        {items.map((item) => {
+          const body = (
+            <>
+              <strong>{item.value}</strong>
+              <span className="status-column-track" aria-hidden="true">
+                <span
+                  className={`tone-${item.tone ?? "primary"}`}
+                  style={{ height: `${(item.value / max) * 100}%` }}
+                />
+              </span>
+              <small>{item.label}</small>
+            </>
+          );
+          return (
+            <li key={item.label}>
+              {item.to ? <Link to={item.to}>{body}</Link> : body}
+            </li>
+          );
+        })}
+      </ol>
+    </figure>
+  );
+}
