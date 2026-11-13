@@ -3,6 +3,7 @@ import {
   HttpException,
   Inject,
   Injectable,
+  Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -157,6 +158,7 @@ const completionSchema = z.object({
 
 @Injectable()
 export class AgentService {
+  private readonly logger = new Logger(AgentService.name);
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(McpService) private readonly mcp: McpService,
@@ -200,7 +202,10 @@ export class AgentService {
           model: this.config.aiModel,
           messages,
           ...(tools.length ? { tools, tool_choice: 'auto' } : {}),
-          max_tokens: maxTokens,
+          // Нові моделі OpenAI приймають лише max_completion_tokens; OpenRouter та інші — max_tokens
+          [url.hostname === 'api.openai.com'
+            ? 'max_completion_tokens'
+            : 'max_tokens']: maxTokens,
           ...(responseFormat ? { response_format: responseFormat } : {}),
         }),
         signal: AbortSignal.timeout(30000),
@@ -215,12 +220,18 @@ export class AgentService {
         'Ліміт AI-провайдера вичерпано. Спробуйте пізніше.',
         429,
       );
-    if (response.status === 400 && (await this.isSchemaRejection(response)))
-      throw new InvalidModelOutputException();
-    if (!response.ok)
+    if (!response.ok) {
+      const error = await response.text().catch(() => '');
+      if (response.status === 400 && error.includes('json_validate_failed'))
+        throw new InvalidModelOutputException();
+      // Без цього в логах Render не видно, що саме не сподобалось провайдеру
+      this.logger.warn(
+        `AI-провайдер ${response.status}: ${error.slice(0, 500)}`,
+      );
       throw new BadGatewayException(
         'AI-провайдер відхилив запит. Перевірте налаштування моделі та ключа.',
       );
+    }
     let body: unknown;
     try {
       body = await response.json();
@@ -235,15 +246,6 @@ export class AgentService {
         'AI-провайдер повернув некоректну відповідь.',
       );
     return parsed.data.choices[0].message;
-  }
-
-  private async isSchemaRejection(response: Response) {
-    try {
-      const body = (await response.json()) as { error?: { code?: unknown } };
-      return body.error?.code === 'json_validate_failed';
-    } catch {
-      return false;
-    }
   }
 
   // Перший бар'єр: окремий короткий запит вирішує, чи стосується питання системи.
