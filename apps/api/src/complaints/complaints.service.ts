@@ -85,7 +85,7 @@ export class ComplaintsService {
     const link = (userId: string, projectId: string) => {
       if (userId === user.id) return;
       if (!userProjects.has(userId)) userProjects.set(userId, new Set());
-      userProjects.get(userId)!.add(titles.get(projectId) ?? '');
+      userProjects.get(userId)!.add(projectId);
     };
     for (const project of projects) link(project.clientId, project.id);
     for (const member of members) link(member.userId, member.projectId);
@@ -100,7 +100,15 @@ export class ComplaintsService {
         .map(({ id, title }) => ({ id, title }))
         .sort((a, b) => a.title.localeCompare(b.title)),
       users: users
-        .map((row) => ({ ...row, projects: [...userProjects.get(row.id)!] }))
+        .map((row) => {
+          const ids = [...userProjects.get(row.id)!];
+          // projectIds — щоб форма скарги одразу підставила спільний проєкт
+          return {
+            ...row,
+            projects: ids.map((id) => titles.get(id) ?? ''),
+            projectIds: ids,
+          };
+        })
         .sort((a, b) => a.name.localeCompare(b.name)),
     };
   }

@@ -23,24 +23,30 @@ export function trNow(text: string, ...args: (string | number)[]) {
 export const enText: Record<string, string> = {
   "Політика конфіденційності": "Privacy policy",
   "Не вдалося завантажити вхід через Google.": "Couldn't load Google sign-in.",
-  "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.": "You sign in with Google. Set a password to sign in with your email as well.",
+  "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.":
+    "You sign in with Google. Set a password to sign in with your email as well.",
   "Встановити пароль": "Set password",
-  "Замовляю": "I'm hiring",
-  "Працюю": "I'm working",
+  Замовляю: "I'm hiring",
+  Працюю: "I'm working",
   "Хто ви": "Who you are",
   "Для кого": "Who it's for",
-  "Нове": "New",
-  "Детальніше": "Learn more",
-  "Ада складає план проєкту з етапами й завданнями з опису": "Ada turns a project description into a plan with milestones and tasks",
-  "Опублікуйте проєкт, оберіть фрілансера із заявок і стежте за роботою на канбан-дошці. Ада, AI-помічниця, нагадає про дедлайни й ризики.": "Publish a project, pick a freelancer from the applications and follow the work on a Kanban board. Ada, the AI assistant, reminds you about deadlines and risks.",
-  "Знаходьте проєкти й здавайте роботу без хаосу": "Find projects and deliver work without chaos",
-  "Відкриті проєкти з бюджетом і строком, заявка в кілька полів і зрозумілі етапи. Ада підкаже, за що братися сьогодні.": "Open projects with a budget and a deadline, an application in a few fields and clear milestones. Ada suggests what to pick up today.",
+  Нове: "New",
+  Детальніше: "Learn more",
+  "Ада складає план проєкту з етапами й завданнями з опису":
+    "Ada turns a project description into a plan with milestones and tasks",
+  "Опублікуйте проєкт, оберіть фрілансера із заявок і стежте за роботою на канбан-дошці. Ада, AI-помічниця, нагадає про дедлайни й ризики.":
+    "Publish a project, pick a freelancer from the applications and follow the work on a Kanban board. Ada, the AI assistant, reminds you about deadlines and risks.",
+  "Знаходьте проєкти й здавайте роботу без хаосу":
+    "Find projects and deliver work without chaos",
+  "Відкриті проєкти з бюджетом і строком, заявка в кілька полів і зрозумілі етапи. Ада підкаже, за що братися сьогодні.":
+    "Open projects with a budget and a deadline, an application in a few fields and clear milestones. Ada suggests what to pick up today.",
   "Знайти роботу": "Find work",
   "Інтернет-магазин кераміки": "Ceramics online store",
   "18 000–25 000 грн": "UAH 18,000–25,000",
   "Лендинг для кав'ярні": "Coffee shop landing page",
   "6 000–9 000 грн": "UAH 6,000–9,000",
-  "Інтернет-магазин збігається з вашими навичками на 90%.": "The online store matches your skills by 90%.",
+  "Інтернет-магазин збігається з вашими навичками на 90%.":
+    "The online store matches your skills by 90%.",
   "Відкрити сайт довідки": "Open the help site",
   "відкриється в новій вкладці": "opens in a new tab",
   // Загальне, помилки, сеанс
@@ -325,6 +331,7 @@ export const enText: Record<string, string> = {
 
   // Проєкти й таблиці
   Проєкт: "Project",
+  Дошка: "Board",
   Проєкти: "Projects",
   "Виберіть проєкт": "Select a project",
   "Обраний проєкт": "Selected project",
@@ -365,6 +372,8 @@ export const enText: Record<string, string> = {
     "There are no projects with the selected status on this page.",
   "Скинути фільтр": "Reset filter",
   "Сторінки проєктів": "Project pages",
+  "Завдання з усіх ваших проєктів в одному списку. Щоб звузити, оберіть проєкт або статус.":
+    "Tasks from all your projects in one list. Pick a project or status to narrow it down.",
   "Оберіть проєкт, щоб переглянути та організувати роботу команди.":
     "Choose a project to view and organise the team's work.",
 
@@ -583,12 +592,15 @@ export const enText: Record<string, string> = {
   "Замовлень ще немає. Замовлення створюється, коли ви приймаєте заявку фрілансера.":
     "No orders yet. An order is created when you accept a freelancer's application.",
   "Сума:": "Amount:",
-  "Угоди з виконавцями, над якими зараз працюють.": "Deals with freelancers that are in progress.",
-  "Клієнт прийняв усю роботу виконавця.": "The client accepted all of the freelancer's work.",
+  "Угоди з виконавцями, над якими зараз працюють.":
+    "Deals with freelancers that are in progress.",
+  "Клієнт прийняв усю роботу виконавця.":
+    "The client accepted all of the freelancer's work.",
   "Угоди, які зірвалися або закриті разом зі скасованим проєктом.":
     "Deals that fell through or closed with a cancelled project.",
   "Сума виконаних, грн": "Completed amount, UAH",
-  "Сума угод, за якими роботу прийнято.": "Total of deals whose work was accepted.",
+  "Сума угод, за якими роботу прийнято.":
+    "Total of deals whose work was accepted.",
   "Строк:": "Due:",
   "Замовлення проєкту": "Project orders",
   "Створено:": "Created:",
@@ -1061,7 +1073,29 @@ export const enText: Record<string, string> = {
     "Nothing found. Try other words or ask Ada.",
   "На цій сторінці": "On this page",
   Корисне: "Useful",
+  "Проєкти за статусом": "Projects by status",
+  виконано: "done",
+  "Найближчі дедлайни": "Upcoming deadlines",
+  "Усі завдання з усіх проєктів — в одному списку з фільтрами":
+    "All tasks from all projects in one filterable list",
+  "Головна панель показує завдання й проєкти на діаграмах":
+    "The dashboard shows tasks and projects on charts",
+  "Підказки довідки відкриваються просто на сторінці":
+    "Help tips open right on the page",
+  "Доступний для нових проєктів": "Available for new projects",
+  "{0} відгуків": "{0} reviews",
+  "На платформі з {0}": "On the platform since {0}",
+  "Показники роботи": "Work stats",
+  "Проєкти, які клієнти прийняли як завершені.":
+    "Projects clients accepted as completed.",
+  "Частка завдань, зданих до дедлайну.":
+    "Share of tasks delivered before the deadline.",
+  "Скільки днів у середньому триває проєкт.":
+    "How many days a project takes on average.",
+  "Поточна завантаженість виконавця.": "The freelancer's current workload.",
+  "Розподіл оцінок": "Rating breakdown",
   "Уся довідка та база знань": "All help and knowledge base",
+  "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",
   "Довідка та база знань": "Help and knowledge base",
   "Інструкції до кожного розділу Tasko.ai, пояснення статусів і відповіді на часті запитання.":
@@ -1070,78 +1104,105 @@ export const enText: Record<string, string> = {
   // Огляд адміністратора: плитки, середні часи, активність
   "Усі облікові записи платформи.": "All accounts on the platform.",
   "Нові користувачі за 7 днів": "New users in 7 days",
-  "Зареєструвалися за останні 7 днів, включно з сьогодні.": "Signed up in the last 7 days, including today.",
+  "Зареєструвалися за останні 7 днів, включно з сьогодні.":
+    "Signed up in the last 7 days, including today.",
   "Усі проєкти незалежно від статусу.": "All projects regardless of status.",
   "Нові проєкти за 7 днів": "New projects in 7 days",
   "Створені за останні 7 днів.": "Created in the last 7 days.",
   "Шукають виконавця": "Looking for a freelancer",
-  "Проєкти на біржі, для яких ще не обрано фрілансера.": "Projects on the marketplace with no freelancer chosen yet.",
-  "Виконавця обрано, триває робота.": "A freelancer is chosen and work is under way.",
+  "Проєкти на біржі, для яких ще не обрано фрілансера.":
+    "Projects on the marketplace with no freelancer chosen yet.",
+  "Виконавця обрано, триває робота.":
+    "A freelancer is chosen and work is under way.",
   "Завершені проєкти": "Completed projects",
   "Роботу прийнято клієнтом.": "The client has accepted the work.",
   "Заблоковані користувачі": "Blocked users",
-  "Облікові записи, яким адміністратор закрив доступ.": "Accounts an administrator has blocked.",
+  "Облікові записи, яким адміністратор закрив доступ.":
+    "Accounts an administrator has blocked.",
   "Нові за 7 днів": "New in 7 days",
   "Скарги, подані за останні 7 днів.": "Complaints filed in the last 7 days.",
   "Очікують розгляду": "Awaiting review",
-  "Скарги без рішення адміністратора.": "Complaints with no administrator decision.",
+  "Скарги без рішення адміністратора.":
+    "Complaints with no administrator decision.",
   "Скарги, за якими вжито заходів.": "Complaints that led to action.",
   "Скарги, які не підтвердилися.": "Complaints that were not confirmed.",
-  "Заявки фрілансерів за останні 7 днів.": "Freelancer applications in the last 7 days.",
+  "Заявки фрілансерів за останні 7 днів.":
+    "Freelancer applications in the last 7 days.",
   "Очікують рішення": "Awaiting decision",
-  "Клієнт ще не прийняв і не відхилив заявку.": "The client has neither accepted nor rejected the application.",
-  "Заявки, за якими обрано виконавця.": "Applications that got the freelancer hired.",
+  "Клієнт ще не прийняв і не відхилив заявку.":
+    "The client has neither accepted nor rejected the application.",
+  "Заявки, за якими обрано виконавця.":
+    "Applications that got the freelancer hired.",
   "Заявки, які клієнт відхилив.": "Applications the client rejected.",
   "Завдання, над якими зараз працюють.": "Tasks being worked on now.",
-  "Роботу здано, клієнт ще не прийняв.": "Work submitted, not yet accepted by the client.",
+  "Роботу здано, клієнт ще не прийняв.":
+    "Work submitted, not yet accepted by the client.",
   "Прийняті завдання.": "Accepted tasks.",
-  "Незавершені завдання з дедлайном у минулому.": "Unfinished tasks whose deadline has passed.",
+  "Незавершені завдання з дедлайном у минулому.":
+    "Unfinished tasks whose deadline has passed.",
   "Основні показники": "Key metrics",
   "Середній час розгляду скарги": "Average complaint resolution time",
-  "Від подання скарги до рішення адміністратора.": "From filing a complaint to the administrator's decision.",
+  "Від подання скарги до рішення адміністратора.":
+    "From filing a complaint to the administrator's decision.",
   "Середній час до першої заявки": "Average time to first application",
-  "Від створення проєкту до першої заявки фрілансера.": "From creating a project to the first freelancer application.",
+  "Від створення проєкту до першої заявки фрілансера.":
+    "From creating a project to the first freelancer application.",
   "Середній час до вибору виконавця": "Average time to hire",
-  "Від створення проєкту до прийнятої заявки.": "From creating a project to an accepted application.",
+  "Від створення проєкту до прийнятої заявки.":
+    "From creating a project to an accepted application.",
   "Активність за 7 днів": "Activity over 7 days",
-  "Кількість": "Count",
-  "Частка": "Share",
-  "Усього": "Total",
+  Кількість: "Count",
+  Частка: "Share",
+  Усього: "Total",
   "{0} хв": "{0} min",
   "{0} год": "{0} h",
   "{0} дн.": "{0} d",
   // Видалення користувача адміністратором
   "Видалити {0}?": "Delete {0}?",
-  "Обліковий запис буде видалено повністю разом з його проєктами, повідомленнями, заявками, відгуками й файлами. У чужих проєктах завдання лишаться без виконавця. Дію не можна скасувати.": "The account is deleted completely together with its projects, messages, applications, reviews and files. In other people's projects its tasks stay unassigned. This cannot be undone.",
+  "Обліковий запис буде видалено повністю разом з його проєктами, повідомленнями, заявками, відгуками й файлами. У чужих проєктах завдання лишаться без виконавця. Дію не можна скасувати.":
+    "The account is deleted completely together with its projects, messages, applications, reviews and files. In other people's projects its tasks stay unassigned. This cannot be undone.",
   "Видаляємо…": "Deleting…",
   "Так, видалити": "Yes, delete",
   "Видалити користувача": "Delete user",
-  "Модерація": "Moderation",
+  Модерація: "Moderation",
   "Модерація проєктів": "Project moderation",
-  "Нові проєкти потрапляють на біржу лише після схвалення адміністратором.": "New projects reach the marketplace only after an administrator approves them.",
+  "Нові проєкти потрапляють на біржу лише після схвалення адміністратором.":
+    "New projects reach the marketplace only after an administrator approves them.",
   "Черга модерації порожня": "The moderation queue is empty",
   "Усі нові проєкти розглянуто.": "All new projects have been reviewed.",
-  "Проєкт «{0}» схвалено й опубліковано на біржі.": "Project “{0}” is approved and published on the marketplace.",
-  "Проєкт «{0}» відхилено. Клієнт отримав причину.": "Project “{0}” is rejected. The client received the reason.",
-  "Опишіть причину відхилення (щонайменше 5 символів).": "Describe the reason for rejection (at least 5 characters).",
-  "Надіслано": "Submitted",
-  "Повторна подача. Минулого разу відхилено: {0}": "Resubmitted. Last time it was rejected: {0}",
-  "Причина відхилення (її побачить клієнт)": "Reason for rejection (the client will see it)",
+  "Проєкт «{0}» схвалено й опубліковано на біржі.":
+    "Project “{0}” is approved and published on the marketplace.",
+  "Проєкт «{0}» відхилено. Клієнт отримав причину.":
+    "Project “{0}” is rejected. The client received the reason.",
+  "Опишіть причину відхилення (щонайменше 5 символів).":
+    "Describe the reason for rejection (at least 5 characters).",
+  Надіслано: "Submitted",
+  "Повторна подача. Минулого разу відхилено: {0}":
+    "Resubmitted. Last time it was rejected: {0}",
+  "Причина відхилення (її побачить клієнт)":
+    "Reason for rejection (the client will see it)",
   "Відхилити проєкт": "Reject project",
   "Схвалити й опублікувати": "Approve and publish",
   "На модерації": "In moderation",
   "Відхилено модератором": "Rejected by moderator",
-  "Нові проєкти, які чекають на рішення адміністратора.": "New projects waiting for an administrator's decision.",
-  "Проєкт на модерації. Після схвалення адміністратором він з'явиться на біржі, і фрілансери зможуть подавати заявки.": "The project is in moderation. Once an administrator approves it, it appears on the marketplace and freelancers can apply.",
+  "Нові проєкти, які чекають на рішення адміністратора.":
+    "New projects waiting for an administrator's decision.",
+  "Проєкт на модерації. Після схвалення адміністратором він з'явиться на біржі, і фрілансери зможуть подавати заявки.":
+    "The project is in moderation. Once an administrator approves it, it appears on the marketplace and freelancers can apply.",
   "Модератор відхилив проєкт.": "The moderator rejected the project.",
   "Причина: {0}": "Reason: {0}",
   "Виправте проєкт": "Fix the project",
-  "— після збереження він знову піде на модерацію.": "— after you save it, it goes back to moderation.",
-  "Після збереження змін проєкт знову піде на модерацію адміністратору.": "After you save the changes, the project goes back to an administrator for moderation.",
-  "Проєкт на модерації. Статус можна буде змінити після схвалення адміністратором.": "The project is in moderation. You can change its status after an administrator approves it.",
-  "Спершу проєкт перевірить адміністратор. Після схвалення він отримає статус «Пошук виконавця» і з'явиться на біржі для фрілансерів.": "An administrator reviews the project first. Once approved, it gets the “Looking for a freelancer” status and appears on the marketplace.",
+  "— після збереження він знову піде на модерацію.":
+    "— after you save it, it goes back to moderation.",
+  "Після збереження змін проєкт знову піде на модерацію адміністратору.":
+    "After you save the changes, the project goes back to an administrator for moderation.",
+  "Проєкт на модерації. Статус можна буде змінити після схвалення адміністратором.":
+    "The project is in moderation. You can change its status after an administrator approves it.",
+  "Спершу проєкт перевірить адміністратор. Після схвалення він отримає статус «Пошук виконавця» і з'явиться на біржі для фрілансерів.":
+    "An administrator reviews the project first. Once approved, it gets the “Looking for a freelancer” status and appears on the marketplace.",
   "Поточний пароль неправильний.": "The current password is wrong.",
-  "Новий пароль має відрізнятися від поточного.": "The new password must differ from the current one.",
+  "Новий пароль має відрізнятися від поточного.":
+    "The new password must differ from the current one.",
   "Пароль неправильний.": "The password is wrong.",
   "Введіть поточний пароль": "Enter your current password",
   "Придумайте новий пароль": "Create a new password",
@@ -1149,19 +1210,23 @@ export const enText: Record<string, string> = {
   "Змінити роль {0}": "Change role of {0}",
   "Розблокувати користувача": "Unblock user",
   "Заблокувати користувача": "Block user",
-  "Розблокувати": "Unblock",
-  "Заблокувати": "Block",
+  Розблокувати: "Unblock",
+  Заблокувати: "Block",
   "Розблокувати {0}": "Unblock {0}",
   "Заблокувати {0}": "Block {0}",
   "Видалити {0}": "Delete {0}",
   "Зберегти роль": "Save role",
-  "Користувач знову зможе входити й працювати на платформі.": "The user will be able to sign in and work on the platform again.",
-  "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.": "The user won't be able to sign in, and their active sessions end. Account data is kept.",
+  "Користувач знову зможе входити й працювати на платформі.":
+    "The user will be able to sign in and work on the platform again.",
+  "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.":
+    "The user won't be able to sign in, and their active sessions end. Account data is kept.",
   "Черга завдань": "Task queue",
-  "Беріть завдання по черзі: спершу з найближчим дедлайном і вищим пріоритетом. Нове можна взяти, коли попереднє передано на перевірку.": "Take tasks in order: the nearest deadline and higher priority come first. You can take a new one once the previous one is sent for review.",
+  "Беріть завдання по черзі: спершу з найближчим дедлайном і вищим пріоритетом. Нове можна взяти, коли попереднє передано на перевірку.":
+    "Take tasks in order: the nearest deadline and higher priority come first. You can take a new one once the previous one is sent for review.",
   "Беремо…": "Taking…",
   "Взяти наступне завдання": "Take the next task",
-  "Брати завдання з черги може фрілансер.": "Only a freelancer can take tasks from the queue.",
+  "Брати завдання з черги може фрілансер.":
+    "Only a freelancer can take tasks from the queue.",
   "Вільних завдань у черзі немає.": "There are no free tasks in the queue.",
 };
 

@@ -1,6 +1,6 @@
 import { BrandWord } from "../components/BrandWord";
 import { BrandMark } from "../components/BrandMark";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "../components/ThemePicker";
@@ -91,6 +91,23 @@ const audiences = {
 } as const;
 type Audience = keyof typeof audiences;
 
+// Новини у смузі «Нове»: змінюються колесом кожні 15 секунд
+const news = [
+  {
+    text: "Ада складає план проєкту з етапами й завданнями з опису",
+    href: "#features",
+  },
+  {
+    text: "Усі завдання з усіх проєктів — в одному списку з фільтрами",
+    href: "#features",
+  },
+  {
+    text: "Головна панель показує завдання й проєкти на діаграмах",
+    href: "#features",
+  },
+  { text: "Підказки довідки відкриваються просто на сторінці", href: "#how" },
+];
+
 const openProjects = [
   ["Інтернет-магазин кераміки", "18 000–25 000 грн", "React"],
   ["Лендинг для кав'ярні", "6 000–9 000 грн", "Figma"],
@@ -101,6 +118,17 @@ export function WelcomePage() {
   const { t, tr } = useLanguage();
   const [audience, setAudience] = useState<Audience>("CLIENT");
   const current = audiences[audience];
+  const [newsIndex, setNewsIndex] = useState(0);
+  const [newsPaused, setNewsPaused] = useState(false);
+  useEffect(() => {
+    if (newsPaused) return;
+    const timer = setInterval(
+      () => setNewsIndex((index) => (index + 1) % news.length),
+      15000,
+    );
+    return () => clearInterval(timer);
+  }, [newsPaused]);
+  const currentNews = news[newsIndex];
   return (
     <div className="welcome">
       <header className="welcome-header">
@@ -131,10 +159,25 @@ export function WelcomePage() {
       </header>
 
       <main>
-        <a className="welcome-news" href="#features">
+        <a
+          className="welcome-news"
+          href={currentNews.href}
+          onMouseEnter={() => setNewsPaused(true)}
+          onMouseLeave={() => setNewsPaused(false)}
+          onFocus={() => setNewsPaused(true)}
+          onBlur={() => setNewsPaused(false)}
+        >
           <span className="welcome-news-tag">{tr("Нове")}</span>
-          <span>
-            {tr("Ада складає план проєкту з етапами й завданнями з опису")}
+          <span className="welcome-news-wheel" aria-live="polite">
+            <span key={newsIndex}>{tr(currentNews.text)}</span>
+          </span>
+          <span className="welcome-news-dots" aria-hidden="true">
+            {news.map((item, index) => (
+              <i
+                key={item.text}
+                className={index === newsIndex ? "active" : ""}
+              />
+            ))}
           </span>
           <span className="welcome-news-link">
             {tr("Детальніше")}
@@ -289,7 +332,6 @@ export function WelcomePage() {
       </main>
 
       <footer className="public-footer">
-        Tasko.ai · {t("footer")} ·{" "}
         {/* Статична сторінка в public/privacy: її читає й перевірка Google OAuth */}
         <a href="/privacy/">{tr("Політика конфіденційності")}</a>
       </footer>

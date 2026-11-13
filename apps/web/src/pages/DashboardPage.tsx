@@ -5,10 +5,13 @@ import { deadlineLabel, formatDate } from "../format";
 import { LoadError } from "../components/LoadError";
 import { ProjectsTable } from "../components/ProjectsTable";
 import { useAuth } from "../auth";
-import { taskStatusNames } from "../types";
+import { projectStatusNames, taskStatusNames } from "../types";
+import { BarChart, DonutChart } from "../components/Charts";
+import type { ChartTone } from "../components/Charts";
 import type {
   DashboardSummary,
   Project,
+  ProjectStatus,
   TaskDeadline,
   TaskStatus,
 } from "../types";
@@ -19,6 +22,22 @@ interface DashboardData {
   projects: Project[];
   deadlines: TaskDeadline[];
 }
+
+const taskTones: Record<TaskStatus, ChartTone> = {
+  TODO: "muted",
+  IN_PROGRESS: "primary",
+  REVIEW: "accent",
+  DONE: "success",
+};
+const projectTones: Record<ProjectStatus, ChartTone> = {
+  MODERATION: "accent",
+  REJECTED: "danger",
+  PLANNING: "muted",
+  ACTIVE: "primary",
+  PAUSED: "accent",
+  COMPLETED: "success",
+  CANCELLED: "danger",
+};
 
 export function DashboardPage() {
   const { tr } = useLanguage();
@@ -151,36 +170,58 @@ export function DashboardPage() {
               </span>
             </Link>
           </section>
-          <div className="dashboard-bottom">
-            <section className="data-panel" aria-labelledby="deadlines-title">
+          <div className="dashboard-bottom dashboard-charts">
+            <DonutChart
+              title={tr("Завдання за статусом")}
+              center={`${
+                data.summary.tasks
+                  ? Math.round(
+                      (data.summary.completedTasks / data.summary.tasks) * 100,
+                    )
+                  : 0
+              }%`}
+              centerNote={tr("виконано")}
+              items={(Object.keys(taskStatusNames) as TaskStatus[]).map(
+                (status) => ({
+                  label: tr(taskStatusNames[status]),
+                  value: data.summary.tasksByStatus[status],
+                  tone: taskTones[status],
+                  to: `/tasks?status=${status}`,
+                }),
+              )}
+            />
+            <BarChart
+              title={tr("Проєкти за статусом")}
+              items={(Object.keys(projectStatusNames) as ProjectStatus[])
+                .filter((status) => data.summary.projectsByStatus?.[status])
+                .map((status) => ({
+                  label: tr(projectStatusNames[status]),
+                  value: data.summary.projectsByStatus[status],
+                  tone: projectTones[status],
+                }))}
+            />
+            <section
+              className="data-panel deadlines-panel"
+              aria-labelledby="deadlines-title"
+            >
               <div className="panel-heading">
-                <div>
-                  <h2 id="deadlines-title">{tr("Дедлайни завдань")}</h2>
-                  <p>
-                    {tr("Першими показано найраніші, включно з простроченими")}
-                  </p>
-                </div>
+                <h2 id="deadlines-title">{tr("Найближчі дедлайни")}</h2>
+                <Link className="text-link" to="/tasks?overdue=true">
+                  {tr("Прострочені")}: {data.summary.overdueTasks}
+                </Link>
               </div>
               {data.deadlines.length ? (
                 <ul className="deadline-list">
                   {data.deadlines.slice(0, 5).map((task) => (
                     <li key={task.id}>
-                      <span
-                        className={
-                          task.risk === "OVERDUE"
-                            ? "deadline-dot overdue"
-                            : "deadline-dot"
-                        }
-                        aria-hidden="true"
-                      />
                       <div>
                         <strong>
                           <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                         </strong>
-                        <span>{tr(taskStatusNames[task.status])}</span>
-                        <time dateTime={task.deadline}>
-                          {formatDate(task.deadline, true)}
-                        </time>
+                        <span>
+                          {task.projectTitle} ·{" "}
+                          {tr(taskStatusNames[task.status])}
+                        </span>
                       </div>
                       <span
                         className={
@@ -188,6 +229,7 @@ export function DashboardPage() {
                             ? "days-left overdue"
                             : "days-left"
                         }
+                        title={formatDate(task.deadline, true)}
                       >
                         {deadlineLabel(task.deadline)}
                       </span>
@@ -199,46 +241,6 @@ export function DashboardPage() {
                   <h3>{tr("Дедлайнів немає")}</h3>
                   <p>
                     {tr("Немає незавершених завдань із визначеним терміном.")}
-                  </p>
-                </div>
-              )}
-            </section>
-            <section
-              className="data-panel"
-              aria-labelledby="task-statuses-title"
-            >
-              <div className="panel-heading">
-                <div>
-                  <h2 id="task-statuses-title">{tr("Завдання за статусом")}</h2>
-                  <p>{tr("Розподіл усіх доступних завдань")}</p>
-                </div>
-              </div>
-              {data.summary.tasks ? (
-                <div className="task-status-list">
-                  {(Object.keys(taskStatusNames) as TaskStatus[]).map(
-                    (status) => (
-                      <div className="task-status-row" key={status}>
-                        <div>
-                          <span>{tr(taskStatusNames[status])}</span>
-                          <strong>{data.summary.tasksByStatus[status]}</strong>
-                        </div>
-                        <progress
-                          className={"status-progress progress-" + status}
-                          max={data.summary.tasks}
-                          value={data.summary.tasksByStatus[status]}
-                          aria-label={tr(taskStatusNames[status])}
-                        />
-                      </div>
-                    ),
-                  )}
-                </div>
-              ) : (
-                <div className="empty-state compact">
-                  <h3>{tr("Завдань поки немає")}</h3>
-                  <p>
-                    {tr(
-                      "Статистика з'явиться після створення завдань у доступних проєктах.",
-                    )}
                   </p>
                 </div>
               )}

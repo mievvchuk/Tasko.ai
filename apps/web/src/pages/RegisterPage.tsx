@@ -143,7 +143,9 @@ export function RegisterPage() {
               value={password}
               onChange={setPassword}
               autoComplete="new-password"
-            />
+            >
+              <PasswordStrength password={password} />
+            </PasswordInput>
             <PasswordInput
               id="confirmation"
               label={t("repeatPassword")}
@@ -152,7 +154,6 @@ export function RegisterPage() {
               autoComplete="new-password"
             />
           </div>
-          <PasswordStrength password={password} />
           {error && (
             <div className="notice error" role="alert">
               {error}

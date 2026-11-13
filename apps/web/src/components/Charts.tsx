@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 // Прості діаграми на CSS, без сторонніх бібліотек.
 // Числа завжди видно текстом, тож смуги лише ілюструють їх (aria-hidden).
 
@@ -10,7 +11,13 @@ export interface ChartItem {
 }
 
 // Горизонтальні смуги: довжина — частка від найбільшого значення
-export function BarChart({ title, items }: { title: string; items: ChartItem[] }) {
+export function BarChart({
+  title,
+  items,
+}: {
+  title: string;
+  items: ChartItem[];
+}) {
   const max = Math.max(1, ...items.map((item) => item.value));
   const total = items.reduce((sum, item) => sum + item.value, 0);
   return (
@@ -85,6 +92,81 @@ export function ColumnChart({
           </li>
         ))}
       </ol>
+    </figure>
+  );
+}
+
+const toneColor: Record<ChartTone, string> = {
+  primary: "var(--data-blue)",
+  accent: "var(--data-amber)",
+  success: "var(--data-green)",
+  danger: "var(--data-red)",
+  muted: "var(--data-gray)",
+};
+
+// Кільце частин (conic-gradient) з числом у центрі й легендою-посиланнями
+export function DonutChart({
+  title,
+  items,
+  center,
+  centerNote,
+}: {
+  title: string;
+  items: (ChartItem & { to?: string })[];
+  center: string;
+  centerNote: string;
+}) {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  let start = 0;
+  const stops = items
+    .filter((item) => item.value > 0)
+    .map((item) => {
+      const end = start + (item.value / total) * 100;
+      const stop = `${toneColor[item.tone ?? "primary"]} ${start}% ${end}%`;
+      start = end;
+      return stop;
+    });
+  return (
+    <figure className="chart-card donut-card">
+      <figcaption>
+        {title}
+        <span>{total}</span>
+      </figcaption>
+      <div className="donut-body">
+        <div
+          className="donut"
+          aria-hidden="true"
+          style={{
+            background: stops.length
+              ? `conic-gradient(${stops.join(", ")})`
+              : "var(--color-paper-3)",
+          }}
+        >
+          <span>
+            <strong>{center}</strong>
+            <small>{centerNote}</small>
+          </span>
+        </div>
+        <ul className="donut-legend">
+          {items.map((item) => {
+            const content = (
+              <>
+                <i
+                  className={`legend-dot tone-${item.tone ?? "primary"}`}
+                  aria-hidden="true"
+                />
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </>
+            );
+            return (
+              <li key={item.label}>
+                {item.to ? <Link to={item.to}>{content}</Link> : content}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </figure>
   );
 }

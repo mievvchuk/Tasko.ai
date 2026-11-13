@@ -1,5 +1,19 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min, ValidateIf } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PageDto } from '../projects/projects.dto.js';
 
@@ -97,6 +111,14 @@ export class TaskQueryDto extends PageDto {
   )
   @IsBoolean()
   overdue?: boolean;
+}
+
+// Завдання з усіх доступних проєктів; projectId звужує до одного
+export class AllTasksQueryDto extends TaskQueryDto {
+  @ApiPropertyOptional({ format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
+  projectId?: string;
 }
 export class OrderStatusDto {
   @ApiProperty({ enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] })

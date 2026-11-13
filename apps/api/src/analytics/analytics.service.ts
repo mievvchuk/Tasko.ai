@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProjectsService } from '../projects/projects.service.js';
+import {
+  moderationStatuses,
+  projectStatuses,
+} from '../projects/projects.dto.js';
 import type { CurrentUser } from '../users/users.service.js';
+import type { AllTasksQueryDto } from '../tasks/tasks.dto.js';
 
 export function taskRisk(
   task: { status: string; priority: string; deadline: Date | null },
@@ -74,6 +79,12 @@ export class AnalyticsService {
       activeProjects: projects.filter((project) => project.status === 'ACTIVE')
         .length,
       tasks: tasks.length,
+      projectsByStatus: Object.fromEntries(
+        [...projectStatuses, ...moderationStatuses].map((status) => [
+          status,
+          projects.filter((project) => project.status === status).length,
+        ]),
+      ),
       completedTasks: tasks.filter((task) => task.status === 'DONE').length,
       overdueTasks: tasks.filter((task) => taskRisk(task) === 'OVERDUE').length,
       nearestDeadline: nearestDeadline(tasks),
@@ -84,6 +95,55 @@ export class AnalyticsService {
         ]),
       ),
     };
+  }
+  // Усі завдання користувача з назвою проєкту — щоб не обирати проєкт перед пошуком
+  async tasks(user: CurrentUser, filters: AllTasksQueryDto) {
+    const projects = (await this.visibleProjects(user)).filter(
+      (project) => !filters.projectId || project.id === filters.projectId,
+    );
+    if (!projects.length) return [];
+    const titles = new Map(
+      projects.map((project) => [project.id, project.title]),
+    );
+    let query = this.db.Task.where((task) =>
+      task.projectId.in([...titles.keys()]),
+    );
+    if (filters.status) query = query.where({ status: filters.status });
+    if (filters.priority) query = query.where({ priority: filters.priority });
+    if (filters.assigneeId)
+      query = query.where({ assigneeId: filters.assigneeId });
+    if (filters.search) {
+      // Символи LIKE у введеному тексті шукаємо буквально.
+      const search = filters.search.replace(/[\\%_]/g, '\\$&');
+      query = query.where((task) => task.title.ilike(`%${search}%`));
+    }
+    if (filters.overdue)
+      query = query
+        .where((task) => task.deadline.lt(new Date()))
+        .where((task) => task.status.neq('DONE'));
+    const rows = await query
+      .orderBy((task) => task.createdAt.desc())
+      .offset((filters.page - 1) * filters.limit)
+      .limit(filters.limit)
+      .all();
+    const assigneeIds = [
+      ...new Set(rows.flatMap((task) => task.assigneeId ?? [])),
+    ];
+    const names = new Map(
+      (assigneeIds.length
+        ? await this.db.User.where((row) => row.id.in(assigneeIds))
+            .select('id', 'name')
+            .all()
+        : []
+      ).map((row) => [row.id, row.name]),
+    );
+    return rows.map((task) => ({
+      ...task,
+      projectTitle: titles.get(task.projectId) ?? null,
+      assigneeName: task.assigneeId
+        ? (names.get(task.assigneeId) ?? null)
+        : null,
+    }));
   }
   async deadlines(user: CurrentUser) {
     const tasks = await this.visibleTasks(user);
