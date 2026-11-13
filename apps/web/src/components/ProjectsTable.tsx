@@ -1,5 +1,6 @@
 import { formatDate } from "../format";
 import { Link } from "react-router";
+import { ProgressRing } from "./Charts";
 import { projectStatusNames } from "../types";
 import type { Project } from "../types";
 
@@ -43,15 +44,10 @@ export function ProjectsTable({ projects }: { projects: Project[] }) {
                   </span>
                 </td>
                 <td>
-                  <div className="task-count">
-                    {project.completedTasks} {tr("з")} {project.totalTasks}
-                    <span>{project.progress}%</span>
-                  </div>
-                  <progress
-                    className="project-progress"
-                    max={100}
-                    value={project.progress}
-                    aria-label={tr("Виконання проєкту ") + project.title}
+                  <ProgressRing
+                    value={project.completedTasks}
+                    max={project.totalTasks}
+                    label={tr("Виконання проєкту ") + project.title}
                   />
                 </td>
                 <td>

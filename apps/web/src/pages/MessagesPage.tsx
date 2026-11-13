@@ -53,7 +53,12 @@ export function MessagesPage() {
           )}
         </p>
       </div>
-      <div className="messenger">
+      {/* На телефоні видно або список розмов, або відкритий чат — не обидва одразу */}
+      <div
+        className={
+          projectId || applicationId ? "messenger chat-open" : "messenger"
+        }
+      >
         <nav className="data-panel messenger-list" aria-label={tr("Розмови")}>
           <h2>{tr("Мої проєкти")}</h2>
           <ResourceState
@@ -107,6 +112,14 @@ export function MessagesPage() {
           )}
         </nav>
         <div className="messenger-chat">
+          <button
+            type="button"
+            className="link-button messenger-back"
+            onClick={() => setParams({})}
+          >
+            <i className="bi bi-arrow-left" aria-hidden="true"></i>
+            {tr("Усі розмови")}
+          </button>
           {!projectId && !applicationId && (
             <div className="data-panel empty-state">
               <i className="bi bi-chat-dots" aria-hidden="true"></i>

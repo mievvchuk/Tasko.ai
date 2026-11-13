@@ -12,13 +12,17 @@ import { ThemePicker } from "./ThemePicker";
 import { AiChatProvider } from "../aiChat";
 import { AiDrawer } from "./AiDrawer";
 import { AccountMenu } from "./AccountMenu";
-import { HelpButton } from "./HelpButton";
+import { HelpButton, openHelpEvent } from "./HelpButton";
 
 // На комп'ютері .topbar показано як світлу бічну панель з підписами, на телефоні — як верхню (див. app.css).
 // Логіка (ролі, сповіщення, вихід) залишилась такою самою.
 // Адміністратор на сайті лише переглядає проєкти (без редагування, листування й файлів)
 const adminPages =
   /^\/(projects(\/(?!new$)[^/]+(\/(board|milestones|activity))?)?|tasks(\/[^/]+)?|profile|notifications|help(\/.*)?)\/?$/;
+
+// Ці пункти на телефоні вже є в нижній панелі, тож у меню «Ще» їх не дублюємо
+const inBottomNav = ({ isActive }: { isActive: boolean }) =>
+  isActive ? "active in-bottom-nav" : "in-bottom-nav";
 
 export function Layout() {
   const { user } = useAuth();
@@ -80,12 +84,12 @@ export function Layout() {
             className={menuOpen ? "topbar-nav open" : "topbar-nav"}
           >
             {!admin && (
-              <NavLink to="/" end onClick={close}>
+              <NavLink to="/" end onClick={close} className={inBottomNav}>
                 <i className="bi bi-grid" aria-hidden="true"></i>
                 <span className="nav-label">{t("main")}</span>
               </NavLink>
             )}
-            <NavLink to="/projects" onClick={close}>
+            <NavLink to="/projects" onClick={close} className={inBottomNav}>
               <i className="bi bi-folder" aria-hidden="true"></i>
               <span className="nav-label">{projectsLabel}</span>
             </NavLink>
@@ -105,7 +109,7 @@ export function Layout() {
                   <i className="bi bi-bar-chart" aria-hidden="true"></i>
                   <span className="nav-label">{t("workload")}</span>
                 </NavLink>
-                <NavLink to="/messages" onClick={close}>
+                <NavLink to="/messages" onClick={close} className={inBottomNav}>
                   <i className="bi bi-chat-dots" aria-hidden="true"></i>
                   <span className="nav-label">{t("messages")}</span>
                   {unreadMessages > 0 && (
@@ -131,10 +135,22 @@ export function Layout() {
                 <span className="nav-label">{t("administration")}</span>
               </NavLink>
             )}
-            <NavLink to="/profile" onClick={close}>
+            <NavLink to="/profile" onClick={close} className={inBottomNav}>
               <i className="bi bi-person" aria-hidden="true"></i>
               <span className="nav-label">{t("profile")}</span>
             </NavLink>
+            {/* На телефоні плаваючого «?» немає: підказки до сторінки відкриваються з меню «Ще» */}
+            <button
+              type="button"
+              className="nav-help-tips"
+              onClick={() => {
+                close();
+                window.dispatchEvent(new Event(openHelpEvent));
+              }}
+            >
+              <i className="bi bi-lightbulb" aria-hidden="true"></i>
+              <span className="nav-label">{tr("Підказки до сторінки")}</span>
+            </button>
             <a
               href={docsUrl(language)}
               target="_blank"
@@ -170,19 +186,37 @@ export function Layout() {
         )}
         <NavLink to="/projects" onClick={close}>
           <i className="bi bi-folder" aria-hidden="true"></i>
-          {projectsLabel}
+          {/* Короткі підписи: п'ять пунктів у ряд на вузькому екрані */}
+          {admin ? projectsLabel : tr("Проєкти")}
         </NavLink>
         {!admin && (
           <NavLink to="/messages" onClick={close}>
             <i className="bi bi-chat-dots" aria-hidden="true"></i>
-            {t("messages")}
+            {tr("Чати")}
           </NavLink>
         )}
         <NavLink to="/profile" onClick={close}>
           <i className="bi bi-person" aria-hidden="true"></i>
           {t("profile")}
         </NavLink>
+        <button
+          type="button"
+          className={menuOpen ? "active" : undefined}
+          aria-expanded={menuOpen}
+          aria-controls="main-navigation"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <i className="bi bi-three-dots" aria-hidden="true"></i>
+          {tr("Ще")}
+          {/* Нові сповіщення лежать у «Ще» — крапка підказує туди заглянути */}
+          {unread > 0 && !menuOpen && (
+            <span className="badge-dot" aria-hidden="true" />
+          )}
+        </button>
       </nav>
+      {menuOpen && (
+        <div className="more-backdrop" aria-hidden="true" onClick={close} />
+      )}
     </div>
   );
 }
