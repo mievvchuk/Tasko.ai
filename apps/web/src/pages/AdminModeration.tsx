@@ -12,6 +12,15 @@ import type { ModerationProject } from "../types";
 
 import { useLanguage } from "../i18n";
 
+// Найчастіші причини відхилення — щоб модератор не писав їх щоразу вручну
+const rejectPresets = [
+  "Опис не пояснює, що саме треба зробити.",
+  "Бюджет не відповідає обсягу роботи.",
+  "В описі є контакти чи посилання для роботи поза платформою.",
+  "Проєкт порушує правила платформи.",
+  "Дедлайн нереальний для такого обсягу.",
+];
+
 export function AdminModerationPage() {
   const { tr } = useLanguage();
   const queue = useApi<ModerationProject[]>("/admin/moderation/projects");
@@ -106,10 +115,6 @@ function ModerationCard({
 
   function submitReject(event: FormEvent) {
     event.preventDefault();
-    if (reason.trim().length < 5) {
-      setError(tr("Опишіть причину відхилення (щонайменше 5 символів)."));
-      return;
-    }
     void decide("REJECT");
   }
 
@@ -190,12 +195,33 @@ function ModerationCard({
           <label htmlFor={`reject-${project.id}`}>
             {tr("Причина відхилення (її побачить клієнт)")}
           </label>
+          {/* Типові причини одним кліком; текст можна доповнити */}
+          <div className="reject-presets">
+            {rejectPresets.map((preset) => (
+              <button
+                type="button"
+                key={preset}
+                className="chip-button"
+                onClick={() =>
+                  setReason((current) =>
+                    current.trim()
+                      ? `${current.trim()} ${tr(preset)}`
+                      : tr(preset),
+                  )
+                }
+              >
+                {tr(preset)}
+              </button>
+            ))}
+          </div>
           <textarea
             id={`reject-${project.id}`}
             rows={3}
+            minLength={5}
             maxLength={1000}
             required
             value={reason}
+            placeholder={tr("Що саме виправити, щоб проєкт пройшов модерацію")}
             onChange={(event) => setReason(event.target.value)}
           />
           <div className="page-actions">

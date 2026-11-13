@@ -70,9 +70,16 @@ export class CreatePortfolioItemDto {
   @Length(0, 2000)
   description?: string;
 
+  // Необов'язкове: не кожна робота має публічну адресу
+  @IsOptional()
   @IsUrl({ protocols: ['https'], require_protocol: true })
   @Length(1, 1000)
-  url!: string;
+  url?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(0, 300)
+  tags?: string;
 }
 
 export class UpdatePortfolioItemDto extends PartialType(

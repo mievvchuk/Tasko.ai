@@ -53,6 +53,7 @@ describe('application chat', () => {
       {
         prisma: { client: { orm: { public: db } } },
         notify,
+        ensureNotRestricted: vi.fn(),
       } as unknown as ProjectsService,
       {} as TasksService,
     );

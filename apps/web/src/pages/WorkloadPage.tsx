@@ -51,13 +51,13 @@ export function WorkloadPage() {
       <div className="page-heading heading-with-action">
         <div>
           <h1>
-            {freelancer
-              ? tr("Моя завантаженість")
-              : tr("Завантаженість виконавців")}
+            {freelancer ? tr("Графік роботи") : tr("Завантаженість виконавців")}
           </h1>
           <p>
             {freelancer
-              ? tr("Ваші незавершені завдання, пріоритети та строки.")
+              ? tr(
+                  "Незавершені завдання з усіх робочих проєктів — що здати першим і чи можна брати нове.",
+                )
               : tr(
                   "Незавершені завдання, пріоритети та строки у доступних вам проєктах.",
                 )}
@@ -81,10 +81,21 @@ export function WorkloadPage() {
       {workload.data && (
         <>
           <div className="stats-grid">
-            <article className="stat-card">
-              <span className="stat-label">{tr("Виконавці")}</span>
-              <strong>{people.length}</strong>
-            </article>
+            {freelancer ? (
+              <article className="stat-card">
+                <span className="stat-label">{tr("Найближчий дедлайн")}</span>
+                <strong className="stat-date">
+                  {people[0]?.nearestDeadline
+                    ? formatDate(people[0].nearestDeadline)
+                    : "—"}
+                </strong>
+              </article>
+            ) : (
+              <article className="stat-card">
+                <span className="stat-label">{tr("Виконавці")}</span>
+                <strong>{people.length}</strong>
+              </article>
+            )}
             <article className="stat-card">
               <span className="stat-label">{tr("Незавершені завдання")}</span>
               <strong>
@@ -109,13 +120,23 @@ export function WorkloadPage() {
           </div>
           {!people.length && (
             <section className="data-panel empty-state">
-              <h2>{tr("Виконавців поки немає")}</h2>
+              <h2>
+                {freelancer
+                  ? tr("Робочих завдань поки немає")
+                  : tr("Виконавців поки немає")}
+              </h2>
               <p>
-                {tr(
-                  "Додайте команду до проєкту, щоб переглядати розподіл роботи.",
-                )}
+                {freelancer
+                  ? tr(
+                      "Знайдіть проєкт на біржі — після найму завдання з'являться тут.",
+                    )
+                  : tr(
+                      "Додайте команду до проєкту, щоб переглядати розподіл роботи.",
+                    )}
               </p>
-              <Link to="/projects">{tr("Переглянути проєкти")}</Link>
+              <Link to={freelancer ? "/marketplace" : "/projects"}>
+                {freelancer ? tr("Знайти роботу") : tr("Переглянути проєкти")}
+              </Link>
             </section>
           )}
           {people.map((person, index) => {
@@ -125,23 +146,43 @@ export function WorkloadPage() {
                 className="data-panel workload-panel"
                 key={person.user?.id || index}
               >
-                <div className="workload-head">
-                  <UserAvatar name={person.user?.name || "?"} size="small" />
-                  <div className="workload-name">
-                    <h2>
-                      {person.user ? (
-                        <Link to={`/freelancers/${person.user.id}`}>
-                          {person.user.name}
-                        </Link>
-                      ) : (
-                        tr("Користувач недоступний")
-                      )}
-                    </h2>
-                    <span>
-                      {tr("Перший дедлайн:")}{" "}
-                      {formatDate(person.nearestDeadline, true)}
-                    </span>
-                  </div>
+                <div
+                  className={
+                    freelancer ? "workload-head workload-self" : "workload-head"
+                  }
+                >
+                  {freelancer ? (
+                    <div className="workload-name">
+                      <h2>{tr("Мої завдання")}</h2>
+                      <span>
+                        {person.activeTasks >= 6
+                          ? tr("Завдань багато — нові заявки краще відкласти.")
+                          : tr("Є місце для нового проєкту.")}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <UserAvatar
+                        name={person.user?.name || "?"}
+                        size="small"
+                      />
+                      <div className="workload-name">
+                        <h2>
+                          {person.user ? (
+                            <Link to={`/freelancers/${person.user.id}`}>
+                              {person.user.name}
+                            </Link>
+                          ) : (
+                            tr("Користувач недоступний")
+                          )}
+                        </h2>
+                        <span>
+                          {tr("Перший дедлайн:")}{" "}
+                          {formatDate(person.nearestDeadline, true)}
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <div className={"workload-load load-" + level.key}>
                     <LoadRing active={person.activeTasks} label={level.label} />
                     <div>

@@ -1,5 +1,6 @@
 import { useParams } from "react-router";
 import { BarChart } from "../components/Charts";
+import { PortfolioCard } from "../components/FreelancerProfileEditor";
 import { KpiGrid } from "../components/Metrics";
 import { ResourceState } from "../components/ResourceState";
 import { UserAvatar } from "../components/UserAvatar";
@@ -15,15 +16,6 @@ const availabilityNames = {
   BUSY: "Зайнятий",
   UNAVAILABLE: "Недоступний",
 } as const;
-
-// Домен посилання портфоліо; некоректну адресу показуємо як є
-function hostOf(url: string) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return url;
-  }
-}
 
 // Профіль виконавця, яким його бачить клієнт перед вибором: хто це, що вміє, як працює
 export function FreelancerProfilePage() {
@@ -137,23 +129,7 @@ export function FreelancerProfilePage() {
             {data.portfolio.length ? (
               <div className="portfolio-grid">
                 {data.portfolio.map((item) => (
-                  <a
-                    className="portfolio-card"
-                    key={item.id}
-                    href={item.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <strong>{item.title}</strong>
-                    {item.description && <small>{item.description}</small>}
-                    <span>
-                      {hostOf(item.url)}
-                      <i
-                        className="bi bi-box-arrow-up-right"
-                        aria-label={tr("відкриється в новій вкладці")}
-                      ></i>
-                    </span>
-                  </a>
+                  <PortfolioCard key={item.id} item={item} />
                 ))}
               </div>
             ) : (

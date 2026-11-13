@@ -80,6 +80,8 @@ describe('ProjectsService', () => {
       FreelancerProfile: { where: vi.fn(() => chain(null)) },
       FreelancerSkill: { where: vi.fn(() => chain([])) },
       PortfolioItem: { where: vi.fn(() => chain([])) },
+      // Користувач без обмежень за скаргами
+      User: { where: vi.fn(() => chain(null)) },
     };
     prisma = {
       client: { orm: { public: db }, transaction: vi.fn() },
@@ -343,6 +345,24 @@ describe('ProjectsService', () => {
       });
     await expect(bid(5001)).rejects.toBeInstanceOf(BadRequestException);
     await expect(bid(5000)).resolves.toMatchObject({ proposedBudget: 5000 });
+  });
+
+  it('stops a restricted user from applying until the restriction ends', async () => {
+    db.User = {
+      where: vi.fn(() =>
+        chain({
+          restrictedUntil: new Date(Date.now() + 86400000),
+          restrictionReason: 'Неоплата',
+        }),
+      ),
+    };
+    await expect(
+      service.apply(freelancer, 'project-id', {
+        message: 'I can complete this work.',
+        proposedBudget: 1000,
+        proposedDays: 3,
+      }),
+    ).rejects.toThrow(/Неоплата/);
   });
 
   it('lets a freelancer withdraw only their own pending application', async () => {

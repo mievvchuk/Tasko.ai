@@ -244,8 +244,8 @@ export const helpArticles: HelpArticle[] = [
     icon: "bi-journal-text",
     title: { uk: "Правила платформи", en: "Platform rules" },
     summary: {
-      uk: "Спілкуйтеся ввічливо, домовляйтеся в межах платформи й не публікуйте заборонений вміст — порушення розглядає адміністратор.",
-      en: "Be polite, keep agreements on the platform and don't post prohibited content — admins handle violations.",
+      uk: "Спілкуйтеся ввічливо й домовляйтеся в межах платформи. За підтверджену скаргу — попередження, тимчасове обмеження або блокування залежно від порушення й повторів.",
+      en: "Be polite and keep agreements on the platform. A confirmed complaint leads to a warning, a temporary restriction or a block depending on the violation and repeats.",
     },
   },
   {

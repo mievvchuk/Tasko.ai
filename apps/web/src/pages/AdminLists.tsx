@@ -249,7 +249,11 @@ export function AdminComplaintsPage() {
       <div className="admin-page-heading">
         <div>
           <h1>{tr("Модерація скарг")}</h1>
-          <p>{tr("Рішення не блокує користувача автоматично.")}</p>
+          <p>
+            {tr(
+              "Підтверджуйте скаргу з санкцією за правилами платформи або відхиляйте без доказів.",
+            )}
+          </p>
         </div>
       </div>
       <section className="data-panel admin-panel">

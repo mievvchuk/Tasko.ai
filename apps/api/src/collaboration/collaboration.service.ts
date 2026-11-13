@@ -91,6 +91,7 @@ export class CollaborationService {
       .all();
   }
   async message(user: CurrentUser, projectId: string, data: MessageDto) {
+    await this.projects.ensureNotRestricted(user.id);
     const project = await this.projects.requireAccess(user, projectId, false);
     this.projects.ensureWritable(project);
     const message = await this.client.orm.public.Message.create({
@@ -234,6 +235,7 @@ export class CollaborationService {
     applicationId: string,
     data: MessageDto,
   ) {
+    await this.projects.ensureNotRestricted(user.id);
     const { application, project } = await this.applicationChat(
       user,
       applicationId,
@@ -252,7 +254,9 @@ export class CollaborationService {
       createdAt: new Date(),
     });
     await this.projects.notify(
-      user.id === project.clientId ? application.freelancerId : project.clientId,
+      user.id === project.clientId
+        ? application.freelancerId
+        : project.clientId,
       user.id,
       'APPLICATION_MESSAGE',
       `Нове повідомлення щодо заявки на «${project.title}».`,

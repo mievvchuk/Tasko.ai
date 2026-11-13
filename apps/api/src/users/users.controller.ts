@@ -107,6 +107,28 @@ export class UsersController {
     return this.users.updatePortfolioItem(user, id, data);
   }
 
+  @Post('profile/portfolio/:id/image')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+      required: ['file'],
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: maxAvatarSize, files: 1, fields: 0 },
+    }),
+  )
+  uploadPortfolioImage(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: UploadedFileData | undefined,
+  ) {
+    return this.users.setPortfolioImage(user, id, file);
+  }
+
   @Delete('profile/portfolio/:id')
   deletePortfolio(
     @Actor() user: CurrentUser,

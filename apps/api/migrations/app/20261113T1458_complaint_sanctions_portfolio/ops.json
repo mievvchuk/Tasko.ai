@@ -1,0 +1,339 @@
+[
+  {
+    "id": "column.public.Complaint.action",
+    "label": "Add column \"action\" to \"Complaint\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "action",
+        "table": "Complaint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"action\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Complaint",
+          "action"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"action\"",
+        "sql": "ALTER TABLE \"public\".\"Complaint\" ADD COLUMN \"action\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"action\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Complaint",
+          "action"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Complaint.category",
+    "label": "Add column \"category\" to \"Complaint\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "category",
+        "table": "Complaint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"category\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Complaint",
+          "category"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"category\"",
+        "sql": "ALTER TABLE \"public\".\"Complaint\" ADD COLUMN \"category\" text DEFAULT 'OTHER' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"category\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Complaint",
+          "category"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Complaint.restrictDays",
+    "label": "Add column \"restrictDays\" to \"Complaint\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "restrictDays",
+        "table": "Complaint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"restrictDays\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Complaint",
+          "restrictDays"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"restrictDays\"",
+        "sql": "ALTER TABLE \"public\".\"Complaint\" ADD COLUMN \"restrictDays\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"restrictDays\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Complaint",
+          "restrictDays"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.PortfolioItem.imageUrl",
+    "label": "Add column \"imageUrl\" to \"PortfolioItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "imageUrl",
+        "table": "PortfolioItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"imageUrl\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PortfolioItem",
+          "imageUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"imageUrl\"",
+        "sql": "ALTER TABLE \"public\".\"PortfolioItem\" ADD COLUMN \"imageUrl\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imageUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PortfolioItem",
+          "imageUrl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.PortfolioItem.tags",
+    "label": "Add column \"tags\" to \"PortfolioItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "tags",
+        "table": "PortfolioItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"tags\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PortfolioItem",
+          "tags"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"tags\"",
+        "sql": "ALTER TABLE \"public\".\"PortfolioItem\" ADD COLUMN \"tags\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"tags\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PortfolioItem",
+          "tags"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.User.restrictedUntil",
+    "label": "Add column \"restrictedUntil\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "restrictedUntil",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"restrictedUntil\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "restrictedUntil"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"restrictedUntil\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"restrictedUntil\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"restrictedUntil\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "restrictedUntil"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.User.restrictionReason",
+    "label": "Add column \"restrictionReason\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "restrictionReason",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"restrictionReason\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "restrictionReason"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"restrictionReason\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"restrictionReason\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"restrictionReason\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "restrictionReason"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.dropNotNull.PortfolioItem.url",
+    "label": "Drop NOT NULL on \"PortfolioItem\".\"url\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "url",
+        "table": "PortfolioItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"url\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PortfolioItem",
+          "url"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"url\"",
+        "sql": "ALTER TABLE \"public\".\"PortfolioItem\" ALTER COLUMN \"url\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"url\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "PortfolioItem",
+          "url",
+          "YES"
+        ]
+      }
+    ]
+  }
+]

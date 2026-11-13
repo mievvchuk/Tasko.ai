@@ -1,4 +1,9 @@
 import { useState, type FormEvent } from "react";
+import {
+  complaintActionNames,
+  complaintCategoryNames,
+} from "../complaintRules";
+import type { ComplaintCategory } from "../complaintRules";
 import { errorMessage, request } from "../api";
 import { ResourceState } from "../components/ResourceState";
 import { formatDate } from "../format";
@@ -31,6 +36,7 @@ export function ComplaintsPage() {
   const [targetUserId, setTargetUserId] = useState("");
   const [projectId, setProjectId] = useState("");
   const [reason, setReason] = useState("");
+  const [category, setCategory] = useState<ComplaintCategory | "">("");
   const [description, setDescription] = useState("");
   const [formError, setFormError] = useState("");
   const selectedPerson = targets.data?.users.find(
@@ -45,11 +51,13 @@ export function ComplaintsPage() {
         body: {
           targetUserId: targetUserId || undefined,
           projectId: projectId || undefined,
+          category,
           reason,
           description,
         },
       });
       setReason("");
+      setCategory("");
       setDescription("");
       setTargetUserId("");
       setProjectId("");
@@ -161,6 +169,23 @@ export function ComplaintsPage() {
           </select>
         </label>
         <label>
+          {tr("Що сталося")}
+          <select
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value as ComplaintCategory)}
+          >
+            <option value="">{tr("Оберіть тип порушення")}</option>
+            {(Object.keys(complaintCategoryNames) as ComplaintCategory[]).map(
+              (key) => (
+                <option key={key} value={key}>
+                  {tr(complaintCategoryNames[key])}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+        <label>
           {tr("Причина")}
           <input
             required
@@ -227,6 +252,8 @@ export function ComplaintsPage() {
                   </div>
                   <small>
                     {[
+                      item.category &&
+                        tr(complaintCategoryNames[item.category]),
                       person?.name,
                       project?.title,
                       formatDate(item.createdAt, true),
@@ -238,6 +265,15 @@ export function ComplaintsPage() {
                   {item.adminNote && (
                     <p className="complaint-answer">
                       <strong>{tr("Відповідь адміністратора:")}</strong>{" "}
+                      {item.action && item.action !== "NONE" && (
+                        <b>
+                          {tr(complaintActionNames[item.action])}
+                          {item.restrictDays
+                            ? ` · ${tr("{0} дн.", item.restrictDays)}`
+                            : ""}
+                          {". "}
+                        </b>
+                      )}
                       {item.adminNote}
                     </p>
                   )}

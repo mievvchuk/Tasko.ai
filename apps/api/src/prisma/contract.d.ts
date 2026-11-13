@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1d24cef48f5655f451b9203f4bead44538d7f677abe3f5be85ee4ea6f0a8af02'>;
+  StorageHashBase<'1c435a1bc70db02fdbe8c52cc507d8b4709ff125683119293bec16390b15efca'>;
 export type ExecutionHash =
   ExecutionHashBase<'ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5'>;
 export type ProfileHash =
@@ -276,13 +276,16 @@ export type FieldOutputTypes = {
       readonly rating: CodecTypes['pg/int4@1']['output'];
     };
     readonly Complaint: {
+      readonly action: CodecTypes['pg/text@1']['output'] | null;
       readonly adminNote: CodecTypes['pg/text@1']['output'] | null;
+      readonly category: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly projectId: CodecTypes['pg/text@1']['output'] | null;
       readonly reason: CodecTypes['pg/text@1']['output'];
       readonly reporterId: CodecTypes['pg/text@1']['output'];
+      readonly restrictDays: CodecTypes['pg/int4@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly targetUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -355,9 +358,11 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly imageUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly tags: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
-      readonly url: CodecTypes['pg/text@1']['output'];
+      readonly url: CodecTypes['pg/text@1']['output'] | null;
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
     readonly Project: {
@@ -449,6 +454,8 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly passwordHash: CodecTypes['pg/text@1']['output'] | null;
+      readonly restrictedUntil: CodecTypes['pg/timestamptz-date@1']['output'] | null;
+      readonly restrictionReason: CodecTypes['pg/text@1']['output'] | null;
       readonly role: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly twoFactorEnabled: CodecTypes['pg/bool@1']['output'];
@@ -512,13 +519,16 @@ export type FieldInputTypes = {
       readonly rating: CodecTypes['pg/int4@1']['input'];
     };
     readonly Complaint: {
+      readonly action: CodecTypes['pg/text@1']['input'] | null;
       readonly adminNote: CodecTypes['pg/text@1']['input'] | null;
+      readonly category: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'] | null;
       readonly reason: CodecTypes['pg/text@1']['input'];
       readonly reporterId: CodecTypes['pg/text@1']['input'];
+      readonly restrictDays: CodecTypes['pg/int4@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly targetUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -591,9 +601,11 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly imageUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly tags: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
-      readonly url: CodecTypes['pg/text@1']['input'];
+      readonly url: CodecTypes['pg/text@1']['input'] | null;
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
     readonly Project: {
@@ -685,6 +697,8 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly passwordHash: CodecTypes['pg/text@1']['input'] | null;
+      readonly restrictedUntil: CodecTypes['pg/timestamptz-date@1']['input'] | null;
+      readonly restrictionReason: CodecTypes['pg/text@1']['input'] | null;
       readonly role: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly twoFactorEnabled: CodecTypes['pg/bool@1']['input'];
@@ -748,13 +762,16 @@ export type StorageColumnTypes = {
       readonly rating: CodecTypes['pg/int4@1']['output'];
     };
     readonly Complaint: {
+      readonly action: CodecTypes['pg/text@1']['output'] | null;
       readonly adminNote: CodecTypes['pg/text@1']['output'] | null;
+      readonly category: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly projectId: CodecTypes['pg/text@1']['output'] | null;
       readonly reason: CodecTypes['pg/text@1']['output'];
       readonly reporterId: CodecTypes['pg/text@1']['output'];
+      readonly restrictDays: CodecTypes['pg/int4@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly targetUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -827,9 +844,11 @@ export type StorageColumnTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly imageUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly tags: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
-      readonly url: CodecTypes['pg/text@1']['output'];
+      readonly url: CodecTypes['pg/text@1']['output'] | null;
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
     readonly Project: {
@@ -921,6 +940,8 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly passwordHash: CodecTypes['pg/text@1']['output'] | null;
+      readonly restrictedUntil: CodecTypes['pg/timestamptz-date@1']['output'] | null;
+      readonly restrictionReason: CodecTypes['pg/text@1']['output'] | null;
       readonly role: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly twoFactorEnabled: CodecTypes['pg/bool@1']['output'];
@@ -984,13 +1005,16 @@ export type StorageColumnInputTypes = {
       readonly rating: CodecTypes['pg/int4@1']['input'];
     };
     readonly Complaint: {
+      readonly action: CodecTypes['pg/text@1']['input'] | null;
       readonly adminNote: CodecTypes['pg/text@1']['input'] | null;
+      readonly category: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'] | null;
       readonly reason: CodecTypes['pg/text@1']['input'];
       readonly reporterId: CodecTypes['pg/text@1']['input'];
+      readonly restrictDays: CodecTypes['pg/int4@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly targetUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -1063,9 +1087,11 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly imageUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly tags: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
-      readonly url: CodecTypes['pg/text@1']['input'];
+      readonly url: CodecTypes['pg/text@1']['input'] | null;
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
     readonly Project: {
@@ -1157,6 +1183,8 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly passwordHash: CodecTypes['pg/text@1']['input'] | null;
+      readonly restrictedUntil: CodecTypes['pg/timestamptz-date@1']['input'] | null;
+      readonly restrictionReason: CodecTypes['pg/text@1']['input'] | null;
       readonly role: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly twoFactorEnabled: CodecTypes['pg/bool@1']['input'];
@@ -1234,13 +1262,16 @@ export namespace Models {
     readonly [RelationKeys]?: 'client' | 'freelancer' | 'project';
   };
   export type public_Complaint = {
+    action: CodecTypes['pg/text@1']['output'] | null;
     adminNote: CodecTypes['pg/text@1']['output'] | null;
+    category: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     description: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     projectId: CodecTypes['pg/text@1']['output'] | null;
     reason: CodecTypes['pg/text@1']['output'];
     reporterId: CodecTypes['pg/text@1']['output'];
+    restrictDays: CodecTypes['pg/int4@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
     targetUserId: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -1342,9 +1373,11 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
+    imageUrl: CodecTypes['pg/text@1']['output'] | null;
+    tags: CodecTypes['pg/text@1']['output'] | null;
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
-    url: CodecTypes['pg/text@1']['output'];
+    url: CodecTypes['pg/text@1']['output'] | null;
     userId: CodecTypes['pg/text@1']['output'];
     applications: public_ProjectApplication[];
     user: public_User;
@@ -1496,6 +1529,8 @@ export namespace Models {
     id: CodecTypes['pg/text@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     passwordHash: CodecTypes['pg/text@1']['output'] | null;
+    restrictedUntil: CodecTypes['pg/timestamptz-date@1']['output'] | null;
+    restrictionReason: CodecTypes['pg/text@1']['output'] | null;
     role: CodecTypes['pg/text@1']['output'];
     status: CodecTypes['pg/text@1']['output'];
     twoFactorEnabled: CodecTypes['pg/bool@1']['output'];
@@ -2000,10 +2035,26 @@ type ContractBase = Omit<
             };
             readonly Complaint: {
               columns: {
+                readonly action: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly adminNote: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly category: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'OTHER'>;
+                  };
                   readonly many: false;
                 };
                 readonly createdAt: {
@@ -2041,6 +2092,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly restrictDays: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly status: {
@@ -2817,6 +2874,18 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly imageUrl: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly tags: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly title: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -2832,7 +2901,7 @@ type ContractBase = Omit<
                 readonly url: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly userId: {
@@ -3618,6 +3687,18 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly restrictedUntil: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly restrictionReason: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly role: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -4209,8 +4290,16 @@ type ContractBase = Omit<
           };
           readonly Complaint: {
             readonly fields: {
+              readonly action: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly adminNote: {
                 readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly category: {
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly createdAt: {
@@ -4239,6 +4328,10 @@ type ContractBase = Omit<
               readonly reporterId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly restrictDays: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly status: {
                 readonly nullable: false;
@@ -4292,13 +4385,16 @@ type ContractBase = Omit<
               readonly table: 'Complaint';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly action: { readonly column: 'action' };
                 readonly adminNote: { readonly column: 'adminNote' };
+                readonly category: { readonly column: 'category' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };
                 readonly projectId: { readonly column: 'projectId' };
                 readonly reason: { readonly column: 'reason' };
                 readonly reporterId: { readonly column: 'reporterId' };
+                readonly restrictDays: { readonly column: 'restrictDays' };
                 readonly status: { readonly column: 'status' };
                 readonly targetUserId: { readonly column: 'targetUserId' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -4865,6 +4961,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly imageUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tags: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly title: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4877,7 +4981,7 @@ type ContractBase = Omit<
                 };
               };
               readonly url: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly userId: {
@@ -4914,6 +5018,8 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };
+                readonly imageUrl: { readonly column: 'imageUrl' };
+                readonly tags: { readonly column: 'tags' };
                 readonly title: { readonly column: 'title' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly url: { readonly column: 'url' };
@@ -5767,6 +5873,17 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly restrictedUntil: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly restrictionReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly role: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -6023,6 +6140,8 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
                 readonly passwordHash: { readonly column: 'passwordHash' };
+                readonly restrictedUntil: { readonly column: 'restrictedUntil' };
+                readonly restrictionReason: { readonly column: 'restrictionReason' };
                 readonly role: { readonly column: 'role' };
                 readonly status: { readonly column: 'status' };
                 readonly twoFactorEnabled: { readonly column: 'twoFactorEnabled' };

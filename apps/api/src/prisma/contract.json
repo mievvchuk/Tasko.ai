@@ -628,8 +628,22 @@
           },
           "Complaint": {
             "fields": {
+              "action": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "adminNote": {
                 "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "category": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -674,6 +688,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "restrictDays": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -751,8 +772,14 @@
             },
             "storage": {
               "fields": {
+                "action": {
+                  "column": "action"
+                },
                 "adminNote": {
                   "column": "adminNote"
+                },
+                "category": {
+                  "column": "category"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -771,6 +798,9 @@
                 },
                 "reporterId": {
                   "column": "reporterId"
+                },
+                "restrictDays": {
+                  "column": "restrictDays"
                 },
                 "status": {
                   "column": "status"
@@ -1657,6 +1687,20 @@
                   "kind": "scalar"
                 }
               },
+              "imageUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tags": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "title": {
                 "nullable": false,
                 "type": {
@@ -1672,7 +1716,7 @@
                 }
               },
               "url": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1729,6 +1773,12 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "imageUrl": {
+                  "column": "imageUrl"
+                },
+                "tags": {
+                  "column": "tags"
                 },
                 "title": {
                   "column": "title"
@@ -3025,6 +3075,20 @@
                   "kind": "scalar"
                 }
               },
+              "restrictedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "restrictionReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "role": {
                 "nullable": false,
                 "type": {
@@ -3389,6 +3453,12 @@
                 },
                 "passwordHash": {
                   "column": "passwordHash"
+                },
+                "restrictedUntil": {
+                  "column": "restrictedUntil"
+                },
+                "restrictionReason": {
+                  "column": "restrictionReason"
                 },
                 "role": {
                   "column": "role"
@@ -4050,10 +4120,24 @@
             },
             "Complaint": {
               "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "adminNote": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": true
+                },
+                "category": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "OTHER"
+                  },
+                  "nullable": false
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
@@ -4088,6 +4172,11 @@
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "restrictDays": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -5053,6 +5142,16 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "imageUrl": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "tags": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "title": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -5066,7 +5165,7 @@
                 "url": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "userId": {
                   "codecId": "pg/text@1",
@@ -6001,6 +6100,16 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "restrictedUntil": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "restrictionReason": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "role": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -6201,7 +6310,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1d24cef48f5655f451b9203f4bead44538d7f677abe3f5be85ee4ea6f0a8af02"
+    "storageHash": "1c435a1bc70db02fdbe8c52cc507d8b4709ff125683119293bec16390b15efca"
   },
   "execution": {
     "executionHash": "ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5",

@@ -155,11 +155,20 @@ export function ProjectApplicationsPage() {
                     <Link to={`/freelancers/${application.freelancerId}`}>
                       {tr("Переглянути профіль")}
                     </Link>
-                    <Link to={`/messages?application=${application.id}`}>
+                    {/* Після найму розмова продовжується в чаті проєкту, а не заявки */}
+                    <Link
+                      to={
+                        application.status === "ACCEPTED"
+                          ? `/messages?project=${application.projectId}`
+                          : `/messages?application=${application.id}`
+                      }
+                    >
                       <i className="bi bi-chat-dots" aria-hidden="true"></i>{" "}
                       {application.status === "PENDING"
                         ? tr("Написати фрілансеру")
-                        : tr("Переписка")}
+                        : application.status === "ACCEPTED"
+                          ? tr("Чат проєкту")
+                          : tr("Переписка")}
                     </Link>
                   </span>
                 </div>

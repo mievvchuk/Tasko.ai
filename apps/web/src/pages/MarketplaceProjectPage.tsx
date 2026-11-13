@@ -143,7 +143,13 @@ export function MarketplaceProjectPage() {
                   {data.applicationId && (
                     <>
                       {" · "}
-                      <Link to={`/messages?application=${data.applicationId}`}>
+                      <Link
+                        to={
+                          data.applicationStatus === "ACCEPTED"
+                            ? `/messages?project=${data.id}`
+                            : `/messages?application=${data.applicationId}`
+                        }
+                      >
                         {data.applicationStatus === "PENDING"
                           ? tr("Написати клієнту")
                           : tr("Переписка з клієнтом")}
