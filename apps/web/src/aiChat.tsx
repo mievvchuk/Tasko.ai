@@ -35,6 +35,8 @@ export interface AiAttachment {
 
 interface AiChatState {
   exchanges: AiExchange[];
+  // Запитання, на яке Ада ще відповідає: показуємо його в стрічці одразу
+  pending: Pick<AiExchange, "question" | "files"> | null;
   busy: boolean;
   error: string;
   send: (
@@ -46,8 +48,9 @@ interface AiChatState {
   clear: () => void;
 }
 
-// Скільки останніх пар надсилаємо як «пам'ять» (сервер приймає до 12 реплік)
-const memoryLimit = 6;
+// Скільки останніх пар надсилаємо як «пам'ять» (сервер приймає до 12 реплік).
+// Історія повторюється в кожному кроці агента, тож 4 пари — компроміс між контекстом і токенами
+const memoryLimit = 4;
 
 export const aiToolNames: Record<string, string> = {
   list_projects: "Список проєктів",
@@ -73,6 +76,7 @@ const AiChatContext = createContext<AiChatState | null>(null);
 export function AiChatProvider({ children }: { children: ReactNode }) {
   const { tr } = useLanguage();
   const [exchanges, setExchanges] = useState<AiExchange[]>([]);
+  const [pending, setPending] = useState<AiChatState["pending"]>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const controller = useRef<AbortController | null>(null);
@@ -94,6 +98,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
         { role: "assistant", content: item.answer.slice(0, 4000) },
       ]);
     setBusy(true);
+    setPending({ question, files: attachments.map((file) => file.name) });
     const current = new AbortController();
     controller.current = current;
     try {
@@ -127,6 +132,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
       return false;
     } finally {
       setBusy(false);
+      setPending(null);
       controller.current = null;
     }
   }
@@ -141,6 +147,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
     <AiChatContext.Provider
       value={{
         exchanges,
+        pending,
         busy,
         error,
         send,

@@ -19,6 +19,8 @@ interface Targets {
   }[];
 }
 
+const searchFrom = 5;
+
 export function ComplaintsPage() {
   const { tr } = useLanguage();
   const { data, error, loading, refresh } = useApi<Complaint[]>(
@@ -66,7 +68,10 @@ export function ComplaintsPage() {
           )}
         </p>
       </div>
-      <form className="data-panel form-grid" onSubmit={(e) => void submit(e)}>
+      <form
+        className="data-panel form-grid complaint-form"
+        onSubmit={(e) => void submit(e)}
+      >
         <fieldset className="full-width complaint-targets">
           <legend>{tr("На кого скарга")}</legend>
           <ResourceState
@@ -76,13 +81,16 @@ export function ComplaintsPage() {
           />
           {targets.data && (
             <>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={tr("Пошук за ім'ям")}
-                aria-label={tr("Пошук за ім'ям")}
-              />
+              {/* Кількох людей видно й так; пошук потрібен, лише коли список довгий */}
+              {targets.data.users.length > searchFrom && (
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={tr("Пошук за ім'ям")}
+                  aria-label={tr("Пошук за ім'ям")}
+                />
+              )}
               <div className="target-list" role="radiogroup">
                 {targets.data.users
                   .filter((person) =>
@@ -128,29 +136,30 @@ export function ComplaintsPage() {
                   </p>
                 )}
               </div>
-              <label>
-                {tr("Проєкт")}
-                <select
-                  value={projectId}
-                  onChange={(e) => setProjectId(e.target.value)}
-                >
-                  <option value="">{tr("Без проєкту")}</option>
-                  {targets.data.projects
-                    .filter(
-                      (project) =>
-                        !selectedPerson ||
-                        selectedPerson.projectIds.includes(project.id),
-                    )
-                    .map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.title}
-                      </option>
-                    ))}
-                </select>
-              </label>
             </>
           )}
         </fieldset>
+        <label>
+          {tr("Проєкт")}
+          <select
+            value={projectId}
+            disabled={!targets.data}
+            onChange={(e) => setProjectId(e.target.value)}
+          >
+            <option value="">{tr("Без проєкту")}</option>
+            {targets.data?.projects
+              .filter(
+                (project) =>
+                  !selectedPerson ||
+                  selectedPerson.projectIds.includes(project.id),
+              )
+              .map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.title}
+              </option>
+            ))}
+          </select>
+        </label>
         <label>
           {tr("Причина")}
           <input
@@ -164,6 +173,7 @@ export function ComplaintsPage() {
           {tr("Опис")}
           <textarea
             required
+            rows={3}
             minLength={10}
             value={description}
             onChange={(e) => setDescription(e.target.value)}

@@ -11,9 +11,11 @@ import { SecuritySettings } from "../components/SecuritySettings";
 import { FreelancerProfileEditor } from "../components/FreelancerProfileEditor";
 import { UserAvatar } from "../components/UserAvatar";
 import { RoleSwitch } from "../components/RoleSwitch";
+import { AvatarCropDialog } from "../components/AvatarCropDialog";
 
 import { useLanguage } from "../i18n";
-const maxPhotoSize = 2 * 1024 * 1024;
+// Оригінал може бути більшим: після обрізання зберігаємо JPEG 512×512
+const maxPhotoSize = 10 * 1024 * 1024;
 const photoTypes = ["image/png", "image/jpeg", "image/webp"];
 
 // Сторінка «Мій профіль»: фото, ім'я, статистика, профіль фрілансера та безпека
@@ -27,6 +29,7 @@ export function WorkspacePage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [cropFile, setCropFile] = useState<File | null>(null);
   if (!user) return null;
 
   // Спільна обгортка: блокує кнопки, показує помилку чи підтвердження
@@ -46,16 +49,23 @@ export function WorkspacePage() {
     }
   }
 
-  async function uploadPhoto(event: ChangeEvent<HTMLInputElement>) {
+  function choosePhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
     // Швидка перевірка в браузері; остаточна — на сервері за вмістом файлу
     if (!photoTypes.includes(file.type) || file.size > maxPhotoSize) {
       setMessage("");
-      setError(tr("Оберіть фото PNG, JPG або WEBP розміром до 2 МБ."));
+      setError(tr("Оберіть фото PNG, JPG або WEBP розміром до 10 МБ."));
       return;
     }
+    setMessage("");
+    setError("");
+    setCropFile(file);
+  }
+
+  async function uploadPhoto(file: File) {
+    setCropFile(null);
     const body = new FormData();
     body.append("file", file);
     await run(
@@ -77,12 +87,22 @@ export function WorkspacePage() {
     if (saved) setEditingName(false);
   }
 
+  // Лічильники охоплюють усі завдання проєктів, тож підпис каже, чиї вони, а не «я виконав»
+  const freelancer = user.role === "FREELANCER";
   const statItems = stats.data
     ? [
-        { label: tr("Проєкти"), value: stats.data.projects },
+        {
+          label: freelancer ? tr("Проєктів, де я в команді") : tr("Мої проєкти"),
+          value: stats.data.projects,
+        },
         { label: tr("Активні проєкти"), value: stats.data.activeProjects },
-        { label: tr("Завдання"), value: stats.data.tasks },
-        { label: tr("Виконано"), value: stats.data.completedTasks },
+        { label: tr("Завдань у моїх проєктах"), value: stats.data.tasks },
+        {
+          label: freelancer
+            ? tr("Виконано командою")
+            : tr("Виконано виконавцями"),
+          value: stats.data.completedTasks,
+        },
       ]
     : [];
 
@@ -110,7 +130,7 @@ export function WorkspacePage() {
             type="file"
             accept={photoTypes.join(",")}
             disabled={busy}
-            onChange={(event) => void uploadPhoto(event)}
+            onChange={choosePhoto}
           />
           <div className="profile-photo-actions">
             <button
@@ -142,8 +162,15 @@ export function WorkspacePage() {
             )}
           </div>
           <small className="form-note">
-            {tr("PNG, JPG або WEBP, до 2 МБ")}
+            {tr("PNG, JPG або WEBP, до 10 МБ")}
           </small>
+          {cropFile && (
+            <AvatarCropDialog
+              file={cropFile}
+              onCancel={() => setCropFile(null)}
+              onSave={(cropped) => void uploadPhoto(cropped)}
+            />
+          )}
         </div>
 
         <div className="profile-info">

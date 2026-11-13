@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Param,
   ParseUUIDPipe,
@@ -57,6 +58,12 @@ export class CollaborationController {
   ) {
     return this.collaboration.message(user, id, data);
   }
+  @Post('projects/:id/typing') @HttpCode(204) typing(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.collaboration.typing(user, id);
+  }
   @Get('applications/conversations') applicationConversations(
     @Actor() user: CurrentUser,
   ) {
@@ -87,6 +94,12 @@ export class CollaborationController {
     @Body() data: MessageDto,
   ) {
     return this.collaboration.applicationMessage(user, id, data);
+  }
+  @Post('applications/:id/typing') @HttpCode(204) applicationTyping(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.collaboration.applicationTyping(user, id);
   }
   @Get('projects/:id/files') listFiles(
     @Actor() user: CurrentUser,

@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import { Link, useSearchParams } from "react-router";
-import { request, errorMessage, subscribe } from "../api";
+import {
+  request,
+  errorMessage,
+  subscribe,
+  notificationsChangedEvent,
+} from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
-import { formatDate, parsePage } from "../format";
-import { Pagination, ResourceState } from "../components/ResourceState";
+import { formatDate } from "../format";
+import { ResourceState } from "../components/ResourceState";
 import { applicationStatusNames, projectStatusNames } from "../types";
 import type {
   ApplicationChat,
@@ -31,6 +36,13 @@ export function MessagesPage() {
     user?.role === "ADMIN" ? null : "/applications/conversations",
   );
   const current = project.data ? project : application;
+  // Відкрили листування — лічильник біля «Повідомлень» гасне
+  useEffect(() => {
+    if (user?.role === "ADMIN") return;
+    void request("/notifications/read-messages", { method: "POST" })
+      .then(() => window.dispatchEvent(new Event(notificationsChangedEvent)))
+      .catch(() => {});
+  }, [user?.role, projectId, applicationId]);
   return (
     <>
       <div className="page-heading">
@@ -129,7 +141,6 @@ function ProjectMessages({ project }: { project: Project }) {
   return (
     <Chat
       path={`/projects/${project.id}`}
-      param={{ project: project.id }}
       title={project.title}
       link={{ to: `/projects/${project.id}`, label: tr("До проєкту") }}
       readOnly={
@@ -169,7 +180,6 @@ function ApplicationMessages({
   return (
     <Chat
       path={`/applications/${chat.id}`}
-      param={{ application: chat.id }}
       title={tr(
         "Заявка на «{0}» · {1}",
         chat.projectTitle,
@@ -195,10 +205,12 @@ function ApplicationMessages({
   );
 }
 
-// Спільний чат: історія сторінками, нові повідомлення наживо через SSE
+const pageSize = 30;
+
+// Спільний чат: одна стрічка з прокруткою. Найновіші — внизу, старіші догружаються,
+// коли гортаєш угору; нові повідомлення приходять наживо через SSE
 function Chat({
   path,
-  param,
   title,
   link,
   readOnly,
@@ -207,7 +219,6 @@ function Chat({
   onSent,
 }: {
   path: string;
-  param: Record<string, string>;
   title: string;
   link: { to: string; label: string };
   readOnly: string;
@@ -217,79 +228,169 @@ function Chat({
 }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
-  const [params, setParams] = useSearchParams();
-  const page = parsePage(params.get("page"));
-  const messages = useApi<ProjectMessage[]>(
-    `${path}/messages?page=${page}&limit=20`,
+  const latest = useApi<ProjectMessage[]>(
+    `${path}/messages?page=1&limit=${pageSize}`,
   );
+  // Раніші сторінки, які вже догрузили прокруткою вгору
+  const [older, setOlder] = useState<ProjectMessage[]>([]);
+  const [olderPage, setOlderPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [olderError, setOlderError] = useState("");
   const [content, setContent] = useState("");
-  const [busy, setBusy] = useState(false);
+  // Надіслане, але ще не підтверджене сервером: показуємо одразу, як у чаті Ади
+  const [sending, setSending] = useState("");
   const [error, setError] = useState("");
   const [live, setLive] = useState<ProjectMessage[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
-  useEffect(() => setLive([]), [messages.data]);
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  // Висота стрічки перед догрузкою старіших: після неї повертаємо читача на те саме місце
+  const keepScroll = useRef<number | null>(null);
+  // Хто зараз пише: id → ім'я; кожен запис гасне через 5 с без нової події
+  const [typers, setTypers] = useState<Record<string, string>>({});
+  const typerTimers = useRef<Record<string, number>>({});
+  const lastTyping = useRef(0);
+  function stopTyping(id: string) {
+    window.clearTimeout(typerTimers.current[id]);
+    delete typerTimers.current[id];
+    setTypers((list) => {
+      if (!(id in list)) return list;
+      const rest = { ...list };
+      delete rest[id];
+      return rest;
+    });
+  }
   useEffect(() => {
-    if (page !== 1) return;
+    if (latest.data) setHasMore(latest.data.length === pageSize);
+  }, [latest.data]);
+  useEffect(() => {
     const controller = new AbortController();
     void subscribe(
       `${path}/messages/stream`,
       (type, data) => {
+        if (type === "typing") {
+          const { userId, name } = JSON.parse(data) as {
+            userId: string;
+            name: string;
+          };
+          setTypers((list) => ({ ...list, [userId]: name }));
+          window.clearTimeout(typerTimers.current[userId]);
+          typerTimers.current[userId] = window.setTimeout(
+            () => stopTyping(userId),
+            5000,
+          );
+          return;
+        }
         if (type !== "message") return;
         const message = JSON.parse(data) as ProjectMessage;
-        setLive((list) =>
-          list.some((item) => item.id === message.id)
-            ? list
-            : [...list, message],
-        );
+        stopTyping(message.senderId);
+        setLive((list) => [...list, message]);
       },
       controller.signal,
     );
-    return () => controller.abort();
-  }, [path, page]);
-  const shown = messages.data
-    ? [
-        ...[...messages.data].reverse(),
-        ...live.filter(
-          (message) => !messages.data!.some((item) => item.id === message.id),
-        ),
-      ]
-    : [];
-  useEffect(() => {
+    const timers = typerTimers.current;
+    return () => {
+      controller.abort();
+      Object.values(timers).forEach((timer) => window.clearTimeout(timer));
+      setTypers({});
+    };
+  }, [path]);
+  // Сторінки рахуються від найновішого, тож нові повідомлення зсувають їх і дають дублікати — відсіюємо за id
+  const seen = new Set<string>();
+  const shown = [
+    ...[...older].reverse(),
+    ...[...(latest.data ?? [])].reverse(),
+    ...live,
+  ].filter((message) => !seen.has(message.id) && seen.add(message.id));
+  const newestId = shown.at(-1)?.id;
+  useLayoutEffect(() => {
     const list = listRef.current;
-    if (list) list.scrollTop = list.scrollHeight;
-  }, [shown.length]);
+    if (!list) return;
+    if (keepScroll.current !== null) {
+      list.scrollTop = list.scrollHeight - keepScroll.current;
+      keepScroll.current = null;
+    } else list.scrollTop = list.scrollHeight;
+  }, [shown.length, newestId, sending]);
+  // Fallback для браузерів без field-sizing: висота поля за вмістом (межу ставить max-height у CSS)
+  useLayoutEffect(() => {
+    const field = textarea.current;
+    if (!field || CSS.supports("field-sizing", "content")) return;
+    field.style.height = "auto";
+    field.style.height = `${field.scrollHeight}px`;
+  }, [content]);
+
+  async function loadOlder() {
+    if (!hasMore || loadingOlder || !latest.data) return;
+    setLoadingOlder(true);
+    setOlderError("");
+    try {
+      const page = await request<ProjectMessage[]>(
+        `${path}/messages?page=${olderPage + 1}&limit=${pageSize}`,
+      );
+      keepScroll.current = listRef.current
+        ? listRef.current.scrollHeight - listRef.current.scrollTop
+        : null;
+      setOlder((list) => [...list, ...page]);
+      setOlderPage((value) => value + 1);
+      setHasMore(page.length === pageSize);
+    } catch (error) {
+      setOlderError(errorMessage(error));
+    } finally {
+      setLoadingOlder(false);
+    }
+  }
   function refresh() {
-    messages.refresh();
+    setOlder([]);
+    setOlderPage(1);
+    setLive([]);
+    latest.refresh();
     extra?.refresh();
   }
-  async function send(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
+  // Сповіщаємо співрозмовників, що пишемо, не частіше ніж раз на 2,5 с
+  function typed(value: string) {
+    setContent(value);
+    if (!value.trim() || Date.now() - lastTyping.current < 2500) return;
+    lastTyping.current = Date.now();
+    void request(`${path}/typing`, { method: "POST" }).catch(() => {});
+  }
+  const typerNames = Object.values(typers);
+  async function send(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    if (sending) return;
     setError("");
-    if (!content.trim()) {
+    const text = content.trim();
+    if (!text) {
       setError(tr("Напишіть повідомлення."));
       return;
     }
-    setBusy(true);
+    // Поле очищуємо одразу — повідомлення вже видно в стрічці; при збої повертаємо текст
+    setSending(text);
+    setContent("");
     try {
-      await request(`${path}/messages`, {
+      const saved = await request<ProjectMessage>(`${path}/messages`, {
         method: "POST",
-        body: { content: content.trim() },
+        body: { content: text },
       });
-      setContent("");
-      setParams(param);
-      messages.refresh();
+      lastTyping.current = 0;
+      if (saved?.id) setLive((list) => [...list, saved]);
+      else refresh();
       onSent?.();
     } catch (error) {
+      setContent(text);
       setError(errorMessage(error));
     } finally {
-      setBusy(false);
+      setSending("");
     }
   }
-  const loading = messages.loading || Boolean(extra?.loading);
-  const loadError = messages.error || extra?.error || "";
+  function handleKey(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    void send();
+  }
+  const loading = latest.loading || Boolean(extra?.loading);
+  const loadError = latest.error || extra?.error || "";
   return (
-    <section className="data-panel">
+    <section className="data-panel chat-panel">
       <div className="panel-heading">
         <div>
           <h2>{title}</h2>
@@ -299,74 +400,136 @@ function Chat({
           </span>
           <Link to={link.to}>{link.label}</Link>
         </div>
-        <button className="button secondary" onClick={refresh}>
+        <button
+          type="button"
+          className="icon-action"
+          aria-label={tr("Оновити повідомлення")}
+          title={tr("Оновити повідомлення")}
+          onClick={refresh}
+        >
           <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
-
-          {tr("Оновити повідомлення")}
         </button>
       </div>
       <ResourceState loading={loading} error={loadError} onRetry={refresh} />
-      {messages.data && !loading && !loadError && (
-        <>
-          <div className="message-list padded" aria-live="polite" ref={listRef}>
-            {!shown.length && (
-              <p className="form-note">
-                {tr("На цій сторінці повідомлень немає.")}
-              </p>
-            )}
-            {shown.map((message) => (
-              <article
-                className={
-                  message.senderId === user?.id ? "message own" : "message"
-                }
-                key={message.id}
-              >
-                <div className="record-heading">
-                  <strong>{senderName(message.senderId)}</strong>
-                  <time dateTime={message.createdAt}>
-                    {formatDate(message.createdAt, true)}
-                  </time>
-                </div>
-                <p className="preserve-lines">{message.content}</p>
-              </article>
-            ))}
-          </div>
-          <p className="form-note padded">
-            {tr(
-              "Перша сторінка містить найновіші повідомлення. Наступні сторінки — раніші.",
-            )}
-          </p>
-          <Pagination
-            page={page}
-            count={messages.data.length}
-            onChange={(value) => setParams({ ...param, page: String(value) })}
-          />
-        </>
+      {latest.data && !loading && !loadError && (
+        <div
+          className="message-list padded"
+          aria-live="polite"
+          ref={listRef}
+          onScroll={(event) => {
+            if (event.currentTarget.scrollTop < 80) void loadOlder();
+          }}
+        >
+          {hasMore && (
+            <p className="message-history-note" role="status">
+              {loadingOlder ? (
+                tr("Завантажуємо раніші повідомлення…")
+              ) : olderError ? (
+                <>
+                  {olderError}{" "}
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => void loadOlder()}
+                  >
+                    {tr("Спробувати ще раз")}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => void loadOlder()}
+                >
+                  {tr("Показати раніші повідомлення")}
+                </button>
+              )}
+            </p>
+          )}
+          {!shown.length && !sending && (
+            <p className="form-note">{tr("Повідомлень ще немає.")}</p>
+          )}
+          {shown.map((message) => (
+            <article
+              className={
+                message.senderId === user?.id ? "message own" : "message"
+              }
+              key={message.id}
+            >
+              <div className="record-heading">
+                <strong>{senderName(message.senderId)}</strong>
+                <time dateTime={message.createdAt}>
+                  {formatDate(message.createdAt, true)}
+                </time>
+              </div>
+              <p className="preserve-lines">{message.content}</p>
+            </article>
+          ))}
+          {sending && (
+            <article className="message own pending">
+              <div className="record-heading">
+                <strong>{senderName(user?.id ?? "")}</strong>
+                <small>{tr("Надсилаємо…")}</small>
+              </div>
+              <p className="preserve-lines">{sending}</p>
+            </article>
+          )}
+        </div>
       )}
-      <div className="padded">
+      <p className="typing-indicator padded" aria-live="polite">
+        {typerNames.length > 0 && (
+          <>
+            <span className="typing-dots" aria-hidden="true">
+              <i></i>
+              <i></i>
+              <i></i>
+            </span>
+            {tr(
+              typerNames.length > 1 ? "{0} пишуть…" : "{0} пише…",
+              typerNames.join(", "),
+            )}
+          </>
+        )}
+      </p>
+      <div className="chat-composer">
         {readOnly ? (
           <p className="form-note">{readOnly}</p>
         ) : (
-          <form className="work-form" onSubmit={send}>
-            <label htmlFor="message-content">{tr("Нове повідомлення")}</label>
-            <textarea
-              id="message-content"
-              required
-              maxLength={5000}
-              rows={4}
-              value={content}
-              disabled={busy}
-              onChange={(event) => setContent(event.target.value)}
-            />
+          <form onSubmit={(event) => void send(event)}>
+            <label htmlFor="message-content" className="visually-hidden">
+              {tr("Нове повідомлення")}
+            </label>
             {error && (
               <p className="notice error" role="alert">
                 {error}
               </p>
             )}
-            <button className="button primary" disabled={busy}>
-              <i className="bi bi-send" aria-hidden="true"></i>
-              {busy ? tr("Надсилаємо…") : tr("Надіслати повідомлення")}
-            </button>
+            <div className="ai-composer">
+              <textarea
+                ref={textarea}
+                id="message-content"
+                rows={1}
+                required
+                maxLength={5000}
+                placeholder={tr("Напишіть повідомлення…")}
+                value={content}
+                onChange={(event) => typed(event.target.value)}
+                onKeyDown={handleKey}
+              />
+              <div className="ai-composer-bar">
+                <span className="ai-hint">
+                  {tr("Enter — надіслати, Shift+Enter — новий рядок")}
+                </span>
+                <button
+                  className="ai-send"
+                  disabled={Boolean(sending) || !content.trim()}
+                  aria-label={tr("Надіслати повідомлення")}
+                  title={tr("Надіслати повідомлення")}
+                >
+                  <i className="bi bi-arrow-up" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
           </form>
         )}
       </div>

@@ -17,3 +17,5 @@
   18.5%, 63.5% { opacity: .35; }
 }
 @media (prefers-reduced-motion: reduce) { .brand-word .brand-letter, .brand-word .brand-mid { animation: none !important; } }
+/* На телефоні логотип дрібний, і проміжні кадри обміну «a» читаються як розсипані літери («T askoa i») */
+@media (max-width: 40rem) { .brand-word .brand-letter, .brand-word .brand-mid { animation: none !important; } }

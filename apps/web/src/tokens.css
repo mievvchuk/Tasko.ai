@@ -49,6 +49,7 @@
   --color-paper-2: oklch(94.5% 0.007 55);   /* бічна панель, заголовки таблиць */
   --color-paper-3: oklch(91.5% 0.009 55);   /* наведення, колонки Kanban, сірі пілюлі */
   --color-surface: oklch(98.8% 0.0045 80);  /* картки й поля: бавовняний папір */
+  --color-field: oklch(98.8% 0.0045 80);    /* поля вводу */
   --color-ink: oklch(21% 0.012 38);         /* основний текст */
   --color-ink-2: oklch(29% 0.013 40);       /* другорядний текст */
   --color-muted: oklch(47% 0.013 45);       /* підписи, рамки полів */
@@ -84,15 +85,17 @@
    Не інверсія: папір стає дошкою, картки — світлішим аркушем на ній, тінь глибша. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-paper: oklch(17% 0.01 40);
-  --color-paper-2: oklch(20% 0.011 40);
-  --color-paper-3: oklch(25% 0.012 40);
-  --color-surface: oklch(22.5% 0.011 42);
+  /* Кроки світлоти ≥ 4–5 %: фон, вкладена «лунка» і картка мають розрізнятися на слабкому екрані */
+  --color-paper: oklch(14.5% 0.009 40);
+  --color-paper-2: oklch(18.5% 0.01 40);    /* вкладені блоки й поля в картці — темніші за неї */
+  --color-paper-3: oklch(30% 0.012 40);
+  --color-surface: oklch(24% 0.011 42);
+  --color-field: oklch(17.5% 0.01 40);      /* поля вводу: заглиблені в картку */
   --color-ink: oklch(96.5% 0.006 70);
   --color-ink-2: oklch(85% 0.01 60);
-  --color-muted: oklch(71% 0.013 55);
-  --color-rule: oklch(29% 0.012 40);
-  --color-rule-2: oklch(39% 0.013 40);
+  --color-muted: oklch(72% 0.013 55);
+  --color-rule: oklch(35% 0.012 40);
+  --color-rule-2: oklch(47% 0.013 40);
 
   --color-accent: oklch(96.5% 0.006 70);    /* світлий аркуш: головна дія */
   --color-accent-deep: oklch(89% 0.008 65);
@@ -111,7 +114,8 @@
   --shadow-pop: 0 0 0 1px oklch(39% 0.013 40), 10px 12px 24px -8px oklch(7% 0.01 40 / 0.7);
 
   --shade: 7% 0.01 40; --lit: 40% 0.012 45;
-  --edge-stock: inset 0 1px 0 oklch(var(--lit) / 0.5), 0 0 0 0.5px oklch(var(--lit) / 0.6);
+  /* Повна 1px рамка: у темряві тінь не видно, тож межу картки тримає лінія */
+  --edge-stock: inset 0 1px 0 oklch(var(--lit) / 0.5), 0 0 0 1px oklch(35% 0.012 40);
   --cast-stock: 6px 5px 12px -6px oklch(var(--shade) / 0.7);
   --cast-stock-lift: 12px 10px 20px -8px oklch(var(--shade) / 0.75);
 }

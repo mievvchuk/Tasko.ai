@@ -6,6 +6,8 @@ description: How to describe a project, set a budget, deadline and skills, and w
 
 ## Creating
 
+![The Create project form with a title and description filled in](/img/help/create-project.en.webp)
+
 1. Open **My projects** → **Create project** or go [here](https://taskoai.pp.ua/projects/new).
 2. Fill in the form:
    - **Title** — short and to the point: "Ceramics online store on React".

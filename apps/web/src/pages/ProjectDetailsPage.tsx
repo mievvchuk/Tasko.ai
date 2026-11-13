@@ -227,7 +227,7 @@ export function ProjectDetailsPage() {
           {tr("Історія")}
         </Link>
         {!isAdmin && (
-          <Link to={`/ai?project=${id}`}>
+          <Link to={`/ai?project=${id}&analyze=1`}>
             <i className="bi bi-graph-up" aria-hidden="true"></i>
             {tr("Аналіз AI")}
           </Link>

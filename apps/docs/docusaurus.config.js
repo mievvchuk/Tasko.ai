@@ -26,6 +26,9 @@ module.exports = {
     },
   },
 
+  // Індекс статей для пошуку в навбарі (src/theme/SearchBar.js)
+  plugins: ["./plugins/search-index.js"],
+
   presets: [
     [
       "classic",

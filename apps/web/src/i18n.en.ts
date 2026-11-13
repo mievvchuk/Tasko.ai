@@ -107,6 +107,7 @@ export const enText: Record<string, string> = {
   Із: "Of",
   грн: "UAH",
   "{0} грн": "{0} UAH",
+  "Чекають на модерацію: {0}": "Awaiting moderation: {0}",
   "{0}–{1} грн": "{0}–{1} UAH",
   КБ: "KB",
   днів: "days",
@@ -314,8 +315,6 @@ export const enText: Record<string, string> = {
   "Інший пристрій": "Other device",
   "IP невідомий": "IP unknown",
   Завершити: "End",
-  "Оберіть фото PNG, JPG або WEBP розміром до 2 МБ.":
-    "Choose a PNG, JPG or WEBP photo up to 2 MB.",
   "Фото профілю оновлено.": "Profile photo updated.",
   "Ім'я збережено.": "Name saved.",
   "Мій профіль": "My profile",
@@ -324,7 +323,6 @@ export const enText: Record<string, string> = {
   "Змінити фото": "Change photo",
   "Додати фото": "Add photo",
   "Фото профілю видалено.": "Profile photo removed.",
-  "PNG, JPG або WEBP, до 2 МБ": "PNG, JPG or WEBP, up to 2 MB",
   "Змінити ім'я": "Change name",
   "У Tasko.ai з": "On Tasko.ai since",
   "Як мій профіль бачать клієнти": "How clients see my profile",
@@ -575,9 +573,6 @@ export const enText: Record<string, string> = {
   "Клієнт проєкту": "Project client",
   "Користувач ": "User ",
   "Оновити повідомлення": "Refresh messages",
-  "На цій сторінці повідомлень немає.": "No messages on this page.",
-  "Перша сторінка містить найновіші повідомлення. Наступні сторінки — раніші.":
-    "The first page has the newest messages. Later pages have older ones.",
   "Проєкт закрито. Обговорення доступне для читання.":
     "The project is closed. The discussion is read-only.",
   "Нове повідомлення": "New message",
@@ -861,8 +856,6 @@ export const enText: Record<string, string> = {
   Виконавці: "Freelancers",
   "Незавершені завдання": "Unfinished tasks",
   "Високий пріоритет": "High priority",
-  "Показники враховують лише доступні вам дані. Вони не розкривають роботу фрілансера у чужих приватних проєктах.":
-    "Figures only count data available to you. They don't reveal a freelancer's work in other private projects.",
   "Виконавців поки немає": "No freelancers yet",
   "Додайте команду до проєкту, щоб переглядати розподіл роботи.":
     "Add a team to a project to see how work is distributed.",
@@ -1007,6 +1000,8 @@ export const enText: Record<string, string> = {
   "В обраному": "In favourites",
   "До обраного": "Add to favourites",
   "Нові повідомлення з'являються одразу": "New messages appear instantly",
+  "{0} пише…": "{0} is typing…",
+  "{0} пишуть…": "{0} are typing…",
   Подія: "Event",
   Отримано: "Received",
   "Прочитано {0}": "Read {0}",
@@ -1228,6 +1223,25 @@ export const enText: Record<string, string> = {
   "Брати завдання з черги може фрілансер.":
     "Only a freelancer can take tasks from the queue.",
   "Вільних завдань у черзі немає.": "There are no free tasks in the queue.",
+  "Фото профілю": "Profile photo",
+  "Перетягніть фото й наблизьте його, щоб обличчя було в колі.": "Drag and zoom the photo so your face fits the circle.",
+  "Не вдалося відкрити зображення. Оберіть інший файл.": "Could not open the image. Choose another file.",
+  "Область фото. Стрілки зсувають зображення.": "Photo area. Arrow keys move the image.",
+  "Масштаб": "Zoom",
+  "Зберегти фото": "Save photo",
+  "Локальна мережа": "Local network",
+  "Проаналізуй стан цього проєкту: прогрес, ризики й дедлайни, завантаження команди. Дай короткі рекомендації.": "Analyse this project: progress, risks and deadlines, team workload. Give short recommendations.",
+  "Завантажуємо раніші повідомлення…": "Loading earlier messages…",
+  "Показати раніші повідомлення": "Show earlier messages",
+  "Повідомлень ще немає.": "No messages yet.",
+  "{0} / 3000 символів": "{0} / 3000 characters",
+  "{0}: незавершених завдань {1}": "{0}: {1} open tasks",
+  "Оберіть фото PNG, JPG або WEBP розміром до 10 МБ.": "Choose a PNG, JPG or WEBP photo up to 10 MB.",
+  "Проєктів, де я в команді": "Projects I am on",
+  "Завдань у моїх проєктах": "Tasks in my projects",
+  "Виконано командою": "Done by the team",
+  "Виконано виконавцями": "Done by freelancers",
+  "PNG, JPG або WEBP, до 10 МБ": "PNG, JPG or WEBP, up to 10 MB",
 };
 
 function storedLanguage(): Language {

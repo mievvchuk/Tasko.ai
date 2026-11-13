@@ -1,6 +1,10 @@
 import { trNow } from "./i18n.en.ts";
 export const tokenKey = "tasko.accessToken";
 export const sessionEndedEvent = "tasko:session-ended";
+// Адмін ухвалив рішення щодо проєкту — меню адмінки оновлює лічильник черги
+export const moderationChangedEvent = "tasko:moderation-changed";
+// Сторінки, що позначають сповіщення прочитаними, кажуть меню оновити лічильники
+export const notificationsChangedEvent = "tasko:notifications-changed";
 
 export class ApiError extends Error {
   status: number;
@@ -34,6 +38,47 @@ export function getToken() {
     globalThis.localStorage?.getItem(tokenKey) ??
     null
   );
+}
+
+// sessionStorage у кожної вкладки свій, тож нова вкладка без «Запам'ятати мене» опинялась на вході.
+// Вона питає відкриті вкладки цього ж сайту через BroadcastChannel і бере їхній токен.
+// Закрили всі вкладки — sessionStorage зник, і сеанс у браузері закінчився, як і раніше.
+const tabs =
+  globalThis.window && typeof BroadcastChannel !== "undefined"
+    ? new BroadcastChannel("tasko.auth")
+    : null;
+tabs?.addEventListener("message", (event: MessageEvent) => {
+  if (event.data !== "ask") return;
+  try {
+    const token = sessionStorage.getItem(tokenKey);
+    if (token) tabs.postMessage({ token });
+  } catch {
+    // сховище недоступне — мовчки не відповідаємо
+  }
+});
+
+export function tokenFromOtherTabs(wait = 300): Promise<string | null> {
+  const channel = tabs;
+  if (!channel) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const done = (token: string | null) => {
+      window.clearTimeout(timer);
+      channel.removeEventListener("message", reply);
+      try {
+        if (token) sessionStorage.setItem(tokenKey, token);
+      } catch {
+        // без сховища токен житиме лише до перезавантаження — далі знову спитаємо
+      }
+      resolve(token);
+    };
+    const reply = (event: MessageEvent) => {
+      const token = (event.data as { token?: unknown } | null)?.token;
+      if (typeof token === "string" && token) done(token);
+    };
+    const timer = window.setTimeout(() => done(null), wait);
+    channel.addEventListener("message", reply);
+    channel.postMessage("ask");
+  });
 }
 
 export function errorMessage(error: unknown) {
