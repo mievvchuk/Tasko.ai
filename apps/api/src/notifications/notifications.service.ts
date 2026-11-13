@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { announce } from './notification-events.js';
 
 // Сповіщення про листування рахуємо окремо: їхній лічильник стоїть біля «Повідомлень», а не «Сповіщень»
 export const messageTypes = ['NEW_MESSAGE', 'APPLICATION_MESSAGE'];
@@ -20,6 +21,7 @@ export class NotificationsService {
     },
   ) {
     if (recipientId === actorId) return null;
+    announce(recipientId);
     return this.prisma.client.orm.public.Notification.create({
       id: randomUUID(),
       userId: recipientId,

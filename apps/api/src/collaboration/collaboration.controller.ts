@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
@@ -25,6 +26,7 @@ import { MessageDto, ReviewDto, SubmissionDto } from './collaboration.dto.js';
 import { CollaborationService } from './collaboration.service.js';
 import {
   FilesService,
+  maxArchiveSize,
   type UploadedFile as UploadedFileData,
 } from './files.service.js';
 
@@ -57,6 +59,13 @@ export class CollaborationController {
     @Body() data: MessageDto,
   ) {
     return this.collaboration.message(user, id, data);
+  }
+  @Delete('projects/:id/messages/:messageId') deleteMessage(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('messageId', ParseUUIDPipe) messageId: string,
+  ) {
+    return this.collaboration.deleteMessage(user, id, messageId);
   }
   @Post('projects/:id/typing') @HttpCode(204) typing(
     @Actor() user: CurrentUser,
@@ -95,6 +104,13 @@ export class CollaborationController {
   ) {
     return this.collaboration.applicationMessage(user, id, data);
   }
+  @Delete('applications/:id/messages/:messageId') deleteApplicationMessage(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('messageId', ParseUUIDPipe) messageId: string,
+  ) {
+    return this.collaboration.deleteApplicationMessage(user, id, messageId);
+  }
   @Post('applications/:id/typing') @HttpCode(204) applicationTyping(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -120,7 +136,8 @@ export class CollaborationController {
   @UseInterceptors(
     FileInterceptor('file', {
       defParamCharset: 'utf8',
-      limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 0 },
+      // Верхня межа для ZIP; решту типів обмежує validateFile (10 МБ)
+      limits: { fileSize: maxArchiveSize, files: 1, fields: 0 },
     }),
   )
   upload(
@@ -129,6 +146,12 @@ export class CollaborationController {
     @UploadedFile() file: UploadedFileData | undefined,
   ) {
     return this.files.upload(user, id, file);
+  }
+  @Delete('files/:id') deleteFile(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.files.remove(user, id);
   }
   @Get('files/:id/download')
   async download(

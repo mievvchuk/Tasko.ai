@@ -1905,13 +1905,76 @@ input[type="file"]::file-selector-button:hover {
   max-height: 520px;
   overflow-y: auto;
 }
-.message-list > * {
+/* Повідомлення — бульбашки: чужі ліворуч з аватаром, свої праворуч */
+.message-list {
+  justify-items: start;
+}
+.message-list > p.form-note {
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-input);
   background: var(--color-paper-2);
 }
-.message-list > .own {
+.message {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-xs);
+  max-width: min(78%, 640px);
+  animation: rise var(--dur-short) var(--ease-out);
+}
+.message.own {
+  flex-direction: row-reverse;
+  justify-self: end;
+}
+.message-bubble {
+  min-width: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 14px 14px 14px 4px;
+  background: var(--color-paper-2);
+}
+.message.own .message-bubble {
+  border-radius: 14px 14px 4px 14px;
   background: var(--color-accent-soft);
+}
+.message .record-heading {
+  justify-content: flex-start;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-3xs);
+  font-size: var(--text-xs);
+}
+.message .record-heading strong {
+  color: var(--color-ink);
+}
+.message.own .record-heading strong {
+  color: var(--color-accent-text);
+}
+.message p {
+  overflow-wrap: anywhere;
+}
+/* Кошик з'являється під курсором; на сенсорних екранах видно завжди */
+.message-delete {
+  flex: none;
+  padding: var(--space-2xs);
+  border: 0;
+  border-radius: var(--radius-small);
+  background: none;
+  color: var(--color-muted);
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    opacity var(--dur-micro) var(--ease-out),
+    color var(--dur-micro) var(--ease-out);
+}
+.message:hover .message-delete,
+.message-delete:focus-visible {
+  opacity: 1;
+}
+.message-delete:hover {
+  color: var(--color-error);
+}
+@media (hover: none) {
+  .message-delete {
+    opacity: 0.6;
+  }
 }
 
 /* Картки заявок, етапів, скарг і здач */
@@ -6465,4 +6528,208 @@ a.stat-card:hover .progress-ring > span {
 .chip-button:hover {
   border-color: var(--color-accent-text);
   color: var(--color-accent-text);
+}
+
+/* Завантаження файлів: зона, куди можна перетягнути кілька файлів; вантажиться одразу */
+.file-upload-block {
+  display: grid;
+  gap: var(--space-xs);
+}
+.file-dropzone {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-lg) var(--space-md);
+  border: 2px dashed var(--color-rule-2);
+  border-radius: var(--radius-card);
+  background: var(--color-paper-2);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
+}
+.file-dropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.file-dropzone > i {
+  color: var(--color-accent-text);
+  font-size: 1.8rem;
+}
+.file-dropzone small {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+.file-dropzone:hover,
+.file-dropzone.dragging {
+  border-color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+.file-dropzone:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.file-dropzone.disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+.file-errors {
+  display: grid;
+  gap: var(--space-3xs);
+  list-style: none;
+}
+
+/* Файл: плитка типу, назва з розміром і дії праворуч */
+.file-list {
+  display: grid;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.file-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
+  transition: border-color var(--dur-micro) var(--ease-out);
+}
+.file-item:hover {
+  border-color: var(--color-rule-2);
+}
+.file-item > .notice {
+  grid-column: 1 / -1;
+}
+.file-type {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-small);
+  background: color-mix(in oklch, var(--tone) 16%, transparent);
+  color: var(--tone);
+  font-size: var(--text-lg);
+}
+.type-pdf {
+  --tone: var(--data-red);
+}
+.type-image {
+  --tone: var(--data-green);
+}
+.type-doc {
+  --tone: var(--data-blue);
+}
+.type-zip {
+  --tone: var(--data-amber);
+}
+.type-text {
+  --tone: var(--data-gray);
+}
+.file-meta {
+  display: grid;
+  min-width: 0;
+}
+.file-name {
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.file-name:hover {
+  color: var(--color-accent-text);
+}
+.file-meta small {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+.file-actions {
+  display: flex;
+  gap: var(--space-3xs);
+}
+.icon-action.danger:hover {
+  color: var(--color-error);
+}
+.file-note {
+  margin: var(--space-3xs) 0 0 calc(38px + var(--space-sm) + var(--space-sm));
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+
+/* Черга завдань фрілансера: відступи всередині картки */
+.take-next-panel {
+  margin-bottom: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+}
+
+/* Розділи проєкту на комп'ютері переносяться, а не ховаються за прихованою прокруткою */
+.project-links {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+@media (max-width: 40rem) {
+  .project-links {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+}
+
+/* У картці з внутрішнім відступом підказки й повідомлення не відступають удруге */
+.data-panel.padded > p.form-note,
+.data-panel.padded > .notice {
+  margin: var(--space-xs) 0;
+}
+/* Кнопка дії у формі — за розміром тексту, а не на всю ширину */
+.work-form > .button {
+  justify-self: start;
+}
+@media (max-width: 40rem) {
+  /* Телефон: повна назва файлу, дії — рядком під нею */
+  .file-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .file-actions {
+    grid-column: 2;
+  }
+  .file-name {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .file-note {
+    margin-left: 0;
+  }
+}
+/* Шапка чату: назва зліва, «Оновити» праворуч у тому ж рядку й на телефоні */
+.chat-panel > .panel-heading {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.chat-panel > .panel-heading > div {
+  min-width: 0;
+}
+@media (max-width: 40rem) {
+  .chat-panel > .panel-heading h2 {
+    font-size: var(--text-lg);
+  }
 }

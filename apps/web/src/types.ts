@@ -318,6 +318,9 @@ export interface ProjectMessage {
   senderId: string;
   content: string;
   createdAt: string;
+  // Додає сервер: хто написав (ім'я й фото)
+  senderName?: string | null;
+  senderAvatarUrl?: string | null;
 }
 
 // Розмова клієнта з автором заявки (GET /applications/:id/chat і /applications/conversations)
@@ -418,7 +421,7 @@ export interface TaskDeadline {
 }
 
 export interface FreelancerWorkload {
-  user: { id: string; name: string } | null;
+  user: { id: string; name: string; avatarUrl?: string | null } | null;
   activeTasks: number;
   overdueTasks: number;
   highPriorityTasks: number;

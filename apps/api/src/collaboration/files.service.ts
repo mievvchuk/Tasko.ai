@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -19,6 +21,8 @@ export interface UploadedFile {
   buffer: Buffer;
 }
 const maxFileSize = 10 * 1024 * 1024;
+// Архів проєкту (код, макети) зазвичай більший за документ
+export const maxArchiveSize = 50 * 1024 * 1024;
 
 export function validateFile(file: UploadedFile) {
   const extension = extname(file.originalname).toLowerCase();
@@ -41,11 +45,11 @@ export function validateFile(file: UploadedFile) {
   if (
     !format ||
     file.size === 0 ||
-    file.size > maxFileSize ||
+    file.size > (extension === '.zip' ? maxArchiveSize : maxFileSize) ||
     file.size !== file.buffer.length
   )
     throw new BadRequestException(
-      'Дозволено PDF, PNG, JPG, DOCX, ZIP, TXT розміром до 10 МБ.',
+      'Дозволено PDF, PNG, JPG, DOCX, TXT до 10 МБ і ZIP до 50 МБ.',
     );
   if (!format.signature.every((byte, index) => file.buffer[index] === byte))
     throw new BadRequestException('Вміст файлу не відповідає його типу.');
@@ -155,6 +159,25 @@ export class FilesService {
         submissionId: null,
       });
     });
+  }
+  // Прибрати власний файл, поки він не став частиною зданого результату
+  async remove(user: CurrentUser, id: string) {
+    const file = await this.files.where({ id }).first();
+    if (!file) throw new NotFoundException('Файл не знайдено.');
+    this.projects.ensureWritable(
+      await this.projects.requireAccess(user, file.projectId, false),
+    );
+    if (file.uploadedBy !== user.id)
+      throw new ForbiddenException('Видалити можна лише власний файл.');
+    if (file.submissionId)
+      throw new ConflictException(
+        'Файл уже є частиною зданого результату — його не можна видалити.',
+      );
+    await this.projects.prisma.client.transaction(async (tx) => {
+      await tx.orm.public.FileAttachment.where({ id }).delete();
+      await tx.orm.public.StoredFile.where({ id: file.storagePath }).delete();
+    });
+    return { deleted: true };
   }
   async download(user: CurrentUser, id: string) {
     const file = await this.files.where({ id }).first();

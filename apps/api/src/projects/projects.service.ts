@@ -21,6 +21,7 @@ import type {
 } from './projects.dto.js';
 import { moderationStatuses } from './projects.dto.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
+import { announce } from '../notifications/notification-events.js';
 
 // Статуси, після яких проєкт або замовлення вважається закритим.
 const closedStatuses = ['COMPLETED', 'CANCELLED'];
@@ -822,6 +823,7 @@ export class ProjectsService {
           hiringOpen: true,
           updatedAt: new Date(),
         });
+      announce(current.freelancerId);
       await tx.orm.public.Notification.create({
         id: randomUUID(),
         userId: current.freelancerId,
@@ -1236,6 +1238,7 @@ export class ProjectsService {
     taskId?: string,
   ) {
     if (userId === actorId) return null;
+    announce(userId);
     return this.prisma.client.orm.public.Notification.create({
       id: randomUUID(),
       userId,

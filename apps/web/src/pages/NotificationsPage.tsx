@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { errorMessage, notificationsChangedEvent, request } from "../api";
 import { useAuth } from "../auth";
@@ -37,6 +37,11 @@ export function NotificationsPage() {
     items: Notification[];
     unreadCount: number;
   }>("/notifications?limit=50");
+  // Нові сповіщення з'являються в списку одразу (подію шле Layout із потоку сервера)
+  useEffect(() => {
+    window.addEventListener(notificationsChangedEvent, refresh);
+    return () => window.removeEventListener(notificationsChangedEvent, refresh);
+  }, [refresh]);
   async function mark(id?: string) {
     try {
       await request(

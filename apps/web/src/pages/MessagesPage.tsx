@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { UserAvatar } from "../components/UserAvatar";
 import type { FormEvent, KeyboardEvent } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
@@ -260,6 +261,8 @@ function Chat({
   const [sending, setSending] = useState("");
   const [error, setError] = useState("");
   const [live, setLive] = useState<ProjectMessage[]>([]);
+  // Видалені (собою чи співрозмовником) — ховаємо зі стрічки без перезавантаження
+  const [removed, setRemoved] = useState<Set<string>>(new Set());
   const listRef = useRef<HTMLDivElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
   // Висота стрічки перед догрузкою старіших: після неї повертаємо читача на те саме місце
@@ -299,6 +302,11 @@ function Chat({
           );
           return;
         }
+        if (type === "deleted") {
+          const { id } = JSON.parse(data) as { id: string };
+          setRemoved((set) => new Set(set).add(id));
+          return;
+        }
         if (type !== "message") return;
         const message = JSON.parse(data) as ProjectMessage;
         stopTyping(message.senderId);
@@ -319,7 +327,10 @@ function Chat({
     ...[...older].reverse(),
     ...[...(latest.data ?? [])].reverse(),
     ...live,
-  ].filter((message) => !seen.has(message.id) && seen.add(message.id));
+  ].filter(
+    (message) =>
+      !removed.has(message.id) && !seen.has(message.id) && seen.add(message.id),
+  );
   const newestId = shown.at(-1)?.id;
   useLayoutEffect(() => {
     const list = listRef.current;
@@ -357,6 +368,24 @@ function Chat({
       setLoadingOlder(false);
     }
   }
+  async function remove(message: ProjectMessage) {
+    if (
+      !window.confirm(tr("Видалити це повідомлення? Його не побачить ніхто."))
+    )
+      return;
+    setError("");
+    try {
+      await request(`${path}/messages/${message.id}`, { method: "DELETE" });
+      setRemoved((set) => new Set(set).add(message.id));
+    } catch (error) {
+      setError(errorMessage(error));
+    }
+  }
+  // Ім'я від сервера; для старих записів — підказка зі сторінки
+  const author = (message: ProjectMessage) =>
+    message.senderId === user?.id
+      ? tr("Ви")
+      : message.senderName || senderName(message.senderId);
   function refresh() {
     setOlder([]);
     setOlderPage(1);
@@ -467,29 +496,52 @@ function Chat({
           {!shown.length && !sending && (
             <p className="form-note">{tr("Повідомлень ще немає.")}</p>
           )}
-          {shown.map((message) => (
-            <article
-              className={
-                message.senderId === user?.id ? "message own" : "message"
-              }
-              key={message.id}
-            >
-              <div className="record-heading">
-                <strong>{senderName(message.senderId)}</strong>
-                <time dateTime={message.createdAt}>
-                  {formatDate(message.createdAt, true)}
-                </time>
-              </div>
-              <p className="preserve-lines">{message.content}</p>
-            </article>
-          ))}
+          {shown.map((message) => {
+            const own = message.senderId === user?.id;
+            return (
+              <article
+                className={own ? "message own" : "message"}
+                key={message.id}
+              >
+                {!own && (
+                  <UserAvatar
+                    name={author(message)}
+                    avatarUrl={message.senderAvatarUrl}
+                    size="small"
+                  />
+                )}
+                <div className="message-bubble">
+                  <div className="record-heading">
+                    <strong>{author(message)}</strong>
+                    <time dateTime={message.createdAt}>
+                      {formatDate(message.createdAt, true)}
+                    </time>
+                  </div>
+                  <p className="preserve-lines">{message.content}</p>
+                </div>
+                {own && (
+                  <button
+                    type="button"
+                    className="message-delete"
+                    aria-label={tr("Видалити повідомлення")}
+                    title={tr("Видалити повідомлення")}
+                    onClick={() => void remove(message)}
+                  >
+                    <i className="bi bi-trash3" aria-hidden="true"></i>
+                  </button>
+                )}
+              </article>
+            );
+          })}
           {sending && (
             <article className="message own pending">
-              <div className="record-heading">
-                <strong>{senderName(user?.id ?? "")}</strong>
-                <small>{tr("Надсилаємо…")}</small>
+              <div className="message-bubble">
+                <div className="record-heading">
+                  <strong>{tr("Ви")}</strong>
+                  <small>{tr("Надсилаємо…")}</small>
+                </div>
+                <p className="preserve-lines">{sending}</p>
               </div>
-              <p className="preserve-lines">{sending}</p>
             </article>
           )}
         </div>

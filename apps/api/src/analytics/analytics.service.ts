@@ -184,7 +184,7 @@ export class AnalyticsService {
     return Promise.all(
       ids.map(async (id) => {
         const person = await this.db.User.where({ id })
-          .select('id', 'name')
+          .select('id', 'name', 'avatarUrl')
           .first();
         const assigned = tasks.filter(
           (task) => task.assigneeId === id && task.status !== 'DONE',

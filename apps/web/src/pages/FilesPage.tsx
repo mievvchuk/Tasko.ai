@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { errorMessage, request } from "../api";
+import { useAuth } from "../auth";
 import { Link, useParams, useSearchParams } from "react-router";
 import { useApi } from "../useApi";
 import { parsePage, formatDate } from "../format";
@@ -8,6 +11,7 @@ import type { FileAttachment, Project } from "../types";
 import { useLanguage } from "../i18n";
 export function FilesPage() {
   const { tr } = useLanguage();
+  const { user } = useAuth();
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
@@ -15,6 +19,22 @@ export function FilesPage() {
   const files = useApi<FileAttachment[]>(
     project.data ? `/projects/${id}/files?page=${page}&limit=20` : null,
   );
+  const [removeError, setRemoveError] = useState("");
+  async function remove(file: FileAttachment) {
+    if (
+      !window.confirm(
+        tr("Видалити файл {0}? Його не можна буде відновити.", file.fileName),
+      )
+    )
+      return;
+    setRemoveError("");
+    try {
+      await request(`/files/${file.id}`, { method: "DELETE" });
+      files.refresh();
+    } catch (error) {
+      setRemoveError(errorMessage(error));
+    }
+  }
   if (!project.data)
     return (
       <ResourceState
@@ -61,6 +81,11 @@ export function FilesPage() {
           error={files.error}
           onRetry={files.refresh}
         />
+        {removeError && (
+          <p className="notice error" role="alert">
+            {removeError}
+          </p>
+        )}
         {files.data && (
           <>
             {!files.data.length && (
@@ -68,11 +93,21 @@ export function FilesPage() {
                 {tr("На цій сторінці файлів немає.")}
               </p>
             )}
-            <ul className="record-list">
+            <ul className="file-list">
               {files.data.map((file) => (
                 <li key={file.id}>
-                  <FileDownload file={file} />
-                  <p className="form-note">
+                  {/* Видалити можна лише власний файл, що ще не став частиною здачі */}
+                  <FileDownload
+                    file={file}
+                    onRemove={
+                      !closed &&
+                      file.uploadedBy === user?.id &&
+                      !file.submissionId
+                        ? () => void remove(file)
+                        : undefined
+                    }
+                  />
+                  <p className="file-note">
                     {formatDate(file.uploadedAt || null, true)}
                     {file.submissionId &&
                       tr(" · Прикріплено до результату роботи")}
