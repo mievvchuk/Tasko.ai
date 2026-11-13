@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useLanguage } from "../i18n";
 
 interface PasswordInputProps {
@@ -10,6 +11,8 @@ interface PasswordInputProps {
   placeholder?: string;
   // Повідомлення під полем; поле підсвічується як помилкове
   error?: string;
+  // Вміст під полем, наприклад шкала складності нового пароля
+  children?: ReactNode;
 }
 
 export function PasswordInput({
@@ -20,6 +23,7 @@ export function PasswordInput({
   autoComplete,
   placeholder,
   error,
+  children,
 }: PasswordInputProps) {
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
@@ -60,6 +64,7 @@ export function PasswordInput({
           ></i>
         </button>
       </div>
+      {children}
       {error && (
         <p className="form-error" id={`${id}-error`}>
           {error}

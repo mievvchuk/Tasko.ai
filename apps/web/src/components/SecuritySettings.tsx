@@ -175,7 +175,9 @@ export function SecuritySettings({ user }: { user: User }) {
                   ? tr("Новий пароль має відрізнятися від поточного.")
                   : ""
               }
-            />
+            >
+              <PasswordStrength password={newPassword} />
+            </PasswordInput>
             <PasswordInput
               id="profile-new-password-confirmation"
               label={tr("Повторіть новий пароль")}
@@ -184,7 +186,6 @@ export function SecuritySettings({ user }: { user: User }) {
               autoComplete="new-password"
               error={mismatch ? tr("Нові паролі не збігаються.") : ""}
             />
-            <PasswordStrength password={newPassword} />
             <button
               className="button primary"
               disabled={submitting || sameAsCurrent || mismatch}

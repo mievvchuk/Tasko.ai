@@ -244,6 +244,7 @@ export interface DashboardSummary {
   overdueTasks: number;
   nearestDeadline: string | null;
   tasksByStatus: Record<TaskStatus, number>;
+  projectsByStatus: Record<ProjectStatus, number>;
 }
 
 export interface ProjectMember {
@@ -263,6 +264,9 @@ export interface Task {
   rating?: number | null;
   deadline: string | null;
   columnId?: string | null;
+  // Лише у списку завдань з усіх проєктів (GET /tasks)
+  projectTitle?: string | null;
+  assigneeName?: string | null;
 }
 // Рейтинг завдання 1–5 зірками: «★★★☆☆»
 export const ratingStars = (rating: number) =>
@@ -393,6 +397,7 @@ export const priorityNames = {
 export interface TaskDeadline {
   id: string;
   projectId: string;
+  projectTitle: string | null;
   title: string;
   deadline: string;
   status: TaskStatus;

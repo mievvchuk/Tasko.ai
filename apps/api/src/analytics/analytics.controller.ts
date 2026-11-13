@@ -4,12 +4,14 @@ import {
   Inject,
   Param,
   ParseUUIDPipe,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { CurrentUser } from '../users/users.service.js';
+import { AllTasksQueryDto } from '../tasks/tasks.dto.js';
 import { AnalyticsService } from './analytics.service.js';
 
 @ApiTags('Analytics')
@@ -25,6 +27,12 @@ export class AnalyticsController {
   }
   @Get('analytics/deadlines') deadlines(@Actor() user: CurrentUser) {
     return this.analytics.deadlines(user);
+  }
+  @Get('tasks') tasks(
+    @Actor() user: CurrentUser,
+    @Query() filters: AllTasksQueryDto,
+  ) {
+    return this.analytics.tasks(user, filters);
   }
   @Get('analytics/workload') workload(@Actor() user: CurrentUser) {
     return this.analytics.workload(user);

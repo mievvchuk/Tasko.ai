@@ -7,10 +7,12 @@ import type { ProjectMember, Task } from "../types";
 import { useLanguage } from "../i18n";
 export function TasksTable({
   tasks,
-  members,
+  members = [],
+  showProject = false,
 }: {
   tasks: Task[];
-  members: ProjectMember[];
+  members?: ProjectMember[];
+  showProject?: boolean;
 }) {
   const { tr } = useLanguage();
   if (!tasks.length)
@@ -35,6 +37,7 @@ export function TasksTable({
           <thead>
             <tr>
               <th scope="col">{tr("Назва")}</th>
+              {showProject && <th scope="col">{tr("Проєкт")}</th>}
               <th scope="col">{tr("Виконавець")}</th>
               <th scope="col">{tr("Пріоритет")}</th>
               <th scope="col">{tr("Статус")}</th>
@@ -47,11 +50,23 @@ export function TasksTable({
                 <td>
                   <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                 </td>
+                {showProject && (
+                  <td>
+                    <Link
+                      className="task-project-link"
+                      to={`/tasks?project=${task.projectId}`}
+                    >
+                      {task.projectTitle}
+                    </Link>
+                  </td>
+                )}
                 <td>
                   {task.assigneeId
-                    ? members.find(
+                    ? task.assigneeName ||
+                      members.find(
                         (member) => member.userId === task.assigneeId,
-                      )?.user?.name || tr("Учасник недоступний")
+                      )?.user?.name ||
+                      tr("Учасник недоступний")
                     : tr("Не призначено")}
                 </td>
                 <td>{tr(priorityNames[task.priority])}</td>

@@ -10,7 +10,13 @@ import { useApi } from "../useApi";
 import { useLanguage } from "../i18n";
 interface Targets {
   projects: { id: string; title: string }[];
-  users: { id: string; name: string; role: UserRole; projects: string[] }[];
+  users: {
+    id: string;
+    name: string;
+    role: UserRole;
+    projects: string[];
+    projectIds: string[];
+  }[];
 }
 
 const searchFrom = 5;
@@ -27,6 +33,9 @@ export function ComplaintsPage() {
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [formError, setFormError] = useState("");
+  const selectedPerson = targets.data?.users.find(
+    (person) => person.id === targetUserId,
+  );
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFormError("");
@@ -100,11 +109,12 @@ export function ComplaintsPage() {
                           ? "target-card active"
                           : "target-card"
                       }
-                      onClick={() =>
-                        setTargetUserId(
-                          targetUserId === person.id ? "" : person.id,
-                        )
-                      }
+                      onClick={() => {
+                        const picked = targetUserId !== person.id;
+                        setTargetUserId(picked ? person.id : "");
+                        // Підставляємо спільний проєкт, щоб не шукати його вручну
+                        setProjectId(picked ? person.projectIds[0] || "" : "");
+                      }}
                     >
                       <UserAvatar name={person.name} size="small" />
                       <span>
@@ -137,7 +147,13 @@ export function ComplaintsPage() {
             onChange={(e) => setProjectId(e.target.value)}
           >
             <option value="">{tr("Без проєкту")}</option>
-            {targets.data?.projects.map((project) => (
+            {targets.data?.projects
+              .filter(
+                (project) =>
+                  !selectedPerson ||
+                  selectedPerson.projectIds.includes(project.id),
+              )
+              .map((project) => (
               <option key={project.id} value={project.id}>
                 {project.title}
               </option>
