@@ -107,7 +107,11 @@ export function Layout() {
                 </NavLink>
                 <NavLink to="/workload" onClick={close}>
                   <i className="bi bi-bar-chart" aria-hidden="true"></i>
-                  <span className="nav-label">{t("workload")}</span>
+                  <span className="nav-label">
+                    {user.role === "FREELANCER"
+                      ? tr("Графік роботи")
+                      : t("workload")}
+                  </span>
                 </NavLink>
                 <NavLink to="/messages" onClick={close} className={inBottomNav}>
                   <i className="bi bi-chat-dots" aria-hidden="true"></i>
@@ -171,6 +175,24 @@ export function Layout() {
       {/* Розмова з AI спільна для сторінки /ai і бічної панелі */}
       <AiChatProvider>
         <main className="page-content" id="main-content" tabIndex={-1}>
+          {user.restrictedUntil && (
+            <p className="notice error restriction-notice" role="status">
+              <i className="bi bi-slash-circle" aria-hidden="true"></i>
+              <span>
+                <strong>
+                  {tr(
+                    "Акаунт обмежено до {0}.",
+                    new Date(user.restrictedUntil).toLocaleDateString(),
+                  )}
+                </strong>{" "}
+                {tr(
+                  "До кінця строку не можна публікувати проєкти, подавати заявки й писати повідомлення.",
+                )}
+                {user.restrictionReason &&
+                  ` ${tr("Причина: {0}", user.restrictionReason)}`}
+              </span>
+            </p>
+          )}
           <Outlet />
         </main>
         <AiDrawer />

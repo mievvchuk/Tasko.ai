@@ -31,6 +31,9 @@ export interface PublicUser {
   hasPassword?: boolean;
   avatarUrl?: string | null;
   createdAt?: Date;
+  // Діюче обмеження за скаргою (лише коли строк ще не минув)
+  restrictedUntil?: Date | null;
+  restrictionReason?: string | null;
 }
 
 export interface CurrentUser extends PublicUser {
@@ -47,7 +50,13 @@ export function toPublicUser(user: {
   passwordHash: string | null;
   avatarUrl: string | null;
   createdAt: Date;
+  restrictedUntil?: Date | null;
+  restrictionReason?: string | null;
 }): PublicUser {
+  const restricted =
+    user.restrictedUntil && user.restrictedUntil > new Date()
+      ? user.restrictedUntil
+      : null;
   if (!['CLIENT', 'FREELANCER', 'ADMIN'].includes(user.role))
     throw new ForbiddenException('Роль користувача некоректна.');
   return {
@@ -59,6 +68,8 @@ export function toPublicUser(user: {
     hasPassword: Boolean(user.passwordHash),
     avatarUrl: user.avatarUrl,
     createdAt: user.createdAt,
+    restrictedUntil: restricted,
+    restrictionReason: restricted ? (user.restrictionReason ?? null) : null,
   };
 }
 
@@ -292,7 +303,9 @@ export class UsersService {
       userId: user.id,
       title: data.title.trim(),
       description: data.description?.trim() || null,
-      url: data.url,
+      url: data.url || null,
+      imageUrl: null,
+      tags: data.tags?.trim() || null,
       createdAt: now,
       updatedAt: now,
     });
@@ -314,9 +327,39 @@ export class UsersService {
       ...(data.description !== undefined
         ? { description: data.description.trim() || null }
         : {}),
-      ...(data.url !== undefined ? { url: data.url } : {}),
+      ...(data.url !== undefined ? { url: data.url || null } : {}),
+      ...(data.tags !== undefined ? { tags: data.tags.trim() || null } : {}),
       updatedAt: new Date(),
     });
+  }
+
+  // Обкладинка роботи: та сама перевірка й сховище, що й у фото профілю
+  async setPortfolioImage(
+    user: CurrentUser,
+    id: string,
+    file: UploadedFile | undefined,
+  ) {
+    this.requireFreelancer(user);
+    const item = await this.prisma.client.orm.public.PortfolioItem.where({
+      id,
+    }).first();
+    if (!item || item.userId !== user.id)
+      throw new NotFoundException('Роботу портфоліо не знайдено.');
+    const format = validateAvatar(file);
+    const fileName = `${randomUUID()}.${format.extension}`;
+    const updated = await this.prisma.client.transaction(async (tx) => {
+      await tx.orm.public.StoredFile.create({
+        id: `avatars/${fileName}`,
+        content: file!.buffer,
+        createdAt: new Date(),
+      });
+      return tx.orm.public.PortfolioItem.where({ id }).update({
+        imageUrl: `/avatars/${fileName}`,
+        updatedAt: new Date(),
+      });
+    });
+    await this.removeAvatarFile(item.imageUrl);
+    return updated;
   }
 
   async deletePortfolioItem(user: CurrentUser, id: string) {
@@ -327,6 +370,7 @@ export class UsersService {
     if (!item || item.userId !== user.id)
       throw new NotFoundException('Роботу портфоліо не знайдено.');
     await this.prisma.client.orm.public.PortfolioItem.where({ id }).delete();
+    await this.removeAvatarFile(item.imageUrl);
     return { deleted: true };
   }
 

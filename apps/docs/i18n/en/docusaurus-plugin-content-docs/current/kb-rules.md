@@ -20,6 +20,25 @@ description: How to behave on Tasko.ai, what is not allowed and what happens aft
 - Work materials only: PDF, PNG, JPG, DOCX, ZIP or TXT, up to 10 MB.
 - Don't upload other people's materials without the right to do so.
 
-## Violations
+## Violations and sanctions
 
-For violations an administrator can reject a project, resolve a complaint against a member or **block the account**. A blocked user can't sign in, and their active sessions end.
+An administrator reviews every complaint: reads the description and the conversation on the platform, checks the offender's history and decides. Both sides see the explanation: the reporter sees the decision, the offender sees the sanction and its reason.
+
+| Sanction | What it means |
+| --- | --- |
+| Warning | A notification with the explanation. The next violation is treated more strictly. |
+| Temporary restriction | For 1–90 days you can't publish projects, apply or send messages. Signing in and current work stay available. |
+| Block | You can't sign in, active sessions end. The reason is shown on the sign-in page. |
+
+The sanction depends on the violation and on whether complaints about the person were confirmed before:
+
+| Violation | First time | Repeated |
+| --- | --- | --- |
+| Fraud, deception | Block | — |
+| Did not pay for completed work | 14-day restriction until they pay | Block |
+| Did not deliver or missed deadlines | Warning | 7-day, then 30-day restriction, then block |
+| Work does not match the terms | Decision without sanction | Warning, then restriction |
+| Insults, threats, spam | Warning | 7-day restriction, then block |
+| Working off the platform | Warning | 14-day restriction, then block |
+
+These are recommendations: the administrator can soften or tighten a sanction when the circumstances call for it. Complaints without evidence are rejected.

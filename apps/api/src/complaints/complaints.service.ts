@@ -53,8 +53,11 @@ export class ComplaintsService {
       projectId: data.projectId ?? null,
       reason: data.reason.trim(),
       description: data.description.trim(),
+      category: data.category ?? 'OTHER',
       status: 'OPEN',
       adminNote: null,
+      action: null,
+      restrictDays: null,
       createdAt: now,
       updatedAt: now,
     });
@@ -142,8 +145,12 @@ export class ComplaintsService {
           ? await this.prisma.client.orm.public.User.where({
               id: item.targetUserId,
             })
-              .select('id', 'name')
+              .select('id', 'name', 'role', 'status', 'restrictedUntil')
               .first()
+          : null,
+        // Попередні підтверджені скарги на цю ж людину — від них залежить суворість санкції
+        targetHistory: item.targetUserId
+          ? await this.history(item.targetUserId, item.id)
           : null,
         project: item.projectId
           ? await this.prisma.client.orm.public.Project.where({
@@ -155,21 +162,87 @@ export class ComplaintsService {
       })),
     );
   }
+  private async history(targetUserId: string, exceptId: string) {
+    const rows = (
+      await this.prisma.client.orm.public.Complaint.where({
+        targetUserId,
+      }).all()
+    ).filter((row) => row.id !== exceptId);
+    return {
+      total: rows.length,
+      confirmed: rows.filter((row) => row.status === 'RESOLVED').length,
+      warnings: rows.filter((row) => row.action === 'WARNING').length,
+      restrictions: rows.filter((row) => row.action === 'RESTRICT').length,
+    };
+  }
+
+  // Рішення по скарзі: статус, пояснення обом сторонам і, за потреби, санкція до порушника
   async decide(user: CurrentUser, id: string, data: DecideComplaintDto) {
     this.requireAdmin(user);
-    const item = await this.prisma.client.orm.public.Complaint.where({
-      id,
-    }).first();
+    const db = this.prisma.client.orm.public;
+    const item = await db.Complaint.where({ id }).first();
     if (!item) throw new NotFoundException('Скаргу не знайдено.');
     if (item.status !== 'OPEN')
       throw new ConflictException('Скаргу вже розглянуто.');
-    return this.prisma.client.orm.public.Complaint.where({
-      id,
-      status: 'OPEN',
-    }).update({
-      status: data.status,
-      adminNote: data.adminNote.trim(),
-      updatedAt: new Date(),
+    const action =
+      data.status === 'RESOLVED' ? (data.action ?? 'NONE') : 'NONE';
+    const note = data.adminNote.trim();
+    const target = item.targetUserId
+      ? await db.User.where({ id: item.targetUserId }).first()
+      : null;
+    if (action !== 'NONE' && !target)
+      throw new BadRequestException(
+        'Санкцію можна застосувати лише до користувача, на якого скаржаться.',
+      );
+    if (action !== 'NONE' && target?.role === 'ADMIN')
+      throw new ForbiddenException('Адміністратора обмежити не можна.');
+    const now = new Date();
+    const updated = await this.prisma.client.transaction(async (tx) => {
+      const users = tx.orm.public.User;
+      if (target && action === 'RESTRICT')
+        await users.where({ id: target.id }).update({
+          restrictedUntil: new Date(
+            now.getTime() + data.restrictDays! * 86400000,
+          ),
+          restrictionReason: note,
+          updatedAt: now,
+        });
+      if (target && action === 'BLOCK')
+        await users.where({ id: target.id }).update({
+          status: 'BLOCKED',
+          blockReason: note,
+          updatedAt: now,
+        });
+      return tx.orm.public.Complaint.where({ id, status: 'OPEN' }).update({
+        status: data.status,
+        adminNote: note,
+        action,
+        restrictDays: action === 'RESTRICT' ? data.restrictDays! : null,
+        updatedAt: now,
+      });
     });
+    // Автор скарги дізнається про рішення, порушник — про санкцію і її причину
+    await this.projects.notify(
+      item.reporterId,
+      user.id,
+      'COMPLAINT_DECIDED',
+      data.status === 'RESOLVED'
+        ? `Скаргу «${item.reason}» розглянуто й підтверджено: ${note}`
+        : `Скаргу «${item.reason}» відхилено: ${note}`,
+      item.projectId ?? undefined,
+    );
+    const sanctions: Record<string, string> = {
+      WARNING: `Попередження від адміністратора: ${note}`,
+      RESTRICT: `Акаунт обмежено на ${data.restrictDays} дн.: не можна публікувати проєкти, подавати заявки й писати повідомлення. Причина: ${note}`,
+    };
+    if (target && sanctions[action])
+      await this.projects.notify(
+        target.id,
+        user.id,
+        `COMPLAINT_${action}`,
+        sanctions[action],
+        item.projectId ?? undefined,
+      );
+    return updated;
   }
 }

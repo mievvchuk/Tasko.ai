@@ -6329,3 +6329,140 @@ a.stat-card:hover .progress-ring > span {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Портфоліо: картка з обкладинкою, описом і технологіями */
+.portfolio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+.portfolio-form {
+  margin: var(--space-sm) 0 var(--space-md);
+  padding: var(--space-md);
+  border: 1px dashed var(--color-rule-2);
+  border-radius: var(--radius-card);
+}
+.portfolio-preview {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-input);
+}
+.portfolio-grid.editor {
+  margin: var(--space-md) 0 0;
+  padding: 0;
+}
+.portfolio-card {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.portfolio-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  background: var(--color-paper-3);
+  color: var(--color-muted);
+  font-size: 2rem;
+}
+.portfolio-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.portfolio-cover .icon-action {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+  background: var(--color-surface);
+}
+.portfolio-body {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+}
+.portfolio-body p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+.portfolio-body a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  justify-self: start;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.portfolio-body .skill-chips li {
+  font-size: var(--text-xs);
+}
+
+/* Графік роботи фрілансера: без власного імені й аватара */
+.workload-head.workload-self {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* Розгляд скарги: рекомендація санкції і вибір дії */
+.complaint-advice {
+  display: flex;
+  align-items: start;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-left: 3px solid var(--data-amber);
+  border-radius: var(--radius-small);
+  background: var(--color-paper-2);
+  font-size: var(--text-sm);
+}
+.complaint-advice span {
+  display: grid;
+  gap: var(--space-3xs);
+}
+.complaint-actions {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.complaint-actions legend {
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+}
+.restriction-notice {
+  display: flex;
+  align-items: start;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+/* Модерація: типові причини відхилення одним кліком */
+.reject-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+.chip-button {
+  padding: var(--space-3xs) var(--space-sm);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink-2);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-out),
+    color var(--dur-micro) var(--ease-out);
+}
+.chip-button:hover {
+  border-color: var(--color-accent-text);
+  color: var(--color-accent-text);
+}

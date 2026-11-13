@@ -14,6 +14,9 @@ model User {
   status    String   // ACTIVE, BLOCKED
   // Причина блокування від адміністратора — користувач бачить її при спробі входу
   blockReason String?
+  // Тимчасове обмеження за рішенням по скарзі: до цієї дати не можна публікувати, подавати заявки й писати
+  restrictedUntil TimestamptzJsDate?
+  restrictionReason String?
   twoFactorSecret String?
   twoFactorEnabled Boolean @default(false)
   // Лише посилання на фото профілю (напр. /avatars/<uuid>.jpg); сам файл — у storage/avatars
@@ -231,7 +234,12 @@ model PortfolioItem {
   user User @relation(fields: [userId], references: [id])
   title String
   description String?
-  url String
+  // Посилання на роботу необов'язкове: є проєкти без публічної адреси
+  url String?
+  // Обкладинка роботи (/avatars/<uuid>.<ext>, файл у StoredFile)
+  imageUrl String?
+  // Технології через кому, напр. «React, NestJS»
+  tags String?
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
   applications ProjectApplication[]
@@ -314,8 +322,13 @@ model Complaint {
   project Project? @relation(fields: [projectId], references: [id])
   reason String
   description String
+  // NON_PAYMENT, FRAUD, NOT_DELIVERED, POOR_QUALITY, ABUSE, OFF_PLATFORM, OTHER
+  category String @default("OTHER")
   status String // OPEN, RESOLVED, REJECTED
   adminNote String?
+  // Санкція за рішенням: NONE, WARNING, RESTRICT, BLOCK; для RESTRICT — кількість днів
+  action String?
+  restrictDays Int?
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
 }

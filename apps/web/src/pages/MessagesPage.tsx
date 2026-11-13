@@ -199,12 +199,17 @@ function ApplicationMessages({
         tr(applicationStatusNames[chat.status]),
       )}
       link={
-        isClient
+        chat.status === "ACCEPTED"
           ? {
-              to: `/projects/${chat.projectId}/applications`,
-              label: tr("До заявок"),
+              to: `/messages?project=${chat.projectId}`,
+              label: tr("Перейти в чат проєкту"),
             }
-          : { to: "/marketplace", label: tr("До біржі") }
+          : isClient
+            ? {
+                to: `/projects/${chat.projectId}/applications`,
+                label: tr("До заявок"),
+              }
+            : { to: "/marketplace", label: tr("До біржі") }
       }
       readOnly={readOnly}
       onSent={onFirstMessage}

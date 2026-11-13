@@ -440,8 +440,8 @@ export const enText: Record<string, string> = {
   "Редагувати користувача": "Edit user",
   Автор: "Author",
   Ціль: "Target",
-  "Рішення не блокує користувача автоматично.":
-    "A decision doesn't block the user automatically.",
+  "Підтверджуйте скаргу з санкцією за правилами платформи або відхиляйте без доказів.":
+    "Confirm a complaint with a sanction per the platform rules, or reject it without evidence.",
   "Автор:": "Author:",
   "· Ціль:": "· Target:",
   "Коментар рішення": "Decision comment",
@@ -1152,6 +1152,102 @@ export const enText: Record<string, string> = {
   "Фрілансер не додав коментар.": "The freelancer left no comment.",
   "Фрілансери оцінюють клієнта після завершення спільного проєкту.":
     "Freelancers rate the client after a completed project.",
+  "Графік роботи": "Work schedule",
+  "Незавершені завдання з усіх робочих проєктів — що здати першим і чи можна брати нове.":
+    "Unfinished tasks from all your work projects — what to deliver first and whether you can take on more.",
+  "Мої завдання": "My tasks",
+  "Завдань багато — нові заявки краще відкласти.":
+    "You have a lot on — better hold off new applications.",
+  "Є місце для нового проєкту.": "You have room for a new project.",
+  "Чат проєкту": "Project chat",
+  "Перейти в чат проєкту": "Go to the project chat",
+  "Назва роботи": "Work title",
+  "Напр. Інтернет-магазин кераміки": "E.g. Ceramics online store",
+  "Технології через кому": "Technologies, comma separated",
+  "Що зроблено": "What was done",
+  "Задача клієнта, ваша роль і результат: що працює, які цифри":
+    "The client's task, your role and the result: what works, what numbers",
+  "Посилання (необов'язково)": "Link (optional)",
+  "Обкладинка: PNG, JPG або WEBP, до 2 МБ":
+    "Cover: PNG, JPG or WEBP, up to 2 MB",
+  "Попередній перегляд обкладинки": "Cover preview",
+  "Видалити роботу {0}": "Delete work {0}",
+  "Додайте 2–3 роботи з обкладинкою й описом — клієнти частіше обирають виконавців із портфоліо.":
+    "Add 2–3 works with a cover and description — clients prefer freelancers with a portfolio.",
+  "Відкрити роботу": "Open work",
+  "Не оплатив виконану роботу": "Did not pay for completed work",
+  "Шахрайство, обман": "Fraud, deception",
+  "Не виконав роботу або зірвав строки": "Did not deliver or missed deadlines",
+  "Робота не відповідає умовам": "Work does not match the terms",
+  "Образи, погрози, спам": "Insults, threats, spam",
+  "Вимагає працювати поза платформою": "Insists on working off the platform",
+  "Без санкції": "No sanction",
+  Попередження: "Warning",
+  "Тимчасове обмеження": "Temporary restriction",
+  "Блокування акаунта": "Account block",
+  "Підтверджене шахрайство — блокування з першого разу.":
+    "Confirmed fraud — block on the first offence.",
+  "Неоплата: обмеження, доки клієнт не розрахується з виконавцем.":
+    "Non-payment: restrict until the client pays the freelancer.",
+  "Повторна неоплата — блокування.": "Repeated non-payment — block.",
+  "Перший зрив строків — попередження.": "First missed deadline — warning.",
+  "Повторний зрив — обмеження на тиждень.": "Repeated — restrict for a week.",
+  "Систематичні зриви — обмеження на місяць.":
+    "Systematic — restrict for a month.",
+  "Четвертий підтверджений зрив — блокування.":
+    "Fourth confirmed case — block.",
+  "Суперечка про якість: рішення й пояснення сторонам, без санкції.":
+    "Quality dispute: a decision explained to both sides, no sanction.",
+  "Повторні претензії до якості — попередження.":
+    "Repeated quality complaints — warning.",
+  "Систематично низька якість — обмеження.":
+    "Systematically poor quality — restriction.",
+  "Перша образа чи спам — попередження.": "First insult or spam — warning.",
+  "Повторно — обмеження на тиждень.": "Again — restrict for a week.",
+  "Систематичні образи — блокування.": "Systematic insults — block.",
+  "Перша спроба вивести угоду з платформи — попередження.":
+    "First attempt to take the deal off the platform — warning.",
+  "Повторно — обмеження на два тижні.": "Again — restrict for two weeks.",
+  "Систематично — блокування.": "Systematic — block.",
+  "Оцініть ситуацію за описом; санкція — за потреби.":
+    "Judge by the description; sanction if needed.",
+  "Повторні скарги на ту саму людину — попередження.":
+    "Repeated complaints about the same person — warning.",
+  "На кого": "Against",
+  "Історія порушника": "Offender history",
+  "Підтверджених скарг раніше: {0} (попереджень {1}, обмежень {2})":
+    "Earlier confirmed complaints: {0} (warnings {1}, restrictions {2})",
+  "Раніше підтверджених скарг не було": "No earlier confirmed complaints",
+  "Рекомендовано:": "Recommended:",
+  "Санкція, якщо скаргу підтверджено": "Sanction if the complaint is confirmed",
+  "Строк обмеження, днів": "Restriction length, days",
+  "Поки діє обмеження, людина не публікує проєкти, не подає заявки й не пише повідомлень.":
+    "While restricted, the person cannot publish projects, apply or send messages.",
+  "Пояснення рішення": "Decision explanation",
+  "Що встановлено й чому таке рішення — це побачать автор скарги й порушник":
+    "What was found and why — the reporter and the offender will see this",
+  "Відхилити скаргу": "Reject complaint",
+  "Підтвердити й застосувати": "Confirm and apply",
+  "Підтвердити скаргу": "Confirm complaint",
+  "Що сталося": "What happened",
+  "Оберіть тип порушення": "Choose the violation type",
+  "Акаунт обмежено до {0}.": "Account restricted until {0}.",
+  "До кінця строку не можна публікувати проєкти, подавати заявки й писати повідомлення.":
+    "Until then you cannot publish projects, apply or send messages.",
+  "Робочих завдань поки немає": "No work tasks yet",
+  "Знайдіть проєкт на біржі — після найму завдання з'являться тут.":
+    "Find a project on the marketplace — tasks appear here once you're hired.",
+  "Опис не пояснює, що саме треба зробити.":
+    "The description doesn't explain what needs to be done.",
+  "Бюджет не відповідає обсягу роботи.":
+    "The budget doesn't match the scope of work.",
+  "В описі є контакти чи посилання для роботи поза платформою.":
+    "The description has contacts or links for working off the platform.",
+  "Проєкт порушує правила платформи.": "The project breaks the platform rules.",
+  "Дедлайн нереальний для такого обсягу.":
+    "The deadline is unrealistic for this scope.",
+  "Що саме виправити, щоб проєкт пройшов модерацію":
+    "What exactly to fix for the project to pass moderation",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",
@@ -1232,8 +1328,6 @@ export const enText: Record<string, string> = {
     "Project “{0}” is approved and published on the marketplace.",
   "Проєкт «{0}» відхилено. Клієнт отримав причину.":
     "Project “{0}” is rejected. The client received the reason.",
-  "Опишіть причину відхилення (щонайменше 5 символів).":
-    "Describe the reason for rejection (at least 5 characters).",
   Надіслано: "Submitted",
   "Повторна подача. Минулого разу відхилено: {0}":
     "Resubmitted. Last time it was rejected: {0}",

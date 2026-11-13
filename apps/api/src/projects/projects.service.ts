@@ -173,6 +173,7 @@ export class ProjectsService {
 
   // Створює новий проєкт клієнта; на біржу він потрапить після модерації.
   async create(user: CurrentUser, data: CreateProjectDto) {
+    await this.ensureNotRestricted(user.id);
     if (user.role !== 'CLIENT')
       throw new ForbiddenException('Проєкти створює клієнт.');
     this.validateDeadline(data.deadline);
@@ -671,6 +672,7 @@ export class ProjectsService {
   ) {
     if (user.role !== 'FREELANCER')
       throw new ForbiddenException('Заявку залишає фрілансер.');
+    await this.ensureNotRestricted(user.id);
     const project = await this.prisma.client.orm.public.Project.where({
       id: projectId,
     }).first();
@@ -1209,6 +1211,20 @@ export class ProjectsService {
       message,
       createdAt: new Date(),
     });
+  }
+
+  // Обмежений за скаргою користувач до кінця строку не публікує, не подає заявок і не пише
+  async ensureNotRestricted(userId: string) {
+    const person = await this.prisma.client.orm.public.User.where({
+      id: userId,
+    })
+      .select('restrictedUntil', 'restrictionReason')
+      .first();
+    if (person?.restrictedUntil && person.restrictedUntil > new Date())
+      throw new ForbiddenException(
+        `Акаунт обмежено до ${person.restrictedUntil.toLocaleDateString('uk-UA')} за рішенням адміністратора` +
+          (person.restrictionReason ? `: ${person.restrictionReason}` : '.'),
+      );
   }
 
   notify(

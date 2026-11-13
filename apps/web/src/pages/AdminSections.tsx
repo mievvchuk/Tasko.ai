@@ -2,6 +2,12 @@
 // Патерни (таблиця з тулбаром і пагінацією, діалоги дій, картки-метрики)
 // взято з shadcn-admin (MIT, © Sat Naing, https://github.com/satnaing/shadcn-admin).
 import { useEffect, useId, useRef, useState } from "react";
+import {
+  complaintActionNames,
+  complaintCategoryNames,
+  recommendAction,
+} from "../complaintRules";
+import type { ComplaintAction } from "../complaintRules";
 import type { FormEvent, ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { downloadApiFile, request, errorMessage } from "../api";
@@ -45,8 +51,19 @@ const reportFormats: ReportFormat[] = ["json", "csv", "xlsx", "pdf"];
 // Скарга разом з іменами учасників, які додає сервер.
 export type ComplaintWithDetails = Complaint & {
   reporter?: { name: string };
-  targetUser?: { name: string };
+  targetUser?: {
+    name: string;
+    role?: UserRole;
+    status?: "ACTIVE" | "BLOCKED";
+    restrictedUntil?: string | null;
+  };
   project?: { title: string };
+  targetHistory?: {
+    total: number;
+    confirmed: number;
+    warnings: number;
+    restrictions: number;
+  } | null;
 };
 
 export function RoleOptions() {
@@ -597,7 +614,8 @@ export function AdminCreateDialog({
   );
 }
 
-// Діалог скарги: подробиці та, для відкритої, рішення з коментарем.
+// Діалог скарги: подробиці, історія порушника, рекомендована санкція й рішення.
+// Пояснення бачать обидві сторони: автор — рішення, порушник — санкцію та її причину.
 export function ComplaintDialog({
   complaint,
   onDecided,
@@ -608,11 +626,32 @@ export function ComplaintDialog({
   onClose: () => void;
 }) {
   const { tr } = useLanguage();
+  const category = complaint.category ?? "OTHER";
+  const history = complaint.targetHistory ?? {
+    total: 0,
+    confirmed: 0,
+    warnings: 0,
+    restrictions: 0,
+  };
+  const advice = recommendAction(category, history);
+  const canSanction = Boolean(
+    complaint.targetUserId && complaint.targetUser?.role !== "ADMIN",
+  );
+  const [action, setAction] = useState<ComplaintAction>(
+    canSanction ? advice.action : "NONE",
+  );
+  const [days, setDays] = useState(String(advice.days ?? 7));
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function decide(status: "RESOLVED" | "REJECTED") {
+  async function decide(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const status =
+      (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") ===
+      "REJECTED"
+        ? "REJECTED"
+        : "RESOLVED";
     setBusy(true);
     setError("");
     try {
@@ -620,7 +659,15 @@ export function ComplaintDialog({
         method: "PATCH",
         body: {
           status,
-          adminNote: note.trim() || tr("Рішення адміністратора"),
+          adminNote: note.trim(),
+          ...(status === "RESOLVED"
+            ? {
+                action,
+                ...(action === "RESTRICT"
+                  ? { restrictDays: Number(days) }
+                  : {}),
+              }
+            : {}),
         },
       });
       onDecided();
@@ -634,7 +681,7 @@ export function ComplaintDialog({
   return (
     <AdminDialog
       title={complaint.reason}
-      description={tr("Рішення не блокує користувача автоматично.")}
+      description={tr(complaintCategoryNames[category])}
       onClose={onClose}
     >
       <dl className="admin-details">
@@ -647,28 +694,111 @@ export function ComplaintDialog({
         </dd>
         <dt>{tr("Автор")}</dt>
         <dd>{complaint.reporter?.name || tr("не вказано")}</dd>
-        <dt>{tr("Ціль")}</dt>
+        <dt>{tr("На кого")}</dt>
         <dd>{complaintTarget(complaint) || tr("не вказано")}</dd>
+        {complaint.targetUserId && (
+          <>
+            <dt>{tr("Історія порушника")}</dt>
+            <dd>
+              {history.confirmed
+                ? tr(
+                    "Підтверджених скарг раніше: {0} (попереджень {1}, обмежень {2})",
+                    history.confirmed,
+                    history.warnings,
+                    history.restrictions,
+                  )
+                : tr("Раніше підтверджених скарг не було")}
+            </dd>
+          </>
+        )}
         <dt>{tr("Створено")}</dt>
         <dd>{formatDate(complaint.createdAt, true)}</dd>
         <dt>{tr("Опис")}</dt>
-        <dd>{complaint.description}</dd>
+        <dd className="preserve-lines">{complaint.description}</dd>
         {complaint.adminNote && (
           <>
-            <dt>{tr("Коментар рішення")}</dt>
-            <dd>{complaint.adminNote}</dd>
+            <dt>{tr("Рішення")}</dt>
+            <dd>
+              {complaint.action && complaint.action !== "NONE" && (
+                <strong>
+                  {tr(complaintActionNames[complaint.action])}
+                  {complaint.restrictDays
+                    ? ` · ${tr("{0} дн.", complaint.restrictDays)}`
+                    : ""}
+                  {". "}
+                </strong>
+              )}
+              {complaint.adminNote}
+            </dd>
           </>
         )}
       </dl>
       {complaint.status === "OPEN" && (
-        <div className="work-form admin-dialog-form">
-          <label htmlFor="complaint-note">{tr("Коментар рішення")}</label>
+        <form
+          className="work-form admin-dialog-form"
+          onSubmit={(e) => void decide(e)}
+        >
+          {canSanction && (
+            <p className="complaint-advice">
+              <i className="bi bi-lightbulb" aria-hidden="true"></i>
+              <span>
+                <strong>
+                  {tr("Рекомендовано:")}{" "}
+                  {tr(complaintActionNames[advice.action])}
+                  {advice.days ? ` · ${tr("{0} дн.", advice.days)}` : ""}
+                </strong>
+                {tr(advice.why)}
+              </span>
+            </p>
+          )}
+          {canSanction && (
+            <fieldset className="complaint-actions" disabled={busy}>
+              <legend>{tr("Санкція, якщо скаргу підтверджено")}</legend>
+              {(Object.keys(complaintActionNames) as ComplaintAction[]).map(
+                (key) => (
+                  <label key={key} className="checkbox-field">
+                    <input
+                      type="radio"
+                      name="complaint-action"
+                      checked={action === key}
+                      onChange={() => setAction(key)}
+                    />
+                    {tr(complaintActionNames[key])}
+                  </label>
+                ),
+              )}
+              {action === "RESTRICT" && (
+                <label>
+                  {tr("Строк обмеження, днів")}
+                  <input
+                    type="number"
+                    min="1"
+                    max="90"
+                    required
+                    value={days}
+                    onChange={(event) => setDays(event.target.value)}
+                  />
+                  <small className="field-hint">
+                    {tr(
+                      "Поки діє обмеження, людина не публікує проєкти, не подає заявки й не пише повідомлень.",
+                    )}
+                  </small>
+                </label>
+              )}
+            </fieldset>
+          )}
+          <label htmlFor="complaint-note">{tr("Пояснення рішення")}</label>
           <textarea
             id="complaint-note"
             rows={3}
+            required
+            minLength={3}
             maxLength={1000}
             value={note}
             disabled={busy}
+            placeholder={tr(
+              "Що встановлено й чому таке рішення — це побачать автор скарги й порушник",
+            )}
             onChange={(event) => setNote(event.target.value)}
           />
           {error && (
@@ -679,20 +809,18 @@ export function ComplaintDialog({
           <div className="admin-dialog-actions">
             <button
               className="button secondary"
+              value="REJECTED"
               disabled={busy}
-              onClick={() => void decide("REJECTED")}
             >
-              {tr("Відхилити")}
+              {tr("Відхилити скаргу")}
             </button>
-            <button
-              className="button primary"
-              disabled={busy}
-              onClick={() => void decide("RESOLVED")}
-            >
-              {tr("Вирішено")}
+            <button className="button primary" value="RESOLVED" disabled={busy}>
+              {action !== "NONE" && canSanction
+                ? tr("Підтвердити й застосувати")
+                : tr("Підтвердити скаргу")}
             </button>
           </div>
-        </div>
+        </form>
       )}
     </AdminDialog>
   );

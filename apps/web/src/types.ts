@@ -1,3 +1,4 @@
+import type { ComplaintAction, ComplaintCategory } from "./complaintRules";
 export type UserRole = "CLIENT" | "FREELANCER" | "ADMIN";
 
 export interface User {
@@ -11,6 +12,9 @@ export interface User {
   // Посилання на фото профілю відносно API (напр. /avatars/<uuid>.jpg)
   avatarUrl?: string | null;
   createdAt?: string;
+  // Діюче обмеження за скаргою: до цієї дати не можна публікувати, подавати заявки й писати
+  restrictedUntil?: string | null;
+  restrictionReason?: string | null;
 }
 
 export interface LoginResponse {
@@ -177,7 +181,9 @@ export interface PortfolioItem {
   id: string;
   title: string;
   description: string | null;
-  url: string;
+  url: string | null;
+  imageUrl?: string | null;
+  tags?: string | null;
 }
 export interface OwnFreelancerProfile {
   bio: string;
@@ -220,8 +226,11 @@ export interface Complaint {
   projectId: string | null;
   reason: string;
   description: string;
+  category?: ComplaintCategory;
   status: "OPEN" | "RESOLVED" | "REJECTED";
   adminNote: string | null;
+  action?: ComplaintAction | null;
+  restrictDays?: number | null;
   createdAt: string;
 }
 
