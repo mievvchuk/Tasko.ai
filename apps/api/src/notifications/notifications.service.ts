@@ -87,6 +87,48 @@ export class NotificationsService {
     });
   }
 
+  // Непрочитані повідомлення по розмовах: id проєкту / заявки → кількість (лічильники в списку чатів)
+  async unreadChats(userId: string) {
+    const unread = (
+      await this.prisma.client.orm.public.Notification.where({ userId }).all()
+    ).filter((item) => !item.readAt && messageTypes.includes(item.type));
+    const projects: Record<string, number> = {};
+    const applications: Record<string, number> = {};
+    for (const item of unread) {
+      if (item.type === 'APPLICATION_MESSAGE' && item.applicationId)
+        applications[item.applicationId] =
+          (applications[item.applicationId] ?? 0) + 1;
+      else if (item.type === 'NEW_MESSAGE' && item.projectId)
+        projects[item.projectId] = (projects[item.projectId] ?? 0) + 1;
+    }
+    return { projects, applications };
+  }
+
+  // Прочитано лише відкриту розмову; без розмови — усі повідомлення (як раніше)
+  async readChat(
+    userId: string,
+    chat: { projectId?: string; applicationId?: string },
+  ) {
+    const items = (
+      await this.prisma.client.orm.public.Notification.where({ userId }).all()
+    ).filter(
+      (item) =>
+        !item.readAt &&
+        messageTypes.includes(item.type) &&
+        (chat.applicationId
+          ? item.type === 'APPLICATION_MESSAGE' &&
+            item.applicationId === chat.applicationId
+          : !chat.projectId ||
+            (item.type === 'NEW_MESSAGE' && item.projectId === chat.projectId)),
+    );
+    const readAt = new Date();
+    for (const item of items)
+      await this.prisma.client.orm.public.Notification.where({
+        id: item.id,
+      }).update({ readAt });
+    return { updated: items.length };
+  }
+
   async readAll(userId: string, types?: string[]) {
     const items = (
       await this.prisma.client.orm.public.Notification.where({

@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1c435a1bc70db02fdbe8c52cc507d8b4709ff125683119293bec16390b15efca'>;
+  StorageHashBase<'b8833235147ef12361380a18dc8778d798e37cc11bb43d7d688b685a7c43d15f'>;
 export type ExecutionHash =
   ExecutionHashBase<'ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5'>;
 export type ProfileHash =
@@ -334,6 +334,7 @@ export type FieldOutputTypes = {
       readonly senderId: CodecTypes['pg/text@1']['output'];
     };
     readonly Notification: {
+      readonly applicationId: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly message: CodecTypes['pg/text@1']['output'];
@@ -577,6 +578,7 @@ export type FieldInputTypes = {
       readonly senderId: CodecTypes['pg/text@1']['input'];
     };
     readonly Notification: {
+      readonly applicationId: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly message: CodecTypes['pg/text@1']['input'];
@@ -820,6 +822,7 @@ export type StorageColumnTypes = {
       readonly senderId: CodecTypes['pg/text@1']['output'];
     };
     readonly Notification: {
+      readonly applicationId: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly message: CodecTypes['pg/text@1']['output'];
@@ -1063,6 +1066,7 @@ export type StorageColumnInputTypes = {
       readonly senderId: CodecTypes['pg/text@1']['input'];
     };
     readonly Notification: {
+      readonly applicationId: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly message: CodecTypes['pg/text@1']['input'];
@@ -1343,6 +1347,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'project' | 'sender';
   };
   export type public_Notification = {
+    applicationId: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     message: CodecTypes['pg/text@1']['output'];
@@ -2659,6 +2664,12 @@ type ContractBase = Omit<
             };
             readonly Notification: {
               columns: {
+                readonly applicationId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-date@1';
@@ -4780,6 +4791,10 @@ type ContractBase = Omit<
           };
           readonly Notification: {
             readonly fields: {
+              readonly applicationId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -4855,6 +4870,7 @@ type ContractBase = Omit<
               readonly table: 'Notification';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly applicationId: { readonly column: 'applicationId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly message: { readonly column: 'message' };

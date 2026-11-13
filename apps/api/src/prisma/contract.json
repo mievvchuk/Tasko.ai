@@ -1408,6 +1408,13 @@
           },
           "Notification": {
             "fields": {
+              "applicationId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -1517,6 +1524,9 @@
             },
             "storage": {
               "fields": {
+                "applicationId": {
+                  "column": "applicationId"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -4894,6 +4904,11 @@
             },
             "Notification": {
               "columns": {
+                "applicationId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "dataType": "pg/timestamptz",
@@ -6310,7 +6325,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1c435a1bc70db02fdbe8c52cc507d8b4709ff125683119293bec16390b15efca"
+    "storageHash": "b8833235147ef12361380a18dc8778d798e37cc11bb43d7d688b685a7c43d15f"
   },
   "execution": {
     "executionHash": "ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5",

@@ -37,13 +37,48 @@ export function MessagesPage() {
     user?.role === "ADMIN" ? null : "/applications/conversations",
   );
   const current = project.data ? project : application;
-  // Відкрили листування — лічильник біля «Повідомлень» гасне
+  // Скільки непрочитаних у кожній розмові — щоб одразу знайти, де нові листи
+  const unread = useApi<{
+    projects: Record<string, number>;
+    applications: Record<string, number>;
+  }>(user?.role === "ADMIN" ? null : "/notifications/unread-chats");
+  const refreshUnread = unread.refresh;
+  // Прочитаною стає лише відкрита розмова; так само й нові листи в ній, поки вона відкрита.
+  // Подію для лічильника в меню шлемо, лише коли щось справді прочитали — інакше вийшло б коло.
   useEffect(() => {
     if (user?.role === "ADMIN") return;
-    void request("/notifications/read-messages", { method: "POST" })
-      .then(() => window.dispatchEvent(new Event(notificationsChangedEvent)))
-      .catch(() => {});
-  }, [user?.role, projectId, applicationId]);
+    const chat = projectId
+      ? { projectId }
+      : applicationId
+        ? { applicationId }
+        : null;
+    const read = () => {
+      if (!chat) return refreshUnread();
+      void request<{ updated: number }>("/notifications/read-messages", {
+        method: "POST",
+        body: chat,
+      })
+        .then((result) => {
+          refreshUnread();
+          if (result?.updated)
+            window.dispatchEvent(new Event(notificationsChangedEvent));
+        })
+        .catch(() => {});
+    };
+    read();
+    window.addEventListener(notificationsChangedEvent, read);
+    return () => window.removeEventListener(notificationsChangedEvent, read);
+  }, [user?.role, projectId, applicationId, refreshUnread]);
+  const unreadProject = (id: string) => unread.data?.projects[id] ?? 0;
+  const unreadApplication = (id: string) => unread.data?.applications[id] ?? 0;
+  // Розмови з новими листами — нагорі списку
+  const byUnread = <T,>(
+    list: T[] | null | undefined,
+    count: (item: T) => number,
+  ) =>
+    [...(list ?? [])].sort(
+      (a, b) => Number(count(b) > 0) - Number(count(a) > 0),
+    );
   return (
     <>
       <div className="page-heading">
@@ -73,41 +108,73 @@ export function MessagesPage() {
             </p>
           )}
           <ul>
-            {mine.data?.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  aria-current={item.id === projectId ? "true" : undefined}
-                  onClick={() => setParams({ project: item.id })}
-                >
-                  <strong>{item.title}</strong>
-                  <small>{tr(projectStatusNames[item.status])}</small>
-                </button>
-              </li>
-            ))}
+            {byUnread(mine.data, (item) => unreadProject(item.id)).map(
+              (item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    aria-current={item.id === projectId ? "true" : undefined}
+                    className={
+                      unreadProject(item.id) ? "has-unread" : undefined
+                    }
+                    onClick={() => setParams({ project: item.id })}
+                  >
+                    <strong>{item.title}</strong>
+                    <small>{tr(projectStatusNames[item.status])}</small>
+                    {unreadProject(item.id) > 0 && (
+                      <span
+                        className="badge-count"
+                        aria-label={tr(
+                          "Нових повідомлень: {0}",
+                          unreadProject(item.id),
+                        )}
+                      >
+                        {unreadProject(item.id)}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ),
+            )}
           </ul>
           {!!chats.data?.length && (
             <>
               <h2>{tr("Заявки")}</h2>
               <ul>
-                {chats.data.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      aria-current={
-                        item.id === applicationId ? "true" : undefined
-                      }
-                      onClick={() => setParams({ application: item.id })}
-                    >
-                      <strong>
-                        {user?.id === item.clientId
-                          ? item.freelancerName
-                          : item.clientName}
-                      </strong>
-                      <small>{item.projectTitle}</small>
-                    </button>
-                  </li>
-                ))}
+                {byUnread(chats.data, (item) => unreadApplication(item.id)).map(
+                  (item) => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        aria-current={
+                          item.id === applicationId ? "true" : undefined
+                        }
+                        className={
+                          unreadApplication(item.id) ? "has-unread" : undefined
+                        }
+                        onClick={() => setParams({ application: item.id })}
+                      >
+                        {unreadApplication(item.id) > 0 && (
+                          <span
+                            className="badge-count"
+                            aria-label={tr(
+                              "Нових повідомлень: {0}",
+                              unreadApplication(item.id),
+                            )}
+                          >
+                            {unreadApplication(item.id)}
+                          </span>
+                        )}
+                        <strong>
+                          {user?.id === item.clientId
+                            ? item.freelancerName
+                            : item.clientName}
+                        </strong>
+                        <small>{item.projectTitle}</small>
+                      </button>
+                    </li>
+                  ),
+                )}
               </ul>
             </>
           )}

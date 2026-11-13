@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.Notification.applicationId",
+    "label": "Add column \"applicationId\" to \"Notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "applicationId",
+        "table": "Notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"applicationId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Notification",
+          "applicationId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"applicationId\"",
+        "sql": "ALTER TABLE \"public\".\"Notification\" ADD COLUMN \"applicationId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"applicationId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Notification",
+          "applicationId"
+        ]
+      }
+    ]
+  }
+]
