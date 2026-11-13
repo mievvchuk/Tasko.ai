@@ -1236,6 +1236,7 @@ export class ProjectsService {
     message: string,
     projectId?: string,
     taskId?: string,
+    applicationId?: string,
   ) {
     if (userId === actorId) return null;
     announce(userId);
@@ -1246,6 +1247,7 @@ export class ProjectsService {
       message,
       projectId: projectId ?? null,
       taskId: taskId ?? null,
+      applicationId: applicationId ?? null,
       readAt: null,
       createdAt: new Date(),
     });

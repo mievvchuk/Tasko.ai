@@ -6733,3 +6733,21 @@ a.stat-card:hover .progress-ring > span {
     font-size: var(--text-lg);
   }
 }
+
+/* Лічильник непрочитаних біля розмови; назва такої розмови — жирніша */
+.messenger-list button {
+  position: relative;
+}
+.messenger-list button .badge-count {
+  position: absolute;
+  top: 50%;
+  right: var(--space-sm);
+  transform: translateY(-50%);
+}
+.messenger-list button:has(.badge-count) {
+  padding-right: calc(var(--space-sm) + 28px);
+}
+.messenger-list button.has-unread strong {
+  color: var(--color-ink);
+  font-weight: 800;
+}

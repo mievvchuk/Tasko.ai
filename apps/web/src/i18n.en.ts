@@ -1268,6 +1268,7 @@ export const enText: Record<string, string> = {
   "Прибрати {0}": "Remove {0}",
   "Видалити файл {0}? Його не можна буде відновити.":
     "Delete file {0}? It can't be restored.",
+  "Нових повідомлень: {0}": "New messages: {0}",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",

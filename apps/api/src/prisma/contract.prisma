@@ -297,6 +297,8 @@ model Notification {
   project Project? @relation(fields: [projectId], references: [id])
   taskId String?
   task Task? @relation(fields: [taskId], references: [id])
+  // Чат заявки, до якого належить сповіщення про повідомлення (лічильник біля розмови)
+  applicationId String?
   readAt TimestamptzJsDate?
   createdAt TimestamptzJsDate @default(now())
 }

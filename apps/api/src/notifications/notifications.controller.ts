@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -17,8 +18,14 @@ import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { PageDto } from '../projects/projects.dto.js';
 import type { CurrentUser } from '../users/users.service.js';
-import { messageTypes, NotificationsService } from './notifications.service.js';
+import { NotificationsService } from './notifications.service.js';
 import { notificationEvents } from './notification-events.js';
+import { IsOptional, IsUUID } from 'class-validator';
+
+class ReadChatDto {
+  @IsOptional() @IsUUID() projectId?: string;
+  @IsOptional() @IsUUID() applicationId?: string;
+}
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -52,9 +59,14 @@ export class NotificationsController {
     return this.notifications.readAll(user.id);
   }
   // Користувач відкрив «Повідомлення» — сповіщення про листування вважаємо прочитаними
+  @Get('unread-chats') unreadChats(@Actor() user: CurrentUser) {
+    return this.notifications.unreadChats(user.id);
+  }
+  // Тіло { projectId } або { applicationId } — прочитано лише цю розмову
   @Post('read-messages') @HttpCode(200) readMessages(
     @Actor() user: CurrentUser,
+    @Body() chat: ReadChatDto,
   ) {
-    return this.notifications.readAll(user.id, messageTypes);
+    return this.notifications.readChat(user.id, chat ?? {});
   }
 }

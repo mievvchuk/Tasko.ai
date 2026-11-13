@@ -333,6 +333,9 @@ export class CollaborationService {
       'APPLICATION_MESSAGE',
       `Нове повідомлення щодо заявки на «${project.title}».`,
       // без projectId: до найму фрілансер не має доступу до сторінки проєкту
+      undefined,
+      undefined,
+      applicationId,
     );
     const signed = this.signed(message, user);
     this.posted.next({
