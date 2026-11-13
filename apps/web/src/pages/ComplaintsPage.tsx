@@ -154,10 +154,10 @@ export function ComplaintsPage() {
                   selectedPerson.projectIds.includes(project.id),
               )
               .map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.title}
-              </option>
-            ))}
+                <option key={project.id} value={project.id}>
+                  {project.title}
+                </option>
+              ))}
           </select>
         </label>
         <label>
@@ -189,29 +189,64 @@ export function ComplaintsPage() {
           {tr("Надіслати скаргу")}
         </button>
       </form>
-      <ResourceState loading={loading} error={error} onRetry={refresh} />
-      {!loading && !error && (
-        <section className="application-list">
-          {data?.map((item) => (
-            <article className="application-card" key={item.id}>
-              <div className="application-person">
-                <h2>{item.reason}</h2>
-                <span className={`project-status status-${item.status}`}>
-                  {tr(statusNames[item.status])}
-                </span>
-              </div>
-              <p>{item.description}</p>
-              <small>{formatDate(item.createdAt, true)}</small>
-              {item.adminNote && (
-                <p>
-                  <strong>{tr("Відповідь адміністратора:")}</strong>{" "}
-                  {item.adminNote}
-                </p>
+      <section className="data-panel projects-panel complaint-history">
+        <div className="panel-heading">
+          <div>
+            <h2>{tr("Історія скарг")}</h2>
+            <p>{tr("Ваші скарги та відповіді адміністратора")}</p>
+          </div>
+          {data && <span className="badge">{data.length}</span>}
+        </div>
+        <ResourceState loading={loading} error={error} onRetry={refresh} />
+        {data && !data.length && (
+          <div className="empty-state">
+            <h3>{tr("Скарг ще немає")}</h3>
+            <p>
+              {tr(
+                "Надіслані скарги з'являться тут разом зі статусом розгляду.",
               )}
-            </article>
-          ))}
-        </section>
-      )}
+            </p>
+          </div>
+        )}
+        {!!data?.length && (
+          <ul className="record-list padded">
+            {data.map((item) => {
+              const person = targets.data?.users.find(
+                (row) => row.id === item.targetUserId,
+              );
+              const project = targets.data?.projects.find(
+                (row) => row.id === item.projectId,
+              );
+              return (
+                <li key={item.id} className="complaint-item">
+                  <div className="complaint-item-head">
+                    <strong>{item.reason}</strong>
+                    <span className={`project-status status-${item.status}`}>
+                      {tr(statusNames[item.status])}
+                    </span>
+                  </div>
+                  <small>
+                    {[
+                      person?.name,
+                      project?.title,
+                      formatDate(item.createdAt, true),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </small>
+                  <p className="preserve-lines">{item.description}</p>
+                  {item.adminNote && (
+                    <p className="complaint-answer">
+                      <strong>{tr("Відповідь адміністратора:")}</strong>{" "}
+                      {item.adminNote}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </>
   );
 }

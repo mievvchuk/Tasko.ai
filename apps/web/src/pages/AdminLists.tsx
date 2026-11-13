@@ -1,5 +1,6 @@
 // Таблиці проєктів і скарг адмінки.
 import { useState } from "react";
+import { ProgressRing } from "../components/Charts";
 import { Link } from "react-router";
 import { useApi } from "../useApi";
 import { formatDate } from "../format";
@@ -34,7 +35,11 @@ export function AdminProjectsPage() {
     Object.keys(projectStatusNames),
   );
   // all=true: в адмін-панелі — усі проєкти платформи (у робочому просторі адмін бачить лише свої)
-  const query = new URLSearchParams({ page: String(page), limit: "20", all: "true" });
+  const query = new URLSearchParams({
+    page: String(page),
+    limit: "20",
+    all: "true",
+  });
   if (status) query.set("status", status);
   const projects = useApi<Project[]>(`/projects?${query}`);
   const rows =
@@ -71,10 +76,14 @@ export function AdminProjectsPage() {
       sort: (row) => row.progress,
       render: (row) => (
         <span className="admin-progress">
-          <span aria-hidden="true">
-            <span style={{ width: `${row.progress}%` }} />
-          </span>
-          {row.progress}% · {row.completedTasks}/{row.totalTasks}
+          <ProgressRing
+            value={row.completedTasks}
+            max={row.totalTasks}
+            label={tr("Прогрес")}
+          />
+          <small>
+            {row.completedTasks} {tr("з")} {row.totalTasks}
+          </small>
         </span>
       ),
     },
