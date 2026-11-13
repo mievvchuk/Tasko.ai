@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
 import { Link, Navigate, useSearchParams } from "react-router";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
@@ -8,7 +7,6 @@ import { formatDate, parsePage } from "../format";
 import { useApi } from "../useApi";
 import { applicationStatusNames } from "../types";
 import type { MarketplaceProject, ProjectCategory, Skill } from "../types";
-import { AdminDialog } from "./AdminSections";
 
 import { useLanguage } from "../i18n";
 
@@ -37,10 +35,8 @@ export function MarketplacePage() {
   );
   const categories = useApi<ProjectCategory[]>("/project-categories");
   const skills = useApi<Skill[]>("/skills");
-  const [openId, setOpenId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
   const filtered = filterKeys.some((key) => params.get(key));
-  const open = data?.find((project) => project.id === openId) ?? null;
 
   if (user?.role === "CLIENT") return <Navigate to="/projects" replace />;
 
@@ -196,12 +192,12 @@ export function MarketplacePage() {
                 </button>
               </div>
               <h2>
-                <button
+                <Link
                   className="market-card-link"
-                  onClick={() => setOpenId(project.id)}
+                  to={`/marketplace/${project.id}`}
                 >
                   {project.title}
-                </button>
+                </Link>
               </h2>
               <p className="market-excerpt">
                 {project.description || tr("Клієнт не додав опис.")}
@@ -252,19 +248,11 @@ export function MarketplacePage() {
           onChange={changePage}
         />
       )}
-      {open && (
-        <ProjectDialog
-          project={open}
-          onClose={() => setOpenId(null)}
-          onApplied={refresh}
-          onFavorite={() => void toggleFavorite(open)}
-        />
-      )}
     </>
   );
 }
 
-function budgetText(
+export function budgetText(
   project: MarketplaceProject,
   tr: (text: string, ...args: (string | number)[]) => string,
 ) {
@@ -274,158 +262,5 @@ function budgetText(
     "{0}–{1} грн",
     project.budgetMin ?? 0,
     project.budgetMax ?? tr("необмежено"),
-  );
-}
-
-// Усі деталі проєкту й форма заявки в одному вікні
-function ProjectDialog({
-  project,
-  onClose,
-  onApplied,
-  onFavorite,
-}: {
-  project: MarketplaceProject;
-  onClose: () => void;
-  onApplied: () => void;
-  onFavorite: () => void;
-}) {
-  const { tr } = useLanguage();
-  const [applying, setApplying] = useState(false);
-  const [message, setMessage] = useState("");
-  const [budget, setBudget] = useState("");
-  const [days, setDays] = useState("");
-  const [formError, setFormError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setSubmitting(true);
-    setFormError("");
-    try {
-      await request(`/projects/${project.id}/applications`, {
-        method: "POST",
-        body: {
-          message,
-          proposedBudget: Number(budget),
-          proposedDays: Number(days),
-        },
-      });
-      setApplying(false);
-      onApplied();
-    } catch (error) {
-      setFormError(errorMessage(error));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <AdminDialog title={project.title} onClose={onClose}>
-      <p className="preserve-lines">
-        {project.description || tr("Клієнт не додав опис.")}
-      </p>
-      <dl className="admin-details">
-        <dt>{tr("Клієнт")}</dt>
-        <dd>{project.client?.name || tr("Клієнт")}</dd>
-        <dt>{tr("Бюджет")}</dt>
-        <dd>{budgetText(project, tr)}</dd>
-        <dt>{tr("Дедлайн")}</dt>
-        <dd>{formatDate(project.deadline)}</dd>
-        <dt>{tr("Категорія")}</dt>
-        <dd>{project.category?.name || tr("Без категорії")}</dd>
-        <dt>{tr("Опубліковано")}</dt>
-        <dd>{formatDate(project.createdAt)}</dd>
-      </dl>
-      {!!project.skills.length && (
-        <p className="skill-list">
-          {project.skills.map((skill) => (
-            <span className="badge" key={skill.id}>
-              {skill.name}
-            </span>
-          ))}
-        </p>
-      )}
-      {project.applicationStatus ? (
-        <p className="application-notice">
-          {tr("Статус заявки:")}{" "}
-          {tr(applicationStatusNames[project.applicationStatus])}
-          {project.applicationId && (
-            <>
-              {" · "}
-              <Link to={`/messages?application=${project.applicationId}`}>
-                {project.applicationStatus === "PENDING"
-                  ? tr("Написати клієнту")
-                  : tr("Переписка з клієнтом")}
-              </Link>
-            </>
-          )}
-        </p>
-      ) : applying ? (
-        <form className="application-form" onSubmit={(e) => void submit(e)}>
-          <label>
-            {tr("Супровідне повідомлення")}
-            <textarea
-              value={message}
-              minLength={10}
-              maxLength={2000}
-              required
-              onChange={(event) => setMessage(event.target.value)}
-              placeholder={tr("Коротко опишіть досвід і спосіб виконання")}
-            />
-          </label>
-          <div className="form-row">
-            <label>
-              {tr("Бюджет, грн")}
-              <input
-                type="number"
-                min="1"
-                max="10000000"
-                required
-                value={budget}
-                onChange={(event) => setBudget(event.target.value)}
-              />
-            </label>
-            <label>
-              {tr("Строк, днів")}
-              <input
-                type="number"
-                min="1"
-                max="365"
-                required
-                value={days}
-                onChange={(event) => setDays(event.target.value)}
-              />
-            </label>
-          </div>
-          {formError && <p className="form-error">{formError}</p>}
-          <div className="page-actions">
-            <button className="button primary" disabled={submitting}>
-              <i className="bi bi-send" aria-hidden="true"></i>
-              {submitting ? tr("Надсилаємо…") : tr("Надіслати заявку")}
-            </button>
-            <button
-              type="button"
-              className="button secondary"
-              onClick={() => setApplying(false)}
-            >
-              {tr("Скасувати")}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="page-actions">
-          <button className="button primary" onClick={() => setApplying(true)}>
-            {tr("Залишити заявку")}
-          </button>
-          <button className="button secondary" onClick={onFavorite}>
-            <i
-              className={`bi ${project.isFavorite ? "bi-star-fill" : "bi-star"}`}
-              aria-hidden="true"
-            ></i>
-            {project.isFavorite ? tr("В обраному") : tr("До обраного")}
-          </button>
-        </div>
-      )}
-    </AdminDialog>
   );
 }

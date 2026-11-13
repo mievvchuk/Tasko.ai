@@ -85,6 +85,14 @@ export class ProjectsController {
     return this.projects.marketplace(user, page);
   }
 
+  @Get('marketplace/projects/:id')
+  marketplaceProject(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projects.marketplaceProject(user, id);
+  }
+
   @Post('projects/:id/favorite')
   favorite(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.favorite(user, id);

@@ -27,6 +27,7 @@ import { AdminPage, AdminUsersPage } from "./pages/AdminPage";
 import { AdminComplaintsPage, AdminProjectsPage } from "./pages/AdminLists";
 import { AdminModerationPage } from "./pages/AdminModeration";
 import { MarketplacePage } from "./pages/MarketplacePage";
+import { MarketplaceProjectPage } from "./pages/MarketplaceProjectPage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
 import { WelcomePage } from "./pages/WelcomePage";
@@ -142,6 +143,7 @@ export function App() {
             element={<ProjectApplicationsPage />}
           />
           <Route path="marketplace" element={<MarketplacePage />} />
+          <Route path="marketplace/:id" element={<MarketplaceProjectPage />} />
           <Route path="freelancers/:id" element={<FreelancerProfilePage />} />
           <Route path="tasks" element={<TasksPage />} />
           <Route path="workload" element={<WorkloadPage />} />

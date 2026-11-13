@@ -176,7 +176,11 @@ export class AnalyticsService {
     const members = await this.db.ProjectMember.where((member) =>
       member.projectId.in(projects.map((project) => project.id)),
     ).all();
-    const ids = [...new Set(members.map((member) => member.userId))];
+    // Фрілансер бачить лише власне навантаження, а не колег з інших проєктів
+    const ids =
+      user.role === 'FREELANCER'
+        ? [user.id]
+        : [...new Set(members.map((member) => member.userId))];
     return Promise.all(
       ids.map(async (id) => {
         const person = await this.db.User.where({ id })

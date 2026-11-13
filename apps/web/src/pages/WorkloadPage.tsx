@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import { useApi } from "../useApi";
+import { useAuth } from "../auth";
 import { formatDate } from "../format";
 import { ResourceState } from "../components/ResourceState";
 import { UserAvatar } from "../components/UserAvatar";
@@ -41,6 +42,7 @@ function LoadRing({ active, label }: { active: number; label: string }) {
 
 export function WorkloadPage() {
   const { tr } = useLanguage();
+  const freelancer = useAuth().user?.role === "FREELANCER";
   const workload = useApi<FreelancerWorkload[]>("/analytics/workload");
   const people = workload.data || [];
 
@@ -48,11 +50,17 @@ export function WorkloadPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <h1>{tr("Завантаженість виконавців")}</h1>
+          <h1>
+            {freelancer
+              ? tr("Моя завантаженість")
+              : tr("Завантаженість виконавців")}
+          </h1>
           <p>
-            {tr(
-              "Незавершені завдання, пріоритети та строки у доступних вам проєктах.",
-            )}
+            {freelancer
+              ? tr("Ваші незавершені завдання, пріоритети та строки.")
+              : tr(
+                  "Незавершені завдання, пріоритети та строки у доступних вам проєктах.",
+                )}
           </p>
         </div>
         <button

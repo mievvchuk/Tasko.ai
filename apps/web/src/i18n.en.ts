@@ -1100,6 +1100,24 @@ export const enText: Record<string, string> = {
   "Скарг ще немає": "No complaints yet",
   "Надіслані скарги з'являться тут разом зі статусом розгляду.":
     "Submitted complaints appear here with their review status.",
+  "Причина блокування:": "Block reason:",
+  "Причина блокування": "Block reason",
+  "Наприклад: спам у заявках, образи в чаті":
+    "For example: spam in applications, insults in chat",
+  "Користувач побачить цю причину, коли спробує увійти.":
+    "The user will see this reason when they try to sign in.",
+  користувачів: "users",
+  "Редагувати профіль фрілансера": "Edit freelancer profile",
+  "← До біржі": "← Back to marketplace",
+  "Ваша заявка": "Your application",
+  "Не більше {0} грн": "At most {0} UAH",
+  Ваша: "Yours",
+  "Заявок ще немає — ваша може бути першою.":
+    "No applications yet — yours can be the first.",
+  Заявок: "Applications",
+  "Моя завантаженість": "My workload",
+  "Ваші незавершені завдання, пріоритети та строки.":
+    "Your unfinished tasks, priorities and deadlines.",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",

@@ -14,14 +14,21 @@ export function FreelancerProfileEditor() {
   const [url, setUrl] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  // Заповнений профіль показуємо лише для читання; олівець вмикає редагування
+  const [editing, setEditing] = useState(false);
+  function fill(data: OwnFreelancerProfile) {
+    setBio(data.bio);
+    setRate(data.hourlyRate?.toString() || "");
+    setAvailability(data.availability);
+    setSkills(data.skills.map((item) => item.name).join(", "));
+  }
   async function load() {
     try {
       const data = await request<OwnFreelancerProfile>("/profile/freelancer");
       setProfile(data);
-      setBio(data.bio);
-      setRate(data.hourlyRate?.toString() || "");
-      setAvailability(data.availability);
-      setSkills(data.skills.map((item) => item.name).join(", "));
+      fill(data);
+      if (!data.bio && !data.skills.length && data.hourlyRate === null)
+        setEditing(true);
     } catch (e) {
       setError(errorMessage(e));
     }
@@ -46,6 +53,7 @@ export function FreelancerProfileEditor() {
         },
       });
       setMessage(tr("Профіль збережено."));
+      setEditing(false);
       await load();
     } catch (e) {
       setError(errorMessage(e));
@@ -90,56 +98,91 @@ export function FreelancerProfileEditor() {
           <h2>{tr("Профіль фрілансера")}</h2>
           <p>{tr("Ці дані бачить клієнт під час вибору виконавця.")}</p>
         </div>
+        {!editing && (
+          <button
+            type="button"
+            className="icon-action"
+            aria-label={tr("Редагувати профіль фрілансера")}
+            title={tr("Редагувати профіль фрілансера")}
+            onClick={() => {
+              setMessage("");
+              setEditing(true);
+            }}
+          >
+            <i className="bi bi-pencil" aria-hidden="true"></i>
+          </button>
+        )}
       </div>
       {message && <p className="notice success">{message}</p>}
       {error && <p className="form-error">{error}</p>}
       <form className="form-grid" onSubmit={(e) => void save(e)}>
-        <label className="full-width">
-          {tr("Про себе")}
-          <textarea
-            maxLength={3000}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-          />
-        </label>
-        <label>
-          {tr("Ставка за годину, грн")}
-          <input
-            type="number"
-            min="0"
-            max="10000000"
-            value={rate}
-            onChange={(e) => setRate(e.target.value)}
-          />
-        </label>
-        <label>
-          {tr("Доступність")}
-          <select
-            value={availability}
-            onChange={(e) => setAvailability(e.target.value)}
-          >
-            <option value="AVAILABLE">{tr("Доступний")}</option>
-            <option value="BUSY">{tr("Зайнятий")}</option>
-            <option value="UNAVAILABLE">{tr("Недоступний")}</option>
-          </select>
-        </label>
-        <label className="full-width">
-          {tr("Навички через кому")}
-          <input
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            placeholder="TypeScript, React, NestJS"
-          />
-        </label>
-        {/* Чипи — як клієнт побачить навички (оновлюються під час введення) */}
-        {skillList.length > 0 && (
-          <ul className="skill-chips full-width" aria-label={tr("Навички")}>
-            {skillList.map((skill) => (
-              <li key={skill}>{skill}</li>
-            ))}
-          </ul>
+        <fieldset
+          className="form-grid full-width plain-fieldset"
+          disabled={!editing}
+        >
+          <label className="full-width">
+            {tr("Про себе")}
+            <textarea
+              maxLength={3000}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+            />
+          </label>
+          <label>
+            {tr("Ставка за годину, грн")}
+            <input
+              type="number"
+              min="0"
+              max="10000000"
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+            />
+          </label>
+          <label>
+            {tr("Доступність")}
+            <select
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+            >
+              <option value="AVAILABLE">{tr("Доступний")}</option>
+              <option value="BUSY">{tr("Зайнятий")}</option>
+              <option value="UNAVAILABLE">{tr("Недоступний")}</option>
+            </select>
+          </label>
+          <label className="full-width">
+            {tr("Навички через кому")}
+            <input
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+              placeholder="TypeScript, React, NestJS"
+            />
+          </label>
+          {/* Чипи — як клієнт побачить навички (оновлюються під час введення) */}
+          {skillList.length > 0 && (
+            <ul className="skill-chips full-width" aria-label={tr("Навички")}>
+              {skillList.map((skill) => (
+                <li key={skill}>{skill}</li>
+              ))}
+            </ul>
+          )}
+        </fieldset>
+        {editing && (
+          <div className="page-actions full-width">
+            <button className="button primary">{tr("Зберегти профіль")}</button>
+            {profile && (profile.bio || profile.skills.length > 0) && (
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => {
+                  fill(profile);
+                  setEditing(false);
+                }}
+              >
+                {tr("Скасувати")}
+              </button>
+            )}
+          </div>
         )}
-        <button className="button primary">{tr("Зберегти профіль")}</button>
       </form>
       <h3>{tr("Портфоліо")}</h3>
       <form className="inline-form" onSubmit={(e) => void addPortfolio(e)}>

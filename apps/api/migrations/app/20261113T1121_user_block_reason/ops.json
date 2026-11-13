@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.User.blockReason",
+    "label": "Add column \"blockReason\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "blockReason",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"blockReason\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "blockReason"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"blockReason\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"blockReason\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"blockReason\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "blockReason"
+        ]
+      }
+    ]
+  }
+]

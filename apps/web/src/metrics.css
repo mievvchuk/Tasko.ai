@@ -303,3 +303,114 @@
 .admin-delete-confirm p {
   margin: 0 0 var(--space-sm);
 }
+
+/* Огляд адмінки: щільна сітка без «осиротілих» плиток і порожнього місця */
+.admin-main-kpis .kpi-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.admin-main-kpis .kpi-tile {
+  padding: var(--space-md);
+}
+.admin-main-kpis .kpi-icon {
+  width: 40px;
+  height: 40px;
+  font-size: var(--text-lg);
+}
+.admin-main-kpis .kpi-text strong {
+  font-size: var(--text-2xl);
+}
+/* Групи 2×2, у кожній чотири показники в один ряд */
+.admin-kpi-groups {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+.admin-kpi-groups .kpi-grid.compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: auto;
+}
+.admin-kpi-groups .kpi-grid.compact .kpi-tile {
+  gap: var(--space-2xs);
+  padding: var(--space-sm);
+}
+.admin-kpi-groups .kpi-grid.compact .kpi-icon {
+  width: 30px;
+  height: 30px;
+  font-size: var(--text-md);
+}
+.admin-kpi-groups .kpi-label {
+  font-size: var(--text-xs);
+}
+.admin-kpi-groups .kpi-grid.compact .kpi-text strong {
+  font-size: var(--text-xl);
+}
+.admin-kpi-groups .kpi-tile > .info-tip {
+  top: var(--space-xs);
+  right: var(--space-xs);
+}
+/* Пари карток в одному ряду — однієї висоти */
+.admin-activity {
+  align-items: stretch;
+}
+.admin-activity > * {
+  margin: 0;
+}
+.admin-overview {
+  align-items: stretch;
+}
+/* Список нових користувачів не задає висоту ряду: її визначає діаграма, а список гортається */
+.admin-recent {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  contain: size;
+}
+.admin-recent ul {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.admin-breakdown {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+.admin-breakdown .chart-card {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.admin-breakdown .donut-body {
+  flex: 1;
+  justify-content: center;
+}
+@media (max-width: 60rem) {
+  .admin-kpi-groups,
+  .admin-breakdown {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-recent {
+    contain: none;
+    min-height: 0;
+  }
+  .admin-recent ul {
+    max-height: 320px;
+  }
+}
+@media (max-width: 40rem) {
+  .admin-kpi-groups .kpi-grid.compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* 9 показників — три в ряд і на телефоні: число під підписом, без іконки */
+  .admin-main-kpis .kpi-tile {
+    flex-direction: column;
+    padding: var(--space-sm);
+  }
+  .admin-main-kpis .kpi-icon {
+    display: none;
+  }
+  .admin-main-kpis .kpi-label {
+    font-size: var(--text-xs);
+  }
+  .admin-main-kpis .kpi-text strong {
+    font-size: var(--text-xl);
+  }
+}

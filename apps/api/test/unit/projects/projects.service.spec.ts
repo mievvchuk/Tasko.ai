@@ -313,6 +313,23 @@ describe('ProjectsService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('refuses a bid above the client maximum budget', async () => {
+    db.Project = {
+      where: vi.fn(() =>
+        chain({ id: 'project-id', status: 'PLANNING', budgetMax: 5000 }),
+      ),
+    };
+    db.ProjectApplication = { create: vi.fn(async (data: unknown) => data) };
+    const bid = (proposedBudget: number) =>
+      service.apply(freelancer, 'project-id', {
+        message: 'I can complete this work.',
+        proposedBudget,
+        proposedDays: 7,
+      });
+    await expect(bid(5001)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(bid(5000)).resolves.toMatchObject({ proposedBudget: 5000 });
+  });
+
   it('shows marketplace projects with the current application status', async () => {
     const project = {
       id: 'project-id',

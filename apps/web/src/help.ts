@@ -15,7 +15,8 @@ const docsBase = (
 // параметром ?docusaurus-theme=, який Docusaurus читає сам ще до першого малювання
 export function docsUrl(language: Language, articleId = "getting-started") {
   const theme = globalThis.document?.documentElement.dataset.theme;
-  const query = theme === "dark" || theme === "light" ? `?docusaurus-theme=${theme}` : "";
+  const query =
+    theme === "dark" || theme === "light" ? `?docusaurus-theme=${theme}` : "";
   return `${docsBase}${language === "en" ? "/en" : ""}/${articleId}${query}`;
 }
 
@@ -25,7 +26,10 @@ for (const type of ["click", "auxclick"])
     type,
     (event) => {
       const link = (event.target as Element | null)?.closest?.("a[href]");
-      if (!(link instanceof HTMLAnchorElement) || !link.href.startsWith(docsBase))
+      if (
+        !(link instanceof HTMLAnchorElement) ||
+        !link.href.startsWith(docsBase)
+      )
         return;
       const url = new URL(link.href);
       url.searchParams.set(
@@ -91,7 +95,7 @@ export const helpArticles: HelpArticle[] = [
     section: "guide",
     icon: "bi-search",
     roles: ["FREELANCER"],
-    paths: ["/marketplace", "/projects"],
+    paths: ["/marketplace", "/marketplace/:id", "/projects"],
     title: {
       uk: "Як знайти проєкт і подати заявку",
       en: "How to find a project and apply",

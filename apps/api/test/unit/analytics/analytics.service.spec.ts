@@ -160,6 +160,16 @@ describe('AnalyticsService', () => {
     expect(result[0]).toHaveProperty('nearestDeadline', tasks[0].deadline);
   });
 
+  it('shows a freelancer only their own workload, not teammates', async () => {
+    const result = await analytics.workload({
+      ...user,
+      id: 'other-freelancer',
+      role: 'FREELANCER',
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ activeTasks: 0 });
+  });
+
   it('returns risky tasks in a project summary', async () => {
     const result = await analytics.summary(user, 'project-id');
     expect(result.project).toMatchObject({ id: 'project-id', progress: 50 });
