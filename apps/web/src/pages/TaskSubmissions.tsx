@@ -38,9 +38,13 @@ export function SubmissionCard({
         </time>
       </div>
       <p className="preserve-lines">{submission.description}</p>
-      {submission.files.map((file) => (
-        <FileDownload key={file.id} file={file} />
-      ))}
+      {submission.files.length > 0 && (
+        <div className="file-list">
+          {submission.files.map((file) => (
+            <FileDownload key={file.id} file={file} />
+          ))}
+        </div>
+      )}
       {submission.feedback && (
         <div className="review-feedback">
           <strong>{tr("Відгук перевірки")}</strong>
@@ -103,7 +107,7 @@ export function TaskSubmissionForm({
   }
 
   function removeFile(fileId: string) {
-    setFiles(files.filter((item) => item.id !== fileId));
+    setFiles((list) => list.filter((item) => item.id !== fileId));
   }
 
   return (
@@ -116,23 +120,23 @@ export function TaskSubmissionForm({
       <FileUpload
         projectId={task.projectId}
         disabled={busy || files.length >= maxSubmissionFiles}
+        maxFiles={maxSubmissionFiles - files.length}
         onBusyChange={setUploading}
         onUploaded={addFile}
       />
-      <ul className="record-list">
-        {files.map((file) => (
-          <li key={file.id}>
-            <FileDownload file={file} />
-            <button
-              className="text-button"
-              disabled={busy}
-              onClick={() => removeFile(file.id)}
-            >
-              {tr("Не додавати до результату")}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {files.length > 0 && (
+        <ul className="file-list">
+          {files.map((file) => (
+            <li key={file.id}>
+              <FileDownload
+                file={file}
+                removeLabel={tr("Не додавати до результату")}
+                onRemove={busy ? undefined : () => removeFile(file.id)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
       <form className="work-form" onSubmit={submit}>
         <label htmlFor="submission-description">{tr("Опис результату")}</label>
         <textarea

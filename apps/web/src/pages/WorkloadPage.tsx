@@ -164,6 +164,7 @@ export function WorkloadPage() {
                     <>
                       <UserAvatar
                         name={person.user?.name || "?"}
+                        avatarUrl={person.user?.avatarUrl}
                         size="small"
                       />
                       <div className="workload-name">

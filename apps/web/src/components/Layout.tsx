@@ -5,7 +5,7 @@ import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { useApi } from "../useApi";
-import { notificationsChangedEvent } from "../api";
+import { notificationsChangedEvent, subscribe } from "../api";
 import { docsUrl } from "../help";
 import type { Notification } from "../types";
 import { ThemePicker } from "./ThemePicker";
@@ -39,6 +39,20 @@ export function Layout() {
     window.addEventListener(notificationsChangedEvent, refresh);
     return () => window.removeEventListener(notificationsChangedEvent, refresh);
   }, [refresh]);
+  // Нове сповіщення чи повідомлення — лічильники оновлюються одразу, без перезавантаження сторінки
+  useEffect(() => {
+    if (!user) return;
+    const controller = new AbortController();
+    void subscribe(
+      "/notifications/stream",
+      (type) => {
+        if (type === "changed")
+          window.dispatchEvent(new Event(notificationsChangedEvent));
+      },
+      controller.signal,
+    );
+    return () => controller.abort();
+  }, [user?.id]);
   // Під час оновлення показуємо попередні числа, щоб значок не блимав
   const counts = useRef({ unreadCount: 0, unreadMessages: 0 });
   if (notifications.data) counts.current = notifications.data;

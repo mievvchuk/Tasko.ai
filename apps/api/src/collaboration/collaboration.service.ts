@@ -17,6 +17,7 @@ import type {
   ReviewDto,
   SubmissionDto,
 } from './collaboration.dto.js';
+import { announce } from '../notifications/notification-events.js';
 
 @Injectable()
 export class CollaborationService {
@@ -29,7 +30,7 @@ export class CollaborationService {
   // type: 'message' (нове повідомлення) або 'typing' (хтось набирає, у базі не зберігається)
   private readonly posted = new Subject<{
     key: string;
-    type: 'message' | 'typing';
+    type: 'message' | 'typing' | 'deleted';
     data: unknown;
     senderId: string;
   }>();
@@ -82,13 +83,40 @@ export class CollaborationService {
     });
   }
 
+  // До кожного повідомлення — ім'я й фото автора, щоб у чаті було видно, хто пише
+  private async withSenders<T extends { senderId: string }>(rows: T[]) {
+    const ids = [...new Set(rows.map((row) => row.senderId))];
+    const people = ids.length
+      ? await this.client.orm.public.User.where((row) => row.id.in(ids))
+          .select('id', 'name', 'avatarUrl')
+          .all()
+      : [];
+    return rows.map((row) => {
+      const person = people.find((item) => item.id === row.senderId);
+      return {
+        ...row,
+        senderName: person?.name ?? null,
+        senderAvatarUrl: person?.avatarUrl ?? null,
+      };
+    });
+  }
+  private signed<T extends object>(message: T, user: CurrentUser) {
+    return {
+      ...message,
+      senderName: user.name,
+      senderAvatarUrl: user.avatarUrl ?? null,
+    };
+  }
+
   async messages(user: CurrentUser, projectId: string, page: PageDto) {
     await this.projects.requireAccess(user, projectId, false);
-    return this.client.orm.public.Message.where({ projectId })
-      .orderBy((message) => message.createdAt.desc())
-      .offset((page.page - 1) * page.limit)
-      .limit(page.limit)
-      .all();
+    return this.withSenders(
+      await this.client.orm.public.Message.where({ projectId })
+        .orderBy((message) => message.createdAt.desc())
+        .offset((page.page - 1) * page.limit)
+        .limit(page.limit)
+        .all(),
+    );
   }
   async message(user: CurrentUser, projectId: string, data: MessageDto) {
     await this.projects.ensureNotRestricted(user.id);
@@ -115,13 +143,55 @@ export class CollaborationService {
         'Нове повідомлення у проєкті.',
         projectId,
       );
+    const signed = this.signed(message, user);
     this.posted.next({
       key: `project:${projectId}`,
       type: 'message',
-      data: message,
+      data: signed,
       senderId: user.id,
     });
-    return message;
+    return signed;
+  }
+
+  // Видалити можна лише власне повідомлення; інші учасники чату одразу бачать, що його немає
+  async deleteMessage(user: CurrentUser, projectId: string, messageId: string) {
+    await this.projects.requireAccess(user, projectId, false);
+    const messages = this.client.orm.public.Message;
+    const message = await messages.where({ id: messageId, projectId }).first();
+    if (!message) throw new NotFoundException('Повідомлення не знайдено.');
+    if (message.senderId !== user.id)
+      throw new ForbiddenException('Видалити можна лише власне повідомлення.');
+    await messages.where({ id: messageId }).delete();
+    this.posted.next({
+      key: `project:${projectId}`,
+      type: 'deleted',
+      data: { id: messageId },
+      senderId: user.id,
+    });
+    return { deleted: true };
+  }
+
+  async deleteApplicationMessage(
+    user: CurrentUser,
+    applicationId: string,
+    messageId: string,
+  ) {
+    await this.applicationChat(user, applicationId);
+    const messages = this.client.orm.public.ApplicationMessage;
+    const message = await messages
+      .where({ id: messageId, applicationId })
+      .first();
+    if (!message) throw new NotFoundException('Повідомлення не знайдено.');
+    if (message.senderId !== user.id)
+      throw new ForbiddenException('Видалити можна лише власне повідомлення.');
+    await messages.where({ id: messageId }).delete();
+    this.posted.next({
+      key: `application:${applicationId}`,
+      type: 'deleted',
+      data: { id: messageId },
+      senderId: user.id,
+    });
+    return { deleted: true };
   }
 
   // Чат заявки бачать лише клієнт-власник проєкту та автор заявки (адміністратор — ні)
@@ -218,11 +288,13 @@ export class CollaborationService {
     page: PageDto,
   ) {
     await this.applicationChat(user, applicationId);
-    return this.client.orm.public.ApplicationMessage.where({ applicationId })
-      .orderBy((message) => message.createdAt.desc())
-      .offset((page.page - 1) * page.limit)
-      .limit(page.limit)
-      .all();
+    return this.withSenders(
+      await this.client.orm.public.ApplicationMessage.where({ applicationId })
+        .orderBy((message) => message.createdAt.desc())
+        .offset((page.page - 1) * page.limit)
+        .limit(page.limit)
+        .all(),
+    );
   }
 
   async applicationMessageStream(user: CurrentUser, applicationId: string) {
@@ -262,13 +334,14 @@ export class CollaborationService {
       `Нове повідомлення щодо заявки на «${project.title}».`,
       // без projectId: до найму фрілансер не має доступу до сторінки проєкту
     );
+    const signed = this.signed(message, user);
     this.posted.next({
       key: `application:${applicationId}`,
       type: 'message',
-      data: message,
+      data: signed,
       senderId: user.id,
     });
-    return message;
+    return signed;
   }
   async submissions(user: CurrentUser, taskId: string, page: PageDto) {
     await this.tasks.find(user, taskId);
@@ -334,6 +407,7 @@ export class CollaborationService {
         }).update({ submissionId: submission.id });
         if (!attached) throw new ConflictException('Файл уже використано.');
       }
+      announce(project.clientId);
       await tx.orm.public.Notification.create({
         id: randomUUID(),
         userId: project.clientId,
@@ -386,6 +460,7 @@ export class CollaborationService {
         updatedAt: new Date(),
       });
       if (!updated) throw new ConflictException('Стан завдання вже змінився.');
+      announce(submission.submittedBy);
       await tx.orm.public.Notification.create({
         id: randomUUID(),
         userId: submission.submittedBy,

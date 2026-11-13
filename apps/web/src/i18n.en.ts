@@ -1248,6 +1248,26 @@ export const enText: Record<string, string> = {
     "The deadline is unrealistic for this scope.",
   "Що саме виправити, щоб проєкт пройшов модерацію":
     "What exactly to fix for the project to pass moderation",
+  "Видалити це повідомлення? Його не побачить ніхто.":
+    "Delete this message? No one will see it.",
+  Ви: "You",
+  "{0} КБ": "{0} KB",
+  "Видалити повідомлення": "Delete message",
+  "Можна додати ще {0} файл(ів) — решту пропущено.":
+    "You can add {0} more file(s) — the rest were skipped.",
+  "{0}: файл порожній або завеликий (ZIP до 50 МБ, інші до 10 МБ).":
+    "{0}: the file is empty or too large (ZIP up to 50 MB, others up to 10 MB).",
+  "Завантажуємо {0} з {1}…": "Uploading {0} of {1}…",
+  "Перетягніть файли сюди або оберіть на комп'ютері":
+    "Drop files here or choose from your computer",
+  "PDF, PNG, JPG, DOCX, TXT — до 10 МБ, ZIP — до 50 МБ. Можна кілька одразу.":
+    "PDF, PNG, JPG, DOCX, TXT — up to 10 MB, ZIP — up to 50 MB. Several at once.",
+  "{0} МБ": "{0} MB",
+  "Переглянути {0}": "Preview {0}",
+  Переглянути: "Preview",
+  "Прибрати {0}": "Remove {0}",
+  "Видалити файл {0}? Його не можна буде відновити.":
+    "Delete file {0}? It can't be restored.",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",
