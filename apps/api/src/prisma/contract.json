@@ -20,6 +20,10 @@
       "model": "BoardColumn",
       "namespace": "public"
     },
+    "ClientReview": {
+      "model": "ClientReview",
+      "namespace": "public"
+    },
     "Complaint": {
       "model": "Complaint",
       "namespace": "public"
@@ -490,6 +494,136 @@
               },
               "namespaceId": "public",
               "table": "BoardColumn"
+            }
+          },
+          "ClientReview": {
+            "fields": {
+              "clientId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "comment": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "freelancerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "projectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "rating": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "client": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "clientId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "freelancer": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "freelancerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "project": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "projectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Project",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "clientId": {
+                  "column": "clientId"
+                },
+                "comment": {
+                  "column": "comment"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "freelancerId": {
+                  "column": "freelancerId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "projectId": {
+                  "column": "projectId"
+                },
+                "rating": {
+                  "column": "rating"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ClientReview"
             }
           },
           "Complaint": {
@@ -1775,6 +1909,21 @@
                 },
                 "to": {
                   "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "clientReviews": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "projectId"
+                  ]
+                },
+                "to": {
+                  "model": "ClientReview",
                   "namespace": "public"
                 }
               },
@@ -3139,6 +3288,21 @@
                   "namespace": "public"
                 }
               },
+              "reviewsAboutClient": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "clientId"
+                  ]
+                },
+                "to": {
+                  "model": "ClientReview",
+                  "namespace": "public"
+                }
+              },
               "reviewsGiven": {
                 "cardinality": "1:N",
                 "on": {
@@ -3151,6 +3315,21 @@
                 },
                 "to": {
                   "model": "WorkSubmission",
+                  "namespace": "public"
+                }
+              },
+              "reviewsOfClients": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "freelancerId"
+                  ]
+                },
+                "to": {
+                  "model": "ClientReview",
                   "namespace": "public"
                 }
               },
@@ -3724,6 +3903,147 @@
                   "columns": [
                     "projectId",
                     "position"
+                  ]
+                }
+              ]
+            },
+            "ClientReview": {
+              "columns": {
+                "clientId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "comment": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "freelancerId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "projectId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "rating": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "ClientReview_projectId_idx_a96e4d92"
+                  },
+                  "source": {
+                    "columns": [
+                      "projectId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ClientReview"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Project"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "ClientReview_clientId_idx_153a9a49"
+                  },
+                  "source": {
+                    "columns": [
+                      "clientId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ClientReview"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "ClientReview_freelancerId_idx_c8137280"
+                  },
+                  "source": {
+                    "columns": [
+                      "freelancerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ClientReview"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "clientId"
+                  ],
+                  "name": "ClientReview_clientId_idx_153a9a49",
+                  "prefix": "ClientReview_clientId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "freelancerId"
+                  ],
+                  "name": "ClientReview_freelancerId_idx_c8137280",
+                  "prefix": "ClientReview_freelancerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "projectId"
+                  ],
+                  "name": "ClientReview_projectId_idx_a96e4d92",
+                  "prefix": "ClientReview_projectId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "projectId",
+                    "freelancerId"
                   ]
                 }
               ]
@@ -5881,10 +6201,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "32f0bb3ec8d3d2716d3b68b650116c0fda5d6b3a477498ecc39c013f6a8b3139"
+    "storageHash": "1d24cef48f5655f451b9203f4bead44538d7f677abe3f5be85ee4ea6f0a8af02"
   },
   "execution": {
-    "executionHash": "e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06",
+    "executionHash": "ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5",
     "mutations": {
       "defaults": [
         {
@@ -5916,6 +6236,17 @@
           },
           "ref": {
             "entry": "BoardColumn",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "ClientReview",
             "field": "id",
             "namespace": "public"
           }

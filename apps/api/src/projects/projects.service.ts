@@ -12,6 +12,7 @@ import type { CurrentUser } from '../users/users.service.js';
 import type {
   CreateProjectDto,
   CreateApplicationDto,
+  CreateClientReviewDto,
   CreateFreelancerReviewDto,
   UpdateProjectDto,
   PageDto,
@@ -602,17 +603,20 @@ export class ProjectsService {
         applications.filter((row) => row.freelancerId === user.id),
         favorites,
       )),
-      bids: applications.map((row) => ({
-        id: row.id,
-        freelancer:
-          people.find((person) => person.id === row.freelancerId) ?? null,
-        proposedBudget: row.proposedBudget,
-        proposedDays: row.proposedDays,
-        status: row.status,
-        createdAt: row.createdAt,
-        mine: row.freelancerId === user.id,
-        message: row.freelancerId === user.id ? row.message : null,
-      })),
+      // Відкликані заявки — не ставки: їх не показуємо
+      bids: applications
+        .filter((row) => row.status !== 'WITHDRAWN')
+        .map((row) => ({
+          id: row.id,
+          freelancer:
+            people.find((person) => person.id === row.freelancerId) ?? null,
+          proposedBudget: row.proposedBudget,
+          proposedDays: row.proposedDays,
+          status: row.status,
+          createdAt: row.createdAt,
+          mine: row.freelancerId === user.id,
+          message: row.freelancerId === user.id ? row.message : null,
+        })),
     };
   }
 
@@ -685,23 +689,43 @@ export class ProjectsService {
         throw new BadRequestException('Оберіть власну роботу з портфоліо.');
     }
     const now = new Date();
+    // Відкликану раніше заявку можна подати знову: оновлюємо той самий запис
+    const withdrawn =
+      await this.prisma.client.orm.public.ProjectApplication.where({
+        projectId,
+        freelancerId: user.id,
+        status: 'WITHDRAWN',
+      }).first();
     try {
-      const application =
-        await this.prisma.client.orm.public.ProjectApplication.create({
-          id: randomUUID(),
-          projectId,
-          freelancerId: user.id,
-          message: data.message,
-          proposedBudget: data.proposedBudget,
-          proposedDays: data.proposedDays,
-          portfolioItemId: data.portfolioItemId ?? null,
-          aiScore: null,
-          aiReason: null,
-          aiRankedAt: null,
-          status: 'PENDING',
-          createdAt: now,
-          updatedAt: now,
-        });
+      const application = withdrawn
+        ? await this.prisma.client.orm.public.ProjectApplication.where({
+            id: withdrawn.id,
+          }).update({
+            message: data.message,
+            proposedBudget: data.proposedBudget,
+            proposedDays: data.proposedDays,
+            portfolioItemId: data.portfolioItemId ?? null,
+            aiScore: null,
+            aiReason: null,
+            aiRankedAt: null,
+            status: 'PENDING',
+            updatedAt: now,
+          })
+        : await this.prisma.client.orm.public.ProjectApplication.create({
+            id: randomUUID(),
+            projectId,
+            freelancerId: user.id,
+            message: data.message,
+            proposedBudget: data.proposedBudget,
+            proposedDays: data.proposedDays,
+            portfolioItemId: data.portfolioItemId ?? null,
+            aiScore: null,
+            aiReason: null,
+            aiRankedAt: null,
+            status: 'PENDING',
+            createdAt: now,
+            updatedAt: now,
+          });
       await this.notify(
         project.clientId,
         user.id,
@@ -1022,6 +1046,153 @@ export class ProjectsService {
         );
       throw error;
     }
+  }
+
+  // Фрілансер передумав: заявка на розгляді стає «Відкликано», клієнт отримує сповіщення
+  async withdrawApplication(user: CurrentUser, id: string) {
+    const db = this.prisma.client.orm.public;
+    const application = await db.ProjectApplication.where({ id }).first();
+    if (!application || application.freelancerId !== user.id)
+      throw new NotFoundException('Заявку не знайдено.');
+    if (application.status !== 'PENDING')
+      throw new ConflictException(
+        'Відкликати можна лише заявку, яку ще не розглянули.',
+      );
+    const updated = await db.ProjectApplication.where({ id }).update({
+      status: 'WITHDRAWN',
+      updatedAt: new Date(),
+    });
+    const project = await db.Project.where({
+      id: application.projectId,
+    }).first();
+    if (project)
+      await this.notify(
+        project.clientId,
+        user.id,
+        'APPLICATION_WITHDRAWN',
+        'Фрілансер відкликав заявку.',
+        project.id,
+      );
+    await this.logActivity(
+      user.id,
+      application.projectId,
+      'APPLICATION_WITHDRAWN',
+      'Фрілансер відкликав заявку.',
+    );
+    return updated;
+  }
+
+  // Фрілансер оцінює клієнта після завершення спільного проєкту
+  async createClientReview(
+    user: CurrentUser,
+    projectId: string,
+    data: CreateClientReviewDto,
+  ) {
+    if (user.role !== 'FREELANCER')
+      throw new ForbiddenException('Відгук про клієнта залишає фрілансер.');
+    const db = this.prisma.client.orm.public;
+    const project = await db.Project.where({ id: projectId }).first();
+    if (!project) throw new NotFoundException('Проєкт не знайдено.');
+    const member = await db.ProjectMember.where({
+      projectId,
+      userId: user.id,
+    }).first();
+    if (!member)
+      throw new ForbiddenException('Ви не працювали над цим проєктом.');
+    if (project.status !== 'COMPLETED')
+      throw new ConflictException(
+        'Відгук можна залишити після завершення проєкту.',
+      );
+    try {
+      return await db.ClientReview.create({
+        id: randomUUID(),
+        projectId,
+        clientId: project.clientId,
+        freelancerId: user.id,
+        rating: data.rating,
+        comment: data.comment || null,
+        createdAt: new Date(),
+      });
+    } catch (error) {
+      if (hasDatabaseCode(error, '23505'))
+        throw new ConflictException(
+          'Ви вже залишили відгук про цього клієнта.',
+        );
+      throw error;
+    }
+  }
+
+  // Публічний профіль клієнта: проєкти, наймання виконавців і відгуки фрілансерів
+  async clientProfile(_user: CurrentUser, id: string) {
+    const db = this.prisma.client.orm.public;
+    const client = await db.User.where({ id })
+      .select('id', 'name', 'role', 'avatarUrl', 'createdAt')
+      .first();
+    if (!client || client.role !== 'CLIENT')
+      throw new NotFoundException('Клієнта не знайдено.');
+    const projects = (
+      await db.Project.where({ clientId: id })
+        .orderBy((project) => project.createdAt.desc())
+        .all()
+    ).filter(
+      (project) =>
+        project.status !== 'MODERATION' && project.status !== 'REJECTED',
+    );
+    const ids = projects.map((project) => project.id);
+    const reviews = await db.ClientReview.where({ clientId: id })
+      .orderBy((review) => review.createdAt.desc())
+      .all();
+    const hired = ids.length
+      ? await db.ProjectApplication.where((row) => row.projectId.in(ids))
+          .where({ status: 'ACCEPTED' })
+          .all()
+      : [];
+    const authorIds = [
+      ...new Set(reviews.map((review) => review.freelancerId)),
+    ];
+    const authors = authorIds.length
+      ? await db.User.where((row) => row.id.in(authorIds))
+          .select('id', 'name', 'avatarUrl')
+          .all()
+      : [];
+    const titles = new Map(
+      projects.map((project) => [project.id, project.title]),
+    );
+    const count = (status: string) =>
+      projects.filter((project) => project.status === status).length;
+    return {
+      ...client,
+      projectsTotal: projects.length,
+      completedProjects: count('COMPLETED'),
+      activeProjects: count('ACTIVE'),
+      hiredFreelancers: new Set(hired.map((row) => row.freelancerId)).size,
+      averageRating: reviews.length
+        ? Math.round(
+            (reviews.reduce((sum, review) => sum + review.rating, 0) /
+              reviews.length) *
+              10,
+          ) / 10
+        : null,
+      reviewCount: reviews.length,
+      reviews: reviews.map((review) => ({
+        ...review,
+        freelancer:
+          authors.find((person) => person.id === review.freelancerId) ?? null,
+        project: {
+          id: review.projectId,
+          title: titles.get(review.projectId) ?? null,
+        },
+      })),
+      openProjects: projects
+        .filter((project) => this.isHiring(project))
+        .map(({ id, title, budgetMin, budgetMax, deadline }) => ({
+          id,
+          title,
+          budgetMin,
+          budgetMax,
+          deadline,
+        })),
+    };
   }
 
   logActivity(

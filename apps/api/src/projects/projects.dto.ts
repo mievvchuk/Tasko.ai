@@ -209,6 +209,25 @@ export class CreateApplicationDto {
   portfolioItemId?: string;
 }
 
+// Відгук фрілансера про клієнта: оцінка 1–5 і коментар за бажанням
+export class CreateClientReviewDto {
+  @ApiProperty({ minimum: 1, maximum: 5 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating: number;
+
+  @ApiPropertyOptional({ maxLength: 2000 })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(0, 2000)
+  comment?: string;
+}
+
 export class CreateFreelancerReviewDto {
   @ApiProperty({ format: 'uuid' })
   @IsUUID()

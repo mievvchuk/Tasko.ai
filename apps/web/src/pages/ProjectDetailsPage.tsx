@@ -4,6 +4,7 @@ import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { LoadError } from "../components/LoadError";
 import { ReviewForm } from "../components/ReviewForm";
+import { ProjectStages } from "../components/ProjectStages";
 import { TaskSearchFilters } from "../components/TaskSearchFilters";
 import { AddProjectMember } from "../components/AddProjectMember";
 import { formatDate, parsePage } from "../format";
@@ -192,7 +193,14 @@ export function ProjectDetailsPage() {
           )}
         </div>
       )}
+      <ProjectStages status={project.status} hiringOpen={project.hiringOpen} />
       <nav className="project-links" aria-label={tr("Розділи проєкту")}>
+        {user?.role === "FREELANCER" && (
+          <Link to={`/clients/${project.clientId}`}>
+            <i className="bi bi-person-badge" aria-hidden="true"></i>
+            {tr("Профіль клієнта")}
+          </Link>
+        )}
         <Link to={`/tasks?project=${id}`}>
           <i className="bi bi-list-check" aria-hidden="true"></i>
           {tr("Усі завдання")}
@@ -487,6 +495,15 @@ export function ProjectDetailsPage() {
                     ? tr(roleNames[member.user.role])
                     : tr("Учасник")}
                 </span>
+                {/* Фрілансер оцінює клієнта у своєму рядку команди */}
+                {project.status === "COMPLETED" &&
+                  user?.role === "FREELANCER" &&
+                  member.user?.id === user.id && (
+                    <ReviewForm
+                      projectId={project.id}
+                      freelancerName={tr("клієнта")}
+                    />
+                  )}
                 {project.status === "COMPLETED" &&
                   project.clientId === user?.id &&
                   member.user && (

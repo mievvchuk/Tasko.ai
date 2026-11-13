@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'32f0bb3ec8d3d2716d3b68b650116c0fda5d6b3a477498ecc39c013f6a8b3139'>;
+  StorageHashBase<'1d24cef48f5655f451b9203f4bead44538d7f677abe3f5be85ee4ea6f0a8af02'>;
 export type ExecutionHash =
-  ExecutionHashBase<'e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06'>;
+  ExecutionHashBase<'ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -266,6 +266,15 @@ export type FieldOutputTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
     };
+    readonly ClientReview: {
+      readonly clientId: CodecTypes['pg/text@1']['output'];
+      readonly comment: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly freelancerId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly projectId: CodecTypes['pg/text@1']['output'];
+      readonly rating: CodecTypes['pg/int4@1']['output'];
+    };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -492,6 +501,15 @@ export type FieldInputTypes = {
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
+    };
+    readonly ClientReview: {
+      readonly clientId: CodecTypes['pg/text@1']['input'];
+      readonly comment: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly freelancerId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly projectId: CodecTypes['pg/text@1']['input'];
+      readonly rating: CodecTypes['pg/int4@1']['input'];
     };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['input'] | null;
@@ -720,6 +738,15 @@ export type StorageColumnTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
     };
+    readonly ClientReview: {
+      readonly clientId: CodecTypes['pg/text@1']['output'];
+      readonly comment: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+      readonly freelancerId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly projectId: CodecTypes['pg/text@1']['output'];
+      readonly rating: CodecTypes['pg/int4@1']['output'];
+    };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -946,6 +973,15 @@ export type StorageColumnInputTypes = {
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
+    };
+    readonly ClientReview: {
+      readonly clientId: CodecTypes['pg/text@1']['input'];
+      readonly comment: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
+      readonly freelancerId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly projectId: CodecTypes['pg/text@1']['input'];
+      readonly rating: CodecTypes['pg/int4@1']['input'];
     };
     readonly Complaint: {
       readonly adminNote: CodecTypes['pg/text@1']['input'] | null;
@@ -1184,6 +1220,19 @@ export namespace Models {
     tasks: public_Task[];
     readonly [RelationKeys]?: 'project' | 'tasks';
   };
+  export type public_ClientReview = {
+    clientId: CodecTypes['pg/text@1']['output'];
+    comment: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
+    freelancerId: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    projectId: CodecTypes['pg/text@1']['output'];
+    rating: CodecTypes['pg/int4@1']['output'];
+    client: public_User;
+    freelancer: public_User;
+    project: public_Project;
+    readonly [RelationKeys]?: 'client' | 'freelancer' | 'project';
+  };
   export type public_Complaint = {
     adminNote: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -1319,6 +1368,7 @@ export namespace Models {
     boardColumns: public_BoardColumn[];
     category: public_ProjectCategory | null;
     client: public_User;
+    clientReviews: public_ClientReview[];
     complaints: public_Complaint[];
     favorites: public_FavoriteProject[];
     freelancerReviews: public_FreelancerReview[];
@@ -1335,6 +1385,7 @@ export namespace Models {
       | 'boardColumns'
       | 'category'
       | 'client'
+      | 'clientReviews'
       | 'complaints'
       | 'favorites'
       | 'freelancerReviews'
@@ -1465,7 +1516,9 @@ export namespace Models {
     portfolioItems: public_PortfolioItem[];
     projectApplications: public_ProjectApplication[];
     projectMembers: public_ProjectMember[];
+    reviewsAboutClient: public_ClientReview[];
     reviewsGiven: public_WorkSubmission[];
+    reviewsOfClients: public_ClientReview[];
     sentMessages: public_Message[];
     submittedWork: public_WorkSubmission[];
     readonly [RelationKeys]?:
@@ -1484,7 +1537,9 @@ export namespace Models {
       | 'portfolioItems'
       | 'projectApplications'
       | 'projectMembers'
+      | 'reviewsAboutClient'
       | 'reviewsGiven'
+      | 'reviewsOfClients'
       | 'sentMessages'
       | 'submittedWork';
   };
@@ -1511,6 +1566,7 @@ export declare const models: {
     ApplicationMessage: Models.public_ApplicationMessage;
     AuthSession: Models.public_AuthSession;
     BoardColumn: Models.public_BoardColumn;
+    ClientReview: Models.public_ClientReview;
     Complaint: Models.public_Complaint;
     FavoriteProject: Models.public_FavoriteProject;
     FileAttachment: Models.public_FileAttachment;
@@ -1830,6 +1886,113 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Project';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ClientReview: {
+              columns: {
+                readonly clientId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly comment: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly freelancerId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly projectId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly rating: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['projectId', 'freelancerId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'ClientReview_clientId_idx_153a9a49';
+                  readonly prefix: 'ClientReview_clientId_idx';
+                  readonly columns: readonly ['clientId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ClientReview_freelancerId_idx_c8137280';
+                  readonly prefix: 'ClientReview_freelancerId_idx';
+                  readonly columns: readonly ['freelancerId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'ClientReview_projectId_idx_a96e4d92';
+                  readonly prefix: 'ClientReview_projectId_idx';
+                  readonly columns: readonly ['projectId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ClientReview';
+                    readonly columns: readonly ['projectId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Project';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ClientReview';
+                    readonly columns: readonly ['clientId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ClientReview';
+                    readonly columns: readonly ['freelancerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -3644,6 +3807,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BoardColumn';
     };
+    readonly ClientReview: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ClientReview';
+    };
     readonly Complaint: { readonly namespace: 'public' & NamespaceId; readonly model: 'Complaint' };
     readonly FavoriteProject: {
       readonly namespace: 'public' & NamespaceId;
@@ -3957,6 +4124,86 @@ type ContractBase = Omit<
                 readonly projectId: { readonly column: 'projectId' };
                 readonly status: { readonly column: 'status' };
                 readonly title: { readonly column: 'title' };
+              };
+            };
+          };
+          readonly ClientReview: {
+            readonly fields: {
+              readonly clientId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly comment: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                };
+              };
+              readonly freelancerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly projectId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly rating: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly client: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['clientId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly freelancer: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['freelancerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly project: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Project';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['projectId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ClientReview';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly clientId: { readonly column: 'clientId' };
+                readonly comment: { readonly column: 'comment' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly freelancerId: { readonly column: 'freelancerId' };
+                readonly id: { readonly column: 'id' };
+                readonly projectId: { readonly column: 'projectId' };
+                readonly rating: { readonly column: 'rating' };
               };
             };
           };
@@ -4787,6 +5034,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['clientId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly clientReviews: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ClientReview';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['projectId'];
                 };
               };
               readonly complaints: {
@@ -5697,6 +5955,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
+              readonly reviewsAboutClient: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ClientReview';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['clientId'];
+                };
+              };
               readonly reviewsGiven: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5706,6 +5975,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['reviewerId'];
+                };
+              };
+              readonly reviewsOfClients: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ClientReview';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['freelancerId'];
                 };
               };
               readonly sentMessages: {
@@ -5897,6 +6177,14 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'BoardColumn';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'ClientReview';
             readonly field: 'id';
             readonly namespace: 'public';
           };
