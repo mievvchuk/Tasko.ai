@@ -6018,3 +6018,61 @@ a.stat-card:hover .progress-ring > span {
     opacity: 0;
   }
 }
+
+/* Фінальний блок вітальної: два шляхи за ролями замість однієї кнопки */
+.welcome-cta-roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 720px;
+}
+.cta-role {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  text-decoration: none !important;
+  transition:
+    transform var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out);
+}
+.cta-role:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent-text);
+}
+.cta-role > .bi:first-child {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-input);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-size: var(--text-lg);
+}
+.cta-role span {
+  display: grid;
+  flex: 1;
+  gap: var(--space-3xs);
+}
+.cta-role small {
+  color: var(--color-ink-2);
+}
+.cta-role > .bi-arrow-right {
+  color: var(--color-accent-text);
+  transition: transform var(--dur-micro) var(--ease-out);
+}
+.cta-role:hover > .bi-arrow-right {
+  transform: translateX(3px);
+}
+@media (max-width: 40rem) {
+  .welcome-cta-roles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
