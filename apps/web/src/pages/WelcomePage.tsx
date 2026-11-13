@@ -321,14 +321,32 @@ export function WelcomePage() {
           ))}
         </section>
 
+        {/* Фінал сторінки: не дублює «Реєстрацію» в шапці, а одразу веде з потрібною роллю */}
         <section className="welcome-cta">
-          <h2>{tr("Готові спробувати?")}</h2>
+          <h2>{tr("Перший проєкт — за 5 хвилин")}</h2>
           <p>
-            {tr("Створіть акаунт клієнта або фрілансера — це займе хвилину.")}
+            {tr(
+              "Оберіть, як ви працюватимете, — роль уже буде вибрана при реєстрації.",
+            )}
           </p>
-          <Link className="button primary" to="/register">
-            {tr("Створити акаунт")}
-          </Link>
+          <div className="welcome-cta-roles">
+            <Link className="cta-role" to="/register?role=CLIENT">
+              <i className="bi bi-briefcase" aria-hidden="true"></i>
+              <span>
+                <strong>{tr("Я замовник")}</strong>
+                <small>{tr("Опублікувати проєкт і обрати виконавця")}</small>
+              </span>
+              <i className="bi bi-arrow-right" aria-hidden="true"></i>
+            </Link>
+            <Link className="cta-role" to="/register?role=FREELANCER">
+              <i className="bi bi-laptop" aria-hidden="true"></i>
+              <span>
+                <strong>{tr("Я фрілансер")}</strong>
+                <small>{tr("Знайти роботу на біржі й подати заявку")}</small>
+              </span>
+              <i className="bi bi-arrow-right" aria-hidden="true"></i>
+            </Link>
+          </div>
         </section>
       </main>
 

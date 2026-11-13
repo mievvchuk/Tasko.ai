@@ -1118,6 +1118,15 @@ export const enText: Record<string, string> = {
   "Моя завантаженість": "My workload",
   "Ваші незавершені завдання, пріоритети та строки.":
     "Your unfinished tasks, priorities and deadlines.",
+  "Перший проєкт — за 5 хвилин": "Your first project in 5 minutes",
+  "Оберіть, як ви працюватимете, — роль уже буде вибрана при реєстрації.":
+    "Choose how you'll work — the role is preselected when you sign up.",
+  "Я замовник": "I'm a client",
+  "Опублікувати проєкт і обрати виконавця":
+    "Publish a project and pick a freelancer",
+  "Я фрілансер": "I'm a freelancer",
+  "Знайти роботу на біржі й подати заявку":
+    "Find work on the marketplace and apply",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",
