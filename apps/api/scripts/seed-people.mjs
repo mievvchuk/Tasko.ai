@@ -1,6 +1,6 @@
 // Наповнює сайт через його HTTP API: клієнти з проєктами й етапами, фрілансери з профілями,
 // портфоліо та заявками на відкриті проєкти. Фото профілів генеруються тут же (PNG-силует).
-// Запуск: API_URL=https://tasko-ai-api.onrender.com node scripts/seed-people.mjs
+// Запуск: API_URL=https://tasko-ai-api-w83l.onrender.com node scripts/seed-people.mjs
 // Повторний запуск безпечний: наявні акаунти лише входять, проєкти й заявки не дублюються.
 import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';

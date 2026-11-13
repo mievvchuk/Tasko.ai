@@ -50,7 +50,7 @@ services:
       - key: NODE_VERSION
         value: "24"
       - key: VITE_API_URL
-        value: https://tasko-ai-api.onrender.com
+        value: https://tasko-ai-api-w83l.onrender.com
       # Сайт довідки (сервіс tasko-ai-docs нижче); кнопка «?» і пункт «Довідка» ведуть туди
       - key: VITE_DOCS_URL
         value: https://tasko-ai-docs.onrender.com
