@@ -11,6 +11,7 @@ import { applicationStatusNames } from "../types";
 import type { ApplicationStatus, MarketplaceProject } from "../types";
 import { useLanguage } from "../i18n";
 import { budgetText } from "./MarketplacePage";
+import { ProjectStages } from "../components/ProjectStages";
 
 interface Bid {
   id: string;
@@ -57,6 +58,20 @@ export function MarketplaceProjectPage() {
       setFormError(errorMessage(error));
     } finally {
       setSubmitting(false);
+    }
+  }
+  // Фрілансер передумав: заявка стає «Відкликано», її можна подати знову
+  async function withdraw() {
+    if (!data?.applicationId) return;
+    if (!window.confirm(tr("Відкликати заявку? Клієнт отримає сповіщення.")))
+      return;
+    try {
+      await request(`/applications/${data.applicationId}/withdraw`, {
+        method: "POST",
+      });
+      refresh();
+    } catch (error) {
+      setFormError(errorMessage(error));
     }
   }
   async function toggleFavorite() {
@@ -120,7 +135,8 @@ export function MarketplaceProjectPage() {
 
             <section className="data-panel market-apply">
               <h2>{tr("Ваша заявка")}</h2>
-              {data.applicationStatus ? (
+              {data.applicationStatus &&
+              data.applicationStatus !== "WITHDRAWN" ? (
                 <p className="application-notice">
                   {tr("Статус заявки:")}{" "}
                   {tr(applicationStatusNames[data.applicationStatus])}
@@ -133,6 +149,16 @@ export function MarketplaceProjectPage() {
                           : tr("Переписка з клієнтом")}
                       </Link>
                     </>
+                  )}
+                  {data.applicationStatus === "PENDING" && (
+                    <button
+                      type="button"
+                      className="button secondary danger-outline withdraw-button"
+                      onClick={() => void withdraw()}
+                    >
+                      <i className="bi bi-x-circle" aria-hidden="true"></i>
+                      {tr("Відкликати заявку")}
+                    </button>
                   )}
                 </p>
               ) : (
@@ -251,12 +277,21 @@ export function MarketplaceProjectPage() {
               <dt>{tr("Категорія")}</dt>
               <dd>{data.category?.name || tr("Без категорії")}</dd>
               <dt>{tr("Клієнт")}</dt>
-              <dd>{data.client?.name || tr("Клієнт")}</dd>
+              <dd>
+                {data.client ? (
+                  <Link to={`/clients/${data.client.id}`}>
+                    {data.client.name}
+                  </Link>
+                ) : (
+                  tr("Клієнт")
+                )}
+              </dd>
               <dt>{tr("Опубліковано")}</dt>
               <dd>{formatDate(data.createdAt)}</dd>
               <dt>{tr("Заявок")}</dt>
               <dd>{data.bids.length}</dd>
             </dl>
+            <ProjectStages status={data.status} />
           </aside>
         </div>
       )}

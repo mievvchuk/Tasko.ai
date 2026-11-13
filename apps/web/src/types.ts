@@ -101,7 +101,8 @@ export interface ModerationProject extends Project {
   previousRejection: string | null;
 }
 
-export type ApplicationStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type ApplicationStatus =
+  "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
 
 export interface MarketplaceProject {
   id: string;
@@ -234,6 +235,7 @@ export const applicationStatusNames: Record<ApplicationStatus, string> = {
   PENDING: "Очікує рішення",
   ACCEPTED: "Прийнято",
   REJECTED: "Відхилено",
+  WITHDRAWN: "Відкликано",
 };
 
 export interface DashboardSummary {

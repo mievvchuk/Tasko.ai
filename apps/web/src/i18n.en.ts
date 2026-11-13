@@ -1127,6 +1127,31 @@ export const enText: Record<string, string> = {
   "Я фрілансер": "I'm a freelancer",
   "Знайти роботу на біржі й подати заявку":
     "Find work on the marketplace and apply",
+  Відкликано: "Withdrawn",
+  "Відкликати заявку": "Withdraw application",
+  "Відкликати заявку? Клієнт отримає сповіщення.":
+    "Withdraw the application? The client will be notified.",
+  Публікація: "Publication",
+  "Приймання заявок": "Accepting applications",
+  Виконання: "In progress",
+  Зараз: "Now",
+  "ще добирають команду": "still hiring",
+  "Профіль клієнта": "Client profile",
+  клієнта: "the client",
+  "Показники клієнта": "Client stats",
+  "Опубліковано проєктів": "Published projects",
+  "Проєкти, що пройшли модерацію.": "Projects that passed moderation.",
+  "Роботу прийнято, проєкт закрито.": "Work accepted, project closed.",
+  "Проєкти, над якими зараз працюють виконавці.":
+    "Projects freelancers are working on now.",
+  "Найнято фрілансерів": "Freelancers hired",
+  "Скільки різних виконавців клієнт обирав.":
+    "How many different freelancers the client has hired.",
+  "Зараз клієнт не шукає виконавців.": "The client is not hiring right now.",
+  "Відгуки фрілансерів": "Freelancer reviews",
+  "Фрілансер не додав коментар.": "The freelancer left no comment.",
+  "Фрілансери оцінюють клієнта після завершення спільного проєкту.":
+    "Freelancers rate the client after a completed project.",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",

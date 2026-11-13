@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import type { PrismaService } from '../../../src/prisma/prisma.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
-import { ProjectsService, validateBudget } from '../../../src/projects/projects.service.js';
+import {
+  ProjectsService,
+  validateBudget,
+} from '../../../src/projects/projects.service.js';
 
 describe('validateBudget', () => {
   it('rejects a maximum below the minimum', () => {
@@ -127,20 +130,28 @@ describe('ProjectsService', () => {
     const project = { id: 'project-id', clientId: client.id, status: 'ACTIVE' };
     db.Project = { where: vi.fn(() => chain(project)) };
     db.ProjectMember = { where: vi.fn(() => chain(null)) };
-    await expect(service.requireAccess(admin, project.id)).resolves.toBe(project);
-    await expect(service.requireOwner(admin, project.id)).rejects.toBeInstanceOf(
-      ForbiddenException,
+    await expect(service.requireAccess(admin, project.id)).resolves.toBe(
+      project,
     );
-    await expect(service.requireOwner(client, project.id)).resolves.toBe(project);
+    await expect(
+      service.requireOwner(admin, project.id),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.requireOwner(client, project.id)).resolves.toBe(
+      project,
+    );
   });
 
   it('lists only own projects for an admin in the workspace, all from the admin panel', async () => {
-    const everyone = [{ id: 'project-id', clientId: client.id, status: 'ACTIVE' }];
+    const everyone = [
+      { id: 'project-id', clientId: client.id, status: 'ACTIVE' },
+    ];
     // Без where (all=true) — усі проєкти; where({ clientId: admin }) — жодного
     db.Project = { ...chain(everyone), where: vi.fn(() => chain([])) };
     db.ProjectMember = { where: vi.fn(() => chain([])) };
     db.Task = { where: vi.fn(() => chain([])) };
-    await expect(service.list(admin, { page: 1, limit: 20 })).resolves.toEqual([]);
+    await expect(service.list(admin, { page: 1, limit: 20 })).resolves.toEqual(
+      [],
+    );
     const all = await service.list(admin, { page: 1, limit: 20, all: true });
     expect(all.map((p) => p.id)).toEqual(['project-id']);
   });
@@ -293,6 +304,7 @@ describe('ProjectsService', () => {
       where: vi.fn(() => chain({ id: 'project-id', status: 'PLANNING' })),
     };
     db.ProjectApplication = {
+      where: vi.fn(() => chain(null)),
       create: vi.fn(async (data: unknown) => data),
     };
     const application = await service.apply(freelancer, 'project-id', {
@@ -319,7 +331,10 @@ describe('ProjectsService', () => {
         chain({ id: 'project-id', status: 'PLANNING', budgetMax: 5000 }),
       ),
     };
-    db.ProjectApplication = { create: vi.fn(async (data: unknown) => data) };
+    db.ProjectApplication = {
+      where: vi.fn(() => chain(null)),
+      create: vi.fn(async (data: unknown) => data),
+    };
     const bid = (proposedBudget: number) =>
       service.apply(freelancer, 'project-id', {
         message: 'I can complete this work.',
@@ -328,6 +343,94 @@ describe('ProjectsService', () => {
       });
     await expect(bid(5001)).rejects.toBeInstanceOf(BadRequestException);
     await expect(bid(5000)).resolves.toMatchObject({ proposedBudget: 5000 });
+  });
+
+  it('lets a freelancer withdraw only their own pending application', async () => {
+    const pending = {
+      id: 'app-1',
+      projectId: 'project-id',
+      freelancerId: freelancer.id,
+      status: 'PENDING',
+    };
+    db.ProjectApplication = { where: vi.fn(() => chain(pending)) };
+    db.Project = {
+      where: vi.fn(() => chain({ id: 'project-id', clientId: client.id })),
+    };
+    await expect(
+      service.withdrawApplication(freelancer, 'app-1'),
+    ).resolves.toMatchObject({ status: 'WITHDRAWN' });
+    expect(db.Notification.create).toHaveBeenCalled();
+    await expect(
+      service.withdrawApplication({ ...freelancer, id: 'other' }, 'app-1'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    db.ProjectApplication = {
+      where: vi.fn(() => chain({ ...pending, status: 'ACCEPTED' })),
+    };
+    await expect(
+      service.withdrawApplication(freelancer, 'app-1'),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('reopens a withdrawn application instead of creating a duplicate', async () => {
+    db.Project = {
+      where: vi.fn(() => chain({ id: 'project-id', status: 'PLANNING' })),
+    };
+    const create = vi.fn();
+    db.ProjectApplication = {
+      where: vi.fn(() => chain({ id: 'app-1', status: 'WITHDRAWN' })),
+      create,
+    };
+    const again = await service.apply(freelancer, 'project-id', {
+      message: 'I changed my mind and can do it.',
+      proposedBudget: 3000,
+      proposedDays: 5,
+    });
+    expect(again).toMatchObject({ status: 'PENDING', proposedBudget: 3000 });
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('builds a public client profile with freelancer reviews', async () => {
+    // first() — сам клієнт, all() — автори відгуків
+    const users = {
+      ...chain({ id: client.id, name: 'Client', role: 'CLIENT' }),
+      all: vi.fn(async () => [{ id: 'f1', name: 'Freelancer' }]),
+    };
+    users.select = vi.fn(() => users);
+    db.User = { where: vi.fn(() => users) };
+    db.Project = {
+      where: vi.fn(() =>
+        chain([
+          { id: 'p1', title: 'Done', status: 'COMPLETED', hiringOpen: false },
+          { id: 'p2', title: 'Open', status: 'PLANNING', hiringOpen: true },
+          {
+            id: 'p3',
+            title: 'Hidden',
+            status: 'MODERATION',
+            hiringOpen: false,
+          },
+        ]),
+      ),
+    };
+    const reviews = chain([
+      { projectId: 'p1', freelancerId: 'f1', rating: 5 },
+      { projectId: 'p1', freelancerId: 'f2', rating: 4 },
+    ]);
+    db.ClientReview = { where: vi.fn(() => reviews) };
+    const rows = chain([{ freelancerId: 'f1' }, { freelancerId: 'f2' }]);
+    const accepted: typeof rows & { where: () => unknown } = {
+      ...rows,
+      where: vi.fn(() => accepted),
+    };
+    db.ProjectApplication = { where: vi.fn(() => accepted) };
+    const profile = await service.clientProfile(freelancer, client.id);
+    expect(profile).toMatchObject({
+      projectsTotal: 2,
+      completedProjects: 1,
+      hiredFreelancers: 2,
+      averageRating: 4.5,
+      reviewCount: 2,
+    });
+    expect(profile.openProjects.map((row) => row.id)).toEqual(['p2']);
   });
 
   it('shows marketplace projects with the current application status', async () => {
@@ -340,7 +443,12 @@ describe('ProjectsService', () => {
     const projects = [
       project,
       { id: 'hiring', clientId: client.id, status: 'ACTIVE', hiringOpen: true },
-      { id: 'closed', clientId: client.id, status: 'ACTIVE', hiringOpen: false },
+      {
+        id: 'closed',
+        clientId: client.id,
+        status: 'ACTIVE',
+        hiringOpen: false,
+      },
       { id: 'draft', clientId: client.id, status: 'MODERATION' },
     ];
     db.Project = { orderBy: vi.fn(() => chain(projects)) };
@@ -468,9 +576,9 @@ describe('ProjectsService', () => {
         }),
       ),
     };
-    await expect(
-      service.acceptApplication(client, 'a'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.acceptApplication(client, 'a')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('closes hiring and rejects the remaining applications', async () => {

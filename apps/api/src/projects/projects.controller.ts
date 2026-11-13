@@ -18,6 +18,7 @@ import type { CurrentUser } from '../users/users.service.js';
 import {
   AddMemberDto,
   CreateApplicationDto,
+  CreateClientReviewDto,
   CreateFreelancerReviewDto,
   CreateProjectDto,
   MarketplaceQueryDto,
@@ -154,6 +155,31 @@ export class ProjectsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.projects.freelancerProfile(user, id);
+  }
+
+  @Post('applications/:id/withdraw')
+  withdrawApplication(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projects.withdrawApplication(user, id);
+  }
+
+  @Post('projects/:id/client-review')
+  createClientReview(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: CreateClientReviewDto,
+  ) {
+    return this.projects.createClientReview(user, id, data);
+  }
+
+  @Get('clients/:id/profile')
+  clientProfile(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.projects.clientProfile(user, id);
   }
 
   @Post('projects/:id/reviews')

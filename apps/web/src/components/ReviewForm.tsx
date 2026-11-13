@@ -9,7 +9,8 @@ export function ReviewForm({
   freelancerName,
 }: {
   projectId: string;
-  freelancerId: string;
+  // Без freelancerId — відгук фрілансера про клієнта проєкту
+  freelancerId?: string;
   freelancerName: string;
 }) {
   const { tr } = useLanguage();
@@ -25,10 +26,17 @@ export function ReviewForm({
     setSubmitting(true);
     setError("");
     try {
-      await request(`/projects/${projectId}/reviews`, {
-        method: "POST",
-        body: { freelancerId, rating: Number(rating), comment },
-      });
+      await request(
+        freelancerId
+          ? `/projects/${projectId}/reviews`
+          : `/projects/${projectId}/client-review`,
+        {
+          method: "POST",
+          body: freelancerId
+            ? { freelancerId, rating: Number(rating), comment }
+            : { rating: Number(rating), comment },
+        },
+      );
       setSaved(true);
       setOpen(false);
     } catch (error) {
