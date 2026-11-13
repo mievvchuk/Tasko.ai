@@ -203,8 +203,9 @@ export function WelcomePage() {
                 </button>
               ))}
             </div>
-            <h1>{tr(current.title)}</h1>
-            <p>{tr(current.text)}</p>
+            {/* key перезапускає анімацію появи тексту при кожному перемиканні */}
+            <h1 key={`title-${audience}`}>{tr(current.title)}</h1>
+            <p key={`text-${audience}`}>{tr(current.text)}</p>
             <div className="welcome-actions">
               <Link
                 className="button hero-primary"
@@ -220,7 +221,7 @@ export function WelcomePage() {
           </div>
 
           {/* Ілюстрація: замовнику — спрощена дошка з підказкою Ади, фрілансеру — біржа */}
-          <div className="welcome-preview" aria-hidden="true">
+          <div className="welcome-preview" aria-hidden="true" key={audience}>
             {audience === "CLIENT" ? (
               <div className="preview-board">
                 {[

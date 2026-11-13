@@ -1094,6 +1094,12 @@ export const enText: Record<string, string> = {
   Ще: "More",
   Чати: "Chats",
   проєктів: "projects",
+  "Історія скарг": "Complaint history",
+  "Ваші скарги та відповіді адміністратора":
+    "Your complaints and admin replies",
+  "Скарг ще немає": "No complaints yet",
+  "Надіслані скарги з'являться тут разом зі статусом розгляду.":
+    "Submitted complaints appear here with their review status.",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
   "База знань": "Knowledge base",
