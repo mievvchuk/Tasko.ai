@@ -34,6 +34,12 @@ export class UpdateUserDto {
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsIn(['ACTIVE', 'BLOCKED'])
   status?: string;
+  // Обов'язкова при блокуванні: користувач побачить її при спробі входу
+  @ApiPropertyOptional({ minLength: 3, maxLength: 500 })
+  @ValidateIf((object: UpdateUserDto) => object.status === 'BLOCKED')
+  @IsString({ message: 'Вкажіть причину блокування.' })
+  @Length(3, 500, { message: 'Причина блокування — від 3 до 500 символів.' })
+  blockReason?: string;
 }
 
 // Новий окремий акаунт адміністратора; дію підтверджує паролем (і кодом 2FA, якщо увімкнено) той, хто створює

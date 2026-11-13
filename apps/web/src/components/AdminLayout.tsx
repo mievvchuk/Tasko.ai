@@ -1,8 +1,7 @@
 import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
 import { useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router";
+import { Link, NavLink, Outlet } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "./ThemePicker";
@@ -12,11 +11,10 @@ import { AccountMenu } from "./AccountMenu";
 
 // Окремий каркас адмінки за зразком shadcn-admin (MIT, © Sat Naing,
 // https://github.com/satnaing/shadcn-admin): бічна панель розділів і верхня панель
-// з пошуком, темою та акаунтом. Перенесено лише структуру, стилі — власні (app.css).
+// з темою та акаунтом (пошук і фільтри — на сторінці «Користувачі»). Перенесено лише структуру, стилі — власні (app.css).
 export function AdminLayout() {
   const { user } = useAuth();
   const { t, tr } = useLanguage();
-  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const close = () => setMenuOpen(false);
   const queue = useApi<unknown[]>(
@@ -43,20 +41,6 @@ export function AdminLayout() {
         </section>
       </main>
     );
-
-  // Пошук у верхній панелі веде до таблиці користувачів
-  function search(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const value = String(new FormData(event.currentTarget).get("q") ?? "")
-      .trim()
-      .slice(0, 100);
-    navigate(
-      value
-        ? `/admin/users?${new URLSearchParams({ search: value })}`
-        : "/admin/users",
-    );
-    close();
-  }
 
   const sections = [
     ["/admin", "bi-speedometer2", tr("Огляд")],
@@ -119,16 +103,6 @@ export function AdminLayout() {
           >
             <i className="bi bi-layout-sidebar" aria-hidden="true"></i>
           </button>
-          <form className="admin-search" role="search" onSubmit={search}>
-            <i className="bi bi-search" aria-hidden="true"></i>
-            <input
-              name="q"
-              type="search"
-              maxLength={100}
-              aria-label={tr("Пошук користувача")}
-              placeholder={tr("Пошук користувачів…")}
-            />
-          </form>
           <div className="admin-header-actions">
             <ThemePicker />
             <LanguageButton />

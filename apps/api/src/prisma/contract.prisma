@@ -12,6 +12,8 @@ model User {
   googleId  String?  @unique
   role      String   // CLIENT, FREELANCER, ADMIN
   status    String   // ACTIVE, BLOCKED
+  // Причина блокування від адміністратора — користувач бачить її при спробі входу
+  blockReason String?
   twoFactorSecret String?
   twoFactorEnabled Boolean @default(false)
   // Лише посилання на фото профілю (напр. /avatars/<uuid>.jpg); сам файл — у storage/avatars

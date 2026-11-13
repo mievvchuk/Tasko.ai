@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'660f56e8093469123a97f93917eee71c2984bb62f03cf1b0c1cd13847e9751f9'>;
+  StorageHashBase<'32f0bb3ec8d3d2716d3b68b650116c0fda5d6b3a477498ecc39c013f6a8b3139'>;
 export type ExecutionHash =
   ExecutionHashBase<'e8475d521f8ad44213ea047e6b8deaba19f0257c6bef956cddb1da5f229f6d06'>;
 export type ProfileHash =
@@ -433,6 +433,7 @@ export type FieldOutputTypes = {
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly blockReason: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly googleId: CodecTypes['pg/text@1']['output'] | null;
@@ -659,6 +660,7 @@ export type FieldInputTypes = {
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly blockReason: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly googleId: CodecTypes['pg/text@1']['input'] | null;
@@ -885,6 +887,7 @@ export type StorageColumnTypes = {
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly blockReason: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly googleId: CodecTypes['pg/text@1']['output'] | null;
@@ -1111,6 +1114,7 @@ export type StorageColumnInputTypes = {
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly blockReason: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-date@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly googleId: CodecTypes['pg/text@1']['input'] | null;
@@ -1434,6 +1438,7 @@ export namespace Models {
   };
   export type public_User = {
     avatarUrl: CodecTypes['pg/text@1']['output'] | null;
+    blockReason: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-date@1']['output'];
     email: CodecTypes['pg/text@1']['output'];
     googleId: CodecTypes['pg/text@1']['output'] | null;
@@ -3402,6 +3407,12 @@ type ContractBase = Omit<
             readonly User: {
               columns: {
                 readonly avatarUrl: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly blockReason: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -5467,6 +5478,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly blockReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -5721,6 +5736,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly avatarUrl: { readonly column: 'avatarUrl' };
+                readonly blockReason: { readonly column: 'blockReason' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly email: { readonly column: 'email' };
                 readonly googleId: { readonly column: 'googleId' };

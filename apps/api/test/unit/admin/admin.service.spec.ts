@@ -475,3 +475,45 @@ describe('AdminService project moderation', () => {
     expect(update).not.toHaveBeenCalled();
   });
 });
+
+describe('AdminService blocking', () => {
+  const admin = { id: 'admin-id', role: 'ADMIN' } as CurrentUser;
+  const freelancer = { id: 'f1', role: 'FREELANCER', status: 'ACTIVE' };
+  const updates: Record<string, unknown>[] = [];
+  const User = {
+    where: () => ({
+      first: async () => freelancer,
+      select: () => ({
+        update: async (row: Record<string, unknown>) => {
+          updates.push(row);
+          return row;
+        },
+      }),
+    }),
+  };
+  const tx = { orm: { public: { User } } };
+  const service = new AdminService(
+    {
+      client: {
+        orm: { public: { User } },
+        transaction: (run: (t: typeof tx) => unknown) => run(tx),
+      },
+    } as unknown as PrismaService,
+    {} as ProjectsService,
+  );
+
+  it('needs a reason to block, keeps it trimmed and clears it on unblock', async () => {
+    await expect(
+      service.update(admin, 'f1', { status: 'BLOCKED', blockReason: '  ' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await service.update(admin, 'f1', {
+      status: 'BLOCKED',
+      blockReason: '  Спам у заявках ',
+    });
+    await service.update(admin, 'f1', { status: 'ACTIVE' });
+    expect(updates.map((row) => row.blockReason)).toEqual([
+      'Спам у заявках',
+      null,
+    ]);
+  });
+});

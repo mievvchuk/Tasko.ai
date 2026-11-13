@@ -32,7 +32,7 @@ import { useLanguage } from "../i18n";
 export function AdminPage() {
   const { tr } = useLanguage();
   const report = useApi<AdminReport>("/admin/report");
-  const latest = useApi<AdminUser[]>("/admin/users?limit=5");
+  const latest = useApi<AdminUser[]>("/admin/users?limit=12");
 
   return (
     <>

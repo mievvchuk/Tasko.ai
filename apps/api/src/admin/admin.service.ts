@@ -130,7 +130,16 @@ export class AdminService {
       );
     }
     return query
-      .select('id', 'name', 'email', 'role', 'status', 'avatarUrl', 'createdAt')
+      .select(
+        'id',
+        'name',
+        'email',
+        'role',
+        'status',
+        'blockReason',
+        'avatarUrl',
+        'createdAt',
+      )
       .orderBy((person) => person.createdAt.desc())
       .offset((filters.page - 1) * filters.limit)
       .limit(filters.limit)
@@ -146,6 +155,8 @@ export class AdminService {
         throw new ForbiddenException(
           'Роль і статус адміністраторів у панелі змінити не можна.',
         );
+      if (data.status === 'BLOCKED' && !data.blockReason?.trim())
+        throw new BadRequestException('Вкажіть причину блокування.');
       if (data.role && data.role !== target.role) {
         const owned = await tx.orm.public.Project.where({ clientId: id }).all();
         const memberships = await tx.orm.public.ProjectMember.where({
@@ -157,10 +168,16 @@ export class AdminService {
           );
       }
       return tx.orm.public.User.where({ id })
-        .select('id', 'name', 'email', 'role', 'status')
+        .select('id', 'name', 'email', 'role', 'status', 'blockReason')
         .update({
           ...(data.role ? { role: data.role } : {}),
-          ...(data.status ? { status: data.status } : {}),
+          ...(data.status
+            ? {
+                status: data.status,
+                blockReason:
+                  data.status === 'BLOCKED' ? data.blockReason!.trim() : null,
+              }
+            : {}),
           updatedAt: new Date(),
         });
     });
@@ -543,10 +560,19 @@ export class AdminService {
       },
       { label: 'Скарги: вирішено', value: report.complaintsByStatus.RESOLVED },
       { label: 'Скарги: відхилено', value: report.complaintsByStatus.REJECTED },
-      { label: 'Замовлення: у роботі', value: report.ordersByStatus.IN_PROGRESS },
+      {
+        label: 'Замовлення: у роботі',
+        value: report.ordersByStatus.IN_PROGRESS,
+      },
       { label: 'Замовлення: виконано', value: report.ordersByStatus.COMPLETED },
-      { label: 'Замовлення: скасовано', value: report.ordersByStatus.CANCELLED },
-      { label: 'Сума виконаних замовлень', value: report.completedOrdersAmount },
+      {
+        label: 'Замовлення: скасовано',
+        value: report.ordersByStatus.CANCELLED,
+      },
+      {
+        label: 'Сума виконаних замовлень',
+        value: report.completedOrdersAmount,
+      },
       { label: 'Нові користувачі за 7 днів', value: report.week.users },
       { label: 'Нові проєкти за 7 днів', value: report.week.projects },
       { label: 'Нові заявки за 7 днів', value: report.week.applications },

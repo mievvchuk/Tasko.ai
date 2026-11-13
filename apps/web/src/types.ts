@@ -347,6 +347,7 @@ export const submissionStatusNames = {
 
 export interface AdminUser extends User {
   status: "ACTIVE" | "BLOCKED";
+  blockReason?: string | null;
   createdAt: string;
 }
 

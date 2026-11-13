@@ -6,7 +6,7 @@ import type { FormEvent, ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { downloadApiFile, request, errorMessage } from "../api";
 import { formatDate, parsePage } from "../format";
-import { BarChart, ColumnChart } from "../components/Charts";
+import { ColumnChart, DonutChart } from "../components/Charts";
 import {
   AverageRow,
   BreakdownTable,
@@ -14,7 +14,7 @@ import {
   LineChart,
 } from "../components/Metrics";
 import type { KpiItem } from "../components/Metrics";
-import type { ChartTone } from "../components/Charts";
+import type { ChartItem, ChartTone } from "../components/Charts";
 import {
   complaintStatusNames,
   projectStatusNames,
@@ -339,6 +339,7 @@ export function UserDialog({
 }) {
   const { tr } = useLanguage();
   const [role, setRole] = useState<UserRole>(user.role);
+  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const blocked = user.status === "BLOCKED";
@@ -358,7 +359,9 @@ export function UserDialog({
               body:
                 action === "role"
                   ? { role }
-                  : { status: blocked ? "ACTIVE" : "BLOCKED" },
+                  : blocked
+                    ? { status: "ACTIVE" }
+                    : { status: "BLOCKED", blockReason: reason.trim() },
             },
       );
       onSaved();
@@ -416,6 +419,28 @@ export function UserDialog({
                   "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.",
                 )}
           </p>
+        )}
+        {action === "status" && blocked && user.blockReason && (
+          <p className="form-note">
+            {tr("Причина блокування:")} {user.blockReason}
+          </p>
+        )}
+        {/* Причину побачить сам користувач у повідомленні при спробі входу */}
+        {action === "status" && !blocked && (
+          <label>
+            {tr("Причина блокування")}
+            <textarea
+              required
+              minLength={3}
+              maxLength={500}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder={tr("Наприклад: спам у заявках, образи в чаті")}
+            />
+            <small className="field-hint">
+              {tr("Користувач побачить цю причину, коли спробує увійти.")}
+            </small>
+          </label>
         )}
         {action === "delete" && (
           <p className="notice error admin-delete-confirm">
@@ -882,7 +907,9 @@ export function AdminStats({ report }: { report: AdminReport }) {
       value: report.ordersByStatus.CANCELLED,
       icon: "bi-x-circle",
       tone: "danger",
-      hint: tr("Угоди, які зірвалися або закриті разом зі скасованим проєктом."),
+      hint: tr(
+        "Угоди, які зірвалися або закриті разом зі скасованим проєктом.",
+      ),
     },
     {
       label: tr("Сума виконаних, грн"),
@@ -931,7 +958,9 @@ export function AdminStats({ report }: { report: AdminReport }) {
   const days = report.week.days;
   return (
     <div className="admin-overview-stack">
-      <KpiGrid items={main} label={tr("Основні показники")} />
+      <div className="admin-main-kpis">
+        <KpiGrid items={main} label={tr("Основні показники")} />
+      </div>
       <AverageRow
         items={[
           {
@@ -1039,35 +1068,50 @@ export function GrowthChart({ report }: { report: AdminReport }) {
   );
 }
 
+// Кругові діаграми: частки видно одразу; нульові статуси не захаращують легенду
 export function BreakdownCharts({ report }: { report: AdminReport }) {
   const { tr } = useLanguage();
+  const nonZero = (items: ChartItem[]) => items.filter((item) => item.value);
+  const total = (items: ChartItem[]) =>
+    String(items.reduce((sum, item) => sum + item.value, 0));
+  const roles = (Object.keys(roleNames) as UserRole[]).map((role) => ({
+    label: tr(roleNames[role]),
+    value: report.usersByRole[role],
+    tone: roleTones[role],
+  }));
+  const projects = (Object.keys(projectStatusNames) as ProjectStatus[]).map(
+    (status) => ({
+      label: tr(projectStatusNames[status]),
+      value: report.projectsByStatus[status],
+      tone: projectTones[status],
+    }),
+  );
+  const tasks = (Object.keys(taskStatusNames) as TaskStatus[]).map(
+    (status) => ({
+      label: tr(taskStatusNames[status]),
+      value: report.tasksByStatus[status],
+      tone: taskTones[status],
+    }),
+  );
   return (
     <div className="admin-breakdown">
-      <BarChart
+      <DonutChart
         title={tr("Користувачі за ролями")}
-        items={(Object.keys(roleNames) as UserRole[]).map((role) => ({
-          label: tr(roleNames[role]),
-          value: report.usersByRole[role],
-          tone: roleTones[role],
-        }))}
+        items={nonZero(roles)}
+        center={total(roles)}
+        centerNote={tr("користувачів")}
       />
-      <BarChart
+      <DonutChart
         title={tr("Проєкти за статусами")}
-        items={(Object.keys(projectStatusNames) as ProjectStatus[]).map(
-          (status) => ({
-            label: tr(projectStatusNames[status]),
-            value: report.projectsByStatus[status],
-            tone: projectTones[status],
-          }),
-        )}
+        items={nonZero(projects)}
+        center={total(projects)}
+        centerNote={tr("проєктів")}
       />
-      <BarChart
+      <DonutChart
         title={tr("Завдання за статусами")}
-        items={(Object.keys(taskStatusNames) as TaskStatus[]).map((status) => ({
-          label: tr(taskStatusNames[status]),
-          value: report.tasksByStatus[status],
-          tone: taskTones[status],
-        }))}
+        items={nonZero(tasks)}
+        center={total(tasks)}
+        centerNote={tr("завдань")}
       />
     </div>
   );

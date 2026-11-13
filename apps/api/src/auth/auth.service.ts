@@ -293,9 +293,13 @@ export class AuthService {
     return { message: 'Двофакторний вхід вимкнено.' };
   }
 
-  private ensureActive(user: { status: string }) {
+  private ensureActive(user: { status: string; blockReason?: string | null }) {
     if (user.status !== 'ACTIVE')
-      throw new ForbiddenException('Обліковий запис заблоковано.');
+      throw new ForbiddenException(
+        user.blockReason
+          ? `Обліковий запис заблоковано. Причина: ${user.blockReason}`
+          : 'Обліковий запис заблоковано.',
+      );
   }
 
   private isExpired(expiresAt: Date, now = Date.now()) {

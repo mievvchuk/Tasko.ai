@@ -536,32 +536,84 @@ export class ProjectsService {
           }).all()
         : [];
     return Promise.all(
-      projects.map(async (project) => ({
-        ...project,
-        client: await this.prisma.client.orm.public.User.where({
-          id: project.clientId,
-        })
-          .select('id', 'name')
-          .first(),
-        applicationStatus:
-          applications.find(
-            (application) => application.projectId === project.id,
-          )?.status ?? null,
-        applicationId:
-          applications.find(
-            (application) => application.projectId === project.id,
-          )?.id ?? null,
-        isFavorite: favorites.some(
-          (favorite) => favorite.projectId === project.id,
-        ),
-        skills: await this.getProjectSkills(project.id),
-        category: project.categoryId
-          ? await this.prisma.client.orm.public.ProjectCategory.where({
-              id: project.categoryId,
-            }).first()
-          : null,
-      })),
+      projects.map((project) =>
+        this.marketplaceCard(project, applications, favorites),
+      ),
     );
+  }
+
+  // Картка проєкту біржі: клієнт, навички, категорія і стан заявки поточного фрілансера
+  private async marketplaceCard(
+    project: { id: string; clientId: string; categoryId: string | null },
+    applications: { id: string; projectId: string; status: string }[],
+    favorites: { projectId: string }[],
+  ) {
+    const own = applications.find(
+      (application) => application.projectId === project.id,
+    );
+    return {
+      ...project,
+      client: await this.prisma.client.orm.public.User.where({
+        id: project.clientId,
+      })
+        .select('id', 'name')
+        .first(),
+      applicationStatus: own?.status ?? null,
+      applicationId: own?.id ?? null,
+      isFavorite: favorites.some(
+        (favorite) => favorite.projectId === project.id,
+      ),
+      skills: await this.getProjectSkills(project.id),
+      category: project.categoryId
+        ? await this.prisma.client.orm.public.ProjectCategory.where({
+            id: project.categoryId,
+          }).first()
+        : null,
+    };
+  }
+
+  // Сторінка проєкту на біржі: опис і ставки інших фрілансерів (ціна й строк, як на біржах).
+  // Текст чужої заявки бачить лише клієнт, тож тут він лише у власній заявці.
+  async marketplaceProject(user: CurrentUser, projectId: string) {
+    if (user.role === 'CLIENT')
+      throw new ForbiddenException(
+        'Біржа проєктів призначена для фрілансерів.',
+      );
+    const db = this.prisma.client.orm.public;
+    const project = await db.Project.where({ id: projectId }).first();
+    if (!project || !this.isHiring(project))
+      throw new NotFoundException('Проєкту немає на біржі.');
+    const applications = await db.ProjectApplication.where({ projectId })
+      .orderBy((application) => application.createdAt.asc())
+      .all();
+    const favorites =
+      user.role === 'FREELANCER'
+        ? await db.FavoriteProject.where({ userId: user.id }).all()
+        : [];
+    const ids = [...new Set(applications.map((row) => row.freelancerId))];
+    const people = ids.length
+      ? await db.User.where((row) => row.id.in(ids))
+          .select('id', 'name', 'avatarUrl')
+          .all()
+      : [];
+    return {
+      ...(await this.marketplaceCard(
+        project,
+        applications.filter((row) => row.freelancerId === user.id),
+        favorites,
+      )),
+      bids: applications.map((row) => ({
+        id: row.id,
+        freelancer:
+          people.find((person) => person.id === row.freelancerId) ?? null,
+        proposedBudget: row.proposedBudget,
+        proposedDays: row.proposedDays,
+        status: row.status,
+        createdAt: row.createdAt,
+        mine: row.freelancerId === user.id,
+        message: row.freelancerId === user.id ? row.message : null,
+      })),
+    };
   }
 
   private async getProjectSkills(projectId: string) {
@@ -621,6 +673,10 @@ export class ProjectsService {
     if (!project) throw new NotFoundException('Проєкт не знайдено.');
     if (!this.isHiring(project))
       throw new ConflictException('Прийом заявок уже завершено.');
+    if (project.budgetMax !== null && data.proposedBudget > project.budgetMax)
+      throw new BadRequestException(
+        `Ставка не може перевищувати максимальний бюджет клієнта — ${project.budgetMax} грн.`,
+      );
     if (data.portfolioItemId) {
       const portfolio = await this.prisma.client.orm.public.PortfolioItem.where(
         { id: data.portfolioItemId },

@@ -8,8 +8,11 @@ import "bootstrap-icons/font/bootstrap-icons.css"; // іконки: лише ш�
 import "./app.css";
 import "./metrics.css";
 import { applyTheme, storedTheme } from "./theme";
+import { installFieldErrors } from "./fieldErrors";
+import { i18n } from "./i18n.en";
 
 applyTheme(storedTheme());
+installFieldErrors(() => (i18n.language === "en" ? "en" : "uk"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
