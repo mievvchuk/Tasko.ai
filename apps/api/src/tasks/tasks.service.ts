@@ -344,10 +344,13 @@ export class TasksService {
           position: item.position,
           status: item.status,
         });
+        // Здані й прийняті завдання лишаються у своєму статусі: перевірку не обходимо
         if (before.get(item.id) !== item.status)
           for (const task of await tx.orm.public.Task.where({
             columnId: item.id,
-          }).all())
+          })
+            .where((task) => task.status.in(['TODO', 'IN_PROGRESS']))
+            .all())
             await tx.orm.public.Task.where({ id: task.id }).update({
               status: item.status,
               updatedAt: new Date(),

@@ -177,3 +177,53 @@ describe('kanban column order', () => {
     ).toThrow(BadRequestException);
   });
 });
+
+describe('kanban column reorder', () => {
+  it('keeps submitted and accepted tasks when their column changes stage', async () => {
+    const owner = { id: 'client-id', role: 'CLIENT' } as CurrentUser;
+    const columns = [{ id: 'col', projectId: 'p', position: 2100, status: 'IN_PROGRESS' }];
+    const tasksInColumn = ['IN_PROGRESS', 'REVIEW', 'DONE'].map((status) => ({
+      id: status,
+      columnId: 'col',
+      status,
+    }));
+    const updated: string[] = [];
+    const Task = {
+      // Фільтр статусу застосовується справжнім предикатом, тож без нього тест упаде
+      where: ({ id }: { id?: string }) => ({
+        where: (pick: (row: { status: { in: (list: string[]) => string[] } }) => string[]) => {
+          const allowed = pick({ status: { in: (list) => list } });
+          return {
+            all: async () => tasksInColumn.filter((task) => allowed.includes(task.status)),
+          };
+        },
+        update: async () => {
+          updated.push(id!);
+          return {};
+        },
+      }),
+    };
+    const BoardColumn = {
+      where: () => ({
+        all: async () => columns,
+        orderBy: () => ({ all: async () => columns }),
+        update: async () => ({}),
+      }),
+    };
+    const orm = { public: { Task, BoardColumn } };
+    const projects = {
+      prisma: {
+        client: {
+          orm,
+          transaction: async (run: (tx: { orm: typeof orm }) => Promise<unknown>) => run({ orm }),
+        },
+      },
+      requireOwner: vi.fn(async () => ({ status: 'ACTIVE' })),
+      requireAccess: vi.fn(async () => ({ status: 'ACTIVE' })),
+      ensureWritable: vi.fn(),
+    };
+    const service = new TasksService(projects as unknown as ProjectsService);
+    await service.reorderColumns(owner, 'p', ['col', 'TODO', 'IN_PROGRESS']);
+    expect(updated).toEqual(['IN_PROGRESS']);
+  });
+});

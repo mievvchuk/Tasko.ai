@@ -38,3 +38,27 @@ describe('email request rate limit', () => {
     expect(() => guard.canActivate(context)).toThrow();
   });
 });
+
+describe('login rate limit', () => {
+  const contextFor = (email: string) =>
+    ({
+      getHandler: () => function login() {},
+      switchToHttp: () => ({
+        getRequest: () => ({ ip: '10.0.0.1', body: { email } }),
+        getResponse: () => ({ setHeader: vi.fn() }),
+      }),
+    }) as unknown as ExecutionContext;
+
+  it('stops password guessing on one account but lets others from the same IP sign in', () => {
+    const guard = new AuthEmailRateLimitGuard();
+    for (let i = 0; i < 10; i++) guard.canActivate(contextFor('victim@example.com'));
+    expect(() => guard.canActivate(contextFor(' Victim@Example.com '))).toThrow();
+    expect(guard.canActivate(contextFor('classmate@example.com'))).toBe(true);
+  });
+
+  it('caps all attempts from one IP', () => {
+    const guard = new AuthEmailRateLimitGuard();
+    for (let i = 0; i < 100; i++) guard.canActivate(contextFor(`u${i}@example.com`));
+    expect(() => guard.canActivate(contextFor('new@example.com'))).toThrow();
+  });
+});
