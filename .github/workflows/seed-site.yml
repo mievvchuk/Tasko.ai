@@ -1,0 +1,29 @@
+name: Seed site content
+
+# Наповнює сайт клієнтами, фрілансерами, проєктами й портфоліо через API.
+# Запуск вручну: Actions → Seed site content → Run workflow.
+# Секрети репозиторію: SEED_PASSWORD (обовʼязковий, спільний пароль створених акаунтів),
+# SEED_ADMIN_EMAIL і SEED_ADMIN_PASSWORD (необовʼязкові: схвалити створені проєкти на модерації).
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Адреса API
+        required: true
+        default: https://tasko-ai-api-w83l.onrender.com
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      # Скрипт використовує лише вбудовані модулі Node, npm install не потрібен
+      - run: node apps/api/scripts/seed-people.mjs
+        env:
+          API_URL: ${{ inputs.api_url }}
+          SEED_PASSWORD: ${{ secrets.SEED_PASSWORD }}
+          SEED_ADMIN_EMAIL: ${{ secrets.SEED_ADMIN_EMAIL }}
+          SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
