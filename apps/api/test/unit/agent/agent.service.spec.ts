@@ -4,7 +4,19 @@ import {
   AgentService,
   compactSchema,
   offTopicAnswer,
+  roleRules,
 } from '../../../src/agent/agent.service.js';
+
+describe('Ada per role', () => {
+  it('describes only the abilities of the current role', () => {
+    expect(roleRules.CLIENT).toContain('чернетку нового проєкту');
+    expect(roleRules.FREELANCER).not.toContain('чернетку нового проєкту');
+    expect(roleRules.FREELANCER).toContain('відкриті проєкти на біржі');
+    expect(roleRules.ADMIN).toContain('статистику платформи');
+    expect(roleRules.CLIENT).not.toContain('статистику платформи');
+    expect(offTopicAnswer('FREELANCER')).not.toContain('заявки фрілансерів');
+  });
+});
 import { McpService, withoutNoise } from '../../../src/agent/mcp.service.js';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { AnalyticsService } from '../../../src/analytics/analytics.service.js';
@@ -304,10 +316,11 @@ describe('AI through MCP', () => {
       projects as unknown as ProjectsService,
     ).chat(user, 'Напиши рецепт борщу');
     expect(result).toEqual({
-      answer: offTopicAnswer,
+      answer: offTopicAnswer(user.role),
       toolsUsed: [],
       offTopic: true,
     });
+    expect(result.answer).toMatch(/^Вибачте, але з цим я не можу допомогти/);
     expect(fetchMock).toHaveBeenCalledOnce();
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.tools).toBeUndefined();

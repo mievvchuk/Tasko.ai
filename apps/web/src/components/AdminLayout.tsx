@@ -8,6 +8,8 @@ import { ThemePicker } from "./ThemePicker";
 import { useApi } from "../useApi";
 import { moderationChangedEvent } from "../api";
 import { AccountMenu } from "./AccountMenu";
+import { AiChatProvider, aiName } from "../aiChat";
+import { AiDrawer } from "./AiDrawer";
 
 // Окремий каркас адмінки за зразком shadcn-admin (MIT, © Sat Naing,
 // https://github.com/satnaing/shadcn-admin): бічна панель розділів і верхня панель
@@ -48,6 +50,7 @@ export function AdminLayout() {
     ["/admin/moderation", "bi-patch-check", tr("Модерація")],
     ["/admin/projects", "bi-folder", tr("Проєкти")],
     ["/admin/complaints", "bi-flag", tr("Скарги")],
+    ["/admin/ai", "bi-stars", tr(aiName)],
   ];
 
   return (
@@ -109,9 +112,13 @@ export function AdminLayout() {
             <AccountMenu />
           </div>
         </header>
-        <main className="admin-content" id="admin-content" tabIndex={-1}>
-          <Outlet />
-        </main>
+        {/* Ада: сторінка «Ада» і плаваюча кнопка на інших розділах ділять одну розмову */}
+        <AiChatProvider>
+          <main className="admin-content" id="admin-content" tabIndex={-1}>
+            <Outlet />
+          </main>
+          <AiDrawer />
+        </AiChatProvider>
       </div>
     </div>
   );

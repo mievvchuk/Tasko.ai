@@ -146,7 +146,6 @@ export const enText: Record<string, string> = {
     "Ask about projects, tasks or deadlines.",
   "Ваше запитання": "Your question",
   "Прикріплені файли": "Attached files",
-  "Поза темою системи": "Off topic",
   "Форматуємо відповідь…": "Formatting the answer…",
   "Спробуйте запитати": "Try asking",
   "Запитання до Ади": "Question for Ada",

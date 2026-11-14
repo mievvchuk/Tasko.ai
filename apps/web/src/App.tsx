@@ -119,6 +119,7 @@ export function App() {
           <Route path="moderation" element={<AdminModerationPage />} />
           <Route path="projects" element={<AdminProjectsPage />} />
           <Route path="complaints" element={<AdminComplaintsPage />} />
+          <Route path="ai" element={<AiAssistantPage />} />
         </Route>
         <Route element={<Layout />}>
           <Route index element={<DashboardPage />} />

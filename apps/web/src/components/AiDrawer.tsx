@@ -35,7 +35,7 @@ export function AiDrawer() {
     if (open) document.getElementById("ai-message-panel")?.focus();
   }, [open, status.data]);
 
-  if (pathname === "/ai") return null;
+  if (pathname === "/ai" || pathname === "/admin/ai") return null;
 
   return (
     <>

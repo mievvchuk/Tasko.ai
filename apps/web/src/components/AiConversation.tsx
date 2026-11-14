@@ -199,6 +199,11 @@ export function AiConversation({
   const fileInput = useRef<HTMLInputElement>(null);
   const inputId = `ai-message-${variant}`;
   const locked = busy || reading || !configured;
+  const unasked = user
+    ? suggestions[user.role]
+        .map((text) => tr(text))
+        .filter((text) => !exchanges.some((item) => item.question === text))
+    : [];
 
   async function ask(question: string) {
     setLocalError("");
@@ -283,9 +288,7 @@ export function AiConversation({
                 <i className="bi bi-stars"></i>
               </span>
               <div className="ai-bubble bot">
-                <h2 className="ai-reply-name">
-                  {item.offTopic ? tr("Поза темою системи") : tr(aiName)}
-                </h2>
+                <h2 className="ai-reply-name">{tr(aiName)}</h2>
                 <Suspense
                   fallback={<p role="status">{tr("Форматуємо відповідь…")}</p>}
                 >
@@ -313,12 +316,21 @@ export function AiConversation({
           </article>
         )}
       </div>
-      {!exchanges.length && !busy && user && configured && (
-        <div className="ai-suggestions">
-          <p className="form-note">{tr("Спробуйте запитати")}</p>
-          {suggestions[user.role]
-            .map((text) => tr(text))
-            .map((text) => (
+      {/* Підказки лишаються й після першого запитання (без уже заданих), щоб було видно, що ще вміє Ада */}
+      {!busy && user && configured && unasked.length > 0 && (
+        <div
+          className={
+            exchanges.length ? "ai-suggestions compact" : "ai-suggestions"
+          }
+          role="group"
+          aria-label={tr("Спробуйте запитати")}
+        >
+          {!exchanges.length && (
+            <p className="form-note" aria-hidden="true">
+              {tr("Спробуйте запитати")}
+            </p>
+          )}
+          {unasked.map((text) => (
               <button
                 key={text}
                 type="button"

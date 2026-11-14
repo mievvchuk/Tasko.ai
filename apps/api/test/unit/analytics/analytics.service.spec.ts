@@ -141,6 +141,14 @@ describe('AnalyticsService', () => {
     expect(result.tasksByStatus).toMatchObject({ TODO: 1, DONE: 1 });
   });
 
+  it('gives an administrator the whole platform, not only their own projects', async () => {
+    const admin = { ...user, id: 'admin-id', role: 'ADMIN' as const };
+    const result = await analytics.deadlines(admin);
+    expect(db.Project.all).toHaveBeenCalled();
+    expect(db.ProjectMember.where).not.toHaveBeenCalled();
+    expect(result[0]).toMatchObject({ id: 'task-1', risk: 'OVERDUE' });
+  });
+
   it('sorts active deadlines and includes their risk', async () => {
     const result = await analytics.deadlines(user);
     expect(result).toHaveLength(1);
