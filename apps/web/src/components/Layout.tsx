@@ -28,7 +28,7 @@ export function Layout() {
   const { user } = useAuth();
   const { t, tr, language } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const notifications = useApi<{
     items: Notification[];
     unreadCount: number;
@@ -59,8 +59,11 @@ export function Layout() {
   if (!user) return null;
   const admin = user.role === "ADMIN";
   // Решта сайту адміністратору не потрібна: його робоче місце — адмін-панель
+  // Посилання на Аду (напр. «Аналіз AI» проєкту) ведуть адміна на її сторінку в адмінці
   if (admin && !adminPages.test(pathname))
-    return <Navigate to="/admin" replace />;
+    return (
+      <Navigate to={pathname === "/ai" ? `/admin/ai${search}` : "/admin"} replace />
+    );
 
   const close = () => setMenuOpen(false);
   const unreadMessages = counts.current.unreadMessages;

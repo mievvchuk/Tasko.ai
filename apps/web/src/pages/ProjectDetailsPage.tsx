@@ -234,12 +234,12 @@ export function ProjectDetailsPage() {
           <i className="bi bi-clock-history" aria-hidden="true"></i>
           {tr("Історія")}
         </Link>
-        {!isAdmin && (
-          <Link to={`/ai?project=${id}&analyze=1`}>
-            <i className="bi bi-graph-up" aria-hidden="true"></i>
-            {tr("Аналіз AI")}
-          </Link>
-        )}
+        <Link
+          to={`${isAdmin ? "/admin/ai" : "/ai"}?project=${id}&analyze=1`}
+        >
+          <i className="bi bi-graph-up" aria-hidden="true"></i>
+          {tr("Аналіз AI")}
+        </Link>
         {canEdit && (
           <Link to={`/projects/${id}/plan`}>
             <i className="bi bi-stars" aria-hidden="true"></i>

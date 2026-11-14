@@ -2668,6 +2668,15 @@ input[type="file"]::file-selector-button:hover {
 .ai-suggestions .form-note {
   flex-basis: 100%;
 }
+/* Після першого запитання підказки займають один рядок над полем і гортаються вбік */
+.ai-suggestions.compact {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: var(--space-2xs);
+}
+.ai-suggestions.compact .ai-chip {
+  flex: none;
+}
 .ai-chip {
   display: inline-flex;
   align-items: center;
