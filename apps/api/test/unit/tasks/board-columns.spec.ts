@@ -31,7 +31,10 @@ describe('kanban board columns', () => {
     status: string;
   }[] = [];
   const db = {
-    Task: { where: vi.fn(() => ({ first: async () => task, update })) },
+    Task: { where: vi.fn(() => ({ first: async () => task,
+        update,
+        updateAll: async (data: object) => [await update(data)],
+      })) },
     BoardColumn: {
       where: vi.fn(({ id }: { id?: string }) => ({
         first: async () => columns.find((column) => column.id === id),
@@ -187,19 +190,18 @@ describe('kanban column reorder', () => {
       columnId: 'col',
       status,
     }));
-    const updated: string[] = [];
     const Task = {
       // Фільтр статусу застосовується справжнім предикатом, тож без нього тест упаде
-      where: ({ id }: { id?: string }) => ({
+      where: () => ({
         where: (pick: (row: { status: { in: (list: string[]) => string[] } }) => string[]) => {
           const allowed = pick({ status: { in: (list) => list } });
           return {
-            all: async () => tasksInColumn.filter((task) => allowed.includes(task.status)),
+            updateAll: async (data: object) => {
+              for (const task of tasksInColumn)
+                if (allowed.includes(task.status)) Object.assign(task, data);
+              return [];
+            },
           };
-        },
-        update: async () => {
-          updated.push(id!);
-          return {};
         },
       }),
     };
@@ -224,6 +226,10 @@ describe('kanban column reorder', () => {
     };
     const service = new TasksService(projects as unknown as ProjectsService);
     await service.reorderColumns(owner, 'p', ['col', 'TODO', 'IN_PROGRESS']);
-    expect(updated).toEqual(['IN_PROGRESS']);
+    expect(tasksInColumn).toEqual([
+      expect.objectContaining({ id: 'IN_PROGRESS', status: 'TODO', columnId: 'col' }),
+      { id: 'REVIEW', status: 'REVIEW', columnId: null },
+      { id: 'DONE', status: 'DONE', columnId: null },
+    ]);
   });
 });

@@ -7,8 +7,11 @@ import type { AppConfig } from './config/config.js';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  // Render ставить перед API один проксі: справжній IP — з X-Forwarded-For (ліміти спроб, список сеансів)
-  app.set('trust proxy', 1);
+  // Скільки проксі стоїть перед API (на Render — 1): тоді IP береться з X-Forwarded-For.
+  // Без змінної заголовку не довіряємо, інакше клієнт підробить собі IP і обійде ліміти.
+  const proxyHops = Number(process.env.TRUST_PROXY ?? 0);
+  if (Number.isInteger(proxyHops) && proxyHops > 0)
+    app.set('trust proxy', proxyHops);
   setupApp(app);
   await app.listen(app.get<AppConfig>(APP_CONFIG).port);
 }

@@ -376,11 +376,11 @@ export class CollaborationService {
     if (task.status !== 'IN_PROGRESS')
       throw new ConflictException('Здати можна лише завдання у виконанні.');
     return this.client.transaction(async (tx) => {
-      const updated = await tx.orm.public.Task.where({
+      const [updated] = await tx.orm.public.Task.where({
         id: taskId,
         status: 'IN_PROGRESS',
         assigneeId: user.id,
-      }).update({ status: 'REVIEW', updatedAt: new Date() });
+      }).updateAll({ status: 'REVIEW', updatedAt: new Date() });
       if (!updated) throw new ConflictException('Стан завдання вже змінився.');
       const submission = await tx.orm.public.WorkSubmission.create({
         id: randomUUID(),
@@ -404,10 +404,10 @@ export class CollaborationService {
           throw new BadRequestException(
             'Файл недоступний або вже прикріплений до іншої роботи.',
           );
-        const attached = await tx.orm.public.FileAttachment.where({
+        const [attached] = await tx.orm.public.FileAttachment.where({
           id: fileId,
           submissionId: null,
-        }).update({ submissionId: submission.id });
+        }).updateAll({ submissionId: submission.id });
         if (!attached) throw new ConflictException('Файл уже використано.');
       }
       announce(project.clientId);
@@ -445,20 +445,20 @@ export class CollaborationService {
     if (submission.status !== 'SUBMITTED' || task.status !== 'REVIEW')
       throw new ConflictException('Цю роботу вже перевірено.');
     return this.client.transaction(async (tx) => {
-      const reviewed = await tx.orm.public.WorkSubmission.where({
+      const [reviewed] = await tx.orm.public.WorkSubmission.where({
         id,
         status: 'SUBMITTED',
-      }).update({
+      }).updateAll({
         status: data.decision === 'APPROVE' ? 'APPROVED' : 'NEEDS_REVISION',
         feedback: data.feedback,
         reviewerId: user.id,
         reviewedAt: new Date(),
       });
       if (!reviewed) throw new ConflictException('Цю роботу вже перевірено.');
-      const updated = await tx.orm.public.Task.where({
+      const [updated] = await tx.orm.public.Task.where({
         id: task.id,
         status: 'REVIEW',
-      }).update({
+      }).updateAll({
         status: data.decision === 'APPROVE' ? 'DONE' : 'IN_PROGRESS',
         updatedAt: new Date(),
       });

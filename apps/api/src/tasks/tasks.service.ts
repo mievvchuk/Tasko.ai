@@ -199,7 +199,10 @@ export class TasksService {
         'Не можна змінювати виконавця під час виконання.',
       );
     this.checkDeadline(data.deadline, project.deadline);
-    return this.db.Task.where({ id, status: task.status }).update({
+    const [updated] = await this.db.Task.where({
+      id,
+      status: task.status,
+    }).updateAll({
       ...(data.title !== undefined ? { title: data.title } : {}),
       ...(data.description !== undefined
         ? { description: data.description }
@@ -212,6 +215,8 @@ export class TasksService {
         : {}),
       updatedAt: new Date(),
     });
+    if (!updated) throw new ConflictException('Стан завдання вже змінився.');
+    return updated;
   }
 
   async status(
@@ -244,14 +249,15 @@ export class TasksService {
       if (column?.status !== status || column.projectId !== task.projectId)
         throw new BadRequestException('Колонку не знайдено в цьому проєкті.');
     }
-    const updated = await this.db.Task.where({
+    const [updated] = await this.db.Task.where({
       id,
       status: task.status,
-    }).update({
+    }).updateAll({
       status,
       columnId: columnId ?? null,
       updatedAt: new Date(),
     });
+    if (!updated) throw new ConflictException('Стан завдання вже змінився.');
     await this.projects.logActivity(
       user.id,
       task.projectId,
@@ -287,12 +293,26 @@ export class TasksService {
       .sort(compareQueue);
     // Інший фрілансер міг узяти завдання одночасно: беремо наступне в черзі
     for (const task of queue) {
-      const taken = await this.db.Task.where({
+      const [taken] = await this.db.Task.where({
         id: task.id,
         assigneeId: null,
         status: 'TODO',
-      }).update({ assigneeId: user.id, updatedAt: new Date() });
+      }).updateAll({ assigneeId: user.id, updatedAt: new Date() });
       if (!taken) continue;
+      // Паралельний запит того ж фрілансера міг щойно взяти інше завдання: тоді віддаємо це назад
+      const mine = await this.db.Task.where({ projectId, assigneeId: user.id })
+        .where((row) => row.status.in(['TODO', 'IN_PROGRESS']))
+        .all();
+      if (mine.length > 1) {
+        await this.db.Task.where({
+          id: task.id,
+          assigneeId: user.id,
+          status: 'TODO',
+        }).updateAll({ assigneeId: null, updatedAt: new Date() });
+        throw new ConflictException(
+          'Ви вже взяли завдання з черги. Спершу завершіть його.',
+        );
+      }
       await this.projects.logActivity(
         user.id,
         projectId,
@@ -344,17 +364,15 @@ export class TasksService {
           position: item.position,
           status: item.status,
         });
-        // Здані й прийняті завдання лишаються у своєму статусі: перевірку не обходимо
-        if (before.get(item.id) !== item.status)
-          for (const task of await tx.orm.public.Task.where({
-            columnId: item.id,
-          })
-            .where((task) => task.status.in(['TODO', 'IN_PROGRESS']))
-            .all())
-            await tx.orm.public.Task.where({ id: task.id }).update({
-              status: item.status,
-              updatedAt: new Date(),
-            });
+        if (before.get(item.id) === item.status) continue;
+        // Здані й прийняті завдання лишаються у своєму статусі (перевірку не обходимо),
+        // але виходять із колонки, щоб після доопрацювання не зникнути з дошки
+        await tx.orm.public.Task.where({ columnId: item.id })
+          .where((task) => task.status.in(['TODO', 'IN_PROGRESS']))
+          .updateAll({ status: item.status, updatedAt: new Date() });
+        await tx.orm.public.Task.where({ columnId: item.id })
+          .where((task) => task.status.in(['REVIEW', 'DONE']))
+          .updateAll({ columnId: null });
       }
     });
     return this.columns(user, projectId);
@@ -451,9 +469,15 @@ export class TasksService {
             : 'Спочатку завершіть завдання проєкту.',
         );
     }
-    return this.db.Order.where({ id, status: order.status }).update({
+    const [updated] = await this.db.Order.where({
+      id,
+      status: order.status,
+    }).updateAll({
       status,
       updatedAt: new Date(),
     });
+    if (!updated)
+      throw new ConflictException('Статус замовлення вже змінився.');
+    return updated;
   }
 }

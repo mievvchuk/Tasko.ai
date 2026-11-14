@@ -252,8 +252,18 @@ export class ProjectsService {
     await this.ensureCategoryExists(data.categoryId ?? undefined);
 
     const changes = this.buildProjectChanges(data);
-    // Виправлений після відхилення проєкт знову йде на модерацію
-    if (project.status === 'REJECTED') changes.status = 'MODERATION';
+    // Виправлений після відхилення проєкт знову йде на модерацію. Так само опублікований
+    // на біржі: інакше після схвалення текст і бюджет можна замінити на що завгодно.
+    const republished =
+      project.status === 'PLANNING' &&
+      data.status === undefined &&
+      ((data.title !== undefined && data.title !== project.title) ||
+        (data.description !== undefined &&
+          (data.description || null) !== (project.description || null)) ||
+        (data.budgetMin !== undefined && data.budgetMin !== project.budgetMin) ||
+        (data.budgetMax !== undefined && data.budgetMax !== project.budgetMax));
+    if (project.status === 'REJECTED' || republished)
+      changes.status = 'MODERATION';
     const updated = await this.db.Project.where({ id }).update(changes);
     // Закритий проєкт доступний лише для читання, тож відкриті угоди закриваємо разом із ним
     if (data.status === 'COMPLETED' || data.status === 'CANCELLED')
@@ -473,7 +483,8 @@ export class ProjectsService {
       role: 'FREELANCER',
       status: 'ACTIVE',
     })
-      .select('id', 'name', 'email', 'avatarUrl')
+      // Без пошти: каталог бачить будь-який клієнт, а реєстрація відкрита
+      .select('id', 'name', 'avatarUrl')
       .orderBy((person) => person.name.asc())
       .offset((page.page - 1) * page.limit)
       .limit(page.limit)
@@ -784,10 +795,10 @@ export class ProjectsService {
       throw new ConflictException('Цю заявку вже опрацьовано.');
     return this.prisma.client.transaction(async (tx) => {
       // Умовне оновлення: дві одночасні спроби не приймуть заявку двічі
-      const accepted = await tx.orm.public.ProjectApplication.where({
+      const [accepted] = await tx.orm.public.ProjectApplication.where({
         id,
         status: 'PENDING',
-      }).update({ status: 'ACCEPTED', updatedAt: new Date() });
+      }).updateAll({ status: 'ACCEPTED', updatedAt: new Date() });
       if (!accepted) throw new ConflictException('Цю заявку вже опрацьовано.');
       const current = application;
       // Фрілансера могли вже додати до команди вручну
@@ -856,11 +867,11 @@ export class ProjectsService {
       }).first();
     if (!application) throw new NotFoundException('Заявку не знайдено.');
     await this.requireOwner(user, application.projectId);
-    const rejected =
+    const [rejected] =
       await this.prisma.client.orm.public.ProjectApplication.where({
         id,
         status: 'PENDING',
-      }).update({ status: 'REJECTED', updatedAt: new Date() });
+      }).updateAll({ status: 'REJECTED', updatedAt: new Date() });
     if (!rejected) throw new ConflictException('Цю заявку вже опрацьовано.');
     await this.notify(
       application.freelancerId,
@@ -911,7 +922,7 @@ export class ProjectsService {
 
   async freelancerProfile(_user: CurrentUser, id: string) {
     const freelancer = await this.prisma.client.orm.public.User.where({ id })
-      .select('id', 'name', 'email', 'role', 'status', 'avatarUrl', 'createdAt')
+      .select('id', 'name', 'role', 'status', 'avatarUrl', 'createdAt')
       .first();
     if (!freelancer || freelancer.role !== 'FREELANCER')
       throw new NotFoundException('Фрілансера не знайдено.');
@@ -1062,10 +1073,17 @@ export class ProjectsService {
       throw new ConflictException(
         'Відкликати можна лише заявку, яку ще не розглянули.',
       );
-    const updated = await db.ProjectApplication.where({ id }).update({
+    const [updated] = await db.ProjectApplication.where({
+      id,
+      status: 'PENDING',
+    }).updateAll({
       status: 'WITHDRAWN',
       updatedAt: new Date(),
     });
+    if (!updated)
+      throw new ConflictException(
+        'Відкликати можна лише заявку, яку ще не розглянули.',
+      );
     const project = await db.Project.where({
       id: application.projectId,
     }).first();

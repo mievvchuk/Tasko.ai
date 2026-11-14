@@ -21,7 +21,7 @@ export function AddProjectMember({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const directory = useApi<{ id: string; name: string; email: string }[]>(
+  const directory = useApi<{ id: string; name: string }[]>(
     `/directory/freelancers?page=${page}&limit=20`,
   );
   const available =
@@ -78,7 +78,7 @@ export function AddProjectMember({
               <option value="">{tr("Оберіть фрілансера")}</option>
               {available.map((person) => (
                 <option key={person.id} value={person.id}>
-                  {person.name} ({person.email})
+                  {person.name}
                 </option>
               ))}
             </select>
