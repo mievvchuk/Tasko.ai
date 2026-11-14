@@ -106,10 +106,10 @@ export class MilestonesService {
       )
         throw new ForbiddenException('Цей перехід виконує власник проєкту.');
     }
-    const updated = await this.db.ProjectMilestone.where({
+    const [updated] = await this.db.ProjectMilestone.where({
       id,
       status: item.status,
-    }).update({
+    }).updateAll({
       ...(data.title !== undefined ? { title: data.title } : {}),
       ...(data.description !== undefined
         ? { description: data.description || null }
@@ -125,6 +125,7 @@ export class MilestonesService {
         : {}),
       updatedAt: new Date(),
     });
+    if (!updated) throw new ConflictException('Етап уже змінився.');
     await this.projects.logActivity(
       user.id,
       item.projectId,

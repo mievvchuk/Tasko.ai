@@ -46,10 +46,19 @@ describe('taking the next task from the queue', () => {
     Task: {
       where: vi.fn((filter: Record<string, unknown>) => ({
         all: async () => rows,
-        update: async (data: object) => {
+        // Перевірка «чи не взяв фрілансер уже щось паралельно»
+        where: () => ({
+          all: async () =>
+            rows.filter(
+              (row) =>
+                row.assigneeId === filter.assigneeId &&
+                ['TODO', 'IN_PROGRESS'].includes(row.status),
+            ),
+        }),
+        updateAll: async (data: object) => {
           update(filter, data);
           const row = rows.find((item) => item.id === filter.id);
-          return row && row.assigneeId === null ? { ...row, ...data } : null;
+          return row && row.assigneeId === null ? [{ ...row, ...data }] : [];
         },
       })),
     },
@@ -113,7 +122,8 @@ describe('taking the next task from the queue', () => {
         rows[0] = { ...rows[0], assigneeId: 'other' };
         return snapshot;
       },
-      update: async () => null,
+      where: () => ({ all: async () => [] }),
+      updateAll: async () => [],
     }));
     const result = await tasks.takeNext(freelancer, 'project-id');
     expect(result).toMatchObject({ id: 'second' });

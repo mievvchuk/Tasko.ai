@@ -419,6 +419,7 @@ describe('AdminService project moderation', () => {
             status,
           })),
           update,
+          updateAll: async (data: object) => [await update(data)],
         })),
       },
     };

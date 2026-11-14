@@ -198,6 +198,18 @@ export class ComplaintsService {
       throw new ForbiddenException('Адміністратора обмежити не можна.');
     const now = new Date();
     const updated = await this.prisma.client.transaction(async (tx) => {
+      // Спершу закриваємо скаргу: друге одночасне рішення не застосує санкцію ще раз
+      const [decided] = await tx.orm.public.Complaint.where({
+        id,
+        status: 'OPEN',
+      }).updateAll({
+        status: data.status,
+        adminNote: note,
+        action,
+        restrictDays: action === 'RESTRICT' ? data.restrictDays! : null,
+        updatedAt: now,
+      });
+      if (!decided) throw new ConflictException('Скаргу вже розглянуто.');
       const users = tx.orm.public.User;
       if (target && action === 'RESTRICT')
         await users.where({ id: target.id }).update({
@@ -213,13 +225,7 @@ export class ComplaintsService {
           blockReason: note,
           updatedAt: now,
         });
-      return tx.orm.public.Complaint.where({ id, status: 'OPEN' }).update({
-        status: data.status,
-        adminNote: note,
-        action,
-        restrictDays: action === 'RESTRICT' ? data.restrictDays! : null,
-        updatedAt: now,
-      });
+      return decided;
     });
     // Автор скарги дізнається про рішення, порушник — про санкцію і її причину
     await this.projects.notify(

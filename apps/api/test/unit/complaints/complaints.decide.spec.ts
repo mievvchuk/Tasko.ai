@@ -25,9 +25,9 @@ describe('ComplaintsService.decide', () => {
     const complaints = {
       where: () => ({
         first: async () => complaint,
-        update: async (row: Record<string, unknown>) => {
+        updateAll: async (row: Record<string, unknown>) => {
           complaintUpdate = row;
-          return row;
+          return [row];
         },
       }),
     };

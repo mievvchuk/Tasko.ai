@@ -1369,6 +1369,8 @@ export const enText: Record<string, string> = {
     "— after you save it, it goes back to moderation.",
   "Після збереження змін проєкт знову піде на модерацію адміністратору.":
     "After you save the changes, the project goes back to an administrator for moderation.",
+  "Зміна назви, опису чи бюджету знову відправить проєкт на модерацію.":
+    "Changing the title, description or budget sends the project back to moderation.",
   "Проєкт на модерації. Статус можна буде змінити після схвалення адміністратором.":
     "The project is in moderation. You can change its status after an administrator approves it.",
   "Спершу проєкт перевірить адміністратор. Після схвалення він отримає статус «Пошук виконавця» і з'явиться на біржі для фрілансерів.":

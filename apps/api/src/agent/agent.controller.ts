@@ -25,6 +25,7 @@ import { ApplyPlanDto, ChatDto, GeneratePlanDto } from './agent.dto.js';
 import { ProjectPlanningService } from './project-planning.service.js';
 import { AgentService } from './agent.service.js';
 import { McpService } from './mcp.service.js';
+import { AiRateLimitGuard } from './ai-rate-limit.guard.js';
 import type { UploadedFile as UploadedFileData } from '../collaboration/files.service.js';
 import {
   extractAttachments,
@@ -46,7 +47,7 @@ export class AgentController {
   @Get('agent/status') status() {
     return this.agent.status();
   }
-  @Post('agent/chat') @HttpCode(200) chat(
+  @Post('agent/chat') @HttpCode(200) @UseGuards(AiRateLimitGuard) chat(
     @Actor() user: CurrentUser,
     @Body() data: ChatDto,
   ) {
@@ -80,6 +81,7 @@ export class AgentController {
   }
   @Post('projects/:id/applications/ai-rank')
   @HttpCode(200)
+  @UseGuards(AiRateLimitGuard)
   rankApplications(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -88,6 +90,7 @@ export class AgentController {
   }
   @Post('projects/:id/ai-plan')
   @HttpCode(200)
+  @UseGuards(AiRateLimitGuard)
   generatePlan(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,
