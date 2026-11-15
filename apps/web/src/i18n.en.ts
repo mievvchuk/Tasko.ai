@@ -72,6 +72,7 @@ export const enText: Record<string, string> = {
   "Етапи й оплата": "Milestones & payment",
   "Прийнято {0} з {1}": "Accepted {0} of {1}",
   "Оплачено {0} з {1}": "Paid {0} of {1}",
+  "Як пройшла співпраця?": "How did the collaboration go?",
   "Проєкт завершено": "Project completed",
   "Усі завдання й етапи виконано. Оцініть роботу фрілансерів — відгук з'явиться в їхньому профілі.":
     "All tasks and milestones are done. Rate the freelancers — your review will appear on their profile.",

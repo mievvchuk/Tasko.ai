@@ -11,6 +11,7 @@ import { AccountMenu } from "./AccountMenu";
 import { AiChatProvider, aiName } from "../aiChat";
 import { AiDrawer } from "./AiDrawer";
 import { useNotificationCounts } from "../useNotificationCounts";
+import { Toaster } from "./Toaster";
 import { docsUrl } from "../help";
 
 // Сторінки сайту, які адмін відкриває з адмінки, підсвічують свій розділ у меню
@@ -155,6 +156,7 @@ export function AdminLayout() {
           </main>
           <AiDrawer />
         </AiChatProvider>
+        <Toaster />
       </div>
     </div>
   );

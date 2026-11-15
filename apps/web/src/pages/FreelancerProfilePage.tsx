@@ -6,6 +6,7 @@ import { ResourceState } from "../components/ResourceState";
 import { UserAvatar } from "../components/UserAvatar";
 import { formatDate } from "../format";
 import { ratingStars } from "../types";
+import { ReviewItem } from "../components/ReviewItem";
 import type { FreelancerProfile } from "../types";
 import { useApi } from "../useApi";
 
@@ -164,19 +165,19 @@ export function FreelancerProfilePage() {
                 />
                 <ul className="review-list">
                   {data.reviews.map((review) => (
-                    <li key={review.id}>
-                      <div>
-                        <strong className="stars">
-                          {ratingStars(review.rating)}
-                        </strong>
-                        <span>{review.client?.name || tr("Клієнт")}</span>
-                      </div>
-                      <p>{review.comment || tr("Клієнт не додав коментар.")}</p>
-                      <small>
-                        {review.project?.title || tr("Завершений проєкт")} ·{" "}
-                        {formatDate(review.createdAt)}
-                      </small>
-                    </li>
+                    <ReviewItem
+                      key={review.id}
+                      author={review.client}
+                      profilePath="/clients"
+                      fallbackName={tr("Клієнт")}
+                      rating={review.rating}
+                      comment={review.comment}
+                      emptyComment={tr("Клієнт не додав коментар.")}
+                      projectTitle={
+                        review.project?.title || tr("Завершений проєкт")
+                      }
+                      createdAt={review.createdAt}
+                    />
                   ))}
                 </ul>
               </div>

@@ -991,7 +991,7 @@ export class ProjectsService {
         client: await this.prisma.client.orm.public.User.where({
           id: review.clientId,
         })
-          .select('id', 'name')
+          .select('id', 'name', 'avatarUrl')
           .first(),
       })),
     );

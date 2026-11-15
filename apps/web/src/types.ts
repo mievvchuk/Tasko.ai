@@ -135,7 +135,7 @@ export interface FreelancerReview {
   comment: string | null;
   createdAt: string;
   project: { id: string; title: string } | null;
-  client: { id: string; name: string } | null;
+  client: { id: string; name: string; avatarUrl?: string | null } | null;
 }
 
 export interface FreelancerProfile extends User {

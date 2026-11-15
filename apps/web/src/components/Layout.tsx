@@ -5,6 +5,7 @@ import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { useNotificationCounts } from "../useNotificationCounts";
+import { Toaster } from "./Toaster";
 import { docsUrl } from "../help";
 import { ThemePicker } from "./ThemePicker";
 import { AiChatProvider } from "../aiChat";
@@ -185,6 +186,7 @@ function UserLayout() {
         <AiDrawer />
       </AiChatProvider>
       <HelpButton />
+      <Toaster />
       {/* Нижня панель для телефону (як у мобільному UI kit); на комп'ютері схована */}
       <nav className="bottom-nav" aria-label={t("navigation")}>
         <NavLink to="/" end onClick={close}>

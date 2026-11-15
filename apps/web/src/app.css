@@ -1512,6 +1512,32 @@ dd {
 .project-members small {
   color: var(--color-muted);
 }
+/* Відгук про учасника: окремий рядок під ним — оцінка, коментар, кнопки в одну лінію */
+.project-members .review-form {
+  display: grid;
+  flex: 1 0 100%;
+  grid-template-columns: minmax(150px, auto) minmax(0, 1fr) auto;
+  align-items: end;
+  padding-top: var(--space-sm);
+  border-top: 1px dashed var(--color-rule);
+}
+.project-members .review-form > strong,
+.project-members .review-form > .form-error {
+  grid-column: 1 / -1;
+}
+.project-members .review-form textarea {
+  min-height: var(--control);
+  height: var(--control);
+}
+.project-members .review-form .page-actions {
+  flex-wrap: nowrap;
+  margin: 0;
+}
+@media (max-width: 40rem) {
+  .project-members .review-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .member-form,
 .inline-form,
 .review-form {
@@ -1869,6 +1895,32 @@ input[type="file"]::file-selector-button:hover {
 .data-panel > .simple-list,
 .data-panel > .review-list {
   padding: var(--space-2xs) var(--space-lg);
+}
+/* Відгук: фото автора зліва, ім'я з посиланням і зірки над текстом */
+.review-list > .review-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-sm);
+}
+.review-item > div {
+  display: grid;
+  gap: var(--space-2xs);
+}
+.review-item p {
+  margin: 0;
+}
+.review-item small {
+  color: var(--color-muted);
+}
+.review-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.review-item-head a {
+  font-weight: 600;
 }
 /* Зірки й ім'я клієнта у відгуку не злипаються */
 .review-list > li > div:first-child {
@@ -5844,6 +5896,74 @@ tbody tr:nth-child(n + 6) {
   flex: 1 1 320px;
 }
 
+/* Спливаючі сповіщення в правому верхньому куті */
+.toaster {
+  position: fixed;
+  top: calc(var(--space-md) + 56px);
+  right: var(--space-md);
+  z-index: 60;
+  display: grid;
+  gap: var(--space-xs);
+  width: min(360px, calc(100vw - 2 * var(--space-md)));
+  pointer-events: none;
+}
+.toast {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--edge-stock), var(--cast-stock);
+  pointer-events: auto;
+  animation: toast-in 0.2s ease-out;
+}
+.toast > .bi {
+  margin-top: 2px;
+  color: var(--color-accent-text);
+  font-size: 1.1rem;
+}
+.toast > div {
+  display: grid;
+  gap: var(--space-2xs);
+}
+.toast strong {
+  font-size: var(--text-sm);
+}
+.toast p {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+.toast a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.toast-close {
+  padding: var(--space-2xs);
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
+
 /* Банер завершеного проєкту з пропозицією оцінити учасників */
 .completion-panel {
   display: flex;
@@ -6654,6 +6774,26 @@ a.stat-card:hover .progress-ring > span {
 .withdraw-button {
   display: inline-flex;
   margin-top: var(--space-sm);
+}
+/* Горизонтальний степер: кружок і лінія до наступного етапу зверху, підписи під ними */
+@media (min-width: 40.0625rem) {
+  .page-content > .project-stages li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2xs);
+  }
+  .page-content > .project-stages li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--space-2xs) + 9px);
+    left: 22px;
+    right: calc(6px - var(--space-sm));
+    height: 2px;
+    border-radius: 1px;
+    background: var(--color-rule-2);
+  }
+  .page-content > .project-stages .stage-done:not(:last-child)::before {
+    background: var(--data-green);
+  }
 }
 @media (max-width: 40rem) {
   .page-content > .project-stages ol {
