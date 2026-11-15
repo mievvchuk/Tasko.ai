@@ -11,7 +11,13 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:show": "playwright test --headed --reporter=list",
+    "test:e2e:client": "playwright test --reporter=list -g \"client|клієнт\"",
+    "test:e2e:freelancer": "playwright test --reporter=list -g \"freelancer|фрилансер\"",
+    "test:e2e:admin": "playwright test --reporter=list -g \"admin|адмін\""
   },
   "dependencies": {
     "bootstrap-icons": "^1.13.2",
@@ -24,6 +30,7 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
