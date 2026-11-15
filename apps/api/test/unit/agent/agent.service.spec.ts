@@ -265,7 +265,12 @@ describe('AI through MCP', () => {
     await server.connect(serverTransport);
     await client.connect(clientTransport);
     const { tools } = await client.listTools();
-    expect(tools.some((tool) => tool.name === 'draft_project')).toBe(false);
+    const names = tools.map((tool) => tool.name);
+    expect(names).not.toContain('draft_project');
+    // Біржа — фрілансеру; каталог і заявки — лише клієнту
+    expect(names).toContain('search_open_projects');
+    expect(names).not.toContain('list_freelancers');
+    expect(names).not.toContain('list_project_applications');
     await client.close();
     await server.close();
   });
@@ -281,8 +286,13 @@ describe('AI through MCP', () => {
     }
     const asAdmin = await connect('ADMIN');
     const names = (await asAdmin.client.listTools()).tools.map((t) => t.name);
-    expect(names).toEqual(
-      expect.arrayContaining(['search_users', 'platform_report']),
+    expect(names.sort()).toEqual(
+      [
+        'get_freelancer_profile',
+        'list_notifications',
+        'platform_report',
+        'search_users',
+      ].sort(),
     );
     const found = await asAdmin.client.callTool({
       name: 'search_users',
@@ -676,7 +686,7 @@ describe('AI through MCP', () => {
           'list_milestones',
           'list_project_applications',
           'list_notifications',
-          'search_open_projects',
+          'list_freelancers',
         ]),
       );
     } finally {

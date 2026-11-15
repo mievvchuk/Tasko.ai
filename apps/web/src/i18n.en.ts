@@ -38,6 +38,7 @@ export const enText: Record<string, string> = {
   "Перейменувати колонку {0}": "Rename column {0}",
   "Перейменувати колонку": "Rename column",
   "На доопрацювання": "Request changes",
+  "Переглянути роботу": "Review work",
   "Змінити етап завдання {0}": "Change stage of task {0}",
   "Змінити етап…": "Change stage…",
   "Що потрібно виправити": "What needs fixing",
@@ -809,6 +810,7 @@ export const enText: Record<string, string> = {
   "Максимальний бюджет не може бути меншим за мінімальний.":
     "The maximum budget can't be less than the minimum.",
   "Створити проєкт": "Create project",
+  "Відредагувати у формі": "Edit in form",
   "Назва обов’язкова. Дедлайн указується за місцевим часом.":
     "Title is required. The deadline is in local time.",
   "Назва проєкту": "Project title",

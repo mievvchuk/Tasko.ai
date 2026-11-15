@@ -2837,8 +2837,10 @@ input[type="file"]::file-selector-button:hover {
   color: var(--color-muted);
   font-size: var(--text-xs);
 }
-.ai-draft .button {
-  justify-self: start;
+.ai-draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
 }
 .ai-sources {
   display: flex;
@@ -6266,13 +6268,22 @@ a.stat-card:hover .progress-ring > span {
     transform: scaleY(0);
   }
 }
-.status-columns small {
+/* Назви статусів — легендою під стовпцями: під вузьким стовпцем
+   «На доопрацюванні» налазило на сусідні підписи */
+.status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  color: var(--color-ink-2);
   font-size: var(--text-xs);
-  line-height: 1.2;
-  text-align: center;
+  list-style: none;
 }
-.status-columns a:hover small {
-  color: var(--color-accent-text);
+.status-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
 }
 
 /* Повідомлення займають висоту екрана без порожнечі знизу */

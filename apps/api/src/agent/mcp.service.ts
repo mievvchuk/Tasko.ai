@@ -81,148 +81,140 @@ export class McpService {
       page: z.number().int().min(1).max(10000).default(1),
       limit: z.number().int().min(1).max(50).default(20),
     };
-    server.registerTool(
-      'list_projects',
-      {
-        description: 'Проєкти, доступні поточному користувачу.',
-        inputSchema: z.object(pagination).strict(),
-        annotations,
-      },
-      async (page) => result(() => this.projects.list(user, page)),
-    );
-    server.registerTool(
-      'list_tasks',
-      {
-        description:
-          'Доступні завдання зі статусами, пріоритетами та дедлайнами.',
-        inputSchema: z
-          .object({
-            projectId: z.string().uuid().optional(),
-            status: z
-              .enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'])
-              .optional(),
-            ...pagination,
-          })
-          .strict(),
-        annotations,
-      },
-      async (args) =>
-        result(async () => {
-          if (args.projectId)
-            await this.projects.requireAccess(user, args.projectId, false);
-          const tasks = await this.analytics.visibleTasks(user);
-          const titles = new Map(
-            (await this.analytics.visibleProjects(user)).map((project) => [
-              project.id,
-              project.title,
-            ]),
-          );
-          return tasks
-            .filter(
-              (task) =>
-                (!args.projectId || task.projectId === args.projectId) &&
-                (!args.status || task.status === args.status),
-            )
-            .slice((args.page - 1) * args.limit, args.page * args.limit)
-            .map((task) => ({
-              ...task,
-              projectTitle: titles.get(task.projectId) ?? null,
-            }));
-        }),
-    );
-    server.registerTool(
-      'get_project_summary',
-      {
-        description: 'Прогрес проєкту та ризикові завдання.',
-        inputSchema: z.object({ projectId: z.string().uuid() }).strict(),
-        annotations,
-      },
-      async ({ projectId }) =>
-        result(() => this.analytics.summary(user, projectId)),
-    );
-    server.registerTool(
-      'get_upcoming_deadlines',
-      {
-        description: 'Найближчі та прострочені дедлайни доступних завдань.',
-        inputSchema: z.object({}).strict(),
-        annotations,
-      },
-      async () => result(() => this.analytics.deadlines(user)),
-    );
-    server.registerTool(
-      'get_workload',
-      {
-        description: 'Завантаженість виконавців у доступних проєктах.',
-        inputSchema: z.object({}).strict(),
-        annotations,
-      },
-      async () => result(() => this.analytics.workload(user)),
-    );
-    // Нижче — додаткові інструменти. Кожен викликає звичайний сервіс,
-    // тож перевірки ролей і доступу ті самі, що й у REST API.
-    server.registerTool(
-      'get_dashboard',
-      {
-        description:
-          'Загальна статистика користувача: кількість проєктів, завдань за статусами, прострочення.',
-        inputSchema: z.object({}).strict(),
-        annotations,
-      },
-      async () => result(() => this.analytics.dashboard(user)),
-    );
-    server.registerTool(
-      'get_task_details',
-      {
-        description:
-          'Повна інформація про завдання: опис, критерії приймання та здані роботи з коментарями перевірки.',
-        inputSchema: z.object({ taskId: z.string().uuid() }).strict(),
-        annotations,
-      },
-      async ({ taskId }) =>
-        result(async () => ({
-          task: await this.tasks.find(user, taskId),
-          submissions: await this.collaboration.submissions(user, taskId, {
-            page: 1,
-            limit: 10,
+    // Адміністратор не має власних проєктів і не керує ними: проєктні інструменти
+    // (проєкти, завдання, етапи, чат, аналітика) йому не видаються,
+    // стан платформи він бачить через platform_report.
+    if (user.role !== 'ADMIN') {
+      server.registerTool(
+        'list_projects',
+        {
+          description: 'Проєкти, доступні поточному користувачу.',
+          inputSchema: z.object(pagination).strict(),
+          annotations,
+        },
+        async (page) => result(() => this.projects.list(user, page)),
+      );
+      server.registerTool(
+        'list_tasks',
+        {
+          description:
+            'Доступні завдання зі статусами, пріоритетами та дедлайнами.',
+          inputSchema: z
+            .object({
+              projectId: z.string().uuid().optional(),
+              status: z
+                .enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'])
+                .optional(),
+              ...pagination,
+            })
+            .strict(),
+          annotations,
+        },
+        async (args) =>
+          result(async () => {
+            if (args.projectId)
+              await this.projects.requireAccess(user, args.projectId, false);
+            const tasks = await this.analytics.visibleTasks(user);
+            const titles = new Map(
+              (await this.analytics.visibleProjects(user)).map((project) => [
+                project.id,
+                project.title,
+              ]),
+            );
+            return tasks
+              .filter(
+                (task) =>
+                  (!args.projectId || task.projectId === args.projectId) &&
+                  (!args.status || task.status === args.status),
+              )
+              .slice((args.page - 1) * args.limit, args.page * args.limit)
+              .map((task) => ({
+                ...task,
+                projectTitle: titles.get(task.projectId) ?? null,
+              }));
           }),
-        })),
-    );
-    server.registerTool(
-      'list_milestones',
-      {
-        description: 'Етапи проєкту з описами, статусами та порядком.',
-        inputSchema: z.object({ projectId: z.string().uuid() }).strict(),
-        annotations,
-      },
-      async ({ projectId }) =>
-        result(() => this.milestones.list(user, projectId)),
-    );
-    server.registerTool(
-      'list_project_messages',
-      {
-        description:
-          'Останні повідомлення в чаті проєкту (від нових до старих).',
-        inputSchema: z
-          .object({ projectId: z.string().uuid(), ...pagination })
-          .strict(),
-        annotations,
-      },
-      async ({ projectId, ...page }) =>
-        result(() => this.collaboration.messages(user, projectId, page)),
-    );
-    server.registerTool(
-      'list_project_applications',
-      {
-        description:
-          'Заявки фрілансерів на проєкт клієнта: бюджет, строки, AI-оцінка. Лише для власника проєкту.',
-        inputSchema: z
-          .object({ projectId: z.string().uuid(), ...pagination })
-          .strict(),
-        annotations,
-      },
-      async ({ projectId, ...page }) =>
-        result(() => this.projects.applications(user, projectId, page)),
-    );
+      );
+      server.registerTool(
+        'get_project_summary',
+        {
+          description: 'Прогрес проєкту та ризикові завдання.',
+          inputSchema: z.object({ projectId: z.string().uuid() }).strict(),
+          annotations,
+        },
+        async ({ projectId }) =>
+          result(() => this.analytics.summary(user, projectId)),
+      );
+      server.registerTool(
+        'get_upcoming_deadlines',
+        {
+          description: 'Найближчі та прострочені дедлайни доступних завдань.',
+          inputSchema: z.object({}).strict(),
+          annotations,
+        },
+        async () => result(() => this.analytics.deadlines(user)),
+      );
+      server.registerTool(
+        'get_workload',
+        {
+          description: 'Завантаженість виконавців у доступних проєктах.',
+          inputSchema: z.object({}).strict(),
+          annotations,
+        },
+        async () => result(() => this.analytics.workload(user)),
+      );
+      // Нижче — додаткові інструменти. Кожен викликає звичайний сервіс,
+      // тож перевірки ролей і доступу ті самі, що й у REST API.
+      server.registerTool(
+        'get_dashboard',
+        {
+          description:
+            'Загальна статистика користувача: кількість проєктів, завдань за статусами, прострочення.',
+          inputSchema: z.object({}).strict(),
+          annotations,
+        },
+        async () => result(() => this.analytics.dashboard(user)),
+      );
+      server.registerTool(
+        'get_task_details',
+        {
+          description:
+            'Повна інформація про завдання: опис, критерії приймання та здані роботи з коментарями перевірки.',
+          inputSchema: z.object({ taskId: z.string().uuid() }).strict(),
+          annotations,
+        },
+        async ({ taskId }) =>
+          result(async () => ({
+            task: await this.tasks.find(user, taskId),
+            submissions: await this.collaboration.submissions(user, taskId, {
+              page: 1,
+              limit: 10,
+            }),
+          })),
+      );
+      server.registerTool(
+        'list_milestones',
+        {
+          description: 'Етапи проєкту з описами, статусами та порядком.',
+          inputSchema: z.object({ projectId: z.string().uuid() }).strict(),
+          annotations,
+        },
+        async ({ projectId }) =>
+          result(() => this.milestones.list(user, projectId)),
+      );
+      server.registerTool(
+        'list_project_messages',
+        {
+          description:
+            'Останні повідомлення в чаті проєкту (від нових до старих).',
+          inputSchema: z
+            .object({ projectId: z.string().uuid(), ...pagination })
+            .strict(),
+          annotations,
+        },
+        async ({ projectId, ...page }) =>
+          result(() => this.collaboration.messages(user, projectId, page)),
+      );
+    }
     server.registerTool(
       'list_notifications',
       {
@@ -233,33 +225,51 @@ export class McpService {
       },
       async () => result(() => this.notifications.list(user.id, 1, 20)),
     );
-    server.registerTool(
-      'search_open_projects',
-      {
-        description:
-          'Відкриті проєкти на біржі (шукають виконавців або добирають команду) з бюджетом і навичками. Для фрілансерів.',
-        inputSchema: z
-          .object({
-            search: z.string().min(1).max(200).optional(),
-            minBudget: z.number().int().min(0).max(10000000).optional(),
-            maxBudget: z.number().int().min(0).max(10000000).optional(),
-            ...pagination,
-          })
-          .strict(),
-        annotations,
-      },
-      async (query) => result(() => this.projects.marketplace(user, query)),
-    );
-    server.registerTool(
-      'list_freelancers',
-      {
-        description: 'Активні фрілансери платформи. Для клієнтів.',
-        inputSchema: z.object(pagination).strict(),
-        annotations,
-      },
-      async (page) =>
-        result(async () => await this.projects.directory(user, page)),
-    );
+    // Біржа — для пошуку роботи фрілансером; каталог фрілансерів і заявки — для
+    // найму клієнтом. Адміністратор лише модерує й цих інструментів не отримує.
+    if (user.role === 'FREELANCER')
+      server.registerTool(
+        'search_open_projects',
+        {
+          description:
+            'Відкриті проєкти на біржі (шукають виконавців або добирають команду) з бюджетом і навичками. Для фрілансерів.',
+          inputSchema: z
+            .object({
+              search: z.string().min(1).max(200).optional(),
+              minBudget: z.number().int().min(0).max(10000000).optional(),
+              maxBudget: z.number().int().min(0).max(10000000).optional(),
+              ...pagination,
+            })
+            .strict(),
+          annotations,
+        },
+        async (query) => result(() => this.projects.marketplace(user, query)),
+      );
+    if (user.role === 'CLIENT') {
+      server.registerTool(
+        'list_freelancers',
+        {
+          description: 'Активні фрілансери платформи. Для клієнтів.',
+          inputSchema: z.object(pagination).strict(),
+          annotations,
+        },
+        async (page) =>
+          result(async () => await this.projects.directory(user, page)),
+      );
+      server.registerTool(
+        'list_project_applications',
+        {
+          description:
+            'Заявки фрілансерів на проєкт клієнта: бюджет, строки, AI-оцінка. Лише для власника проєкту.',
+          inputSchema: z
+            .object({ projectId: z.string().uuid(), ...pagination })
+            .strict(),
+          annotations,
+        },
+        async ({ projectId, ...page }) =>
+          result(() => this.projects.applications(user, projectId, page)),
+      );
+    }
     server.registerTool(
       'get_freelancer_profile',
       {
