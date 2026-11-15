@@ -5,6 +5,11 @@ import { z } from 'zod';
 export const maxPlanAmount = 100_000_000;
 const text = (max: number) => z.string().trim().min(2).max(max);
 const criteria = z.array(text(400)).min(1).max(6);
+// Дата у форматі YYYY-MM-DD, яка справді існує в календарі
+const planDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((value) => toDate(value).toISOString().slice(0, 10) === value);
 const taskSchema = z
   .object({
     title: text(200),
@@ -12,6 +17,9 @@ const taskSchema = z
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH']),
     // Вартість завдання в гривнях; сума етапу — це сума його завдань
     amount: z.number().int().min(0).max(maxPlanAmount),
+    // Рейтинг завдання 1–5 (важливість для замовника) і дедлайн; обидва можна змінити в чернетці
+    rating: z.number().int().min(1).max(5).nullable().default(null),
+    deadline: planDate.nullable().default(null),
     acceptanceCriteria: criteria,
   })
   .strict();
@@ -64,6 +72,8 @@ export const projectPlanJsonSchema = {
                 'description',
                 'priority',
                 'amount',
+                'rating',
+                'deadline',
                 'acceptanceCriteria',
               ],
               properties: {
@@ -71,6 +81,8 @@ export const projectPlanJsonSchema = {
                 description: { type: 'string' },
                 priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
                 amount: { type: 'integer' },
+                rating: { type: 'integer', enum: [1, 2, 3, 4, 5] },
+                deadline: { type: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$' },
                 acceptanceCriteria: criteriaJsonSchema,
               },
             },
@@ -126,6 +138,46 @@ export function fitPlanToBudget<T extends PlanAmounts>(
       })),
     })),
   };
+}
+
+export function toDate(value: string) {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+const isoDay = (date: Date) => date.toISOString().slice(0, 10);
+
+// Модель може поставити дату в минулому або після дедлайну проєкту: підтягуємо
+// кожен дедлайн у межі [сьогодні; дедлайн проєкту].
+export function fitPlanDeadlines<
+  T extends { milestones: { tasks: { deadline: string | null }[] }[] },
+>(plan: T, today: Date, projectDeadline: Date | null): T {
+  const min = isoDay(today);
+  const max = projectDeadline ? isoDay(projectDeadline) : null;
+  const clamp = (value: string | null) => {
+    if (!value) return max;
+    if (value < min) return max && max < min ? max : min;
+    return max && value > max ? max : value;
+  };
+  return {
+    ...plan,
+    milestones: plan.milestones.map((milestone) => ({
+      ...milestone,
+      tasks: milestone.tasks.map((task) => ({
+        ...task,
+        deadline: clamp(task.deadline),
+      })),
+    })),
+  };
+}
+
+// Дедлайн етапу — найпізніший дедлайн його завдань
+export function milestoneDeadline(milestone: {
+  tasks: { deadline: string | null }[];
+}) {
+  const dates = milestone.tasks
+    .map((task) => task.deadline)
+    .filter(Boolean) as string[];
+  return dates.length ? toDate(dates.sort().at(-1)!) : null;
 }
 
 export function planDescription(

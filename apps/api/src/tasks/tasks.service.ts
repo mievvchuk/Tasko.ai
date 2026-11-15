@@ -7,7 +7,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { syncMilestones } from '../projects/milestone-progress.js';
+import {
+  syncMilestones,
+  syncProgress,
+} from '../projects/milestone-progress.js';
 import { moveRule, type MoveActor, type TaskStatus } from './task-workflow.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import type { CurrentUser } from '../users/users.service.js';
@@ -356,7 +359,10 @@ export class TasksService {
     });
     if (!updated)
       throw new ConflictException('Стан завдання вже змінився. Оновіть дошку.');
-    await syncMilestones(this.db, [task.milestoneId]);
+    // Прийняте завдання може завершити етап, а з ним і весь проєкт
+    if (to === 'DONE')
+      await syncProgress(this.db, task.projectId, [task.milestoneId], user.id);
+    else await syncMilestones(this.db, [task.milestoneId]);
     // Аудит: хто, коли й який перехід виконав
     await this.projects.logActivity(
       user.id,

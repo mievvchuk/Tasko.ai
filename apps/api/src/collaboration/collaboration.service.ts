@@ -7,7 +7,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { syncMilestones } from '../projects/milestone-progress.js';
+import {
+  syncMilestones,
+  syncProgress,
+} from '../projects/milestone-progress.js';
 import { moveRule } from '../tasks/task-workflow.js';
 import { Subject, filter, interval, map, merge, type Observable } from 'rxjs';
 import { ProjectsService } from '../projects/projects.service.js';
@@ -511,8 +514,15 @@ export class CollaborationService {
         updatedAt: new Date(),
       });
       if (!updated) throw new ConflictException('Стан завдання вже змінився.');
-      // Останнє прийняте завдання етапу відправляє етап замовнику на приймання
-      await syncMilestones(tx.orm.public, [task.milestoneId]);
+      // Останнє прийняте завдання завершує (й оплачує) етап, а за ним і проєкт
+      if (data.decision === 'APPROVE')
+        await syncProgress(
+          tx.orm.public,
+          task.projectId,
+          [task.milestoneId],
+          user.id,
+        );
+      else await syncMilestones(tx.orm.public, [task.milestoneId]);
       announce(submission.submittedBy);
       await tx.orm.public.Notification.create({
         id: randomUUID(),

@@ -34,6 +34,8 @@ const plan = {
           description: 'Реалізувати головну',
           priority: 'HIGH',
           amount: 3000,
+          rating: 5,
+          deadline: null,
           acceptanceCriteria: ['Сторінка адаптивна'],
         },
         {
@@ -41,6 +43,8 @@ const plan = {
           description: 'Форма зворотного звʼязку',
           priority: 'LOW',
           amount: 1000,
+          rating: 3,
+          deadline: null,
           acceptanceCriteria: ['Форма надсилає лист'],
         },
       ],
@@ -150,6 +154,7 @@ describe('project planning permissions and persistence', () => {
       instructions: 'MVP',
       // бюджет проєкту мінус уже розподілене в наявних етапах
       budget: 8000,
+      today: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
     });
     expect(transaction).not.toHaveBeenCalled();
   });

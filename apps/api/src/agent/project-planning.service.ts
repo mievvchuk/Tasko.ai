@@ -9,8 +9,11 @@ import { ProjectsService } from '../projects/projects.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { AgentService } from './agent.service.js';
 import {
+  fitPlanDeadlines,
   fitPlanToBudget,
   milestoneAmount,
+  milestoneDeadline,
+  toDate,
   planDescription,
   planTotal,
   projectPlanSchema,
@@ -110,8 +113,13 @@ export class ProjectPlanningService {
       deadline: project.deadline,
       instructions: instructions || '',
       budget,
+      today: new Date().toISOString().slice(0, 10),
     });
-    return fitPlanToBudget(plan, budget);
+    return fitPlanDeadlines(
+      fitPlanToBudget(plan, budget),
+      new Date(),
+      project.deadline,
+    );
   }
 
   async apply(
@@ -124,9 +132,21 @@ export class ProjectPlanningService {
     const parsed = projectPlanSchema.safeParse(input);
     if (!parsed.success)
       throw new BadRequestException(
-        'Перевірте назви, описи, пріоритети, суми та критерії приймання плану.',
+        'Перевірте назви, описи, пріоритети, рейтинги, суми, дедлайни та критерії приймання плану.',
       );
     const project = await this.projects.requireOwner(user, projectId);
+    const late = parsed.data.milestones
+      .flatMap((milestone) => milestone.tasks)
+      .find(
+        (task) =>
+          task.deadline &&
+          project.deadline &&
+          toDate(task.deadline) > project.deadline,
+      );
+    if (late)
+      throw new BadRequestException(
+        `Дедлайн завдання «${late.title}» пізніший за дедлайн проєкту.`,
+      );
     const client = this.projects.prisma.client;
     const previous = await client.orm.public.ActivityLog.where({
       id: requestId,
@@ -210,7 +230,7 @@ export class ProjectPlanningService {
               milestone.acceptanceCriteria,
             ),
             position,
-            deadline: null,
+            deadline: milestoneDeadline(milestone),
             amount: milestoneAmount(milestone),
             status: 'PLANNED',
             paymentStatus: 'UNPAID',
@@ -229,8 +249,9 @@ export class ProjectPlanningService {
               ),
               assigneeId: null,
               priority: task.priority,
+              rating: task.rating,
               status: 'TODO',
-              deadline: null,
+              deadline: task.deadline ? toDate(task.deadline) : null,
               // Завдання належить своєму етапу: етап закривається, коли виконано всі його завдання
               milestoneId,
               createdAt: now,

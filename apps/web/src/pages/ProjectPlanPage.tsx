@@ -396,6 +396,7 @@ function ProjectPlanEditor() {
                   index={index}
                   disabled={editingLocked}
                   canRemove={plan.milestones.length > 1}
+                  maxDate={project.data?.deadline?.slice(0, 10)}
                   onChange={(patch) => changeMilestone(index, patch)}
                   onChangeTask={(taskIndex, patch) =>
                     changeTask(index, taskIndex, patch)

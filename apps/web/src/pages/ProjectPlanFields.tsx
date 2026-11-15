@@ -1,5 +1,6 @@
 import { useLanguage } from "../i18n";
 import { formatMoney } from "../format";
+import { ratingStars } from "../types";
 
 // Поля редактора AI-плану: етап, завдання та критерії приймання.
 
@@ -9,6 +10,9 @@ export interface PlanTask {
   priority: "LOW" | "MEDIUM" | "HIGH";
   // Вартість завдання, грн; сума етапу — сума його завдань
   amount: number;
+  // Рейтинг 1–5 і дедлайн (YYYY-MM-DD), які пропонує AI; null — не задано
+  rating: number | null;
+  deadline: string | null;
   acceptanceCriteria: string[];
 }
 export interface PlanMilestone {
@@ -37,6 +41,8 @@ function createEmptyTask(): PlanTask {
     description: "",
     priority: "MEDIUM",
     amount: 0,
+    rating: null,
+    deadline: null,
     acceptanceCriteria: [""],
   };
 }
@@ -72,6 +78,7 @@ function PlanTaskFields({
   milestoneIndex,
   taskIndex,
   canRemove,
+  maxDate,
   onChange,
   onRemove,
 }: {
@@ -79,6 +86,7 @@ function PlanTaskFields({
   milestoneIndex: number;
   taskIndex: number;
   canRemove: boolean;
+  maxDate?: string;
   onChange: (patch: Partial<PlanTask>) => void;
   onRemove: () => void;
 }) {
@@ -165,6 +173,35 @@ function PlanTaskFields({
               }
             />
           </div>
+          <div>
+            <label htmlFor={`task-rating-${idSuffix}`}>{tr("Рейтинг")}</label>
+            <select
+              id={`task-rating-${idSuffix}`}
+              value={task.rating ?? ""}
+              onChange={(e) =>
+                onChange({
+                  rating: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+            >
+              <option value="">{tr("Не задано")}</option>
+              {[5, 4, 3, 2, 1].map((value) => (
+                <option key={value} value={value}>
+                  {ratingStars(value)} ({value})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor={`task-deadline-${idSuffix}`}>{tr("Дедлайн")}</label>
+            <input
+              id={`task-deadline-${idSuffix}`}
+              type="date"
+              max={maxDate}
+              value={task.deadline ?? ""}
+              onChange={(e) => onChange({ deadline: e.target.value || null })}
+            />
+          </div>
         </div>
         <CriteriaField
           id={`task-criteria-${idSuffix}`}
@@ -182,6 +219,7 @@ export function PlanMilestoneFields({
   index,
   disabled,
   canRemove,
+  maxDate,
   onChange,
   onChangeTask,
   onRemove,
@@ -190,6 +228,8 @@ export function PlanMilestoneFields({
   index: number;
   disabled: boolean;
   canRemove: boolean;
+  // Дедлайн проєкту (YYYY-MM-DD): завдання не можуть закінчуватись пізніше
+  maxDate?: string;
   onChange: (patch: Partial<PlanMilestone>) => void;
   onChangeTask: (taskIndex: number, patch: Partial<PlanTask>) => void;
   onRemove: () => void;
@@ -253,6 +293,7 @@ export function PlanMilestoneFields({
           milestoneIndex={index}
           taskIndex={taskIndex}
           canRemove={tasks.length > 1}
+          maxDate={maxDate}
           onChange={(patch) => onChangeTask(taskIndex, patch)}
           onRemove={() => removeTask(taskIndex)}
         />

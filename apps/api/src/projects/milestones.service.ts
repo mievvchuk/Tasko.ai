@@ -12,9 +12,10 @@ import type {
   UpdateMilestoneDto,
 } from './milestones.dto.js';
 import { ProjectsService } from './projects.service.js';
+import { completeProjectIfDone } from './milestone-progress.js';
 
 // Статус етапу рахується із завдань (див. milestone-progress.ts); вручну замовник
-// лише приймає етап, коли всі його завдання виконано.
+// лише приймає етап, що лишився «На перевірці» з часів до автоматичного завершення.
 export function checkMilestoneTransition(from: string, to: string) {
   if (from === to) return;
   if (from === 'REVIEW' && to === 'COMPLETED') return;
@@ -129,6 +130,8 @@ export class MilestonesService {
       ...(data.paymentStatus !== undefined
         ? { paymentStatus: data.paymentStatus }
         : {}),
+      // Платіжної системи немає: прийнятий етап вважається оплаченим
+      ...(data.status === 'COMPLETED' ? { paymentStatus: 'PAID' } : {}),
       updatedAt: new Date(),
     });
     if (!updated) throw new ConflictException('Етап уже змінився.');
@@ -153,6 +156,8 @@ export class MilestonesService {
         `Оновлено етап «${item.title}».`,
         item.projectId,
       );
+    if (data.status === 'COMPLETED')
+      await completeProjectIfDone(this.db, item.projectId, user.id);
     return updated;
   }
 }

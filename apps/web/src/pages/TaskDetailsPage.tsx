@@ -100,9 +100,14 @@ export function TaskDetailsPage() {
     projectActive && currentTask.status === "IN_PROGRESS" && isAssignee;
   const canReview = owner && !closed && currentTask.status === "REVIEW";
 
-  const assigneeName =
-    members.data.find((member) => member.userId === currentTask.assigneeId)
-      ?.user?.name || tr("Не призначено");
+  const assigneeName = currentTask.assigneeId ? (
+    <Link to={`/freelancers/${currentTask.assigneeId}`}>
+      {members.data.find((member) => member.userId === currentTask.assigneeId)
+        ?.user?.name || tr("Учасник недоступний")}
+    </Link>
+  ) : (
+    tr("Не призначено")
+  );
   const nextStatus =
     currentTask.status === "IN_PROGRESS" ? "TODO" : "IN_PROGRESS";
 

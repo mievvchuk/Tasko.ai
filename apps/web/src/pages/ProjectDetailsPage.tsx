@@ -309,6 +309,32 @@ export function ProjectDetailsPage() {
           </div>
         </dl>
       </section>
+      {/* Після завершення пропонуємо учасникам оцінити одне одного */}
+      {project.status === "COMPLETED" &&
+        (project.clientId === user?.id ||
+          members.some((member) => member.userId === user?.id)) && (
+          <section className="data-panel completion-panel" role="status">
+            <i className="bi bi-trophy" aria-hidden="true"></i>
+            <div>
+              <h2>{tr("Проєкт завершено")}</h2>
+              <p>
+                {project.clientId === user?.id
+                  ? tr(
+                      "Усі завдання й етапи виконано. Оцініть роботу фрілансерів — відгук з'явиться в їхньому профілі.",
+                    )
+                  : tr(
+                      "Усі завдання й етапи виконано. Оцініть співпрацю із замовником.",
+                    )}
+              </p>
+            </div>
+            <a className="button primary" href="#project-members-heading">
+              <i className="bi bi-star" aria-hidden="true"></i>
+              {project.clientId === user?.id
+                ? tr("Оцінити фрілансерів")
+                : tr("Оцінити замовника")}
+            </a>
+          </section>
+        )}
       {milestones.data && (
         <MilestonesPanel
           projectId={project.id}
@@ -467,11 +493,15 @@ export function ProjectDetailsPage() {
                         )?.title ?? "—"}
                       </td>
                       <td>
-                        {task.assigneeId
-                          ? members.find(
+                        {task.assigneeId ? (
+                          <Link to={`/freelancers/${task.assigneeId}`}>
+                            {members.find(
                               (member) => member.userId === task.assigneeId,
-                            )?.user?.name || tr("Учасник недоступний")
-                          : tr("Не призначено")}
+                            )?.user?.name || tr("Учасник недоступний")}
+                          </Link>
+                        ) : (
+                          tr("Не призначено")
+                        )}
                       </td>
                       <td>{tr(priorityNames[task.priority])}</td>
                       <td>{tr(taskStatusNames[task.status])}</td>

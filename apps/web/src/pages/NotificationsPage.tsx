@@ -23,6 +23,7 @@ const kinds: Record<string, [string, string]> = {
   MILESTONE_UPDATED: ["Етап оновлено", "bi-flag"],
   PROJECT_MEMBER: ["Учасник проєкту", "bi-people"],
   PROJECT_UPDATED: ["Проєкт оновлено", "bi-folder"],
+  PROJECT_COMPLETED: ["Проєкт завершено", "bi-trophy"],
   AI_PLAN_APPLIED: ["AI-план додано", "bi-stars"],
   NEW_COMPLAINT: ["Нова скарга", "bi-flag-fill"],
 };

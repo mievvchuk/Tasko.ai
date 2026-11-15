@@ -48,8 +48,11 @@ export function MilestonesPanel({
   }
 
   const total = milestones.reduce((sum, item) => sum + item.amount, 0);
-  const accepted = milestones
-    .filter((item) => item.status === "COMPLETED")
+  // Платіжної системи немає: виконаний етап одразу вважається оплаченим
+  const paid = milestones
+    .filter(
+      (item) => item.status === "COMPLETED" || item.paymentStatus === "PAID",
+    )
     .reduce((sum, item) => sum + item.amount, 0);
 
   return (
@@ -63,8 +66,8 @@ export function MilestonesPanel({
           {milestones.length > 0 && (
             <p className="form-note">
               {tr(
-                "Прийнято {0} з {1}",
-                formatMoney(accepted),
+                "Оплачено {0} з {1}",
+                formatMoney(paid),
                 formatMoney(total),
               )}
             </p>
@@ -130,12 +133,16 @@ export function MilestonesPanel({
                           )
                         : tr("Завдань ще немає")}
                     </span>
-                    <span className={`project-status status-${item.status}`}>
-                      {tr(milestoneStatusNames[item.status])}
-                    </span>
-                    {item.paymentStatus !== "UNPAID" && (
-                      <span className="project-status">
-                        {tr(milestonePaymentNames[item.paymentStatus])}
+                    {item.status === "COMPLETED" ? (
+                      <span className="project-status status-PAID">
+                        <i className="bi bi-cash-coin" aria-hidden="true"></i>
+                        {tr(milestonePaymentNames.PAID)}
+                      </span>
+                    ) : (
+                      <span
+                        className={`project-status status-${item.status}`}
+                      >
+                        {tr(milestoneStatusNames[item.status])}
                       </span>
                     )}
                   </span>
