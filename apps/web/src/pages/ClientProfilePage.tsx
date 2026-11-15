@@ -4,6 +4,7 @@ import { ResourceState } from "../components/ResourceState";
 import { UserAvatar } from "../components/UserAvatar";
 import { formatDate } from "../format";
 import { ratingStars } from "../types";
+import { ReviewItem } from "../components/ReviewItem";
 import { useApi } from "../useApi";
 import { useLanguage } from "../i18n";
 
@@ -23,7 +24,7 @@ interface ClientProfile {
     rating: number;
     comment: string | null;
     createdAt: string;
-    freelancer: { id: string; name: string } | null;
+    freelancer: { id: string; name: string; avatarUrl?: string | null } | null;
     project: { id: string; title: string | null };
   }[];
   openProjects: {
@@ -154,29 +155,19 @@ export function ClientProfilePage() {
             {data.reviews.length ? (
               <ul className="review-list">
                 {data.reviews.map((review) => (
-                  <li key={review.id}>
-                    <div>
-                      <strong className="stars">
-                        {ratingStars(review.rating)}
-                      </strong>
-                      <span>
-                        {review.freelancer ? (
-                          <Link to={`/freelancers/${review.freelancer.id}`}>
-                            {review.freelancer.name}
-                          </Link>
-                        ) : (
-                          tr("Фрілансер")
-                        )}
-                      </span>
-                    </div>
-                    <p>
-                      {review.comment || tr("Фрілансер не додав коментар.")}
-                    </p>
-                    <small>
-                      {review.project.title || tr("Завершений проєкт")} ·{" "}
-                      {formatDate(review.createdAt)}
-                    </small>
-                  </li>
+                  <ReviewItem
+                    key={review.id}
+                    author={review.freelancer}
+                    profilePath="/freelancers"
+                    fallbackName={tr("Фрілансер")}
+                    rating={review.rating}
+                    comment={review.comment}
+                    emptyComment={tr("Фрілансер не додав коментар.")}
+                    projectTitle={
+                      review.project.title || tr("Завершений проєкт")
+                    }
+                    createdAt={review.createdAt}
+                  />
                 ))}
               </ul>
             ) : (

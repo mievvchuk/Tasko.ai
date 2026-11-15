@@ -9,24 +9,7 @@ import { useApi } from "../useApi";
 
 import { useLanguage } from "../i18n";
 
-// Тип події з API → підпис та іконка
-const kinds: Record<string, [string, string]> = {
-  NEW_APPLICATION: ["Нова заявка", "bi-person-plus"],
-  APPLICATION_ACCEPTED: ["Заявку прийнято", "bi-check2-circle"],
-  APPLICATION_REJECTED: ["Заявку відхилено", "bi-x-circle"],
-  NEW_MESSAGE: ["Нове повідомлення", "bi-chat-dots"],
-  APPLICATION_MESSAGE: ["Повідомлення щодо заявки", "bi-chat-left-text"],
-  TASK_ASSIGNED: ["Призначено завдання", "bi-check2-square"],
-  WORK_SUBMITTED: ["Роботу здано", "bi-upload"],
-  WORK_REVIEWED: ["Роботу перевірено", "bi-clipboard-check"],
-  MILESTONE_CREATED: ["Новий етап", "bi-flag"],
-  MILESTONE_UPDATED: ["Етап оновлено", "bi-flag"],
-  PROJECT_MEMBER: ["Учасник проєкту", "bi-people"],
-  PROJECT_UPDATED: ["Проєкт оновлено", "bi-folder"],
-  PROJECT_COMPLETED: ["Проєкт завершено", "bi-trophy"],
-  AI_PLAN_APPLIED: ["AI-план додано", "bi-stars"],
-  NEW_COMPLAINT: ["Нова скарга", "bi-flag-fill"],
-};
+import { notificationKinds as kinds } from "../notificationKinds";
 
 export function NotificationsPage() {
   const { tr } = useLanguage();

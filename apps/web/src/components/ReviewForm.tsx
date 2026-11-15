@@ -75,7 +75,9 @@ export function ReviewForm({
       <label>
         {tr("Коментар")}
         <textarea
+          rows={1}
           maxLength={2000}
+          placeholder={tr("Як пройшла співпраця?")}
           value={comment}
           onChange={(event) => setComment(event.target.value)}
         />
