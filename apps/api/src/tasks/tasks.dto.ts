@@ -48,14 +48,38 @@ export class CreateTaskDto {
   @IsOptional()
   @IsDateString()
   deadline?: string;
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description:
+      'Етап проєкту, до якого належить завдання; null — поза етапами',
+  })
+  @IsOptional()
+  @IsUUID()
+  milestoneId?: string | null;
 }
 export class UpdateTaskDto extends PartialType(CreateTaskDto, {
   skipNullProperties: false,
 }) {}
 export class TaskStatusDto {
-  @ApiProperty({ enum: ['TODO', 'IN_PROGRESS'] })
-  @IsIn(['TODO', 'IN_PROGRESS'])
-  status: 'TODO' | 'IN_PROGRESS';
+  @ApiProperty({
+    enum: ['TODO', 'IN_PROGRESS', 'REVISION', 'DONE'],
+    description:
+      'Новий етап картки. На перевірку (REVIEW) — через POST /tasks/:id/move з коментарем',
+  })
+  @IsIn(['TODO', 'IN_PROGRESS', 'REVISION', 'DONE'])
+  status: 'TODO' | 'IN_PROGRESS' | 'REVISION' | 'DONE';
+  @ApiPropertyOptional({
+    maxLength: 2000,
+    description: 'Причина повернення на доопрацювання',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(1, 2000)
+  reason?: string;
   @ApiPropertyOptional({
     format: 'uuid',
     description: 'Власна колонка канбану з тим самим статусом',
@@ -96,9 +120,11 @@ export class TaskQueryDto extends PageDto {
   @IsOptional()
   @IsUUID()
   assigneeId?: string;
-  @ApiPropertyOptional({ enum: ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] })
+  @ApiPropertyOptional({
+    enum: ['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'],
+  })
   @IsOptional()
-  @IsIn(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'])
+  @IsIn(['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'])
   status?: string;
   @ApiPropertyOptional({ enum: ['LOW', 'MEDIUM', 'HIGH'] })
   @IsOptional()
@@ -111,6 +137,10 @@ export class TaskQueryDto extends PageDto {
   )
   @IsBoolean()
   overdue?: boolean;
+  @ApiPropertyOptional({ format: 'uuid', description: 'Лише завдання етапу' })
+  @IsOptional()
+  @IsUUID()
+  milestoneId?: string;
 }
 
 // Завдання з усіх доступних проєктів; projectId звужує до одного
@@ -136,4 +166,25 @@ export class ColumnOrderDto {
   @ArrayMaxSize(20)
   @IsString({ each: true })
   order: string[];
+}
+
+export class RenameColumnDto {
+  @ApiProperty({ minLength: 2, maxLength: 40, example: 'Frontend' })
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(2, 40)
+  title: string;
+}
+
+export class DeleteColumnQueryDto {
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Власна колонка того самого етапу, куди перенести картки; без нього — у стандартну',
+  })
+  @IsOptional()
+  @IsUUID()
+  moveTo?: string;
 }

@@ -1,24 +1,23 @@
 import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
-import { useApi } from "../useApi";
-import { notificationsChangedEvent, subscribe } from "../api";
+import { useNotificationCounts } from "../useNotificationCounts";
 import { docsUrl } from "../help";
-import type { Notification } from "../types";
 import { ThemePicker } from "./ThemePicker";
 import { AiChatProvider } from "../aiChat";
 import { AiDrawer } from "./AiDrawer";
 import { AccountMenu } from "./AccountMenu";
 import { HelpButton, openHelpEvent } from "./HelpButton";
+import { AdminLayout } from "./AdminLayout";
 
 // На комп'ютері .topbar показано як світлу бічну панель з підписами, на телефоні — як верхню (див. app.css).
 // Логіка (ролі, сповіщення, вихід) залишилась такою самою.
-// Адміністратор на сайті лише переглядає проєкти (без редагування, листування й файлів)
+// Адміністратор на сайті лише переглядає проєкти, завдання й профілі (без редагування, листування й файлів)
 const adminPages =
-  /^\/(projects(\/(?!new$)[^/]+(\/(board|milestones|activity))?)?|tasks(\/[^/]+)?|profile|notifications|help(\/.*)?)\/?$/;
+  /^\/(projects\/(?!new$)[^/]+(\/(board|milestones|activity))?|tasks(\/[^/]+)?|freelancers\/[^/]+|clients\/[^/]+|profile|notifications|help(\/.*)?)\/?$/;
 
 // Ці пункти на телефоні вже є в нижній панелі, тож у меню «Ще» їх не дублюємо
 const inBottomNav = ({ isActive }: { isActive: boolean }) =>
@@ -26,53 +25,38 @@ const inBottomNav = ({ isActive }: { isActive: boolean }) =>
 
 export function Layout() {
   const { user } = useAuth();
+  if (user?.role === "ADMIN") return <AdminSiteLayout />;
+  return <UserLayout />;
+}
+
+// Адміністратор не виходить з адмінки: проєкти, профілі, сповіщення й профіль
+// відкриваються в її каркасі (бічне меню адмінки), а не в меню замовника чи виконавця
+function AdminSiteLayout() {
+  const { pathname, search } = useLocation();
+  if (adminPages.test(pathname)) return <AdminLayout />;
+  // Посилання на Аду (напр. «Аналіз AI» проєкту) ведуть на її сторінку в адмінці,
+  // список проєктів сайту — на список проєктів в адмінці, решта — на огляд
+  const target =
+    pathname === "/ai"
+      ? `/admin/ai${search}`
+      : pathname === "/projects"
+        ? "/admin/projects"
+        : "/admin";
+  return <Navigate to={target} replace />;
+}
+
+function UserLayout() {
+  const { user } = useAuth();
   const { t, tr, language } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { pathname, search } = useLocation();
-  const notifications = useApi<{
-    items: Notification[];
-    unreadCount: number;
-    unreadMessages: number;
-  }>("/notifications?limit=1");
-  const { refresh } = notifications;
-  useEffect(() => {
-    window.addEventListener(notificationsChangedEvent, refresh);
-    return () => window.removeEventListener(notificationsChangedEvent, refresh);
-  }, [refresh]);
-  // Нове сповіщення чи повідомлення — лічильники оновлюються одразу, без перезавантаження сторінки
-  useEffect(() => {
-    if (!user) return;
-    const controller = new AbortController();
-    void subscribe(
-      "/notifications/stream",
-      (type) => {
-        if (type === "changed")
-          window.dispatchEvent(new Event(notificationsChangedEvent));
-      },
-      controller.signal,
-    );
-    return () => controller.abort();
-  }, [user?.id]);
-  // Під час оновлення показуємо попередні числа, щоб значок не блимав
-  const counts = useRef({ unreadCount: 0, unreadMessages: 0 });
-  if (notifications.data) counts.current = notifications.data;
+  const counts = useNotificationCounts(user?.id);
   if (!user) return null;
-  const admin = user.role === "ADMIN";
-  // Решта сайту адміністратору не потрібна: його робоче місце — адмін-панель
-  // Посилання на Аду (напр. «Аналіз AI» проєкту) ведуть адміна на її сторінку в адмінці
-  if (admin && !adminPages.test(pathname))
-    return (
-      <Navigate to={pathname === "/ai" ? `/admin/ai${search}` : "/admin"} replace />
-    );
 
   const close = () => setMenuOpen(false);
-  const unreadMessages = counts.current.unreadMessages;
-  const unread = counts.current.unreadCount - unreadMessages;
-  const projectsLabel = admin
-    ? tr("Усі проєкти")
-    : user.role === "FREELANCER"
-      ? t("workProjects")
-      : t("myProjects");
+  const unreadMessages = counts.unreadMessages;
+  const unread = counts.unreadCount - unreadMessages;
+  const projectsLabel =
+    user.role === "FREELANCER" ? t("workProjects") : t("myProjects");
 
   return (
     <div className="app-shell">
@@ -100,12 +84,10 @@ export function Layout() {
             aria-label={t("navigation")}
             className={menuOpen ? "topbar-nav open" : "topbar-nav"}
           >
-            {!admin && (
-              <NavLink to="/" end onClick={close} className={inBottomNav}>
-                <i className="bi bi-grid" aria-hidden="true"></i>
-                <span className="nav-label">{t("main")}</span>
-              </NavLink>
-            )}
+            <NavLink to="/" end onClick={close} className={inBottomNav}>
+              <i className="bi bi-grid" aria-hidden="true"></i>
+              <span className="nav-label">{t("main")}</span>
+            </NavLink>
             <NavLink to="/projects" onClick={close} className={inBottomNav}>
               <i className="bi bi-folder" aria-hidden="true"></i>
               <span className="nav-label">{projectsLabel}</span>
@@ -116,46 +98,34 @@ export function Layout() {
                 <span className="nav-label">{t("findWork")}</span>
               </NavLink>
             )}
-            {!admin && (
-              <>
-                <NavLink to="/tasks" onClick={close}>
-                  <i className="bi bi-check2-square" aria-hidden="true"></i>
-                  <span className="nav-label">{t("tasks")}</span>
-                </NavLink>
-                <NavLink to="/workload" onClick={close}>
-                  <i className="bi bi-bar-chart" aria-hidden="true"></i>
-                  <span className="nav-label">
-                    {user.role === "FREELANCER"
-                      ? tr("Графік роботи")
-                      : t("workload")}
-                  </span>
-                </NavLink>
-                <NavLink to="/messages" onClick={close} className={inBottomNav}>
-                  <i className="bi bi-chat-dots" aria-hidden="true"></i>
-                  <span className="nav-label">{t("messages")}</span>
-                  {unreadMessages > 0 && (
-                    <span className="badge-count">{unreadMessages}</span>
-                  )}
-                </NavLink>
-              </>
-            )}
+            <NavLink to="/tasks" onClick={close}>
+              <i className="bi bi-check2-square" aria-hidden="true"></i>
+              <span className="nav-label">{t("tasks")}</span>
+            </NavLink>
+            <NavLink to="/workload" onClick={close}>
+              <i className="bi bi-bar-chart" aria-hidden="true"></i>
+              <span className="nav-label">
+                {user.role === "FREELANCER"
+                  ? tr("Графік роботи")
+                  : t("workload")}
+              </span>
+            </NavLink>
+            <NavLink to="/messages" onClick={close} className={inBottomNav}>
+              <i className="bi bi-chat-dots" aria-hidden="true"></i>
+              <span className="nav-label">{t("messages")}</span>
+              {unreadMessages > 0 && (
+                <span className="badge-count">{unreadMessages}</span>
+              )}
+            </NavLink>
             <NavLink to="/notifications" onClick={close}>
               <i className="bi bi-bell" aria-hidden="true"></i>
               <span className="nav-label">{tr("Сповіщення")}</span>
               {unread > 0 && <span className="badge-count">{unread}</span>}
             </NavLink>
-            {!admin && (
-              <NavLink to="/complaints" onClick={close}>
-                <i className="bi bi-flag" aria-hidden="true"></i>
-                <span className="nav-label">{tr("Скарги")}</span>
-              </NavLink>
-            )}
-            {admin && (
-              <NavLink to="/admin" onClick={close}>
-                <i className="bi bi-shield-lock" aria-hidden="true"></i>
-                <span className="nav-label">{t("administration")}</span>
-              </NavLink>
-            )}
+            <NavLink to="/complaints" onClick={close}>
+              <i className="bi bi-flag" aria-hidden="true"></i>
+              <span className="nav-label">{tr("Скарги")}</span>
+            </NavLink>
             <NavLink to="/profile" onClick={close} className={inBottomNav}>
               <i className="bi bi-person" aria-hidden="true"></i>
               <span className="nav-label">{t("profile")}</span>
@@ -217,23 +187,19 @@ export function Layout() {
       <HelpButton />
       {/* Нижня панель для телефону (як у мобільному UI kit); на комп'ютері схована */}
       <nav className="bottom-nav" aria-label={t("navigation")}>
-        {!admin && (
-          <NavLink to="/" end onClick={close}>
-            <i className="bi bi-house" aria-hidden="true"></i>
-            {t("main")}
-          </NavLink>
-        )}
+        <NavLink to="/" end onClick={close}>
+          <i className="bi bi-house" aria-hidden="true"></i>
+          {t("main")}
+        </NavLink>
         <NavLink to="/projects" onClick={close}>
           <i className="bi bi-folder" aria-hidden="true"></i>
           {/* Короткі підписи: п'ять пунктів у ряд на вузькому екрані */}
-          {admin ? projectsLabel : tr("Проєкти")}
+          {tr("Проєкти")}
         </NavLink>
-        {!admin && (
-          <NavLink to="/messages" onClick={close}>
-            <i className="bi bi-chat-dots" aria-hidden="true"></i>
-            {tr("Чати")}
-          </NavLink>
-        )}
+        <NavLink to="/messages" onClick={close}>
+          <i className="bi bi-chat-dots" aria-hidden="true"></i>
+          {tr("Чати")}
+        </NavLink>
         <NavLink to="/profile" onClick={close}>
           <i className="bi bi-person" aria-hidden="true"></i>
           {t("profile")}

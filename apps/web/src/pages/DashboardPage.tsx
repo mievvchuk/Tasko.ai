@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { errorMessage, request } from "../api";
+import { useLiveRefresh } from "../useLiveRefresh";
 import { deadlineLabel, formatDate } from "../format";
 import { LoadError } from "../components/LoadError";
 import { ProjectsTable } from "../components/ProjectsTable";
@@ -27,6 +28,7 @@ const taskTones: Record<TaskStatus, ChartTone> = {
   TODO: "muted",
   IN_PROGRESS: "primary",
   REVIEW: "accent",
+  REVISION: "danger",
   DONE: "success",
 };
 const projectTones: Record<ProjectStatus, ChartTone> = {
@@ -46,13 +48,23 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const silent = useRef(false);
+  useLiveRefresh(() => {
+    silent.current = true;
+    setAttempt((value) => value + 1);
+  });
 
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    // Живе оновлення перечитує дані тихо: без індикатора завантаження й без заміни їх помилкою
+    const quiet = silent.current;
+    silent.current = false;
     async function load() {
-      setLoading(true);
-      setError("");
+      if (!quiet) {
+        setLoading(true);
+        setError("");
+      }
       try {
         const options = { signal: controller.signal };
         const [summary, projects, deadlines] = await Promise.all([
@@ -62,7 +74,7 @@ export function DashboardPage() {
         ]);
         if (active) setData({ summary, projects, deadlines });
       } catch (error) {
-        if (active) setError(errorMessage(error));
+        if (active && !quiet) setError(errorMessage(error));
       } finally {
         if (active) setLoading(false);
       }

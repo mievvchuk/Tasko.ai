@@ -21,7 +21,9 @@ import {
   BoardColumnDto,
   ColumnOrderDto,
   CreateTaskDto,
+  DeleteColumnQueryDto,
   OrderStatusDto,
+  RenameColumnDto,
   TaskQueryDto,
   TaskStatusDto,
   UpdateTaskDto,
@@ -72,7 +74,10 @@ export class TasksController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() data: TaskStatusDto,
   ) {
-    return this.tasks.status(user, id, data.status, data.columnId);
+    return this.tasks.transition(user, id, data.status, {
+      columnId: data.columnId,
+      reason: data.reason,
+    });
   }
   @Get('projects/:id/columns') columns(
     @Actor() user: CurrentUser,
@@ -94,11 +99,19 @@ export class TasksController {
   ) {
     return this.tasks.reorderColumns(user, id, data.order);
   }
+  @Patch('columns/:id') renameColumn(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: RenameColumnDto,
+  ) {
+    return this.tasks.renameColumn(user, id, data.title);
+  }
   @Delete('columns/:id') deleteColumn(
     @Actor() user: CurrentUser,
     @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: DeleteColumnQueryDto,
   ) {
-    return this.tasks.deleteColumn(user, id);
+    return this.tasks.deleteColumn(user, id, query.moveTo);
   }
   @Get('projects/:id/orders') orders(
     @Actor() user: CurrentUser,

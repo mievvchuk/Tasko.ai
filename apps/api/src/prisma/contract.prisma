@@ -184,6 +184,9 @@ model Task {
   // Додаткова колонка канбану (етап «До виконання» або «У процесі»); null — звичайна колонка
   columnId  String?
   column    BoardColumn? @relation(fields: [columnId], references: [id])
+  // Етап (оплата частинами), до якого належить завдання; null — завдання поза етапами
+  milestoneId String?
+  milestone ProjectMilestone? @relation(fields: [milestoneId], references: [id])
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
   notifications Notification[]
@@ -283,6 +286,7 @@ model ProjectMilestone {
   paymentStatus String // UNPAID, RESERVED, PAID
   createdAt TimestamptzJsDate @default(now())
   updatedAt TimestamptzJsDate
+  tasks Task[]
 
   @@unique([projectId, position])
 }

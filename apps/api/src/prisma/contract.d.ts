@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b8833235147ef12361380a18dc8778d798e37cc11bb43d7d688b685a7c43d15f'>;
+  StorageHashBase<'e10247c796c41c4a7b8c356c6ec8957d636b81878de5d042ce7c6fad6104e125'>;
 export type ExecutionHash =
   ExecutionHashBase<'ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5'>;
 export type ProfileHash =
@@ -439,6 +439,7 @@ export type FieldOutputTypes = {
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly milestoneId: CodecTypes['pg/text@1']['output'] | null;
       readonly priority: CodecTypes['pg/text@1']['output'];
       readonly projectId: CodecTypes['pg/text@1']['output'];
       readonly rating: CodecTypes['pg/int4@1']['output'] | null;
@@ -683,6 +684,7 @@ export type FieldInputTypes = {
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly milestoneId: CodecTypes['pg/text@1']['input'] | null;
       readonly priority: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly rating: CodecTypes['pg/int4@1']['input'] | null;
@@ -927,6 +929,7 @@ export type StorageColumnTypes = {
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly milestoneId: CodecTypes['pg/text@1']['output'] | null;
       readonly priority: CodecTypes['pg/text@1']['output'];
       readonly projectId: CodecTypes['pg/text@1']['output'];
       readonly rating: CodecTypes['pg/int4@1']['output'] | null;
@@ -1171,6 +1174,7 @@ export type StorageColumnInputTypes = {
       readonly deadline: CodecTypes['pg/timestamptz-date@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly milestoneId: CodecTypes['pg/text@1']['input'] | null;
       readonly priority: CodecTypes['pg/text@1']['input'];
       readonly projectId: CodecTypes['pg/text@1']['input'];
       readonly rating: CodecTypes['pg/int4@1']['input'] | null;
@@ -1484,7 +1488,8 @@ export namespace Models {
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     project: public_Project;
-    readonly [RelationKeys]?: 'project';
+    tasks: public_Task[];
+    readonly [RelationKeys]?: 'project' | 'tasks';
   };
   export type public_ProjectSkill = {
     projectId: CodecTypes['pg/text@1']['output'];
@@ -1513,6 +1518,7 @@ export namespace Models {
     deadline: CodecTypes['pg/timestamptz-date@1']['output'] | null;
     description: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
+    milestoneId: CodecTypes['pg/text@1']['output'] | null;
     priority: CodecTypes['pg/text@1']['output'];
     projectId: CodecTypes['pg/text@1']['output'];
     rating: CodecTypes['pg/int4@1']['output'] | null;
@@ -1521,9 +1527,10 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
     assignee: public_User | null;
     column: public_BoardColumn | null;
+    milestone: public_ProjectMilestone | null;
     notifications: public_Notification[];
     project: public_Project;
-    readonly [RelationKeys]?: 'assignee' | 'column' | 'notifications' | 'project';
+    readonly [RelationKeys]?: 'assignee' | 'column' | 'milestone' | 'notifications' | 'project';
   };
   export type public_User = {
     avatarUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -3549,6 +3556,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly milestoneId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly priority: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -3602,6 +3615,12 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'Task_milestoneId_idx_f1dac854';
+                  readonly prefix: 'Task_milestoneId_idx';
+                  readonly columns: readonly ['milestoneId'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'Task_projectId_idx_a96e4d92';
                   readonly prefix: 'Task_projectId_idx';
                   readonly columns: readonly ['projectId'];
@@ -3642,6 +3661,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'BoardColumn';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Task';
+                    readonly columns: readonly ['milestoneId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ProjectMilestone';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -5589,6 +5620,14 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly tasks: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Task' };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['milestoneId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'ProjectMilestone';
@@ -5759,6 +5798,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly milestoneId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly priority: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -5809,6 +5852,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly milestone: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProjectMilestone';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['milestoneId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly notifications: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5843,6 +5898,7 @@ type ContractBase = Omit<
                 readonly deadline: { readonly column: 'deadline' };
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };
+                readonly milestoneId: { readonly column: 'milestoneId' };
                 readonly priority: { readonly column: 'priority' };
                 readonly projectId: { readonly column: 'projectId' };
                 readonly rating: { readonly column: 'rating' };

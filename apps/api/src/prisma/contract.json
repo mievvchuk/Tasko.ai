@@ -2623,6 +2623,21 @@
                   "model": "Project",
                   "namespace": "public"
                 }
+              },
+              "tasks": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "milestoneId"
+                  ]
+                },
+                "to": {
+                  "model": "Task",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -2876,6 +2891,13 @@
                   "kind": "scalar"
                 }
               },
+              "milestoneId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "priority": {
                 "nullable": false,
                 "type": {
@@ -2952,6 +2974,22 @@
                   "namespace": "public"
                 }
               },
+              "milestone": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "milestoneId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "ProjectMilestone",
+                  "namespace": "public"
+                }
+              },
               "notifications": {
                 "cardinality": "1:N",
                 "on": {
@@ -3003,6 +3041,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "milestoneId": {
+                  "column": "milestoneId"
                 },
                 "priority": {
                   "column": "priority"
@@ -5946,6 +5987,11 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "milestoneId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "priority": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -6034,6 +6080,25 @@
                     "namespaceId": "public",
                     "tableName": "BoardColumn"
                   }
+                },
+                {
+                  "index": {
+                    "name": "Task_milestoneId_idx_f1dac854"
+                  },
+                  "source": {
+                    "columns": [
+                      "milestoneId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Task"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ProjectMilestone"
+                  }
                 }
               ],
               "indexes": [
@@ -6051,6 +6116,14 @@
                   ],
                   "name": "Task_columnId_idx_728f084b",
                   "prefix": "Task_columnId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "milestoneId"
+                  ],
+                  "name": "Task_milestoneId_idx_f1dac854",
+                  "prefix": "Task_milestoneId_idx",
                   "unique": false
                 },
                 {
@@ -6325,7 +6398,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b8833235147ef12361380a18dc8778d798e37cc11bb43d7d688b685a7c43d15f"
+    "storageHash": "e10247c796c41c4a7b8c356c6ec8957d636b81878de5d042ce7c6fad6104e125"
   },
   "execution": {
     "executionHash": "ebbfb31b3fe8a8c19851f817f73657864a7bbc7e4afadbd316ddbe4ebb987af5",

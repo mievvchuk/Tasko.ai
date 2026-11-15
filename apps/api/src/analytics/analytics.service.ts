@@ -85,7 +85,7 @@ export class AnalyticsService {
       overdueTasks: tasks.filter((task) => taskRisk(task) === 'OVERDUE').length,
       nearestDeadline: nearestDeadline(tasks),
       tasksByStatus: Object.fromEntries(
-        ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'].map((status) => [
+        ['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'].map((status) => [
           status,
           tasks.filter((task) => task.status === status).length,
         ]),

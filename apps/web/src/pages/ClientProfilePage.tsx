@@ -41,6 +41,7 @@ export function ClientProfilePage() {
   const { id } = useParams();
   const { data, error, loading, refresh } = useApi<ClientProfile>(
     id ? `/clients/${id}/profile` : null,
+    { live: true },
   );
   return (
     <>

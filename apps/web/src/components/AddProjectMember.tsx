@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import { errorMessage, request } from "../api";
 import { useApi } from "../useApi";
 import type { ProjectMember } from "../types";
-import { Pagination, ResourceState } from "./ResourceState";
+import { ResourceState } from "./ResourceState";
 
 import { useLanguage } from "../i18n";
 export function AddProjectMember({
@@ -16,13 +16,13 @@ export function AddProjectMember({
   onAdded: () => void;
 }) {
   const { tr } = useLanguage();
-  const [page, setPage] = useState(1);
   const [userId, setUserId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const directory = useApi<{ id: string; name: string; email: string }[]>(
-    `/directory/freelancers?page=${page}&limit=20`,
+    // Один список у полі вибору замість сторінок під ним
+    "/directory/freelancers?limit=50",
   );
   const available =
     directory.data?.filter(
@@ -51,10 +51,10 @@ export function AddProjectMember({
   }
 
   return (
-    <div className="padded">
+    <div className="add-member">
       <p className="form-note">
         {tr(
-          "Команду наймають через заявки на біржі. Можна також додати фрілансера напряму: він отримає доступ до даних цього проєкту.",
+          "Поки триває найм, команду можна поповнити й напряму: фрілансер отримає доступ до даних цього проєкту.",
         )}
       </p>
       <ResourceState
@@ -64,10 +64,10 @@ export function AddProjectMember({
       />
       {directory.data && (
         <>
-          <form className="member-form" onSubmit={add}>
-            <label htmlFor="new-project-member">
-              {tr("Додати фрілансера")}
-            </label>
+          <label className="add-member-label" htmlFor="new-project-member">
+            {tr("Додати фрілансера")}
+          </label>
+          <form className="add-member-form" onSubmit={add}>
             <select
               id="new-project-member"
               required
@@ -89,17 +89,9 @@ export function AddProjectMember({
           </form>
           {!available.length && (
             <p className="form-note">
-              {tr("На цій сторінці немає інших активних фрілансерів.")}
+              {tr("Інших активних фрілансерів немає.")}
             </p>
           )}
-          <Pagination
-            page={page}
-            count={directory.data.length}
-            onChange={(value) => {
-              setUserId("");
-              setPage(value);
-            }}
-          />
         </>
       )}
       {message && (

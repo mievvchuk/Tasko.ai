@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
-import { TasksService, columnKey, planColumnOrder } from '../../../src/tasks/tasks.service.js';
+import {
+  TasksService,
+  columnKey,
+  planColumnOrder,
+} from '../../../src/tasks/tasks.service.js';
 
 describe('kanban board columns', () => {
   const freelancer: CurrentUser = {
@@ -31,7 +35,14 @@ describe('kanban board columns', () => {
     status: string;
   }[] = [];
   const db = {
-    Task: { where: vi.fn(() => ({ first: async () => task, update })) },
+    Task: {
+      where: vi.fn(() => ({
+        first: async () => task,
+        update,
+        all: async () => [],
+      })),
+    },
+    ProjectMember: { where: vi.fn(() => ({ first: async () => null })) },
     BoardColumn: {
       where: vi.fn(({ id }: { id?: string }) => ({
         first: async () => columns.find((column) => column.id === id),
@@ -49,6 +60,7 @@ describe('kanban board columns', () => {
     requireOwner: vi.fn(async () => ({ status: 'ACTIVE' })),
     ensureWritable: vi.fn(),
     logActivity: vi.fn(),
+    notify: vi.fn(),
   };
   const tasks = new TasksService(projects as unknown as ProjectsService);
 
@@ -66,7 +78,9 @@ describe('kanban board columns', () => {
   });
 
   it('moves a task into a column of its own project', async () => {
-    await tasks.status(freelancer, task.id, 'IN_PROGRESS', 'own-column');
+    await tasks.transition(freelancer, task.id, 'IN_PROGRESS', {
+      columnId: 'own-column',
+    });
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'IN_PROGRESS',
@@ -83,36 +97,42 @@ describe('kanban board columns', () => {
       status: 'IN_PROGRESS',
     });
     await expect(
-      tasks.status(freelancer, task.id, 'IN_PROGRESS', 'other-column'),
+      tasks.transition(freelancer, task.id, 'IN_PROGRESS', {
+        columnId: 'other-column',
+      }),
     ).rejects.toBeInstanceOf(BadRequestException);
     await expect(
-      tasks.status(freelancer, task.id, 'TODO', 'own-column'),
+      tasks.transition(freelancer, task.id, 'TODO', { columnId: 'own-column' }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(update).not.toHaveBeenCalled();
   });
 
   it('moves a task into a To do column such as Backlog', async () => {
-    await tasks.status(freelancer, task.id, 'TODO', 'backlog');
+    await tasks.transition(freelancer, task.id, 'TODO', {
+      columnId: 'backlog',
+    });
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'TODO', columnId: 'backlog' }),
     );
     await expect(
-      tasks.status(freelancer, task.id, 'IN_PROGRESS', 'backlog'),
+      tasks.transition(freelancer, task.id, 'IN_PROGRESS', {
+        columnId: 'backlog',
+      }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('lets the project owner move a task assigned to someone else', async () => {
     const owner = { ...freelancer, id: 'client-id', role: 'CLIENT' as const };
-    await tasks.status(owner, task.id, 'IN_PROGRESS');
+    await tasks.transition(owner, task.id, 'IN_PROGRESS');
     expect(update).toHaveBeenCalled();
     const stranger = { ...freelancer, id: 'stranger-id' };
     await expect(
-      tasks.status(stranger, task.id, 'IN_PROGRESS'),
+      tasks.transition(stranger, task.id, 'IN_PROGRESS'),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('clears the column when a task goes back to To do', async () => {
-    await tasks.status(freelancer, task.id, 'TODO');
+    await tasks.transition(freelancer, task.id, 'TODO');
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'TODO', columnId: null }),
     );

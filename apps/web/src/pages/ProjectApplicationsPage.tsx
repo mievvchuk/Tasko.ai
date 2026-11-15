@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { errorMessage, request } from "../api";
 import { Pagination, ResourceState } from "../components/ResourceState";
+import { UserAvatar } from "../components/UserAvatar";
 import { formatDate, parsePage } from "../format";
 import { applicationStatusNames } from "../types";
 import type { Project, ProjectApplication } from "../types";
@@ -16,8 +17,11 @@ export function ProjectApplicationsPage() {
   const page = parsePage(params.get("page"));
   const { data, error, loading, refresh } = useApi<ProjectApplication[]>(
     id ? `/projects/${id}/applications?page=${page}&limit=10` : null,
+    { live: true },
   );
-  const project = useApi<Project>(id ? `/projects/${id}` : null);
+  const project = useApi<Project>(id ? `/projects/${id}` : null, {
+    live: true,
+  });
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState("");
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -143,8 +147,27 @@ export function ProjectApplicationsPage() {
             .map((application) => (
               <article className="application-card" key={application.id}>
                 <div className="application-person">
+                  {/* Аватар та ім'я ведуть на профіль фрілансера */}
+                  <Link
+                    className="application-avatar"
+                    to={`/freelancers/${application.freelancerId}`}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  >
+                    <UserAvatar
+                      name={application.freelancer.name}
+                      avatarUrl={application.freelancer.avatarUrl}
+                    />
+                  </Link>
                   <div>
-                    <h2>{application.freelancer.name}</h2>
+                    <h2>
+                      <Link
+                        className="application-name"
+                        to={`/freelancers/${application.freelancerId}`}
+                      >
+                        {application.freelancer.name}
+                      </Link>
+                    </h2>
                     <span
                       className={`project-status status-${application.status}`}
                     >
@@ -152,9 +175,6 @@ export function ProjectApplicationsPage() {
                     </span>
                   </div>
                   <span className="application-links">
-                    <Link to={`/freelancers/${application.freelancerId}`}>
-                      {tr("Переглянути профіль")}
-                    </Link>
                     {/* Після найму розмова продовжується в чаті проєкту, а не заявки */}
                     <Link
                       to={

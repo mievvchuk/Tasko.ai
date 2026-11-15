@@ -9,17 +9,7 @@ import { useApi } from "../useApi";
 
 import { useLanguage } from "../i18n";
 import { uiLocale } from "../i18n.en";
-const workNames = {
-  PLANNED: "Заплановано",
-  IN_PROGRESS: "У роботі",
-  REVIEW: "На перевірці",
-  COMPLETED: "Завершено",
-};
-const paymentNames = {
-  UNPAID: "Не зарезервовано",
-  RESERVED: "Умовно зарезервовано",
-  PAID: "Позначено оплаченим",
-};
+import { milestonePaymentNames, milestoneStatusNames } from "../types";
 
 type MilestoneFields = {
   title: string;
@@ -135,8 +125,11 @@ export function ProjectMilestonesPage() {
   const { user } = useAuth();
   const milestones = useApi<ProjectMilestone[]>(
     id ? `/projects/${id}/milestones` : null,
+    { live: true },
   );
-  const project = useApi<Project>(id ? `/projects/${id}` : null);
+  const project = useApi<Project>(id ? `/projects/${id}` : null, {
+    live: true,
+  });
   const [editingId, setEditingId] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -181,7 +174,7 @@ export function ProjectMilestonesPage() {
         <h1>{tr("Етапи та умовна оплата")}</h1>
         <p>
           {tr(
-            "Суми й статуси тут є обліковими та не виконують реальний платіж.",
+            "Етап — це оплата частинами за його завдання. Статус етапу змінюється сам: коли всі завдання виконано, етап чекає вашого приймання. Суми облікові й не виконують реальний платіж.",
           )}
         </p>
       </div>
@@ -226,11 +219,27 @@ export function ProjectMilestonesPage() {
                 <dl className="marketplace-facts">
                   <div>
                     <dt>{tr("Статус")}</dt>
-                    <dd>{tr(workNames[item.status])}</dd>
+                    <dd>{tr(milestoneStatusNames[item.status])}</dd>
+                  </div>
+                  <div>
+                    <dt>{tr("Завдання")}</dt>
+                    <dd>
+                      {item.taskCount ? (
+                        <Link to={`/projects/${id}?milestone=${item.id}`}>
+                          {tr(
+                            "Виконано {0} з {1}",
+                            item.doneTaskCount,
+                            item.taskCount,
+                          )}
+                        </Link>
+                      ) : (
+                        tr("Завдань ще немає")
+                      )}
+                    </dd>
                   </div>
                   <div>
                     <dt>{tr("Умовна оплата")}</dt>
-                    <dd>{tr(paymentNames[item.paymentStatus])}</dd>
+                    <dd>{tr(milestonePaymentNames[item.paymentStatus])}</dd>
                   </div>
                   <div>
                     <dt>{tr("Сума")}</dt>
@@ -253,43 +262,14 @@ export function ProjectMilestonesPage() {
                       {tr("Редагувати")}
                     </button>
                   )}
-                  {item.status === "PLANNED" && (
-                    <button
-                      className="button secondary"
-                      onClick={() =>
-                        void update(item, { status: "IN_PROGRESS" })
-                      }
-                    >
-                      {tr("Почати")}
-                    </button>
-                  )}
-                  {item.status === "IN_PROGRESS" && !owner && (
-                    <button
-                      className="button secondary"
-                      onClick={() => void update(item, { status: "REVIEW" })}
-                    >
-                      {tr("Передати на перевірку")}
-                    </button>
-                  )}
                   {item.status === "REVIEW" && owner && (
-                    <>
-                      <button
-                        className="button primary"
-                        onClick={() =>
-                          void update(item, { status: "COMPLETED" })
-                        }
-                      >
-                        {tr("Прийняти")}
-                      </button>
-                      <button
-                        className="button secondary"
-                        onClick={() =>
-                          void update(item, { status: "IN_PROGRESS" })
-                        }
-                      >
-                        {tr("Повернути")}
-                      </button>
-                    </>
+                    <button
+                      className="button primary"
+                      onClick={() => void update(item, { status: "COMPLETED" })}
+                    >
+                      <i className="bi bi-check2-circle" aria-hidden="true"></i>
+                      {tr("Прийняти етап")}
+                    </button>
                   )}
                   {owner && (
                     <select

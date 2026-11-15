@@ -409,6 +409,11 @@ export class ProjectsService {
     const project = await this.requireOwner(user, projectId);
     this.ensureWritable(project);
     this.ensureModerated(project);
+    // Після закриття найму команда сформована: напряму нікого не додаємо
+    if (!project.hiringOpen)
+      throw new ConflictException(
+        'Найм у проєкті закрито, тож додати фрілансера вже не можна.',
+      );
     const freelancer = await this.prisma.client.orm.public.User.where({
       id: userId,
     }).first();

@@ -21,16 +21,19 @@ export function TaskDetailsPage() {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
-  const task = useApi<Task>(`/tasks/${taskId}`);
+  const task = useApi<Task>(`/tasks/${taskId}`, { live: true });
   // Проєкт, учасники й результати завантажуються лише після завдання, бо потрібен його projectId.
   const project = useApi<Project>(
     task.data ? `/projects/${task.data.projectId}` : null,
+    { live: true },
   );
   const members = useApi<ProjectMember[]>(
     task.data ? `/projects/${task.data.projectId}/members` : null,
+    { live: true },
   );
   const submissions = useApi<WorkSubmission[]>(
     task.data ? `/tasks/${taskId}/submissions?page=${page}&limit=20` : null,
+    { live: true },
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,19 +44,24 @@ export function TaskDetailsPage() {
     submissions.refresh();
   }
 
-  // Переводить завдання між «До виконання» і «У роботі».
-  async function changeStatus(status: "TODO" | "IN_PROGRESS") {
-    if (busy) return;
+  // Переміщення завдання за тими самими правилами, що й на Kanban-дошці
+  async function changeStatus(
+    status: "TODO" | "IN_PROGRESS" | "REVISION",
+    reason?: string,
+  ) {
+    if (busy) return false;
     setBusy(true);
     setError("");
     try {
-      await request(`/tasks/${taskId}/status`, {
-        method: "PATCH",
-        body: { status },
+      await request(`/tasks/${taskId}/move`, {
+        method: "POST",
+        body: { status, reason },
       });
       refresh();
+      return true;
     } catch (error) {
       setError(errorMessage(error));
+      return false;
     } finally {
       setBusy(false);
     }
@@ -81,10 +89,13 @@ export function TaskDetailsPage() {
   // Редагувати можна, поки завдання не передано на перевірку й не завершено.
   const canEdit =
     owner && !closed && !["REVIEW", "DONE"].includes(currentTask.status);
+  // Виконавець бере в роботу, повертає до плану або продовжує після доопрацювання
   const canChangeStatus =
     projectActive &&
-    ["TODO", "IN_PROGRESS"].includes(currentTask.status) &&
+    ["TODO", "IN_PROGRESS", "REVISION"].includes(currentTask.status) &&
     isAssignee;
+  // Прийняту роботу замовник може повернути на доопрацювання з причиною
+  const canReopen = owner && projectActive && currentTask.status === "DONE";
   const canSubmit =
     projectActive && currentTask.status === "IN_PROGRESS" && isAssignee;
   const canReview = owner && !closed && currentTask.status === "REVIEW";
@@ -92,7 +103,8 @@ export function TaskDetailsPage() {
   const assigneeName =
     members.data.find((member) => member.userId === currentTask.assigneeId)
       ?.user?.name || tr("Не призначено");
-  const nextStatus = currentTask.status === "TODO" ? "IN_PROGRESS" : "TODO";
+  const nextStatus =
+    currentTask.status === "IN_PROGRESS" ? "TODO" : "IN_PROGRESS";
 
   return (
     <>
@@ -152,9 +164,24 @@ export function TaskDetailsPage() {
             >
               {currentTask.status === "TODO"
                 ? tr("Почати виконання")
-                : tr("Повернути до плану")}
+                : currentTask.status === "REVISION"
+                  ? tr("Продовжити роботу")
+                  : tr("Повернути до плану")}
             </button>
           </div>
+        )}
+        {currentTask.status === "REVISION" && isAssignee && (
+          <p className="form-note section-gap">
+            {tr(
+              "Замовник повернув завдання на доопрацювання — причина в результатах нижче та в сповіщеннях.",
+            )}
+          </p>
+        )}
+        {canReopen && (
+          <ReopenTask
+            busy={busy}
+            onReopen={(reason) => changeStatus("REVISION", reason)}
+          />
         )}
         {!projectActive && !closed && (
           <p className="form-note section-gap">
@@ -222,5 +249,61 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
       <dt>{label}</dt>
       <dd>{children}</dd>
     </div>
+  );
+}
+
+// Повернення прийнятого завдання на доопрацювання: причина обов'язкова
+function ReopenTask({
+  busy,
+  onReopen,
+}: {
+  busy: boolean;
+  onReopen: (reason: string) => Promise<boolean>;
+}) {
+  const { tr } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  if (!open)
+    return (
+      <div className="page-actions section-gap">
+        <button className="button secondary" onClick={() => setOpen(true)}>
+          <i className="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+          {tr("Повернути на доопрацювання")}
+        </button>
+      </div>
+    );
+  return (
+    <form
+      className="work-form section-gap"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (await onReopen(reason.trim())) {
+          setOpen(false);
+          setReason("");
+        }
+      }}
+    >
+      <label htmlFor="reopen-reason">{tr("Що потрібно виправити")}</label>
+      <textarea
+        id="reopen-reason"
+        required
+        rows={3}
+        maxLength={2000}
+        value={reason}
+        onChange={(event) => setReason(event.target.value)}
+      />
+      <div className="page-actions">
+        <button className="button primary" disabled={busy || !reason.trim()}>
+          {tr("Повернути")}
+        </button>
+        <button
+          type="button"
+          className="button secondary"
+          onClick={() => setOpen(false)}
+        >
+          {tr("Скасувати")}
+        </button>
+      </div>
+    </form>
   );
 }

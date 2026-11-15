@@ -18,9 +18,10 @@ export function OrdersPage() {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
-  const project = useApi<Project>(`/projects/${id}`);
+  const project = useApi<Project>(`/projects/${id}`, { live: true });
   const orders = useApi<Order[]>(
     project.data ? `/projects/${id}/orders?page=${page}&limit=20` : null,
+    { live: true },
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

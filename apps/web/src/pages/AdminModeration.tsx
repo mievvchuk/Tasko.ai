@@ -23,7 +23,9 @@ const rejectPresets = [
 
 export function AdminModerationPage() {
   const { tr } = useLanguage();
-  const queue = useApi<ModerationProject[]>("/admin/moderation/projects");
+  const queue = useApi<ModerationProject[]>("/admin/moderation/projects", {
+    live: true,
+  });
   const [notice, setNotice] = useState("");
 
   return (

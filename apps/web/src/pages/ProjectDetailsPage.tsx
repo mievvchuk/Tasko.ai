@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { request, errorMessage } from "../api";
+import { useLiveRefresh } from "../useLiveRefresh";
 import { useAuth } from "../auth";
 import { LoadError } from "../components/LoadError";
 import { ReviewForm } from "../components/ReviewForm";
 import { ProjectStages } from "../components/ProjectStages";
 import { TaskSearchFilters } from "../components/TaskSearchFilters";
 import { AddProjectMember } from "../components/AddProjectMember";
+import { MilestonesPanel } from "../components/MilestonesPanel";
+import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
 import {
   priorityNames,
@@ -14,7 +17,7 @@ import {
   roleNames,
   taskStatusNames,
 } from "../types";
-import type { Project, ProjectMember, Task } from "../types";
+import type { Project, ProjectMember, ProjectMilestone, Task } from "../types";
 
 import { useLanguage } from "../i18n";
 export function ProjectDetailsPage() {
@@ -30,12 +33,23 @@ export function ProjectDetailsPage() {
   const rawPriority = params.get("priority") || "";
   const priority = Object.hasOwn(priorityNames, rawPriority) ? rawPriority : "";
   const assignee = params.get("assignee") || "";
+  const milestone = params.get("milestone") || "";
+  // Етапи з прогресом: панель над завданнями і фільтр «Етап»
+  const milestones = useApi<ProjectMilestone[]>(
+    id ? `/projects/${id}/milestones` : null,
+    { live: true },
+  );
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const silent = useRef(false);
+  useLiveRefresh(() => {
+    silent.current = true;
+    setAttempt((value) => value + 1);
+  });
   const [memberNotice, setMemberNotice] = useState("");
   const navigate = useNavigate();
   const [taking, setTaking] = useState(false);
@@ -58,9 +72,14 @@ export function ProjectDetailsPage() {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    // Живе оновлення перечитує дані тихо: без індикатора завантаження й без заміни їх помилкою
+    const quiet = silent.current;
+    silent.current = false;
     async function load() {
-      setLoading(true);
-      setError("");
+      if (!quiet) {
+        setLoading(true);
+        setError("");
+      }
       try {
         const query = new URLSearchParams({ page: String(page), limit: "10" });
         if (status) query.set("status", status);
@@ -68,6 +87,7 @@ export function ProjectDetailsPage() {
         if (search) query.set("search", search);
         if (overdue) query.set("overdue", "true");
         if (assignee) query.set("assigneeId", assignee);
+        if (milestone) query.set("milestoneId", milestone);
         const [detail, people, items] = await Promise.all([
           request<Project>(`/projects/${id}`, { signal: controller.signal }),
           request<ProjectMember[]>(`/projects/${id}/members`, {
@@ -83,7 +103,7 @@ export function ProjectDetailsPage() {
           setTasks(items);
         }
       } catch (error) {
-        if (active) setError(errorMessage(error));
+        if (active && !quiet) setError(errorMessage(error));
       } finally {
         if (active) setLoading(false);
       }
@@ -93,7 +113,17 @@ export function ProjectDetailsPage() {
       active = false;
       controller.abort();
     };
-  }, [id, page, status, priority, search, overdue, assignee, attempt]);
+  }, [
+    id,
+    page,
+    status,
+    priority,
+    search,
+    overdue,
+    assignee,
+    milestone,
+    attempt,
+  ]);
 
   function changeFilter(name: string, value: string) {
     const query = new URLSearchParams(params);
@@ -150,7 +180,10 @@ export function ProjectDetailsPage() {
             </Link>
           )}
           {canEdit && (
-            <Link className="button secondary" to={`/projects/${id}/tasks/new`}>
+            <Link
+              className="button secondary"
+              to={`/projects/${id}/tasks/new${milestone ? `?milestone=${milestone}` : ""}`}
+            >
               <i className="bi bi-plus-lg" aria-hidden="true"></i>
 
               {tr("Створити завдання")}
@@ -195,16 +228,7 @@ export function ProjectDetailsPage() {
       )}
       <ProjectStages status={project.status} hiringOpen={project.hiringOpen} />
       <nav className="project-links" aria-label={tr("Розділи проєкту")}>
-        {user?.role === "FREELANCER" && (
-          <Link to={`/clients/${project.clientId}`}>
-            <i className="bi bi-person-badge" aria-hidden="true"></i>
-            {tr("Профіль клієнта")}
-          </Link>
-        )}
-        <Link to={`/tasks?project=${id}`}>
-          <i className="bi bi-list-check" aria-hidden="true"></i>
-          {tr("Усі завдання")}
-        </Link>
+        {/* Завдання проєкту показано нижче на цій сторінці, тож окремого пункту «Усі завдання» немає */}
         {/* Листування й файли — приватні, адміністратору недоступні */}
         {!isAdmin && (
           <>
@@ -226,20 +250,17 @@ export function ProjectDetailsPage() {
           <i className="bi bi-receipt" aria-hidden="true"></i>
           {tr("Замовлення")}
         </Link>
-        <Link to={`/projects/${id}/milestones`}>
-          <i className="bi bi-flag" aria-hidden="true"></i>
-          {tr("Етапи")}
-        </Link>
         <Link to={`/projects/${id}/activity`}>
           <i className="bi bi-clock-history" aria-hidden="true"></i>
           {tr("Історія")}
         </Link>
-        <Link
-          to={`${isAdmin ? "/admin/ai" : "/ai"}?project=${id}&analyze=1`}
-        >
-          <i className="bi bi-graph-up" aria-hidden="true"></i>
-          {tr("Аналіз AI")}
-        </Link>
+        {/* Аналіз проєкту (ризики, дедлайни, завантаженість команди) потрібен тому, хто керує проєктом */}
+        {user?.role !== "FREELANCER" && (
+          <Link to={`${isAdmin ? "/admin/ai" : "/ai"}?project=${id}&analyze=1`}>
+            <i className="bi bi-graph-up" aria-hidden="true"></i>
+            {tr("Аналіз AI")}
+          </Link>
+        )}
         {canEdit && (
           <Link to={`/projects/${id}/plan`}>
             <i className="bi bi-stars" aria-hidden="true"></i>
@@ -288,6 +309,19 @@ export function ProjectDetailsPage() {
           </div>
         </dl>
       </section>
+      {milestones.data && (
+        <MilestonesPanel
+          projectId={project.id}
+          milestones={milestones.data}
+          selected={milestone}
+          owner={canEdit}
+          onSelect={(value) => changeFilter("milestone", value)}
+          onChanged={() => {
+            milestones.refresh();
+            retry();
+          }}
+        />
+      )}
       {user?.role === "FREELANCER" &&
         project.status === "ACTIVE" &&
         members.some((member) => member.userId === user.id) && (
@@ -359,6 +393,25 @@ export function ProjectDetailsPage() {
                 ))}
               </select>
             </div>
+            {Boolean(milestones.data?.length) && (
+              <div className="filter-field">
+                <label htmlFor="task-milestone">{tr("Етап")}</label>
+                <select
+                  id="task-milestone"
+                  value={milestone}
+                  onChange={(event) =>
+                    changeFilter("milestone", event.target.value)
+                  }
+                >
+                  <option value="">{tr("Усі етапи")}</option>
+                  {milestones.data?.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="filter-field">
               <label htmlFor="task-assignee">{tr("Виконавець")}</label>
               <select
@@ -395,6 +448,7 @@ export function ProjectDetailsPage() {
                 <thead>
                   <tr>
                     <th scope="col">{tr("Назва")}</th>
+                    <th scope="col">{tr("Етап")}</th>
                     <th scope="col">{tr("Виконавець")}</th>
                     <th scope="col">{tr("Пріоритет")}</th>
                     <th scope="col">{tr("Статус")}</th>
@@ -406,6 +460,11 @@ export function ProjectDetailsPage() {
                     <tr key={task.id}>
                       <td>
                         <Link to={`/tasks/${task.id}`}>{task.title}</Link>
+                      </td>
+                      <td>
+                        {milestones.data?.find(
+                          (item) => item.id === task.milestoneId,
+                        )?.title ?? "—"}
                       </td>
                       <td>
                         {task.assigneeId
@@ -464,7 +523,8 @@ export function ProjectDetailsPage() {
             {memberNotice}
           </p>
         )}
-        {canEdit && project.status !== "PLANNING" && (
+        {/* Додати фрілансера напряму можна, лише поки триває найм; після закриття команда сформована */}
+        {canEdit && project.status !== "PLANNING" && project.hiringOpen && (
           <AddProjectMember
             projectId={project.id}
             members={members}

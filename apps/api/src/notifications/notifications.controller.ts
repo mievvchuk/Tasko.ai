@@ -12,7 +12,7 @@ import {
   Sse,
   UseGuards,
 } from '@nestjs/common';
-import { filter, interval, map, merge } from 'rxjs';
+import { concatMap, filter, interval, map, merge } from 'rxjs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -20,6 +20,7 @@ import { PageDto } from '../projects/projects.dto.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { NotificationsService } from './notifications.service.js';
 import { notificationEvents } from './notification-events.js';
+import { dataEvents } from './data-events.js';
 import { IsOptional, IsUUID } from 'class-validator';
 
 class ReadChatDto {
@@ -36,12 +37,23 @@ export class NotificationsController {
     @Inject(NotificationsService)
     private readonly notifications: NotificationsService,
   ) {}
-  // Подія «щось змінилось» лише для цього користувача; пінг раз на 25 с тримає з'єднання
+  // «changed» — нове сповіщення саме для цього користувача; «data» — дані на платформі змінились
+  // (сторінки тихо перечитують їх); пінг раз на 25 с тримає з'єднання
   @Sse('stream') stream(@Actor() user: CurrentUser) {
     return merge(
       notificationEvents.pipe(
         filter((userId) => userId === user.id),
         map(() => ({ type: 'changed', data: '' })),
+      ),
+      // Подію проєкту отримують лише ті, хто має до нього доступ
+      dataEvents.pipe(
+        concatMap(async (projectId) =>
+          !projectId ||
+          (await this.notifications.canSeeProject(user, projectId))
+            ? { type: 'data', data: projectId ?? '' }
+            : null,
+        ),
+        filter((event) => event !== null),
       ),
       interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
     );

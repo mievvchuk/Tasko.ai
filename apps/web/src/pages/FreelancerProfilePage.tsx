@@ -23,6 +23,7 @@ export function FreelancerProfilePage() {
   const { id } = useParams();
   const { data, error, loading, refresh } = useApi<FreelancerProfile>(
     id ? `/freelancers/${id}/profile` : null,
+    { live: true },
   );
   return (
     <>

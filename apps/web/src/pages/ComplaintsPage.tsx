@@ -30,6 +30,7 @@ export function ComplaintsPage() {
   const { tr } = useLanguage();
   const { data, error, loading, refresh } = useApi<Complaint[]>(
     "/complaints?limit=50",
+    { live: true },
   );
   const targets = useApi<Targets>("/complaints/targets");
   const [query, setQuery] = useState("");

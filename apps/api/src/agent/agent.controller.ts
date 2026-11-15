@@ -93,7 +93,16 @@ export class AgentController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() data: GeneratePlanDto,
   ) {
-    return this.planning.generate(user, id, data.instructions);
+    return this.planning.generate(user, id, data.instructions, data.replace);
+  }
+
+  // Бюджет для плану й наявні етапи: сторінка плану показує, скільки можна розподілити
+  @Get('projects/:id/ai-plan/context')
+  planContext(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.planning.context(user, id);
   }
 
   @Post('projects/:id/ai-plan/apply')
@@ -103,7 +112,13 @@ export class AgentController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() data: ApplyPlanDto,
   ) {
-    return this.planning.apply(user, id, data.requestId, data.plan);
+    return this.planning.apply(
+      user,
+      id,
+      data.requestId,
+      data.plan,
+      data.replace,
+    );
   }
 
   @All('mcp')

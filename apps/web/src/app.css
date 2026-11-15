@@ -490,7 +490,8 @@ label {
 }
 .status-CANCELLED,
 .status-REJECTED,
-.status-BLOCKED {
+.status-BLOCKED,
+.status-REVISION {
   background: var(--color-error-soft);
   color: var(--color-error);
 }
@@ -2094,36 +2095,233 @@ input[type="file"]::file-selector-button:hover {
   gap: var(--space-xs);
   margin-top: var(--space-2xs);
 }
-.plan-summary {
-  display: grid;
+/* Бюджет для плану — така сама рамка-підказка, як примітка вище */
+.plan-intro > .plan-budget {
+  display: flex;
   gap: var(--space-xs);
-  margin-bottom: var(--space-md);
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-paper-2);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
 }
+.plan-budget i {
+  color: var(--color-accent-text);
+}
+.plan-budget strong {
+  color: var(--color-ink);
+}
+/* Замінити попередні етапи чи додати до них — дві картки-перемикачі */
+.plan-mode {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.plan-mode legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--space-2xs);
+  padding: 0;
+  font-weight: 700;
+}
+.plan-mode legend + * {
+  clear: both;
+}
+.plan-mode-option {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-paper-2);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-out),
+    background-color var(--dur-micro) var(--ease-out);
+}
+.plan-mode-option:hover {
+  border-color: var(--color-rule-2);
+}
+.plan-mode-option:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.plan-mode-option input {
+  margin-top: 0.2em;
+  accent-color: var(--color-accent);
+}
+.plan-mode-option > span {
+  display: grid;
+  gap: var(--space-3xs);
+}
+.plan-mode-option small {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+/* Чернетка: заголовок із підсумком (етапи, завдання, сума плану) */
+.plan-editor {
+  display: grid;
+  gap: var(--space-md);
+}
+.plan-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+.plan-summary h2 {
+  font-size: var(--text-xl);
+}
+.plan-summary p {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+.plan-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+}
+.plan-stats > div {
+  display: grid;
+  gap: var(--space-3xs);
+  min-width: 96px;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-paper-2);
+}
+.plan-stats dt {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+.plan-stats dd {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.plan-stats .over {
+  border-color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.plan-stats .over dd {
+  color: var(--color-error);
+}
+
 /* Етап — картка, завдання в ньому — заглиблені блоки з рамкою, щоб рівні не зливались */
 .plan-milestone,
 .plan-task {
   display: grid;
   gap: var(--space-sm);
-  padding: var(--space-md);
-  border-radius: var(--radius-input);
+  min-width: 0;
 }
 .plan-milestone {
-  border: 0;
+  margin: 0;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
   background-color: var(--color-surface);
   background-image: var(--tex-cotton);
   box-shadow: var(--edge-stock), var(--cast-stock);
 }
+/* legend за замовчуванням сидить на рамці fieldset; float повертає її всередину картки */
+.plan-milestone > legend.plan-milestone-head {
+  float: left;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  margin: 0 0 var(--space-xs);
+  padding: 0 0 var(--space-sm);
+  border-bottom: 1px solid var(--color-rule);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+.plan-milestone-head + * {
+  clear: both;
+}
+.plan-milestone-head > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plan-step {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-size: var(--text-sm);
+}
+.plan-amount {
+  flex: none;
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-3);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.plan-tasks-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+  font-size: var(--text-md);
+}
+.plan-tasks-title span {
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-3);
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+}
 .plan-task {
+  padding: var(--space-md);
   border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
   background: var(--color-paper-2);
 }
-.plan-milestone + .plan-milestone,
 .plan-task + .plan-task {
-  margin-top: var(--space-sm);
+  margin-top: var(--space-2xs);
 }
-.plan-milestone legend {
-  padding: 0 var(--space-2xs);
-  font-weight: 700;
+.plan-task-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.plan-task-head h4 {
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+}
+/* Пріоритет і вартість — поруч, на телефоні одне під одним */
+.plan-task-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-sm);
+}
+.plan-task-meta > div {
+  display: grid;
+  gap: var(--space-2xs);
+}
+.plan-milestone .plan-actions {
+  margin-top: var(--space-xs);
 }
 
 /* Профіль */
@@ -3788,6 +3986,35 @@ dl.admin-details > dd {
 }
 .admin-recent li:hover {
   background: var(--color-paper-2);
+}
+/* Уся картка користувача клікабельна: посилання на ім'я розтягнуте на рядок */
+.admin-recent li {
+  position: relative;
+}
+.admin-recent-link {
+  color: var(--color-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+.admin-recent-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.admin-recent-link:focus-visible {
+  outline: none;
+}
+.admin-recent li:has(.admin-recent-link:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.admin-user-link {
+  color: inherit;
+  text-decoration: none;
+}
+.admin-user-link:hover {
+  color: var(--color-accent-text);
+  text-decoration: underline;
 }
 .admin-recent li > span {
   display: grid;
@@ -5583,6 +5810,23 @@ tbody tr:nth-child(n + 6) {
   flex-wrap: wrap;
   gap: var(--space-sm);
 }
+/* Аватар заявника; ім'я — посилання на профіль, підсвічується при наведенні */
+.application-avatar {
+  display: inline-flex;
+  flex: none;
+  border-radius: 50%;
+}
+.application-name {
+  color: inherit;
+  text-decoration: none;
+}
+.application-name:hover {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+}
+.application-card:has(.application-avatar:hover) .application-name {
+  color: var(--color-accent-text);
+}
 
 /* Черга завдань для фрілансера на сторінці проєкту */
 .take-next-panel {
@@ -6759,4 +7003,221 @@ a.stat-card:hover .progress-ring > span {
 .messenger-list button.has-unread strong {
   color: var(--color-ink);
   font-weight: 800;
+}
+
+/* Етапи й оплата на сторінці проєкту: картки з прогресом; клік фільтрує завдання нижче */
+.milestones-panel {
+  margin-bottom: var(--space-md);
+}
+.milestones-panel > .form-note,
+.milestones-panel > .form-error {
+  padding: var(--space-md) var(--space-lg);
+}
+.milestone-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-sm);
+  margin: 0;
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+  list-style: none;
+}
+.milestone-card {
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-paper-2);
+  transition: border-color var(--dur-micro) var(--ease-out);
+}
+.milestone-card:hover {
+  border-color: var(--color-rule-2);
+}
+.milestone-card.selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+.milestone-card-main {
+  display: grid;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.milestone-card-main:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-small);
+}
+.milestone-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+.milestone-card-head strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.milestone-index {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--color-paper-3);
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+.milestone-amount {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.milestone-card progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--color-accent);
+}
+.milestone-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs) var(--space-xs);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+.milestone-card-meta > span:first-child {
+  margin-right: auto;
+}
+.milestone-card-meta .project-status {
+  font-size: var(--text-xs);
+}
+.milestone-accept {
+  justify-self: start;
+}
+
+/* «Ваша заявка» на біржі: статус і дії окремими рядками */
+.application-state {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-paper-2);
+}
+.application-state > p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+.application-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+/* Пряме додавання фрілансера в команду (поки триває найм) */
+.add-member {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-rule);
+}
+.add-member-label {
+  margin-top: var(--space-2xs);
+  font-weight: 600;
+}
+.add-member-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.add-member-form select {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.add-member-form .button {
+  flex: none;
+}
+.add-member .notice {
+  margin: 0;
+}
+
+/* Kanban: під час перетягування доступні колонки мають рамку, недоступні — бліді */
+.kanban-column.drop-allowed {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: -2px;
+}
+.kanban-column.drop-allowed.drop-target {
+  background-color: var(--color-accent-soft);
+  outline-style: solid;
+}
+.kanban-column.locked {
+  opacity: 0.4;
+}
+/* Підказка над дошкою: куди можна кинути картку, а якщо ні — чому */
+.kanban-drag-hint {
+  position: sticky;
+  top: var(--space-xs);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: fit-content;
+  margin: 0 0 var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-accent-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  box-shadow: var(--cast-stock);
+}
+.kanban-drag-hint.denied {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+/* Колонка «На доопрацюванні» — тонка червона смуга під заголовком */
+.kanban-column.column-REVISION > h2 {
+  border-bottom: 2px solid var(--color-error);
+}
+/* Дві дії замовника на картці «На перевірці» */
+.kanban-review {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+.kanban-review .button {
+  flex: 1 1 auto;
+  min-height: 32px;
+  padding: var(--space-3xs) var(--space-xs);
+  font-size: var(--text-xs);
+}
+/* Перейменування колонки прямо в заголовку */
+.kanban-rename {
+  flex: 1;
+  min-width: 0;
+}
+.kanban-rename input {
+  width: 100%;
+  min-height: 30px;
+  padding: var(--space-3xs) var(--space-xs);
+  font-size: var(--text-sm);
 }

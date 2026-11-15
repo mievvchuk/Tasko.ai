@@ -1255,6 +1255,7 @@ const taskTones: Record<TaskStatus, ChartTone> = {
   TODO: "muted",
   IN_PROGRESS: "primary",
   REVIEW: "accent",
+  REVISION: "danger",
   DONE: "success",
 };
 const projectTones: Record<ProjectStatus, ChartTone> = {

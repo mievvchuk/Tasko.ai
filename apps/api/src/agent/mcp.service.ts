@@ -99,7 +99,7 @@ export class McpService {
           .object({
             projectId: z.string().uuid().optional(),
             status: z
-              .enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'])
+              .enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'])
               .optional(),
             ...pagination,
           })

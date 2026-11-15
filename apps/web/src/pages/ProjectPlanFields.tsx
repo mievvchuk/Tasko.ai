@@ -1,9 +1,14 @@
-import { useLanguage } from "../i18n"; // Поля редактора AI-плану: етап, завдання та критерії приймання.
+import { useLanguage } from "../i18n";
+import { formatMoney } from "../format";
+
+// Поля редактора AI-плану: етап, завдання та критерії приймання.
 
 export interface PlanTask {
   title: string;
   description: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
+  // Вартість завдання, грн; сума етапу — сума його завдань
+  amount: number;
   acceptanceCriteria: string[];
 }
 export interface PlanMilestone {
@@ -16,6 +21,14 @@ export interface Plan {
   milestones: PlanMilestone[];
 }
 
+export function milestoneTotal(milestone: PlanMilestone) {
+  return milestone.tasks.reduce((sum, task) => sum + (task.amount || 0), 0);
+}
+
+export function planTotal(plan: Plan) {
+  return plan.milestones.reduce((sum, item) => sum + milestoneTotal(item), 0);
+}
+
 const maxTasksPerMilestone = 8;
 
 function createEmptyTask(): PlanTask {
@@ -23,6 +36,7 @@ function createEmptyTask(): PlanTask {
     title: "",
     description: "",
     priority: "MEDIUM",
+    amount: 0,
     acceptanceCriteria: [""],
   };
 }
@@ -72,9 +86,24 @@ function PlanTaskFields({
   const idSuffix = `${milestoneIndex}-${taskIndex}`;
   return (
     <section className="plan-task">
-      <h3>
-        {tr("Завдання")} {milestoneIndex + 1}.{taskIndex + 1}
-      </h3>
+      <div className="plan-task-head">
+        <h4>
+          {tr("Завдання")} {milestoneIndex + 1}.{taskIndex + 1}
+        </h4>
+        <button
+          type="button"
+          className="text-button"
+          disabled={!canRemove}
+          onClick={onRemove}
+          aria-label={tr(
+            "Прибрати завдання {0}",
+            `${milestoneIndex + 1}.${taskIndex + 1}`,
+          )}
+        >
+          <i className="bi bi-trash" aria-hidden="true"></i>
+          {tr("Прибрати")}
+        </button>
+      </div>
       <div className="work-form">
         <label htmlFor={`task-title-${idSuffix}`}>{tr("Назва завдання")}</label>
         <input
@@ -96,18 +125,47 @@ function PlanTaskFields({
           value={task.description}
           onChange={(e) => onChange({ description: e.target.value })}
         />
-        <label htmlFor={`task-priority-${idSuffix}`}>{tr("Пріоритет")}</label>
-        <select
-          id={`task-priority-${idSuffix}`}
-          value={task.priority}
-          onChange={(e) =>
-            onChange({ priority: e.target.value as PlanTask["priority"] })
-          }
-        >
-          <option value="LOW">{tr("Низький")}</option>
-          <option value="MEDIUM">{tr("Середній")}</option>
-          <option value="HIGH">{tr("Високий")}</option>
-        </select>
+        <div className="plan-task-meta">
+          <div>
+            <label htmlFor={`task-priority-${idSuffix}`}>
+              {tr("Пріоритет")}
+            </label>
+            <select
+              id={`task-priority-${idSuffix}`}
+              value={task.priority}
+              onChange={(e) =>
+                onChange({ priority: e.target.value as PlanTask["priority"] })
+              }
+            >
+              <option value="LOW">{tr("Низький")}</option>
+              <option value="MEDIUM">{tr("Середній")}</option>
+              <option value="HIGH">{tr("Високий")}</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor={`task-amount-${idSuffix}`}>
+              {tr("Вартість, грн")}
+            </label>
+            <input
+              id={`task-amount-${idSuffix}`}
+              type="number"
+              inputMode="numeric"
+              required
+              min={0}
+              max={100000000}
+              step={1}
+              value={Number.isFinite(task.amount) ? task.amount : ""}
+              onChange={(e) =>
+                onChange({
+                  amount:
+                    e.target.value === ""
+                      ? Number.NaN
+                      : Math.max(0, Math.floor(Number(e.target.value))),
+                })
+              }
+            />
+          </div>
+        </div>
         <CriteriaField
           id={`task-criteria-${idSuffix}`}
           label={tr("Критерії приймання — по одному на рядок")}
@@ -115,16 +173,6 @@ function PlanTaskFields({
           onChange={(acceptanceCriteria) => onChange({ acceptanceCriteria })}
         />
       </div>
-      <button
-        type="button"
-        className="text-button"
-        disabled={!canRemove}
-        onClick={onRemove}
-      >
-        <i className="bi bi-trash" aria-hidden="true"></i>
-
-        {tr("Прибрати завдання")}
-      </button>
     </section>
   );
 }
@@ -159,8 +207,13 @@ export function PlanMilestoneFields({
 
   return (
     <fieldset className="plan-milestone" disabled={disabled}>
-      <legend>
-        {tr("Етап")} {index + 1}
+      {/* legend усередині картки (а не на її рамці) — разом із сумою етапу */}
+      <legend className="plan-milestone-head">
+        <span className="plan-step">{index + 1}</span>
+        <span>{milestone.title.trim() || tr("Етап {0}", index + 1)}</span>
+        <strong className="plan-amount">
+          {formatMoney(milestoneTotal(milestone))}
+        </strong>
       </legend>
       <div className="work-form">
         <label htmlFor={`milestone-title-${index}`}>{tr("Назва етапу")}</label>
@@ -190,6 +243,9 @@ export function PlanMilestoneFields({
           onChange={(acceptanceCriteria) => onChange({ acceptanceCriteria })}
         />
       </div>
+      <h3 className="plan-tasks-title">
+        {tr("Завдання етапу")} <span>{tasks.length}</span>
+      </h3>
       {tasks.map((task, taskIndex) => (
         <PlanTaskFields
           key={taskIndex}

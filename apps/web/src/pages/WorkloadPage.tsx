@@ -43,7 +43,9 @@ function LoadRing({ active, label }: { active: number; label: string }) {
 export function WorkloadPage() {
   const { tr } = useLanguage();
   const freelancer = useAuth().user?.role === "FREELANCER";
-  const workload = useApi<FreelancerWorkload[]>("/analytics/workload");
+  const workload = useApi<FreelancerWorkload[]>("/analytics/workload", {
+    live: true,
+  });
   const people = workload.data || [];
 
   return (

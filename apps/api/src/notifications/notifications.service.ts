@@ -142,4 +142,16 @@ export class NotificationsService {
       }).update({ readAt });
     return { updated: items.length };
   }
+
+  // Чи бачить користувач зміни проєкту: адмін, замовник або учасник команди
+  async canSeeProject(user: { id: string; role: string }, projectId: string) {
+    if (user.role === 'ADMIN') return true;
+    const db = this.prisma.client.orm.public;
+    const project = await db.Project.where({ id: projectId }).first();
+    if (!project) return false;
+    if (project.clientId === user.id) return true;
+    return Boolean(
+      await db.ProjectMember.where({ projectId, userId: user.id }).first(),
+    );
+  }
 }

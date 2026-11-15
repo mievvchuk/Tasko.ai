@@ -7,6 +7,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { syncMilestones } from '../projects/milestone-progress.js';
+import { moveRule, type MoveActor, type TaskStatus } from './task-workflow.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import type { PageDto } from '../projects/projects.dto.js';
@@ -17,6 +19,15 @@ import type {
 } from './tasks.dto.js';
 
 const maxBoardColumns = 8;
+
+// Назви етапів для журналу дій
+const statusTitles: Record<TaskStatus, string> = {
+  TODO: 'До виконання',
+  IN_PROGRESS: 'У роботі',
+  REVIEW: 'На перевірці',
+  REVISION: 'На доопрацюванні',
+  DONE: 'Завершено',
+};
 
 // Черга вільних завдань: спершу з найближчим дедлайном (без дедлайну — у кінці),
 // далі вищий пріоритет, далі давніше створені
@@ -116,6 +127,8 @@ export class TasksService {
     if (filters.priority) query = query.where({ priority: filters.priority });
     if (filters.assigneeId)
       query = query.where({ assigneeId: filters.assigneeId });
+    if (filters.milestoneId)
+      query = query.where({ milestoneId: filters.milestoneId });
     if (filters.search) {
       // Символи LIKE у введеному тексті шукаємо буквально.
       const search = filters.search.replace(/[\\%_]/g, '\\$&');
@@ -142,12 +155,27 @@ export class TasksService {
       );
   }
 
+  // Етап має бути з цього ж проєкту й ще не прийнятий
+  private async checkMilestone(projectId: string, milestoneId?: string | null) {
+    if (!milestoneId) return;
+    const milestone = await this.db.ProjectMilestone.where({
+      id: milestoneId,
+    }).first();
+    if (milestone?.projectId !== projectId)
+      throw new BadRequestException('Етап не знайдено в цьому проєкті.');
+    if (milestone.status === 'COMPLETED')
+      throw new ConflictException(
+        'Етап уже прийнято, додати до нього завдання не можна.',
+      );
+  }
+
   async create(user: CurrentUser, projectId: string, data: CreateTaskDto) {
     const project = await this.projects.requireOwner(user, projectId);
     this.projects.ensureWritable(project);
     if (data.assigneeId)
       await this.projects.requireAssignee(projectId, data.assigneeId);
     this.checkDeadline(data.deadline, project.deadline);
+    await this.checkMilestone(projectId, data.milestoneId);
     const now = new Date();
     const task = await this.db.Task.create({
       id: randomUUID(),
@@ -159,9 +187,12 @@ export class TasksService {
       rating: data.rating ?? null,
       status: 'TODO',
       deadline: data.deadline ? new Date(data.deadline) : null,
+      milestoneId: data.milestoneId ?? null,
       createdAt: now,
       updatedAt: now,
     });
+    // Нове невиконане завдання повертає етап «На перевірці» в роботу
+    await syncMilestones(this.db, [task.milestoneId]);
     if (data.assigneeId)
       await this.projects.notify(
         data.assigneeId,
@@ -191,7 +222,7 @@ export class TasksService {
     if (data.assigneeId)
       await this.projects.requireAssignee(task.projectId, data.assigneeId);
     if (
-      task.status === 'IN_PROGRESS' &&
+      ['IN_PROGRESS', 'REVISION'].includes(task.status) &&
       data.assigneeId !== undefined &&
       data.assigneeId !== task.assigneeId
     )
@@ -199,7 +230,12 @@ export class TasksService {
         'Не можна змінювати виконавця під час виконання.',
       );
     this.checkDeadline(data.deadline, project.deadline);
-    return this.db.Task.where({ id, status: task.status }).update({
+    if (data.milestoneId !== undefined)
+      await this.checkMilestone(task.projectId, data.milestoneId);
+    const updated = await this.db.Task.where({
+      id,
+      status: task.status,
+    }).update({
       ...(data.title !== undefined ? { title: data.title } : {}),
       ...(data.description !== undefined
         ? { description: data.description }
@@ -210,17 +246,21 @@ export class TasksService {
       ...(data.deadline !== undefined
         ? { deadline: data.deadline ? new Date(data.deadline) : null }
         : {}),
+      ...(data.milestoneId !== undefined
+        ? { milestoneId: data.milestoneId }
+        : {}),
       updatedAt: new Date(),
     });
+    // Завдання могло перейти в інший етап: перераховуємо обидва
+    if (updated && data.milestoneId !== undefined)
+      await syncMilestones(this.db, [task.milestoneId, data.milestoneId]);
+    return updated;
   }
 
-  async status(
-    user: CurrentUser,
-    id: string,
-    status: 'TODO' | 'IN_PROGRESS',
-    columnId?: string,
-  ) {
+  // Хто рухає картку відносно завдання і чи можна взагалі працювати з дошкою
+  async moveContext(user: CurrentUser, id: string) {
     const task = await this.find(user, id);
+    // Без винятку для адміністратора: чужі дошки він лише переглядає
     const project = await this.projects.requireAccess(
       user,
       task.projectId,
@@ -230,34 +270,117 @@ export class TasksService {
       throw new ConflictException(
         'Працювати із завданнями можна лише в активному проєкті.',
       );
-    // Картку пересуває виконавець або власник проєкту (напр. з беклогу в роботу)
-    const isOwner = project.clientId === user.id;
-    if (task.assigneeId !== user.id && !isOwner)
-      throw new ForbiddenException(
-        'Статус змінює виконавець або власник проєкту.',
+    const member =
+      user.role === 'FREELANCER'
+        ? await this.db.ProjectMember.where({
+            projectId: task.projectId,
+            userId: user.id,
+          }).first()
+        : null;
+    const actor: MoveActor = {
+      isOwner: project.clientId === user.id,
+      isAssignee: Boolean(task.assigneeId) && task.assigneeId === user.id,
+      isMember: Boolean(member),
+    };
+    return { task, project, actor };
+  }
+
+  // Переміщення картки, крім здачі на перевірку та самої перевірки
+  // (їх веде CollaborationService.submit/review, бо там створюється запис здачі).
+  // Правила переходів — у task-workflow.ts; кожне оновлення умовне на попередній стан,
+  // тож одночасна зміна іншим користувачем дає 409, а не зіпсований стан.
+  async transition(
+    user: CurrentUser,
+    id: string,
+    to: TaskStatus,
+    options: { columnId?: string; reason?: string } = {},
+  ) {
+    const { task, project, actor } = await this.moveContext(user, id);
+    const from = task.status as TaskStatus;
+    const rule = moveRule(task, to, actor);
+    if (!rule.allowed) throw new ForbiddenException(rule.reason);
+    if (from === 'REVIEW' || to === 'REVIEW')
+      throw new BadRequestException(
+        'Здача й перевірка роботи проходять через результат роботи.',
       );
-    if (!['TODO', 'IN_PROGRESS'].includes(task.status))
-      throw new ConflictException('Завдання вже здане або завершене.');
-    // Власна колонка — етап «До виконання» або «У процесі»; статус має збігатися
-    if (columnId) {
-      const column = await this.db.BoardColumn.where({ id: columnId }).first();
-      if (column?.status !== status || column.projectId !== task.projectId)
+    const reason = options.reason?.trim();
+    if (rule.needs === 'reason' && !reason)
+      throw new BadRequestException('Вкажіть причину повернення.');
+    const working = to === 'TODO' || to === 'IN_PROGRESS';
+    // Власна колонка — лише етапів «До виконання» й «У процесі», того ж статусу й проєкту
+    if (options.columnId) {
+      const column = await this.db.BoardColumn.where({
+        id: options.columnId,
+      }).first();
+      if (
+        !working ||
+        column?.status !== to ||
+        column.projectId !== task.projectId
+      )
         throw new BadRequestException('Колонку не знайдено в цьому проєкті.');
+    }
+    if (from === 'DONE' && task.milestoneId) {
+      const milestone = await this.db.ProjectMilestone.where({
+        id: task.milestoneId,
+      }).first();
+      if (milestone?.status === 'COMPLETED')
+        throw new ConflictException(
+          'Етап цього завдання вже прийнято — повернути завдання не можна.',
+        );
+    }
+    if (rule.takes) {
+      // Вільне завдання бере фрілансер — те саме правило, що й «Взяти наступне»
+      const unfinished = await this.db.Task.where({
+        projectId: task.projectId,
+        assigneeId: user.id,
+      }).all();
+      const busy = unfinished.find((item) =>
+        ['TODO', 'IN_PROGRESS', 'REVISION'].includes(item.status),
+      );
+      if (busy)
+        throw new ConflictException(
+          `Спершу завершіть або передайте на перевірку «${busy.title}».`,
+        );
     }
     const updated = await this.db.Task.where({
       id,
-      status: task.status,
+      status: from,
+      ...(rule.takes ? { assigneeId: null } : {}),
     }).update({
-      status,
-      columnId: columnId ?? null,
+      status: to,
+      columnId: working ? (options.columnId ?? null) : null,
+      ...(rule.takes ? { assigneeId: user.id } : {}),
       updatedAt: new Date(),
     });
+    if (!updated)
+      throw new ConflictException('Стан завдання вже змінився. Оновіть дошку.');
+    await syncMilestones(this.db, [task.milestoneId]);
+    // Аудит: хто, коли й який перехід виконав
     await this.projects.logActivity(
       user.id,
       task.projectId,
-      'TASK_STATUS',
-      `Статус завдання «${task.title}» змінено на ${status}.`,
+      'TASK_MOVED',
+      `«${task.title}»: ${statusTitles[from]} → ${statusTitles[to]}` +
+        (reason ? `. Причина: ${reason}` : '.'),
     );
+    if (rule.takes)
+      await this.projects.notify(
+        project.clientId,
+        user.id,
+        'TASK_TAKEN',
+        `${user.name} узяв завдання «${task.title}».`,
+        task.projectId,
+        task.id,
+      );
+    if (to === 'REVISION' && task.assigneeId)
+      await this.projects.notify(
+        task.assigneeId,
+        user.id,
+        'WORK_REVIEWED',
+        `Завдання «${task.title}» повернуто на доопрацювання. Причина: ${reason}`,
+        task.projectId,
+        task.id,
+      );
     return updated;
   }
 
@@ -276,7 +399,7 @@ export class TasksService {
     const unfinished = tasks.find(
       (task) =>
         task.assigneeId === user.id &&
-        ['TODO', 'IN_PROGRESS'].includes(task.status),
+        ['TODO', 'IN_PROGRESS', 'REVISION'].includes(task.status),
     );
     if (unfinished)
       throw new ConflictException(
@@ -381,21 +504,62 @@ export class TasksService {
     });
   }
 
-  // Завдання з видаленої колонки повертаються у звичайну колонку свого статусу
-  async deleteColumn(user: CurrentUser, columnId: string) {
+  // Назву власної колонки можна змінити, не чіпаючи її етапу
+  async renameColumn(user: CurrentUser, columnId: string, title: string) {
     const column = await this.db.BoardColumn.where({ id: columnId }).first();
     if (!column) throw new NotFoundException('Колонку не знайдено.');
     this.projects.ensureWritable(
       await this.projects.requireOwner(user, column.projectId),
     );
+    const updated = await this.db.BoardColumn.where({ id: columnId }).update({
+      title,
+    });
+    await this.projects.logActivity(
+      user.id,
+      column.projectId,
+      'COLUMN_RENAMED',
+      `Колонку «${column.title}» перейменовано на «${title}».`,
+    );
+    return updated;
+  }
+
+  // Картки з видаленої колонки переходять у вибрану колонку того самого етапу
+  // (moveTo — id власної колонки) або в стандартну колонку свого статусу.
+  // Стандартні колонки не зберігаються в базі, тож останню колонку етапу видалити неможливо.
+  async deleteColumn(user: CurrentUser, columnId: string, moveTo?: string) {
+    const column = await this.db.BoardColumn.where({ id: columnId }).first();
+    if (!column) throw new NotFoundException('Колонку не знайдено.');
+    this.projects.ensureWritable(
+      await this.projects.requireOwner(user, column.projectId),
+    );
+    if (moveTo) {
+      const target = await this.db.BoardColumn.where({ id: moveTo }).first();
+      if (
+        !target ||
+        target.id === columnId ||
+        target.projectId !== column.projectId ||
+        target.status !== column.status
+      )
+        throw new BadRequestException(
+          'Картки можна перенести лише в колонку того самого етапу.',
+        );
+    }
     return this.projects.prisma.client.transaction(async (tx) => {
       const tasks = await tx.orm.public.Task.where({ columnId }).all();
       for (const task of tasks)
         await tx.orm.public.Task.where({ id: task.id }).update({
-          columnId: null,
+          columnId: moveTo ?? null,
         });
       await tx.orm.public.BoardColumn.where({ id: columnId }).delete();
-      return { id: columnId };
+      await tx.orm.public.ActivityLog.create({
+        id: randomUUID(),
+        actorId: user.id,
+        projectId: column.projectId,
+        type: 'COLUMN_DELETED',
+        message: `Видалено колонку «${column.title}»; карток перенесено: ${tasks.length}.`,
+        createdAt: new Date(),
+      });
+      return { id: columnId, moved: tasks.length };
     });
   }
 

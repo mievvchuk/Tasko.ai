@@ -41,7 +41,7 @@ export function AdminProjectsPage() {
     all: "true",
   });
   if (status) query.set("status", status);
-  const projects = useApi<Project[]>(`/projects?${query}`);
+  const projects = useApi<Project[]>(`/projects?${query}`, { live: true });
   const rows =
     projects.data?.filter(
       (row) => !search || matches(search, row.title, row.description),
@@ -102,7 +102,7 @@ export function AdminProjectsPage() {
           to={`/projects/${row.id}`}
           aria-label={tr("Відкрити {0}", row.title)}
         >
-          <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+          <i className="bi bi-eye" aria-hidden="true"></i>
           {tr("Відкрити")}
         </Link>
       ),
@@ -175,6 +175,7 @@ export function AdminComplaintsPage() {
   if (status) query.set("status", status);
   const complaints = useApi<ComplaintWithDetails[]>(
     `/admin/complaints?${query}`,
+    { live: true },
   );
   const rows =
     complaints.data?.filter(

@@ -7,6 +7,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { syncMilestones } from '../projects/milestone-progress.js';
+import { moveRule } from '../tasks/task-workflow.js';
 import { Subject, filter, interval, map, merge, type Observable } from 'rxjs';
 import { ProjectsService } from '../projects/projects.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
@@ -14,6 +16,7 @@ import type { CurrentUser } from '../users/users.service.js';
 import type { PageDto } from '../projects/projects.dto.js';
 import type {
   MessageDto,
+  MoveTaskDto,
   ReviewDto,
   SubmissionDto,
 } from './collaboration.dto.js';
@@ -382,6 +385,7 @@ export class CollaborationService {
         assigneeId: user.id,
       }).update({ status: 'REVIEW', updatedAt: new Date() });
       if (!updated) throw new ConflictException('Стан завдання вже змінився.');
+      await syncMilestones(tx.orm.public, [task.milestoneId]);
       const submission = await tx.orm.public.WorkSubmission.create({
         id: randomUUID(),
         taskId,
@@ -432,6 +436,49 @@ export class CollaborationService {
       return submission;
     });
   }
+  // Єдина точка для переміщення картки на Kanban-дошці. Здача на перевірку й сама
+  // перевірка йдуть через submit/review (створюють і закривають запис здачі),
+  // решта переходів — через TasksService.transition. Правила — task-workflow.ts.
+  async move(user: CurrentUser, taskId: string, data: MoveTaskDto) {
+    const { task, actor } = await this.tasks.moveContext(user, taskId);
+    const rule = moveRule(task, data.status, actor);
+    if (!rule.allowed) throw new ForbiddenException(rule.reason);
+    const comment = data.comment?.trim();
+    if (data.status === 'REVIEW') {
+      if (!comment)
+        throw new BadRequestException(
+          'Опишіть результат або додайте посилання на нього.',
+        );
+      await this.submit(user, taskId, {
+        description: comment,
+        fileIds: data.fileIds,
+      });
+    } else if (task.status === 'REVIEW') {
+      const reason = data.reason?.trim();
+      if (data.status === 'REVISION' && !reason)
+        throw new BadRequestException('Вкажіть причину повернення.');
+      const submission = await this.client.orm.public.WorkSubmission.where({
+        taskId,
+        status: 'SUBMITTED',
+      })
+        .orderBy((item) => item.submittedAt.desc())
+        .first();
+      if (!submission)
+        throw new ConflictException('Немає результату роботи для перевірки.');
+      await this.review(user, submission.id, {
+        decision: data.status === 'DONE' ? 'APPROVE' : 'NEEDS_REVISION',
+        feedback:
+          data.status === 'DONE' ? comment || 'Роботу прийнято.' : reason!,
+      });
+    } else {
+      await this.tasks.transition(user, taskId, data.status, {
+        columnId: data.columnId,
+        reason: data.reason,
+      });
+    }
+    return this.tasks.find(user, taskId);
+  }
+
   async review(user: CurrentUser, id: string, data: ReviewDto) {
     const submission = await this.client.orm.public.WorkSubmission.where({
       id,
@@ -459,10 +506,13 @@ export class CollaborationService {
         id: task.id,
         status: 'REVIEW',
       }).update({
-        status: data.decision === 'APPROVE' ? 'DONE' : 'IN_PROGRESS',
+        // Повернута робота видна на дошці окремим етапом «На доопрацюванні»
+        status: data.decision === 'APPROVE' ? 'DONE' : 'REVISION',
         updatedAt: new Date(),
       });
       if (!updated) throw new ConflictException('Стан завдання вже змінився.');
+      // Останнє прийняте завдання етапу відправляє етап замовнику на приймання
+      await syncMilestones(tx.orm.public, [task.milestoneId]);
       announce(submission.submittedBy);
       await tx.orm.public.Notification.create({
         id: randomUUID(),
@@ -471,7 +521,7 @@ export class CollaborationService {
         message:
           data.decision === 'APPROVE'
             ? 'Результат роботи прийнято.'
-            : 'Роботу повернуто на доопрацювання.',
+            : `Завдання «${task.title}» повернуто на доопрацювання. Причина: ${data.feedback}`,
         projectId: task.projectId,
         taskId: task.id,
         readAt: null,
@@ -484,8 +534,8 @@ export class CollaborationService {
         type: 'WORK_REVIEWED',
         message:
           data.decision === 'APPROVE'
-            ? 'Результат роботи прийнято.'
-            : 'Роботу повернуто на доопрацювання.',
+            ? `«${task.title}»: На перевірці → Завершено. Роботу прийнято.`
+            : `«${task.title}»: На перевірці → На доопрацюванні. Причина: ${data.feedback}`,
         createdAt: new Date(),
       });
       return reviewed;

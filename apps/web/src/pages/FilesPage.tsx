@@ -15,9 +15,10 @@ export function FilesPage() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
-  const project = useApi<Project>(`/projects/${id}`);
+  const project = useApi<Project>(`/projects/${id}`, { live: true });
   const files = useApi<FileAttachment[]>(
     project.data ? `/projects/${id}/files?page=${page}&limit=20` : null,
+    { live: true },
   );
   const [removeError, setRemoveError] = useState("");
   async function remove(file: FileAttachment) {

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { ResourceState } from "../components/ResourceState";
 import { dateInputEnd, toDateInput } from "../format";
 import { priorityNames, ratingStars } from "../types";
-import type { Project, ProjectMember, Task } from "../types";
+import type { Project, ProjectMember, ProjectMilestone, Task } from "../types";
 
 import { useLanguage } from "../i18n";
 export function TaskFormPage() {
@@ -43,14 +43,18 @@ function TaskFormContext({
   const { user } = useAuth();
   const project = useApi<Project>(`/projects/${projectId}`);
   const members = useApi<ProjectMember[]>(`/projects/${projectId}/members`);
-  if (!project.data || !members.data)
+  const milestones = useApi<ProjectMilestone[]>(
+    `/projects/${projectId}/milestones`,
+  );
+  if (!project.data || !members.data || !milestones.data)
     return (
       <ResourceState
-        loading={project.loading || members.loading}
-        error={project.error || members.error}
+        loading={project.loading || members.loading || milestones.loading}
+        error={project.error || members.error || milestones.error}
         onRetry={() => {
           project.refresh();
           members.refresh();
+          milestones.refresh();
         }}
       />
     );
@@ -66,20 +70,38 @@ function TaskFormContext({
         <Link to={`/projects/${projectId}`}>{tr("До проєкту")}</Link>
       </section>
     );
-  return <TaskForm project={project.data} members={members.data} task={task} />;
+  return (
+    <TaskForm
+      project={project.data}
+      members={members.data}
+      milestones={milestones.data}
+      task={task}
+    />
+  );
 }
 
 function TaskForm({
   project,
   members,
+  milestones,
   task,
 }: {
   project: Project;
   members: ProjectMember[];
+  milestones: ProjectMilestone[];
   task: Task | null;
 }) {
   const { tr } = useLanguage();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  // Нове завдання зі сторінки проєкту з вибраним етапом одразу потрапляє в цей етап
+  const [milestoneId, setMilestoneId] = useState(
+    task ? task.milestoneId || "" : params.get("milestone") || "",
+  );
+  // У прийнятий етап нові завдання не додаються
+  const openMilestones = milestones.filter(
+    (item) => item.status !== "COMPLETED" || item.id === task?.milestoneId,
+  );
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
   const [assigneeId, setAssigneeId] = useState(task?.assigneeId || "");
@@ -87,9 +109,7 @@ function TaskForm({
     task?.priority || "MEDIUM",
   );
   const [rating, setRating] = useState(task?.rating ? String(task.rating) : "");
-  const [deadline, setDeadline] = useState(
-    toDateInput(task?.deadline || null),
-  );
+  const [deadline, setDeadline] = useState(toDateInput(task?.deadline || null));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -123,6 +143,7 @@ function TaskForm({
         rating: number | null;
         assigneeId?: string | null;
         deadline?: string | null;
+        milestoneId?: string | null;
       } = {
         title: title.trim(),
         description,
@@ -131,11 +152,15 @@ function TaskForm({
       };
       if (assigneeId !== (task?.assigneeId || ""))
         body.assigneeId = assigneeId || null;
+      if (milestoneId !== (task?.milestoneId || ""))
+        body.milestoneId = milestoneId || null;
       if (deadline !== toDateInput(task?.deadline || null)) {
         // У день дедлайну проєкту завдання не може закінчуватися пізніше за сам проєкт
         const due = deadline ? dateInputEnd(deadline) : null;
         const cap = project.deadline ? new Date(project.deadline) : null;
-        body.deadline = due ? (cap && due > cap ? cap : due).toISOString() : null;
+        body.deadline = due
+          ? (cap && due > cap ? cap : due).toISOString()
+          : null;
       }
       const result = await request<{ id: string }>(
         task ? `/tasks/${task.id}` : `/projects/${project.id}/tasks`,
@@ -181,6 +206,28 @@ function TaskForm({
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
+            {openMilestones.length > 0 && (
+              <>
+                <label htmlFor="task-milestone">{tr("Етап")}</label>
+                <select
+                  id="task-milestone"
+                  value={milestoneId}
+                  onChange={(event) => setMilestoneId(event.target.value)}
+                >
+                  <option value="">{tr("Без етапу")}</option>
+                  {openMilestones.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.position}. {item.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="form-note">
+                  {tr(
+                    "Етап закривається, коли виконано всі його завдання, і тоді ви приймаєте його оплату.",
+                  )}
+                </p>
+              </>
+            )}
             <h2 className="form-section-title">{tr("Хто і коли")}</h2>
             <label htmlFor="task-assignee">{tr("Виконавець")}</label>
             <select

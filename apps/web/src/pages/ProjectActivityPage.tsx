@@ -10,6 +10,7 @@ export function ProjectActivityPage() {
   const { id } = useParams();
   const { data, error, loading, refresh } = useApi<ActivityLog[]>(
     id ? `/projects/${id}/activity?limit=50` : null,
+    { live: true },
   );
   return (
     <>
