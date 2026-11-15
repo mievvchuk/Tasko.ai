@@ -95,10 +95,15 @@ export class AdminService {
     const reason = data.reason?.trim() ?? '';
     if (!approved && reason.length < 5)
       throw new BadRequestException('Вкажіть причину відхилення.');
-    const updated = await orm.Project.where({ id }).update({
+    const [updated] = await orm.Project.where({
+      id,
+      status: 'MODERATION',
+    }).updateAll({
       status: approved ? 'PLANNING' : 'REJECTED',
       updatedAt: new Date(),
     });
+    if (!updated)
+      throw new ConflictException('Проєкт уже не очікує модерації.');
     await this.projects.logActivity(
       user.id,
       id,

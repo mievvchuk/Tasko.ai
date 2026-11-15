@@ -20,7 +20,7 @@ export function AddProjectMember({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const directory = useApi<{ id: string; name: string; email: string }[]>(
+  const directory = useApi<{ id: string; name: string }[]>(
     // Один список у полі вибору замість сторінок під ним
     "/directory/freelancers?limit=50",
   );
@@ -78,7 +78,7 @@ export function AddProjectMember({
               <option value="">{tr("Оберіть фрілансера")}</option>
               {available.map((person) => (
                 <option key={person.id} value={person.id}>
-                  {person.name} ({person.email})
+                  {person.name}
                 </option>
               ))}
             </select>

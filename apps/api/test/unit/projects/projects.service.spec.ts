@@ -42,6 +42,7 @@ function chain<T>(value: T) {
     offset: vi.fn(),
     limit: vi.fn(),
     update: vi.fn(async (data: unknown) => data),
+    updateAll: vi.fn(async (data: unknown) => [await query.update(data)]),
   };
   query.select.mockReturnValue(query);
   query.orderBy.mockReturnValue(query);

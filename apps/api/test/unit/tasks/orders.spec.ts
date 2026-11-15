@@ -12,7 +12,10 @@ describe('orders', () => {
   }));
   const update = vi.fn(async (data: object) => ({ ...order, ...data }));
   const db = {
-    Order: { where: vi.fn(() => ({ first: async () => order, update })) },
+    Order: { where: vi.fn(() => ({ first: async () => order,
+        update,
+        updateAll: async (data: object) => [await update(data)],
+      })) },
     Task: { where: taskWhere },
   };
   const projects = {

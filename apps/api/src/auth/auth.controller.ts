@@ -43,6 +43,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  @UseGuards(AuthEmailRateLimitGuard)
   @ApiOperation({ summary: 'Отримання JWT access token' })
   @ApiBody({ type: LoginDto })
   login(@Body() data: LoginDto, @Req() request: Request) {

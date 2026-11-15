@@ -36,10 +36,11 @@ export async function syncMilestones(
     );
     if (next === milestone.status) continue;
     // Умова на попередній статус: паралельна зміна не перезапише нову
-    const updated = await db.ProjectMilestone.where({
+    // (updateAll, бо update() у Prisma 8 оновлює лише за id)
+    const [updated] = await db.ProjectMilestone.where({
       id,
       status: milestone.status,
-    }).update({ status: next, updatedAt: new Date() });
+    }).updateAll({ status: next, updatedAt: new Date() });
     if (!updated || next !== 'REVIEW') continue;
     const project = await db.Project.where({ id: milestone.projectId }).first();
     if (!project) continue;

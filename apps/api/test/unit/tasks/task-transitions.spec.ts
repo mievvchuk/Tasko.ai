@@ -49,6 +49,12 @@ function setup(task: Row, extra: { milestones?: Row[]; tasks?: Row[] } = {}) {
         Object.assign(row, patch);
         return row;
       },
+      // Як у Prisma 8: updateAll враховує всю умову й повертає змінені рядки
+      updateAll: async (patch: Row) => {
+        const rows = tables[name].filter((item) => matches(item, query));
+        rows.forEach((row) => Object.assign(row, patch));
+        return rows;
+      },
       delete: async () => {
         tables[name] = tables[name].filter((row) => !matches(row, query));
       },

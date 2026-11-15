@@ -1,0 +1,27 @@
+import { randomUUID } from 'node:crypto';
+const { verifyTotp } = await import(process.argv[2]);
+const totpMod = await import(process.argv[2]);
+const b = 'http://127.0.0.1:3100';
+const j = async (m, p, tok, body) => { const r = await fetch(b + p, { method: m, headers: { 'content-type': 'application/json', ...(tok ? { authorization: 'Bearer ' + tok } : {}) }, body: body && JSON.stringify(body) }); let d; try { d = await r.json(); } catch {} return { s: r.status, d }; };
+// TOTP-код рахуємо тим самим алгоритмом RFC 6238, що й сервер
+import { createHmac } from 'node:crypto';
+const code = (secret) => { const al = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; let bits = ''; for (const c of secret) bits += al.indexOf(c).toString(2).padStart(5, '0'); const key = Buffer.from(bits.match(/.{8}/g).map((x) => parseInt(x, 2))); const v = Buffer.alloc(8); v.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000))); const d = createHmac('sha1', key).update(v).digest(); const o = d[d.length - 1] & 15; return (((d[o] & 127) << 24 | d[o + 1] << 16 | d[o + 2] << 8 | d[o + 3]) % 1e6).toString().padStart(6, '0'); };
+const email = `qa-2fa-${randomUUID().slice(0, 6)}@example.test`; const password = 'Qa2faPass-' + randomUUID().slice(0, 8);
+await j('POST', '/auth/register', null, { name: 'QA Двофактор', email, password, role: 'CLIENT' });
+let tok = (await j('POST', '/auth/login', null, { email, password })).d.accessToken;
+const setup = (await j('POST', '/auth/2fa/setup', tok)).d;
+const out = [];
+out.push(['2FA: enable з правильним кодом', (await j('POST', '/auth/2fa/enable', tok, { code: code(setup.secret) })).s]);
+out.push(['2FA: вхід без коду просить код', JSON.stringify((await j('POST', '/auth/login', null, { email, password })).d)]);
+out.push(['2FA: вхід з неправильним кодом', (await j('POST', '/auth/login', null, { email, password, twoFactorCode: '000000' })).s]);
+const ok = await j('POST', '/auth/login', null, { email, password, twoFactorCode: code(setup.secret) });
+out.push(['2FA: вхід з правильним кодом', ok.s + ' token=' + Boolean(ok.d.accessToken)]);
+out.push(['2FA: повторне використання того ж коду', (await j('POST', '/auth/login', null, { email, password, twoFactorCode: code(setup.secret) })).s]);
+tok = ok.d.accessToken;
+const other = (await j('POST', '/auth/login', null, { email, password, twoFactorCode: code(setup.secret) })).d.accessToken;
+out.push(['Зміна пароля', (await j('PATCH', '/auth/password', tok, { currentPassword: password, newPassword: password + 'X' })).s]);
+out.push(['Інші сеанси завершено після зміни пароля', (await j('GET', '/auth/me', other)).s]);
+out.push(['Поточний сеанс живий після зміни пароля', (await j('GET', '/auth/me', tok)).s]);
+out.push(['Старий пароль більше не діє', (await j('POST', '/auth/login', null, { email, password, twoFactorCode: code(setup.secret) })).s]);
+out.push(['2FA: вимкнення з паролем і кодом', (await j('POST', '/auth/2fa/disable', tok, { password: password + 'X', code: code(setup.secret) })).s]);
+for (const r of out) console.log(r.join(' => '));

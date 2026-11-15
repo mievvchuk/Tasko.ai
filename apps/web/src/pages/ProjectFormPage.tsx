@@ -335,6 +335,13 @@ function ProjectForm({ project }: { project: Project | null }) {
                     )}
               </p>
             )}
+            {project?.status === "PLANNING" && (
+              <p className="form-note">
+                {tr(
+                  "Зміна назви, опису чи бюджету знову відправить проєкт на модерацію.",
+                )}
+              </p>
+            )}
             {project && !inModeration(project.status) && (
               <div className="project-form-field">
                 <label htmlFor="edit-project-status">{tr("Статус")}</label>
