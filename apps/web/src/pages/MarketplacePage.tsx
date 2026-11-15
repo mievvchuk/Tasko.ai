@@ -32,6 +32,7 @@ export function MarketplacePage() {
   }
   const { data, error, loading, refresh } = useApi<MarketplaceProject[]>(
     `/marketplace/projects?${query}`,
+    { live: true },
   );
   const categories = useApi<ProjectCategory[]>("/project-categories");
   const skills = useApi<Skill[]>("/skills");

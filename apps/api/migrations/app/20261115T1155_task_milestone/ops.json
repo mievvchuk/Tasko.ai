@@ -1,0 +1,125 @@
+[
+  {
+    "id": "column.public.Task.milestoneId",
+    "label": "Add column \"milestoneId\" to \"Task\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "milestoneId",
+        "table": "Task"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"milestoneId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Task",
+          "milestoneId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"milestoneId\"",
+        "sql": "ALTER TABLE \"public\".\"Task\" ADD COLUMN \"milestoneId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"milestoneId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Task",
+          "milestoneId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Task.Task_milestoneId_idx_f1dac854",
+    "label": "Create index \"Task_milestoneId_idx_f1dac854\" on \"Task\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Task_milestoneId_idx_f1dac854",
+        "table": "Task"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Task_milestoneId_idx_f1dac854\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Task_milestoneId_idx_f1dac854\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Task_milestoneId_idx_f1dac854\"",
+        "sql": "CREATE INDEX \"Task_milestoneId_idx_f1dac854\" ON \"public\".\"Task\" (\"milestoneId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Task_milestoneId_idx_f1dac854\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Task_milestoneId_idx_f1dac854\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Task.Task_milestoneId_fkey",
+    "label": "Add foreign key \"Task_milestoneId_fkey\" on \"Task\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Task_milestoneId_fkey",
+        "table": "Task"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Task_milestoneId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Task_milestoneId_fkey",
+          "public",
+          "\"public\".\"Task\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Task_milestoneId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Task\"\nADD CONSTRAINT \"Task_milestoneId_fkey\"\nFOREIGN KEY (\"milestoneId\")\nREFERENCES \"public\".\"ProjectMilestone\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Task_milestoneId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Task_milestoneId_fkey",
+          "public",
+          "\"public\".\"Task\""
+        ]
+      }
+    ]
+  }
+]

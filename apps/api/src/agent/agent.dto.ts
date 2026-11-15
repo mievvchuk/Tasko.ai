@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsIn,
   IsObject,
   IsOptional,
@@ -84,6 +85,14 @@ export class GeneratePlanDto {
   @IsString()
   @Length(0, 3000)
   instructions?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'План замінить етапи, які ще не почали й не оплачували (а не додасться до них)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  replace?: boolean;
 }
 
 export class ApplyPlanDto {
@@ -101,4 +110,12 @@ export class ApplyPlanDto {
   })
   @IsObject()
   plan: Record<string, unknown>;
+
+  @ApiPropertyOptional({
+    description:
+      'Замінити етапи, які ще не почали й не оплачували, разом із їхніми невзятими завданнями',
+  })
+  @IsOptional()
+  @IsBoolean()
+  replace?: boolean;
 }

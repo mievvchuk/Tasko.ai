@@ -95,7 +95,9 @@ export function describeAddress(ip: string | null) {
   const address = ip.replace(/^::ffff:/i, "");
   const local =
     address === "::1" ||
-    /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/.test(address) ||
+    /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/.test(
+      address,
+    ) ||
     /^f[cd]|^fe80:/i.test(address);
   return local ? trNow("Локальна мережа") : address;
 }
@@ -120,4 +122,10 @@ export function cropFrame(
     y,
     source: { x: (0 - x) / scale, y: (0 - y) / scale, size: size / scale },
   };
+}
+
+// Сума в гривнях з розділювачем тисяч мовою інтерфейсу: «12 500 грн»
+export function formatMoney(amount: number) {
+  const value = Number.isFinite(amount) ? amount : 0;
+  return trNow("{0} грн", value.toLocaleString(uiLocale()));
 }

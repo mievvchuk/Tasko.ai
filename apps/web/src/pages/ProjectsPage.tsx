@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useAuth } from "../auth";
 import { errorMessage, request } from "../api";
+import { useLiveRefresh } from "../useLiveRefresh";
 import { parsePage } from "../format";
 import { LoadError } from "../components/LoadError";
 import { ProjectsTable } from "../components/ProjectsTable";
@@ -22,13 +23,23 @@ export function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const silent = useRef(false);
+  useLiveRefresh(() => {
+    silent.current = true;
+    setAttempt((value) => value + 1);
+  });
 
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    // Живе оновлення перечитує дані тихо: без індикатора завантаження й без заміни їх помилкою
+    const quiet = silent.current;
+    silent.current = false;
     async function load() {
-      setLoading(true);
-      setError("");
+      if (!quiet) {
+        setLoading(true);
+        setError("");
+      }
       try {
         const query = new URLSearchParams({
           page: String(page),
@@ -42,7 +53,7 @@ export function ProjectsPage() {
         );
         if (active) setProjects(result);
       } catch (error) {
-        if (active) setError(errorMessage(error));
+        if (active && !quiet) setError(errorMessage(error));
       } finally {
         if (active) setLoading(false);
       }

@@ -19,6 +19,8 @@ const project = {
   description: 'Створити портфоліо',
   deadline: null,
   status: 'ACTIVE',
+  budgetMin: 5000,
+  budgetMax: 10000,
 };
 const plan = {
   milestones: [
@@ -31,7 +33,15 @@ const plan = {
           title: 'Головна сторінка',
           description: 'Реалізувати головну',
           priority: 'HIGH',
+          amount: 3000,
           acceptanceCriteria: ['Сторінка адаптивна'],
+        },
+        {
+          title: 'Контакти',
+          description: 'Форма зворотного звʼязку',
+          priority: 'LOW',
+          amount: 1000,
+          acceptanceCriteria: ['Форма надсилає лист'],
         },
       ],
     },
@@ -42,7 +52,43 @@ describe('project planning permissions and persistence', () => {
   function setup() {
     const activities: Record<string, unknown>[] = [];
     const tasks: Record<string, unknown>[] = [];
-    const milestones: Record<string, unknown>[] = [{ position: 4 }];
+    const milestones: Record<string, unknown>[] = [
+      {
+        id: 'paid',
+        projectId: project.id,
+        position: 4,
+        amount: 2000,
+        status: 'COMPLETED',
+        paymentStatus: 'PAID',
+      },
+    ];
+    const applications: Record<string, unknown>[] = [];
+    const matches = (row: Record<string, unknown>, query: object) =>
+      Object.entries(query).every(([key, value]) => row[key] === value);
+    // Простий двійник таблиці: where(...) з all/first/delete/deleteAll
+    const table = (rows: Record<string, unknown>[]) => ({
+      where: vi.fn((query: object) => ({
+        all: vi.fn(async () => rows.filter((row) => matches(row, query))),
+        first: vi.fn(
+          async () => rows.find((row) => matches(row, query)) ?? null,
+        ),
+        delete: vi.fn(async () => {
+          rows.splice(
+            rows.findIndex((row) => matches(row, query)),
+            1,
+          );
+        }),
+        deleteAll: vi.fn(async () => undefined),
+        updateAll: vi.fn(async (patch: object) => {
+          for (const row of rows.filter((row) => matches(row, query)))
+            Object.assign(row, patch);
+        }),
+      })),
+      create: vi.fn(async (row: Record<string, unknown>) => {
+        rows.push(row);
+        return row;
+      }),
+    });
     const db = {
       Project: {
         where: vi.fn(() => ({
@@ -61,19 +107,11 @@ describe('project planning permissions and persistence', () => {
           return row;
         }),
       },
-      ProjectMilestone: {
-        where: vi.fn(() => ({ all: vi.fn(async () => [...milestones]) })),
-        create: vi.fn(async (row: Record<string, unknown>) => {
-          milestones.push(row as { position: number });
-          return row;
-        }),
-      },
-      Task: {
-        create: vi.fn(async (row: Record<string, unknown>) => {
-          tasks.push(row);
-          return row;
-        }),
-      },
+      ProjectMilestone: table(milestones),
+      ProjectApplication: table(applications),
+      Task: table(tasks),
+      Notification: table([]),
+      WorkSubmission: table([]),
     };
     const transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
       fn({ orm: { public: db } }),
@@ -94,6 +132,7 @@ describe('project planning permissions and persistence', () => {
       activities,
       tasks,
       milestones,
+      applications,
       db,
       transaction,
       projects,
@@ -109,6 +148,8 @@ describe('project planning permissions and persistence', () => {
       description: project.description,
       deadline: null,
       instructions: 'MVP',
+      // бюджет проєкту мінус уже розподілене в наявних етапах
+      budget: 8000,
     });
     expect(transaction).not.toHaveBeenCalled();
   });
@@ -131,7 +172,7 @@ describe('project planning permissions and persistence', () => {
     expect(transaction).toHaveBeenCalledTimes(1);
     expect(milestones[1]).toMatchObject({
       position: 5,
-      amount: 0,
+      amount: 4000,
       paymentStatus: 'UNPAID',
     });
     expect(tasks[0]).toMatchObject({
@@ -141,7 +182,9 @@ describe('project planning permissions and persistence', () => {
       priority: 'HIGH',
     });
     expect(tasks[0].description).toContain('Сторінка адаптивна');
-    expect(tasks[0].description).toContain('Етап: Розробка');
+    // Завдання прив'язане до свого етапу, а не лише згадує його в описі
+    expect(tasks[0].milestoneId).toBe(milestones[1].id);
+    expect(tasks[0].description).toContain('Вартість: 3000 грн');
     expect(activities[0]).toMatchObject({
       actorId: user.id,
       type: 'AI_PLAN_APPLIED',
@@ -154,7 +197,7 @@ describe('project planning permissions and persistence', () => {
     expect(await service.apply(user, project.id, id, plan)).toMatchObject({
       alreadyApplied: true,
     });
-    expect(tasks).toHaveLength(1);
+    expect(tasks).toHaveLength(2);
     expect(milestones).toHaveLength(2);
     expect(transaction).toHaveBeenCalledTimes(1);
   });
@@ -182,5 +225,81 @@ describe('project planning permissions and persistence', () => {
     await expect(
       service.apply(user, project.id, randomUUID(), plan),
     ).rejects.toThrow('write failed');
+  });
+  it('keeps the plan within the budget of an accepted freelancer bid', async () => {
+    const { service, applications, agent, transaction } = setup();
+    applications.push({
+      projectId: project.id,
+      status: 'ACCEPTED',
+      proposedBudget: 3000,
+    });
+    // Фрілансер погодився на 3000 грн, 2000 з них уже в оплаченому етапі; AI запропонував 4000 — суми зменшуються пропорційно
+    const draft = await service.generate(user, project.id, '', true);
+    expect(agent.generateProjectPlan).toHaveBeenCalledWith(
+      expect.objectContaining({ budget: 1000 }),
+    );
+    const amounts = draft.milestones[0].tasks.map((task) => task.amount);
+    expect(amounts).toEqual([750, 250]);
+    await expect(
+      service.apply(user, project.id, randomUUID(), plan, true),
+    ).rejects.toMatchObject({ status: 400 });
+    expect(transaction).toHaveBeenCalledTimes(1);
+  });
+  it('replaces only milestones that were not started, with their untouched plan tasks', async () => {
+    const { service, milestones, tasks } = setup();
+    milestones.push({
+      id: 'old',
+      projectId: project.id,
+      title: 'Старий етап',
+      position: 5,
+      amount: 1000,
+      status: 'PLANNED',
+      paymentStatus: 'UNPAID',
+    });
+    tasks.push(
+      {
+        id: 'old-task',
+        projectId: project.id,
+        status: 'TODO',
+        assigneeId: null,
+        description: 'Етап: Старий етап\n\nЗробити',
+      },
+      {
+        id: 'taken',
+        projectId: project.id,
+        status: 'IN_PROGRESS',
+        assigneeId: 'f1',
+        description: 'Етап: Старий етап\n\nЗробити',
+      },
+      {
+        id: 'linked',
+        projectId: project.id,
+        milestoneId: 'old',
+        status: 'TODO',
+        assigneeId: null,
+        description: 'Зробити',
+      },
+      {
+        id: 'assigned',
+        projectId: project.id,
+        milestoneId: 'old',
+        status: 'TODO',
+        assigneeId: 'f1',
+        description: 'Зробити',
+      },
+    );
+    await service.apply(user, project.id, randomUUID(), plan, true);
+    // Невзяте завдання етапу видаляється, призначене — лишається без етапу
+    expect(tasks.map((task) => task.id)).not.toContain('linked');
+    expect(tasks.find((task) => task.id === 'assigned')).toMatchObject({
+      milestoneId: null,
+    });
+    expect(milestones.map((item) => item.id ?? item.title)).toEqual([
+      'paid',
+      expect.any(String),
+    ]);
+    expect(milestones[1]).toMatchObject({ title: 'Розробка', position: 5 });
+    expect(tasks.map((task) => task.id)).toContain('taken');
+    expect(tasks.map((task) => task.id)).not.toContain('old-task');
   });
 });

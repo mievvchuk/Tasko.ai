@@ -28,11 +28,18 @@ import type { Column, UserAction } from "./AdminSections";
 
 import { useLanguage } from "../i18n";
 
+// Публічний профіль є лише у виконавця та замовника; в адміністратора його немає
+function profilePath(person: Pick<AdminUser, "id" | "role">) {
+  if (person.role === "FREELANCER") return `/freelancers/${person.id}`;
+  if (person.role === "CLIENT") return `/clients/${person.id}`;
+  return null;
+}
+
 // Огляд: метрики, графіки, експорт звіту й нові користувачі.
 export function AdminPage() {
   const { tr } = useLanguage();
-  const report = useApi<AdminReport>("/admin/report");
-  const latest = useApi<AdminUser[]>("/admin/users?limit=12");
+  const report = useApi<AdminReport>("/admin/report", { live: true });
+  const latest = useApi<AdminUser[]>("/admin/users?limit=12", { live: true });
 
   return (
     <>
@@ -72,7 +79,16 @@ export function AdminPage() {
                       size="small"
                     />
                     <span>
-                      <strong>{person.name}</strong>
+                      {profilePath(person) ? (
+                        <Link
+                          className="admin-recent-link"
+                          to={profilePath(person)!}
+                        >
+                          {person.name}
+                        </Link>
+                      ) : (
+                        <strong>{person.name}</strong>
+                      )}
                       <small>{person.email}</small>
                     </span>
                     <small>{tr(roleNames[person.role])}</small>
@@ -105,7 +121,7 @@ export function AdminUsersPage() {
   if (role) query.set("role", role);
   if (status) query.set("status", status);
   if (search) query.set("search", search);
-  const users = useApi<AdminUser[]>(`/admin/users?${query}`);
+  const users = useApi<AdminUser[]>(`/admin/users?${query}`, { live: true });
 
   const columns: Column<AdminUser>[] = [
     {
@@ -117,7 +133,13 @@ export function AdminUsersPage() {
           <UserAvatar name={row.name} avatarUrl={row.avatarUrl} size="small" />
           <span>
             <strong>
-              {row.name}
+              {profilePath(row) ? (
+                <Link className="admin-user-link" to={profilePath(row)!}>
+                  {row.name}
+                </Link>
+              ) : (
+                row.name
+              )}
               {row.id === user?.id && tr(" (ви)")}
             </strong>
             <small>{row.email}</small>

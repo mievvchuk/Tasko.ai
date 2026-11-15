@@ -31,7 +31,7 @@ export function MarketplaceProjectPage() {
   const { id } = useParams();
   const { data, error, loading, refresh } = useApi<
     MarketplaceProject & { bids: Bid[] }
-  >(id ? `/marketplace/projects/${id}` : null);
+  >(id ? `/marketplace/projects/${id}` : null, { live: true });
   const [message, setMessage] = useState("");
   const [budget, setBudget] = useState("");
   const [days, setDays] = useState("");
@@ -137,36 +137,44 @@ export function MarketplaceProjectPage() {
               <h2>{tr("Ваша заявка")}</h2>
               {data.applicationStatus &&
               data.applicationStatus !== "WITHDRAWN" ? (
-                <p className="application-notice">
-                  {tr("Статус заявки:")}{" "}
-                  {tr(applicationStatusNames[data.applicationStatus])}
-                  {data.applicationId && (
-                    <>
-                      {" · "}
+                // Статус окремим рядком, дії — кнопками однієї висоти в одному ряду
+                <div className="application-state">
+                  <p>
+                    <span>{tr("Статус заявки")}</span>
+                    <span
+                      className={`project-status status-${data.applicationStatus}`}
+                    >
+                      {tr(applicationStatusNames[data.applicationStatus])}
+                    </span>
+                  </p>
+                  <div className="application-state-actions">
+                    {data.applicationId && (
                       <Link
+                        className="button secondary"
                         to={
                           data.applicationStatus === "ACCEPTED"
                             ? `/messages?project=${data.id}`
                             : `/messages?application=${data.applicationId}`
                         }
                       >
+                        <i className="bi bi-chat-dots" aria-hidden="true"></i>
                         {data.applicationStatus === "PENDING"
                           ? tr("Написати клієнту")
                           : tr("Переписка з клієнтом")}
                       </Link>
-                    </>
-                  )}
-                  {data.applicationStatus === "PENDING" && (
-                    <button
-                      type="button"
-                      className="button secondary danger-outline withdraw-button"
-                      onClick={() => void withdraw()}
-                    >
-                      <i className="bi bi-x-circle" aria-hidden="true"></i>
-                      {tr("Відкликати заявку")}
-                    </button>
-                  )}
-                </p>
+                    )}
+                    {data.applicationStatus === "PENDING" && (
+                      <button
+                        type="button"
+                        className="button secondary danger-outline"
+                        onClick={() => void withdraw()}
+                      >
+                        <i className="bi bi-x-circle" aria-hidden="true"></i>
+                        {tr("Відкликати заявку")}
+                      </button>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <form
                   className="application-form"

@@ -22,7 +22,12 @@ import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { PageDto } from '../projects/projects.dto.js';
-import { MessageDto, ReviewDto, SubmissionDto } from './collaboration.dto.js';
+import {
+  MessageDto,
+  MoveTaskDto,
+  ReviewDto,
+  SubmissionDto,
+} from './collaboration.dto.js';
 import { CollaborationService } from './collaboration.service.js';
 import {
   FilesService,
@@ -178,6 +183,13 @@ export class CollaborationController {
     @Body() data: SubmissionDto,
   ) {
     return this.collaboration.submit(user, id, data);
+  }
+  @Post('tasks/:id/move') @HttpCode(200) move(
+    @Actor() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: MoveTaskDto,
+  ) {
+    return this.collaboration.move(user, id, data);
   }
   @Post('submissions/:id/review') review(
     @Actor() user: CurrentUser,

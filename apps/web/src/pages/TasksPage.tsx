@@ -34,7 +34,7 @@ export function TasksPage() {
   if (priority) query.set("priority", priority);
   if (search) query.set("search", search);
   if (overdue) query.set("overdue", "true");
-  const tasks = useApi<Task[]>(`/tasks?${query}`);
+  const tasks = useApi<Task[]>(`/tasks?${query}`, { live: true });
   function change(name: string, value: string) {
     const next = new URLSearchParams(params);
     next.delete("page");

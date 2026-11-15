@@ -9,6 +9,8 @@ import { PasswordStrength } from "./PasswordStrength";
 import { ResourceState } from "./ResourceState";
 
 import { useLanguage } from "../i18n";
+type SecuritySection = "password" | "twoFactor" | "sessions";
+
 export function SecuritySettings({ user }: { user: User }) {
   const { tr } = useLanguage();
   const sessions = useApi<AuthSession[]>("/auth/sessions");
@@ -32,6 +34,9 @@ export function SecuritySettings({ user }: { user: User }) {
   const [disablePassword, setDisablePassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  // Повідомлення показуємо в тій секції, де сталася дія, а не над усією карткою
+  const [noticeSection, setNoticeSection] =
+    useState<SecuritySection>("password");
   const [submitting, setSubmitting] = useState(false);
   // Акаунт із Google без пароля: пароль можна встановити, поточного не питаємо
   const [hasPassword, setHasPassword] = useState(user.hasPassword !== false);
@@ -39,6 +44,7 @@ export function SecuritySettings({ user }: { user: User }) {
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (sameAsCurrent || newPassword !== confirmation) return;
+    setNoticeSection("password");
     setError("");
     setMessage("");
     setCurrentError("");
@@ -65,7 +71,7 @@ export function SecuritySettings({ user }: { user: User }) {
   }
 
   async function beginTwoFactor() {
-    await run(async () => {
+    await run("twoFactor", async () => {
       const response = await request<{ secret: string; qrCode: string }>(
         "/auth/2fa/setup",
         { method: "POST" },
@@ -76,7 +82,7 @@ export function SecuritySettings({ user }: { user: User }) {
 
   async function enableTwoFactor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await run(async () => {
+    await run("twoFactor", async () => {
       const response = await request<{ message: string }>("/auth/2fa/enable", {
         method: "POST",
         body: { code },
@@ -90,7 +96,7 @@ export function SecuritySettings({ user }: { user: User }) {
 
   async function disableTwoFactor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await run(async () => {
+    await run("twoFactor", async () => {
       const response = await request<{ message: string }>("/auth/2fa/disable", {
         method: "POST",
         body: hasPassword ? { code, password: disablePassword } : { code },
@@ -103,14 +109,15 @@ export function SecuritySettings({ user }: { user: User }) {
   }
 
   async function revokeSession(id: string) {
-    await run(async () => {
+    await run("sessions", async () => {
       await request(`/auth/sessions/${id}`, { method: "DELETE" });
       sessions.refresh();
       setMessage(tr("Сеанс завершено."));
     });
   }
 
-  async function run(action: () => Promise<void>) {
+  async function run(section: SecuritySection, action: () => Promise<void>) {
+    setNoticeSection(section);
     setError("");
     setMessage("");
     setSubmitting(true);
@@ -123,16 +130,16 @@ export function SecuritySettings({ user }: { user: User }) {
     }
   }
 
+  const notice = (section: SecuritySection) =>
+    noticeSection === section &&
+    (message || error) && (
+      <div className={error ? "notice error" : "notice success"} role="status">
+        {error || message}
+      </div>
+    );
+
   return (
     <>
-      {(message || error) && (
-        <div
-          className={error ? "notice error" : "notice success"}
-          role="status"
-        >
-          {error || message}
-        </div>
-      )}
       {/* Одна картка «Безпека» з трьома секціями, розділеними лініями (макет Figma) */}
       <section
         className="account-panel security-card"
@@ -148,7 +155,11 @@ export function SecuritySettings({ user }: { user: User }) {
                   "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.",
                 )}
           </p>
-          <form onSubmit={changePassword} className="security-form password-form">
+          {notice("password")}
+          <form
+            onSubmit={changePassword}
+            className="security-form password-form"
+          >
             {hasPassword && (
               <PasswordInput
                 id="current-password"
@@ -217,6 +228,7 @@ export function SecuritySettings({ user }: { user: User }) {
               </button>
             )}
           </div>
+          {notice("twoFactor")}
           {setup && (
             <form onSubmit={enableTwoFactor} className="two-factor-setup">
               <img src={setup.qrCode} alt={tr("QR-код для налаштування 2FA")} />
@@ -305,6 +317,7 @@ export function SecuritySettings({ user }: { user: User }) {
           <p className="form-note">
             {tr("Пристрої, на яких зараз виконано вхід.")}
           </p>
+          {notice("sessions")}
           <ResourceState
             loading={sessions.loading}
             error={sessions.error}

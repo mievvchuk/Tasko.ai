@@ -5,6 +5,8 @@ export const sessionEndedEvent = "tasko:session-ended";
 export const moderationChangedEvent = "tasko:moderation-changed";
 // Сторінки, що позначають сповіщення прочитаними, кажуть меню оновити лічильники
 export const notificationsChangedEvent = "tasko:notifications-changed";
+// Сервер повідомив, що дані на платформі змінились — відкриті сторінки тихо їх перечитують
+export const dataChangedEvent = "tasko:data-changed";
 
 export class ApiError extends Error {
   status: number;

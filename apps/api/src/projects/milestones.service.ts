@@ -13,15 +13,16 @@ import type {
 } from './milestones.dto.js';
 import { ProjectsService } from './projects.service.js';
 
+// Статус етапу рахується із завдань (див. milestone-progress.ts); вручну замовник
+// лише приймає етап, коли всі його завдання виконано.
 export function checkMilestoneTransition(from: string, to: string) {
   if (from === to) return;
-  const allowed: Record<string, string[]> = {
-    PLANNED: ['IN_PROGRESS'],
-    IN_PROGRESS: ['REVIEW'],
-    REVIEW: ['IN_PROGRESS', 'COMPLETED'],
-  };
-  if (!allowed[from]?.includes(to))
-    throw new ConflictException('Недозволена зміна статусу етапу.');
+  if (from === 'REVIEW' && to === 'COMPLETED') return;
+  throw new ConflictException(
+    from === 'REVIEW' || to !== 'COMPLETED'
+      ? 'Статус етапу змінюється сам за статусами його завдань.'
+      : 'Прийняти етап можна, коли всі його завдання виконано.',
+  );
 }
 
 @Injectable()
@@ -35,9 +36,21 @@ export class MilestonesService {
 
   async list(user: CurrentUser, projectId: string) {
     await this.projects.requireAccess(user, projectId);
-    return this.db.ProjectMilestone.where({ projectId })
-      .orderBy((item) => item.position.asc())
-      .all();
+    const [milestones, tasks] = await Promise.all([
+      this.db.ProjectMilestone.where({ projectId })
+        .orderBy((item) => item.position.asc())
+        .all(),
+      this.db.Task.where({ projectId }).all(),
+    ]);
+    // Прогрес етапу — скільки його завдань виконано
+    return milestones.map((milestone) => {
+      const own = tasks.filter((task) => task.milestoneId === milestone.id);
+      return {
+        ...milestone,
+        taskCount: own.length,
+        doneTaskCount: own.filter((task) => task.status === 'DONE').length,
+      };
+    });
   }
 
   async create(user: CurrentUser, projectId: string, data: CreateMilestoneDto) {
@@ -96,15 +109,8 @@ export class MilestonesService {
     )
       throw new ForbiddenException('Ці поля змінює власник проєкту.');
     if (data.status) {
+      if (!owner) throw new ForbiddenException('Етап приймає власник проєкту.');
       checkMilestoneTransition(item.status, data.status);
-      if (
-        !owner &&
-        !(
-          (item.status === 'PLANNED' && data.status === 'IN_PROGRESS') ||
-          (item.status === 'IN_PROGRESS' && data.status === 'REVIEW')
-        )
-      )
-        throw new ForbiddenException('Цей перехід виконує власник проєкту.');
     }
     const [updated] = await this.db.ProjectMilestone.where({
       id,

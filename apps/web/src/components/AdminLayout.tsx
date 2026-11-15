@@ -1,7 +1,7 @@
 import { BrandWord } from "./BrandWord";
 import { BrandMark } from "./BrandMark";
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth";
 import { LanguageButton, useLanguage } from "../i18n";
 import { ThemePicker } from "./ThemePicker";
@@ -10,17 +10,31 @@ import { moderationChangedEvent } from "../api";
 import { AccountMenu } from "./AccountMenu";
 import { AiChatProvider, aiName } from "../aiChat";
 import { AiDrawer } from "./AiDrawer";
+import { useNotificationCounts } from "../useNotificationCounts";
+import { docsUrl } from "../help";
+
+// Сторінки сайту, які адмін відкриває з адмінки, підсвічують свій розділ у меню
+const sectionPages: Record<string, RegExp> = {
+  "/admin/users": /^\/(freelancers|clients)\//,
+  "/admin/projects": /^\/(projects|tasks)\//,
+};
 
 // Окремий каркас адмінки за зразком shadcn-admin (MIT, © Sat Naing,
 // https://github.com/satnaing/shadcn-admin): бічна панель розділів і верхня панель
 // з темою та акаунтом (пошук і фільтри — на сторінці «Користувачі»). Перенесено лише структуру, стилі — власні (app.css).
 export function AdminLayout() {
   const { user } = useAuth();
-  const { t, tr } = useLanguage();
+  const { t, tr, language } = useLanguage();
+  const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const counts = useNotificationCounts(
+    user?.role === "ADMIN" ? user.id : undefined,
+  );
+  const unread = counts.unreadCount - counts.unreadMessages;
   const close = () => setMenuOpen(false);
   const queue = useApi<unknown[]>(
     user?.role === "ADMIN" ? "/admin/moderation/projects" : null,
+    { live: true },
   );
   const { refresh } = queue;
   useEffect(() => {
@@ -71,7 +85,15 @@ export function AdminLayout() {
         <nav aria-label={tr("Розділи адмінки")}>
           <span className="admin-nav-title">{tr("Загальне")}</span>
           {sections.map(([to, icon, label]) => (
-            <NavLink key={to} to={to} end={to === "/admin"} onClick={close}>
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/admin"}
+              onClick={close}
+              className={({ isActive }) =>
+                isActive || sectionPages[to]?.test(pathname) ? "active" : ""
+              }
+            >
               <i className={`bi ${icon}`} aria-hidden="true"></i>
               {label}
               {to === "/admin/moderation" && waiting.current > 0 && (
@@ -85,10 +107,24 @@ export function AdminLayout() {
             </NavLink>
           ))}
           <span className="admin-nav-title">{tr("Інше")}</span>
-          <NavLink to="/projects" onClick={close}>
-            <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-            {tr("Проєкти на сайті")}
+          <NavLink to="/notifications" onClick={close}>
+            <i className="bi bi-bell" aria-hidden="true"></i>
+            {tr("Сповіщення")}
+            {unread > 0 && <span className="badge-count">{unread}</span>}
           </NavLink>
+          <NavLink to="/profile" onClick={close}>
+            <i className="bi bi-person" aria-hidden="true"></i>
+            {t("profile")}
+          </NavLink>
+          <a
+            href={docsUrl(language)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={close}
+          >
+            <i className="bi bi-question-circle" aria-hidden="true"></i>
+            {tr("Довідка")}
+          </a>
         </nav>
       </aside>
       {menuOpen && (

@@ -22,7 +22,12 @@ const photoTypes = ["image/png", "image/jpeg", "image/webp"];
 export function WorkspacePage() {
   const { tr } = useLanguage();
   const { user, updateUser } = useAuth();
-  const stats = useApi<DashboardSummary>("/analytics/dashboard");
+  // Адмінові статистика платформи вже є на «Панелі адміністратора», тут не потрібна
+  const admin = user?.role === "ADMIN";
+  const stats = useApi<DashboardSummary>(
+    admin ? null : "/analytics/dashboard",
+    { live: true },
+  );
   const fileInput = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState("");
@@ -92,7 +97,9 @@ export function WorkspacePage() {
   const statItems = stats.data
     ? [
         {
-          label: freelancer ? tr("Проєктів, де я в команді") : tr("Мої проєкти"),
+          label: freelancer
+            ? tr("Проєктів, де я в команді")
+            : tr("Мої проєкти"),
           value: stats.data.projects,
         },
         { label: tr("Активні проєкти"), value: stats.data.activeProjects },

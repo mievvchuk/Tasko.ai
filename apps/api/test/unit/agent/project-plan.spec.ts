@@ -1,4 +1,7 @@
-import { parseProjectPlan, projectPlanSchema } from '../../../src/agent/project-plan.js';
+import {
+  parseProjectPlan,
+  projectPlanSchema,
+} from '../../../src/agent/project-plan.js';
 
 const plan = {
   milestones: [
@@ -11,6 +14,7 @@ const plan = {
           title: 'Зібрати вимоги',
           description: 'Описати сценарії',
           priority: 'HIGH',
+          amount: 1500,
           acceptanceCriteria: ['Сценарії задокументовано'],
         },
       ],

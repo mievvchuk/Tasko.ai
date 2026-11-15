@@ -21,6 +21,111 @@ export function trNow(text: string, ...args: (string | number)[]) {
 }
 
 export const enText: Record<string, string> = {
+  "Поки триває найм, команду можна поповнити й напряму: фрілансер отримає доступ до даних цього проєкту.":
+    "While hiring is open, you can also add a freelancer directly: they get access to this project's data.",
+  "Інших активних фрілансерів немає.": "There are no other active freelancers.",
+  "Статус заявки": "Application status",
+  "Продовжити роботу": "Resume work",
+  "Замовник повернув завдання на доопрацювання — причина в результатах нижче та в сповіщеннях.":
+    "The client requested changes — see the reason in the results below and in your notifications.",
+  // Kanban: правила переміщення, перевірка й доопрацювання
+  "Перетягніть картку за ручку або виберіть «Змінити етап» на картці. Доступні колонки підсвічуються.":
+    "Drag a card by its handle or pick “Change stage” on the card. Available columns are highlighted.",
+  "Картку рухає її виконавець, а перевіряє й приймає роботу замовник.":
+    "The assignee moves the card; the client reviews and accepts the work.",
+  "Відпустіть, щоб перемістити в «{0}»": "Release to move to “{0}”",
+  "Нова назва колонки": "New column name",
+  "Перейменувати колонку {0}": "Rename column {0}",
+  "Перейменувати колонку": "Rename column",
+  "На доопрацювання": "Request changes",
+  "Змінити етап завдання {0}": "Change stage of task {0}",
+  "Змінити етап…": "Change stage…",
+  "Що потрібно виправити": "What needs fixing",
+  "Коротко опишіть результат і додайте посилання: репозиторій, макет, документ.":
+    "Briefly describe the result and add links: repository, mockup, document.",
+  "Поясніть, що саме не так, щоб виконавець міг виправити.":
+    "Explain what's wrong so the freelancer can fix it.",
+  "Замовник отримає сповіщення й прийме роботу або поверне її.":
+    "The client will be notified and will accept or return the work.",
+  "Виконавець отримає сповіщення з цією причиною.":
+    "The freelancer will be notified with this reason.",
+  Передати: "Submit",
+  "Видалити колонку «{0}»?": "Delete column “{0}”?",
+  "Куди перенести картки ({0})": "Where to move the cards ({0})",
+  "У колонці немає карток.": "The column has no cards.",
+  "На доопрацюванні": "Changes requested",
+  "Пересувати картку може її виконавець або замовник.":
+    "Only the card's assignee or the client can move it.",
+  "На перевірку роботу передає призначений виконавець.":
+    "Only the assigned freelancer submits work for review.",
+  "Завершити завдання можна лише після перевірки: передайте його на перевірку.":
+    "A task can be completed only after review: submit it for review.",
+  "Роботу приймає замовник.": "The client accepts the work.",
+  "На доопрацювання повертає замовник.": "The client requests changes.",
+  "Продовжити роботу може призначений виконавець.":
+    "Only the assigned freelancer can resume work.",
+  "Картка вже в цьому етапі.": "The card is already at this stage.",
+  "Такий перехід не передбачено процесом.":
+    "The workflow doesn't allow this move.",
+  "Картка вже в цій колонці.": "The card is already in this column.",
+  // Етапи, прив'язані до завдань
+  "Етапи й оплата": "Milestones & payment",
+  "Прийнято {0} з {1}": "Accepted {0} of {1}",
+  "Керувати етапами": "Manage milestones",
+  "Показати всі завдання": "Show all tasks",
+  "Показати завдання етапу": "Show this milestone's tasks",
+  "Прогрес етапу {0}": "Milestone progress {0}",
+  "Виконано {0} з {1} завдань": "{0} of {1} tasks done",
+  "Завдань ще немає": "No tasks yet",
+  "Прийняти етап": "Accept milestone",
+  "Етапів ще немає. Розбийте роботу на етапи через AI-планування або додайте їх вручну — оплата йтиме частинами.":
+    "No milestones yet. Split the work into milestones with AI planning or add them manually — payment will go in parts.",
+  "Усі етапи": "All milestones",
+  "Етап — це оплата частинами за його завдання. Статус етапу змінюється сам: коли всі завдання виконано, етап чекає вашого приймання. Суми облікові й не виконують реальний платіж.":
+    "A milestone is a partial payment for its tasks. Its status updates by itself: once all tasks are done, the milestone waits for your acceptance. Amounts are for record keeping and make no real payment.",
+  "Виконано {0} з {1}": "{0} of {1} done",
+  "Без етапу": "No milestone",
+  "Етап закривається, коли виконано всі його завдання, і тоді ви приймаєте його оплату.":
+    "A milestone closes when all its tasks are done, and then you accept its payment.",
+  Оплачено: "Paid",
+  "Чекає приймання": "Awaiting acceptance",
+  // AI-план: вартість завдань, бюджет і заміна попередніх етапів
+  "Прибрати завдання {0}": "Remove task {0}",
+  Прибрати: "Remove",
+  "Вартість, грн": "Cost, UAH",
+  "Етап {0}": "Milestone {0}",
+  "Завдання етапу": "Milestone tasks",
+  "AI оцінює вартість кожного завдання, а сума етапу складається з вартостей його завдань. Завдання створюються без виконавців і дедлайнів — їх можна призначити після збереження.":
+    "AI estimates the cost of each task, and a milestone's amount is the sum of its tasks. Tasks are created without assignees or deadlines — you can set them after saving.",
+  "У проєкті вже є етапи: {0}": "The project already has milestones: {0}",
+  "Замінити попередні етапи": "Replace previous milestones",
+  "Етапи та їхні завдання, які ще ніхто не взяв у роботу, буде видалено й замінено новим планом.":
+    "Milestones and their tasks that nobody has started will be removed and replaced by the new plan.",
+  "Замінимо етапи, які ще не почали й не оплачували ({0}). Етапи в роботі чи оплачені лишаться.":
+    "Milestones not yet started or paid ({0}) will be replaced. Milestones in progress or paid stay.",
+  "Додати до наявних етапів": "Add to existing milestones",
+  "Нові етапи стануть після наявних, нічого не видаляється.":
+    "New milestones go after the existing ones; nothing is removed.",
+  "Наявні етапи вже в роботі або оплачені, тож новий план додасться після них.":
+    "The existing milestones are already in progress or paid, so the new plan will be added after them.",
+  "Перевірте назви, вартість і критерії приймання — усе можна змінити перед збереженням.":
+    "Check the titles, costs and acceptance criteria — you can change everything before saving.",
+  Етапів: "Milestones",
+  Завдань: "Tasks",
+  "Сума плану": "Plan total",
+  "Сума плану з {0}": "Plan total of {0}",
+  "Сума плану перевищує доступний бюджет на {0}. Зменште вартість завдань.":
+    "The plan total exceeds the available budget by {0}. Lower the task costs.",
+  "Попередні етапи, які ще не почали, буде замінено етапами й завданнями цієї чернетки.":
+    "Previous milestones that haven't started will be replaced by this draft's milestones and tasks.",
+  "Бюджет у проєкті не вказано, тож AI оцінить вартість завдань за ринковими цінами. Суми можна змінити вручну.":
+    "The project has no budget, so AI will estimate task costs at market rates. You can change the amounts manually.",
+  "Ціна, погоджена з виконавцем: {0}.":
+    "Price agreed with the freelancer: {0}.",
+  "Бюджет проєкту: {0}.": "Project budget: {0}.",
+  "Для нового плану доступно {0}.": "Available for the new plan: {0}.",
+  "Сума всіх завдань не може бути більшою.":
+    "The total of all tasks can't be higher.",
   "Політика конфіденційності": "Privacy policy",
   "Не вдалося завантажити вхід через Google.": "Couldn't load Google sign-in.",
   "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.":

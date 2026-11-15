@@ -50,7 +50,8 @@ export type ProjectStatus =
   | "PAUSED"
   | "COMPLETED"
   | "CANCELLED";
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE";
+export type TaskStatus =
+  "TODO" | "IN_PROGRESS" | "REVIEW" | "REVISION" | "DONE";
 
 export const projectStatusNames: Record<ProjectStatus, string> = {
   MODERATION: "На модерації",
@@ -65,6 +66,7 @@ export const taskStatusNames: Record<TaskStatus, string> = {
   TODO: "До виконання",
   IN_PROGRESS: "У процесі",
   REVIEW: "На перевірці",
+  REVISION: "На доопрацюванні",
   DONE: "Завершено",
 };
 
@@ -212,7 +214,25 @@ export interface ProjectMilestone {
   amount: number;
   status: "PLANNED" | "IN_PROGRESS" | "REVIEW" | "COMPLETED";
   paymentStatus: "UNPAID" | "RESERVED" | "PAID";
+  // Прогрес: скільки завдань етапу виконано (статус етапу рахується з них)
+  taskCount: number;
+  doneTaskCount: number;
 }
+export const milestoneStatusNames: Record<ProjectMilestone["status"], string> =
+  {
+    PLANNED: "Заплановано",
+    IN_PROGRESS: "У роботі",
+    REVIEW: "Чекає приймання",
+    COMPLETED: "Прийнято",
+  };
+export const milestonePaymentNames: Record<
+  ProjectMilestone["paymentStatus"],
+  string
+> = {
+  UNPAID: "Не зарезервовано",
+  RESERVED: "Умовно зарезервовано",
+  PAID: "Оплачено",
+};
 export interface ActivityLog {
   id: string;
   type: string;
@@ -275,6 +295,8 @@ export interface Task {
   rating?: number | null;
   deadline: string | null;
   columnId?: string | null;
+  // Етап (оплата частинами), до якого належить завдання
+  milestoneId?: string | null;
   // Лише у списку завдань з усіх проєктів (GET /tasks)
   projectTitle?: string | null;
   assigneeName?: string | null;

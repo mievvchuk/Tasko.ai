@@ -7,13 +7,25 @@ import { ResourceState } from "../components/ResourceState";
 import type { Project } from "../types";
 import {
   PlanMilestoneFields,
+  planTotal,
   type Plan,
   type PlanMilestone,
   type PlanTask,
 } from "./ProjectPlanFields";
+import { formatMoney } from "../format";
 
 import { useLanguage } from "../i18n";
 type BusyAction = "generate" | "apply";
+
+// Бюджет для плану і наявні етапи (GET /projects/:id/ai-plan/context)
+interface PlanContext {
+  limit: number | null;
+  source: "BID" | "PROJECT" | null;
+  milestones: number;
+  replaceableMilestones: number;
+  committed: number;
+  committedAfterReplace: number;
+}
 
 export function ProjectPlanPage() {
   const { id } = useParams();
@@ -27,7 +39,12 @@ function ProjectPlanEditor() {
   const { user } = useAuth();
   const project = useApi<Project>(id ? `/projects/${id}` : null);
   const provider = useApi<{ configured: boolean }>("/agent/status");
+  const context = useApi<PlanContext>(
+    id ? `/projects/${id}/ai-plan/context` : null,
+  );
   const [instructions, setInstructions] = useState("");
+  // Замінити попередні етапи чи додати до них; null — власник ще не обирав
+  const [replaceChoice, setReplaceChoice] = useState<boolean | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [requestId, setRequestId] = useState("");
   const [busy, setBusy] = useState<BusyAction | null>(null);
@@ -43,6 +60,24 @@ function ProjectPlanEditor() {
   const writable =
     project.data && !["COMPLETED", "CANCELLED"].includes(project.data.status);
   const editingLocked = Boolean(busy) || saveAttempted;
+  const ctx = context.data;
+  const canReplace = Boolean(ctx && ctx.replaceableMilestones > 0);
+  // Якщо є що замінити, за замовчуванням план замінює попередні етапи
+  const replace = canReplace && (replaceChoice ?? true);
+  const available =
+    ctx && ctx.limit !== null
+      ? Math.max(
+          0,
+          ctx.limit - (replace ? ctx.committedAfterReplace : ctx.committed),
+        )
+      : null;
+  const total = plan ? planTotal(plan) : 0;
+  const invalidAmount = Boolean(
+    plan?.milestones.some((m) =>
+      m.tasks.some((t) => !Number.isFinite(t.amount)),
+    ),
+  );
+  const overBudget = available !== null && total > available;
 
   function startRequest(action: BusyAction) {
     submitting.current = true;
@@ -69,7 +104,7 @@ function ProjectPlanEditor() {
     try {
       const result = await request<Plan>(`/projects/${id}/ai-plan`, {
         method: "POST",
-        body: { instructions: instructions.trim() },
+        body: { instructions: instructions.trim(), replace },
         timeoutMs: 45000,
         signal: abort.signal,
       });
@@ -87,17 +122,18 @@ function ProjectPlanEditor() {
 
   // Зберігає підтверджену чернетку як етапи й завдання проєкту.
   async function apply() {
-    if (!plan || submitting.current) return;
+    if (!plan || overBudget || invalidAmount || submitting.current) return;
     const abort = startRequest("apply");
     setSaveAttempted(true);
     try {
       await request(`/projects/${id}/ai-plan/apply`, {
         method: "POST",
-        body: { plan, requestId },
+        body: { plan, requestId, replace },
         signal: abort.signal,
         timeoutMs: 30000,
       });
       setSaved(true);
+      context.refresh();
     } catch (e) {
       showRequestError(e, abort);
       // 400 означає, що сервер точно нічого не зберіг, тож чернетку можна знову редагувати.
@@ -155,11 +191,12 @@ function ProjectPlanEditor() {
         <p>{project.data?.title}</p>
       </div>
       <ResourceState
-        loading={project.loading || provider.loading}
-        error={project.error || provider.error}
+        loading={project.loading || provider.loading || context.loading}
+        error={project.error || provider.error || context.error}
         onRetry={() => {
           project.refresh();
           provider.refresh();
+          context.refresh();
         }}
       />
       {project.data && !owner && (
@@ -185,10 +222,65 @@ function ProjectPlanEditor() {
               <i className="bi bi-info-circle" aria-hidden="true"></i>
               <span>
                 {tr(
-                  "Завдання створюються без виконавців і дедлайнів, етапи — з сумою 0 грн. Призначити виконавців і строки завдань можна у формах їх редагування після збереження.",
+                  "AI оцінює вартість кожного завдання, а сума етапу складається з вартостей його завдань. Завдання створюються без виконавців і дедлайнів — їх можна призначити після збереження.",
                 )}
               </span>
             </p>
+            {ctx && <BudgetNote context={ctx} available={available} />}
+            {ctx && ctx.milestones > 0 && (
+              <fieldset className="plan-mode" disabled={editingLocked}>
+                <legend>
+                  {tr("У проєкті вже є етапи: {0}", ctx.milestones)}
+                </legend>
+                {canReplace ? (
+                  <>
+                    <label className="plan-mode-option">
+                      <input
+                        type="radio"
+                        name="plan-mode"
+                        checked={replace}
+                        onChange={() => setReplaceChoice(true)}
+                      />
+                      <span>
+                        <strong>{tr("Замінити попередні етапи")}</strong>
+                        <small>
+                          {ctx.replaceableMilestones === ctx.milestones
+                            ? tr(
+                                "Етапи та їхні завдання, які ще ніхто не взяв у роботу, буде видалено й замінено новим планом.",
+                              )
+                            : tr(
+                                "Замінимо етапи, які ще не почали й не оплачували ({0}). Етапи в роботі чи оплачені лишаться.",
+                                ctx.replaceableMilestones,
+                              )}
+                        </small>
+                      </span>
+                    </label>
+                    <label className="plan-mode-option">
+                      <input
+                        type="radio"
+                        name="plan-mode"
+                        checked={!replace}
+                        onChange={() => setReplaceChoice(false)}
+                      />
+                      <span>
+                        <strong>{tr("Додати до наявних етапів")}</strong>
+                        <small>
+                          {tr(
+                            "Нові етапи стануть після наявних, нічого не видаляється.",
+                          )}
+                        </small>
+                      </span>
+                    </label>
+                  </>
+                ) : (
+                  <p className="form-note">
+                    {tr(
+                      "Наявні етапи вже в роботі або оплачені, тож новий план додасться після них.",
+                    )}
+                  </p>
+                )}
+              </fieldset>
+            )}
             {!provider.loading &&
               provider.data &&
               !provider.data.configured && (
@@ -255,14 +347,41 @@ function ProjectPlanEditor() {
               }}
             >
               <div className="plan-summary">
-                <strong>{tr("Чернетка для перевірки")}</strong>
-                <span>
-                  {tr("Етапів:")} {plan.milestones.length}
-                </span>
-                <span>
-                  {tr("Завдань:")} {countTasks(plan)}
-                </span>
+                <div>
+                  <h2>{tr("Чернетка для перевірки")}</h2>
+                  <p>
+                    {tr(
+                      "Перевірте назви, вартість і критерії приймання — усе можна змінити перед збереженням.",
+                    )}
+                  </p>
+                </div>
+                <dl className="plan-stats">
+                  <div>
+                    <dt>{tr("Етапів")}</dt>
+                    <dd>{plan.milestones.length}</dd>
+                  </div>
+                  <div>
+                    <dt>{tr("Завдань")}</dt>
+                    <dd>{countTasks(plan)}</dd>
+                  </div>
+                  <div className={overBudget ? "over" : undefined}>
+                    <dt>
+                      {available === null
+                        ? tr("Сума плану")
+                        : tr("Сума плану з {0}", formatMoney(available))}
+                    </dt>
+                    <dd>{formatMoney(total)}</dd>
+                  </div>
+                </dl>
               </div>
+              {overBudget && (
+                <p role="alert" className="notice error">
+                  {tr(
+                    "Сума плану перевищує доступний бюджет на {0}. Зменште вартість завдань.",
+                    formatMoney(total - (available ?? 0)),
+                  )}
+                </p>
+              )}
               {saveAttempted && !busy && (
                 <p className="notice">
                   {tr(
@@ -285,13 +404,20 @@ function ProjectPlanEditor() {
                 />
               ))}
               <div className="plan-actions">
-                <button className="button primary" disabled={Boolean(busy)}>
-                  {tr(applyButtonLabel(busy, saveAttempted))}
+                <button
+                  className="button primary"
+                  disabled={Boolean(busy) || overBudget || invalidAmount}
+                >
+                  {tr(applyButtonLabel(busy, saveAttempted, replace))}
                 </button>
                 <p className="form-note">
-                  {tr(
-                    "Після підтвердження буде створено всі етапи та завдання цієї чернетки.",
-                  )}
+                  {replace
+                    ? tr(
+                        "Попередні етапи, які ще не почали, буде замінено етапами й завданнями цієї чернетки.",
+                      )
+                    : tr(
+                        "Після підтвердження буде створено всі етапи та завдання цієї чернетки.",
+                      )}
                 </p>
               </div>
             </form>
@@ -349,8 +475,52 @@ function generateButtonLabel(busy: BusyAction | null, hasPlan: boolean) {
   return "Запропонувати план";
 }
 
-function applyButtonLabel(busy: BusyAction | null, saveAttempted: boolean) {
+function applyButtonLabel(
+  busy: BusyAction | null,
+  saveAttempted: boolean,
+  replace: boolean,
+) {
   if (busy === "apply") return "Зберігаємо…";
   if (saveAttempted) return "Повторити підтвердження";
+  if (replace) return "Замінити попередні етапи";
   return "Підтвердити й додати до проєкту";
+}
+
+// Звідки взято межу суми плану і скільки ще можна розподілити
+function BudgetNote({
+  context,
+  available,
+}: {
+  context: PlanContext;
+  available: number | null;
+}) {
+  const { tr } = useLanguage();
+  return (
+    <p className="plan-budget">
+      <i className="bi bi-cash-coin" aria-hidden="true"></i>
+      <span>
+        {context.limit === null ? (
+          tr(
+            "Бюджет у проєкті не вказано, тож AI оцінить вартість завдань за ринковими цінами. Суми можна змінити вручну.",
+          )
+        ) : (
+          <>
+            {context.source === "BID"
+              ? tr(
+                  "Ціна, погоджена з виконавцем: {0}.",
+                  formatMoney(context.limit),
+                )
+              : tr("Бюджет проєкту: {0}.", formatMoney(context.limit))}{" "}
+            <strong>
+              {tr(
+                "Для нового плану доступно {0}.",
+                formatMoney(available ?? 0),
+              )}
+            </strong>{" "}
+            {tr("Сума всіх завдань не може бути більшою.")}
+          </>
+        )}
+      </span>
+    </p>
+  );
 }

@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { DragEvent, FormEvent, PointerEvent } from "react";
 import { Link, useParams } from "react-router";
 import { errorMessage, request } from "../api";
@@ -9,24 +9,32 @@ import {
   boardLanes,
   isOverdue,
   laneOrder,
+  laneRule,
+  movedTask,
   stageAt,
   tasksInLane,
   type Lane,
+  type MoveActor,
 } from "../kanban";
 import {
   priorityNames,
   taskStatusNames,
   type BoardColumn,
   type Project,
+  type ProjectMember,
   type Task,
-  type TaskStatus,
 } from "../types";
 import { useApi } from "../useApi";
+import { AdminDialog } from "./AdminSections";
 
 import { useLanguage } from "../i18n";
-// Сервер дозволяє вручну перемикати лише ці два статуси (і власні колонки цих етапів).
-// «На перевірці» — це передавання результату, а «Завершено» ставить клієнт.
-const movableStatuses: TaskStatus[] = ["TODO", "IN_PROGRESS"];
+
+// Переміщення, яке чекає на коментар (здача на перевірку) чи причину (доопрацювання)
+interface PendingMove {
+  task: Task;
+  lane: Lane;
+  needs: "comment" | "reason";
+}
 
 // Картка, яку зараз тягнуть: звідки почали і скільки прокрутили з того часу
 interface Drag {
@@ -46,33 +54,63 @@ export function ProjectBoardPage() {
   const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
-  const { data, error, loading, refresh } = useApi<Task[]>(
-    id ? `/projects/${id}/tasks?limit=50` : null,
-  );
-  const project = useApi<Project>(id ? `/projects/${id}` : null);
-  const columns = useApi<BoardColumn[]>(id ? `/projects/${id}/columns` : null);
-  const [actionError, setActionError] = useState("");
   // Яку картку тягнемо і над якою колонкою вона зараз
   const [dragId, setDragId] = useState<string | null>(null);
-  const [overLane, setOverLane] = useState<string | null>(null);
-  const [newColumn, setNewColumn] = useState("");
   // Куди вставляємо нову колонку (індекс проміжку) і яку колонку зараз тягнуть
   const [insertAt, setInsertAt] = useState<number | null>(null);
   const [columnDrag, setColumnDrag] = useState<string | null>(null);
+  // Поки картку чи колонку тягнуть, дошку не перемальовуємо: після відпускання вона й так оновиться
+  const live = { live: !dragId && !columnDrag };
+  const { data, error, loading, refresh } = useApi<Task[]>(
+    id ? `/projects/${id}/tasks?limit=50` : null,
+    live,
+  );
+  const project = useApi<Project>(id ? `/projects/${id}` : null, live);
+  const columns = useApi<BoardColumn[]>(
+    id ? `/projects/${id}/columns` : null,
+    live,
+  );
+  // Учасники — щоб знати, чи може фрілансер узяти вільне завдання
+  const members = useApi<ProjectMember[]>(
+    id ? `/projects/${id}/members` : null,
+    live,
+  );
+  const [actionError, setActionError] = useState("");
+  // Картки, переміщені до відповіді сервера: показуємо одразу, при помилці повертаємо назад
+  const [moved, setMoved] = useState<Record<string, Task>>({});
+  const [pending, setPending] = useState<PendingMove | null>(null);
+  const [renaming, setRenaming] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState<Lane | null>(null);
+  const [overLane, setOverLane] = useState<string | null>(null);
+  const [newColumn, setNewColumn] = useState("");
   const [overGap, setOverGap] = useState<number | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<Drag | null>(null);
 
-  const lanes = boardLanes(columns.data ?? []);
-  const tasks = data ?? [];
-  // Колонки додає й видаляє власник проєкту (або адміністратор)
-  const isOwner = project.data?.clientId === user?.id;
+  // Свіжі дані з сервера замінюють миттєві переміщення
+  useEffect(() => setMoved({}), [data]);
 
-  // Пересувати картку може виконавець або власник проєкту
-  function canMove(task: Task) {
-    const allowed = task.assigneeId === user?.id || isOwner;
-    return allowed && movableStatuses.includes(task.status);
-  }
+  const lanes = boardLanes(columns.data ?? []);
+  const tasks = (data ?? []).map((task) => moved[task.id] ?? task);
+  // Структуру дошки (колонки) змінює лише замовник; переміщення — за правилами процесу
+  const isOwner = project.data?.clientId === user?.id;
+  const isMember =
+    user?.role === "FREELANCER" &&
+    Boolean(members.data?.some((member) => member.userId === user.id));
+  const active = project.data?.status === "ACTIVE";
+  const actorFor = (task: Task): MoveActor => ({
+    isOwner,
+    isAssignee: Boolean(task.assigneeId) && task.assigneeId === user?.id,
+    isMember,
+  });
+  const ruleFor = (task: Task, lane: Lane) =>
+    laneRule(task, lane, actorFor(task));
+  const targetsFor = (task: Task) =>
+    active ? lanes.filter((lane) => ruleFor(task, lane).allowed) : [];
+  const canMove = (task: Task) => targetsFor(task).length > 0;
 
   async function run(action: () => Promise<unknown>) {
     setActionError("");
@@ -83,15 +121,51 @@ export function ProjectBoardPage() {
     }
   }
 
-  function move(task: Task, lane: Lane) {
-    return run(async () => {
-      await request(`/tasks/${task.id}/status`, {
-        method: "PATCH",
-        body: { status: lane.status, columnId: lane.columnId ?? undefined },
+  // Переміщення картки: перевіряємо правило, за потреби питаємо коментар чи причину,
+  // показуємо картку на новому місці одразу, а при помилці сервера повертаємо назад
+  async function move(
+    task: Task,
+    lane: Lane,
+    extra?: { comment?: string; reason?: string },
+  ) {
+    const rule = ruleFor(task, lane);
+    if (!rule.allowed) {
+      setActionError(tr(rule.reason));
+      return false;
+    }
+    if (rule.needs && !extra) {
+      setPending({ task, lane, needs: rule.needs });
+      return false;
+    }
+    setActionError("");
+    setMoved((items) => ({
+      ...items,
+      [task.id]: movedTask(task, lane, rule.takes ? user?.id : undefined),
+    }));
+    try {
+      await request(`/tasks/${task.id}/move`, {
+        method: "POST",
+        body: {
+          status: lane.status,
+          columnId: lane.columnId ?? undefined,
+          ...extra,
+        },
       });
+      return true;
+    } catch (error) {
+      setMoved((items) => {
+        const rest = { ...items };
+        delete rest[task.id];
+        return rest;
+      });
+      setActionError(errorMessage(error));
+      return false;
+    } finally {
       refresh();
-    });
+    }
   }
+  const laneFor = (status: Task["status"]) =>
+    lanes.find((lane) => lane.status === status && !lane.columnId)!;
 
   // Колонки до «На перевірці» можна ставити будь-де; етап визначає місце
   const order = laneOrder(lanes);
@@ -137,15 +211,26 @@ export function ProjectBoardPage() {
     if (columnId) void moveColumn(columnId, gap);
   }
 
-  function deleteColumn(lane: Lane) {
-    const question = tr(
-      "Видалити колонку «{0}»? Її завдання повернуться в «{1}».",
-      lane.title ?? "",
-      tr(taskStatusNames[lane.status]),
-    );
-    if (!confirm(question)) return;
+  function renameColumn(event: FormEvent) {
+    event.preventDefault();
+    if (!renaming) return;
+    const { id: columnId, title } = renaming;
     return run(async () => {
-      await request(`/columns/${lane.columnId}`, { method: "DELETE" });
+      await request(`/columns/${columnId}`, {
+        method: "PATCH",
+        body: { title: title.trim() },
+      });
+      setRenaming(null);
+      columns.refresh();
+    });
+  }
+
+  // Видалення колонки: картки переходять у вибрану колонку того самого етапу
+  function deleteColumn(lane: Lane, moveTo: string) {
+    return run(async () => {
+      const query = moveTo ? `?moveTo=${moveTo}` : "";
+      await request(`/columns/${lane.columnId}${query}`, { method: "DELETE" });
+      setDeleting(null);
       columns.refresh();
       refresh();
     });
@@ -165,10 +250,7 @@ export function ProjectBoardPage() {
     const dx = drag.lastX - drag.x + (board?.scrollLeft ?? 0) - drag.scrollLeft;
     const dy = drag.lastY - drag.y + window.scrollY - drag.scrollY;
     drag.card.style.transform = `translate(${dx}px, ${dy}px) rotate(2deg)`;
-    const lane = laneAt(drag.lastX, drag.lastY);
-    setOverLane(
-      lane && movableStatuses.includes(lane.status) ? lane.key : null,
-    );
+    setOverLane(laneAt(drag.lastX, drag.lastY)?.key ?? null);
   }
   // Біля краю екрана дошка і сторінка самі прокручуються, поки картку тримають
   function autoScroll(drag: Drag) {
@@ -243,30 +325,33 @@ export function ProjectBoardPage() {
         0,
       );
       const lane = cancelled ? undefined : laneAt(event.clientX, event.clientY);
-      if (
-        lane &&
-        movableStatuses.includes(lane.status) &&
-        !tasksInLane([drag.task], lane).length
-      )
+      // Кинули в ту саму колонку — нічого не робимо; в недоступну — пояснюємо чому
+      if (lane && !tasksInLane([drag.task], lane).length)
         void move(drag.task, lane);
     }
     setDragId(null);
     setOverLane(null);
   }
 
-  // Клас колонки: під карткою — підсвічена, куди не можна кинути — бліда
+  const dragged = dragId ? tasks.find((task) => task.id === dragId) : null;
+  // Клас колонки під час перетягування: доступна — з рамкою, під карткою — підсвічена,
+  // недоступна — бліда (причину показує підказка над дошкою)
   function laneClass(lane: Lane) {
     let className = `kanban-column column-${lane.status}`;
     if (lane.columnId) className += " custom";
-    if (overLane === lane.key) className += " drop-target";
-    if (dragId && !movableStatuses.includes(lane.status))
-      className += " locked";
+    if (dragged && !tasksInLane([dragged], lane).length) {
+      const allowed = ruleFor(dragged, lane).allowed;
+      className += allowed ? " drop-allowed" : " locked";
+      if (allowed && overLane === lane.key) className += " drop-target";
+    }
     return className;
   }
+  const overTarget = lanes.find((lane) => lane.key === overLane);
+  const dragHint =
+    dragged && overTarget && !tasksInLane([dragged], overTarget).length
+      ? ruleFor(dragged, overTarget)
+      : null;
 
-  const movableLanes = lanes.filter((lane) =>
-    movableStatuses.includes(lane.status),
-  );
   const laneTitle = (lane: Lane) =>
     lane.title ?? tr(taskStatusNames[lane.status]);
   const anyMovable = tasks.some(canMove);
@@ -280,9 +365,11 @@ export function ProjectBoardPage() {
         <p>
           {anyMovable
             ? tr(
-                "Перетягніть картку за ручку в іншу колонку або виберіть колонку у списку на картці.",
+                "Перетягніть картку за ручку або виберіть «Змінити етап» на картці. Доступні колонки підсвічуються.",
               )
-            : tr("Статус завдання змінює призначений виконавець.")}
+            : tr(
+                "Картку рухає її виконавець, а перевіряє й приймає роботу замовник.",
+              )}
           {isOwner &&
             " " +
               tr(
@@ -290,7 +377,32 @@ export function ProjectBoardPage() {
               )}
         </p>
       </div>
-      {actionError && <p className="form-error">{actionError}</p>}
+      {actionError && (
+        <p className="notice error" role="alert">
+          {actionError}
+        </p>
+      )}
+      {/* Під час перетягування: куди можна кинути картку, а куди ні й чому */}
+      {dragHint && (
+        <p
+          className={
+            dragHint.allowed ? "kanban-drag-hint" : "kanban-drag-hint denied"
+          }
+          role="status"
+        >
+          <i
+            className={
+              dragHint.allowed
+                ? "bi bi-arrow-down-circle"
+                : "bi bi-slash-circle"
+            }
+            aria-hidden="true"
+          ></i>
+          {dragHint.allowed
+            ? tr("Відпустіть, щоб перемістити в «{0}»", laneTitle(overTarget!))
+            : tr(dragHint.reason)}
+        </p>
+      )}
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (
         <div
@@ -400,29 +512,79 @@ export function ProjectBoardPage() {
                         aria-hidden="true"
                       ></i>
                     )}
-                    <span className="kanban-title">{laneTitle(lane)}</span>
+                    {renaming?.id === lane.columnId ? (
+                      <form className="kanban-rename" onSubmit={renameColumn}>
+                        <input
+                          autoFocus
+                          required
+                          minLength={2}
+                          maxLength={40}
+                          aria-label={tr("Нова назва колонки")}
+                          value={renaming.title}
+                          onChange={(event) =>
+                            setRenaming({
+                              id: renaming.id,
+                              title: event.target.value,
+                            })
+                          }
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") setRenaming(null);
+                          }}
+                        />
+                      </form>
+                    ) : (
+                      <span className="kanban-title">{laneTitle(lane)}</span>
+                    )}
                     <span className="kanban-count">{laneTasks.length}</span>
-                    {lane.columnId && isOwner && (
-                      <button
-                        type="button"
-                        className="kanban-remove"
-                        aria-label={tr("Видалити колонку {0}", laneTitle(lane))}
-                        title={tr("Видалити колонку")}
-                        onClick={() => void deleteColumn(lane)}
-                      >
-                        <span className="bi bi-x-lg" aria-hidden="true"></span>
-                      </button>
+                    {lane.columnId && isOwner && !renaming && (
+                      <>
+                        <button
+                          type="button"
+                          className="kanban-remove"
+                          aria-label={tr(
+                            "Перейменувати колонку {0}",
+                            laneTitle(lane),
+                          )}
+                          title={tr("Перейменувати колонку")}
+                          onClick={() =>
+                            setRenaming({
+                              id: lane.columnId!,
+                              title: laneTitle(lane),
+                            })
+                          }
+                        >
+                          <span
+                            className="bi bi-pencil"
+                            aria-hidden="true"
+                          ></span>
+                        </button>
+                        <button
+                          type="button"
+                          className="kanban-remove"
+                          aria-label={tr(
+                            "Видалити колонку {0}",
+                            laneTitle(lane),
+                          )}
+                          title={tr("Видалити колонку")}
+                          onClick={() => setDeleting(lane)}
+                        >
+                          <span
+                            className="bi bi-x-lg"
+                            aria-hidden="true"
+                          ></span>
+                        </button>
+                      </>
                     )}
                   </h2>
                   {!laneTasks.length && (
-                    <p className="kanban-empty">
-                      {movableStatuses.includes(lane.status) && anyMovable
-                        ? tr("Перетягніть сюди картку")
-                        : tr("Порожньо")}
-                    </p>
+                    <p className="kanban-empty">{tr("Порожньо")}</p>
                   )}
                   {laneTasks.map((task) => {
-                    const movable = canMove(task);
+                    const targets = targetsFor(task);
+                    const movable = targets.length > 0;
+                    // Перевірка роботи — дві основні дії замовника прямо на картці
+                    const reviewing =
+                      isOwner && active && task.status === "REVIEW";
                     return (
                       <article
                         key={task.id}
@@ -479,26 +641,57 @@ export function ProjectBoardPage() {
                             </span>
                           )}
                         </div>
-                        {/* select лишаємо — ним можна змінити колонку з клавіатури */}
-                        {movable && (
-                          <select
-                            aria-label={tr("Колонка завдання {0}", task.title)}
-                            value={
-                              tasksInLane([task], lane).length ? lane.key : ""
-                            }
-                            onChange={(event) => {
-                              const target = movableLanes.find(
-                                (item) => item.key === event.target.value,
-                              );
-                              if (target) void move(task, target);
-                            }}
-                          >
-                            {movableLanes.map((item) => (
-                              <option key={item.key} value={item.key}>
-                                {laneTitle(item)}
-                              </option>
-                            ))}
-                          </select>
+                        {reviewing ? (
+                          <div className="kanban-review">
+                            <button
+                              type="button"
+                              className="button primary"
+                              onClick={() => void move(task, laneFor("DONE"))}
+                            >
+                              <i
+                                className="bi bi-check2-circle"
+                                aria-hidden="true"
+                              ></i>
+                              {tr("Прийняти")}
+                            </button>
+                            <button
+                              type="button"
+                              className="button secondary"
+                              onClick={() =>
+                                void move(task, laneFor("REVISION"))
+                              }
+                            >
+                              <i
+                                className="bi bi-arrow-counterclockwise"
+                                aria-hidden="true"
+                              ></i>
+                              {tr("На доопрацювання")}
+                            </button>
+                          </div>
+                        ) : (
+                          // Альтернатива перетягуванню: лише доступні етапи
+                          movable && (
+                            <select
+                              aria-label={tr(
+                                "Змінити етап завдання {0}",
+                                task.title,
+                              )}
+                              value=""
+                              onChange={(event) => {
+                                const target = targets.find(
+                                  (item) => item.key === event.target.value,
+                                );
+                                if (target) void move(task, target);
+                              }}
+                            >
+                              <option value="">{tr("Змінити етап…")}</option>
+                              {targets.map((item) => (
+                                <option key={item.key} value={item.key}>
+                                  {laneTitle(item)}
+                                </option>
+                              ))}
+                            </select>
+                          )
                         )}
                       </article>
                     );
@@ -509,7 +702,168 @@ export function ProjectBoardPage() {
           })}
         </div>
       )}
+      {pending && (
+        <MoveDialog
+          pending={pending}
+          onClose={() => setPending(null)}
+          onSubmit={async (text) => {
+            const done = await move(
+              pending.task,
+              pending.lane,
+              pending.needs === "comment"
+                ? { comment: text }
+                : { reason: text },
+            );
+            if (done) setPending(null);
+            return done;
+          }}
+        />
+      )}
+      {deleting && (
+        <DeleteColumnDialog
+          lane={deleting}
+          lanes={lanes}
+          count={tasksInLane(tasks, deleting).length}
+          laneTitle={laneTitle}
+          onClose={() => setDeleting(null)}
+          onDelete={(moveTo) => deleteColumn(deleting, moveTo)}
+        />
+      )}
     </>
+  );
+}
+
+// Здача на перевірку (коментар чи посилання) або повернення на доопрацювання (причина)
+function MoveDialog({
+  pending,
+  onClose,
+  onSubmit,
+}: {
+  pending: PendingMove;
+  onClose: () => void;
+  onSubmit: (text: string) => Promise<boolean>;
+}) {
+  const { tr } = useLanguage();
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const review = pending.needs === "comment";
+  return (
+    <AdminDialog
+      title={
+        review ? tr("Передати на перевірку") : tr("Повернути на доопрацювання")
+      }
+      description={pending.task.title}
+      onClose={onClose}
+    >
+      <form
+        className="admin-dialog-form"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setBusy(true);
+          await onSubmit(text.trim());
+          setBusy(false);
+        }}
+      >
+        <label>
+          {review ? tr("Що зроблено") : tr("Що потрібно виправити")}
+          <textarea
+            autoFocus
+            required
+            rows={4}
+            maxLength={review ? 10000 : 2000}
+            value={text}
+            placeholder={
+              review
+                ? tr(
+                    "Коротко опишіть результат і додайте посилання: репозиторій, макет, документ.",
+                  )
+                : tr("Поясніть, що саме не так, щоб виконавець міг виправити.")
+            }
+            onChange={(event) => setText(event.target.value)}
+          />
+        </label>
+        <p className="form-note">
+          {review
+            ? tr("Замовник отримає сповіщення й прийме роботу або поверне її.")
+            : tr("Виконавець отримає сповіщення з цією причиною.")}
+        </p>
+        <div className="admin-dialog-actions">
+          <button className="button primary" disabled={busy || !text.trim()}>
+            {review ? tr("Передати") : tr("Повернути")}
+          </button>
+          <button type="button" className="button secondary" onClick={onClose}>
+            {tr("Скасувати")}
+          </button>
+        </div>
+      </form>
+    </AdminDialog>
+  );
+}
+
+// Видалення колонки: картки не губляться — вибираємо, куди їх перенести
+function DeleteColumnDialog({
+  lane,
+  lanes,
+  count,
+  laneTitle,
+  onClose,
+  onDelete,
+}: {
+  lane: Lane;
+  lanes: Lane[];
+  count: number;
+  laneTitle: (lane: Lane) => string;
+  onClose: () => void;
+  onDelete: (moveTo: string) => Promise<unknown> | undefined;
+}) {
+  const { tr } = useLanguage();
+  // Сумісні колонки — того самого етапу; стандартна йде першою
+  const options = lanes.filter(
+    (item) => item.status === lane.status && item.key !== lane.key,
+  );
+  const [target, setTarget] = useState(options[0]?.columnId ?? "");
+  const [busy, setBusy] = useState(false);
+  return (
+    <AdminDialog
+      title={tr("Видалити колонку «{0}»?", laneTitle(lane))}
+      onClose={onClose}
+    >
+      <form
+        className="admin-dialog-form"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setBusy(true);
+          await onDelete(target);
+          setBusy(false);
+        }}
+      >
+        {count > 0 ? (
+          <label>
+            {tr("Куди перенести картки ({0})", count)}
+            <select
+              value={target}
+              onChange={(event) => setTarget(event.target.value)}
+            >
+              {options.map((item) => (
+                <option key={item.key} value={item.columnId ?? ""}>
+                  {laneTitle(item)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <p className="form-note">{tr("У колонці немає карток.")}</p>
+        )}
+        <div className="admin-dialog-actions">
+          <button className="button secondary danger-outline" disabled={busy}>
+            {tr("Видалити колонку")}
+          </button>
+          <button type="button" className="button secondary" onClick={onClose}>
+            {tr("Скасувати")}
+          </button>
+        </div>
+      </form>
+    </AdminDialog>
   );
 }
 
