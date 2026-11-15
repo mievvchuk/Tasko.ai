@@ -226,7 +226,9 @@ export function StatusColumns({
                   style={{ height: `${(item.value / max) * 100}%` }}
                 />
               </span>
-              <small>{item.label}</small>
+              {/* Назва лишається в посиланні для скрінрідера, а видно її в легенді:
+                  «На доопрацюванні» не вміщається під вузьким стовпцем */}
+              <small className="visually-hidden">{item.label}</small>
             </>
           );
           return (
@@ -236,6 +238,14 @@ export function StatusColumns({
           );
         })}
       </ol>
+      <ul className="status-legend" aria-hidden="true">
+        {items.map((item) => (
+          <li key={item.label}>
+            <i className={`legend-dot tone-${item.tone ?? "primary"}`} />
+            {item.label}
+          </li>
+        ))}
+      </ul>
     </figure>
   );
 }

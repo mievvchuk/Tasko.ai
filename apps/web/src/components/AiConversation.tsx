@@ -9,7 +9,7 @@ import {
 import type { ChangeEvent, FormEvent, KeyboardEvent } from "react";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { aiName, aiToolNames, useAiChat } from "../aiChat";
 import type { AiAttachment, AiProjectDraft } from "../aiChat";
 import { formatDate } from "../format";
@@ -86,7 +86,13 @@ function Thinking() {
   );
 }
 
-function UserBubble({ question, files }: { question: string; files?: string[] }) {
+function UserBubble({
+  question,
+  files,
+}: {
+  question: string;
+  files?: string[];
+}) {
   const { tr } = useLanguage();
   return (
     <div className="ai-bubble user">
@@ -148,14 +154,22 @@ function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
           <dd>{formatDate(draft.deadline ?? null)}</dd>
         </div>
       </dl>
-      <button
-        type="button"
-        className="button primary"
-        disabled={busy}
-        onClick={() => void create()}
-      >
-        {busy ? tr("Створюємо…") : tr("Створити проєкт")}
-      </button>
+      <div className="ai-draft-actions">
+        <button
+          type="button"
+          className="button primary"
+          disabled={busy}
+          onClick={() => void create()}
+        >
+          {busy ? tr("Створюємо…") : tr("Створити проєкт")}
+        </button>
+        {/* Форма створення відкривається вже заповненою: можна підправити
+            текст, бюджет чи дедлайн і додати категорію з навичками */}
+        <Link className="button secondary" to="/projects/new" state={{ draft }}>
+          <i className="bi bi-pencil" aria-hidden="true"></i>
+          {tr("Відредагувати у формі")}
+        </Link>
+      </div>
       {error && (
         <p className="notice error" role="alert">
           {error}
@@ -331,16 +345,16 @@ export function AiConversation({
             </p>
           )}
           {unasked.map((text) => (
-              <button
-                key={text}
-                type="button"
-                className="ai-chip"
-                onClick={() => void ask(text)}
-              >
-                <span>{text}</span>
-                <i className="bi bi-arrow-up-right" aria-hidden="true"></i>
-              </button>
-            ))}
+            <button
+              key={text}
+              type="button"
+              className="ai-chip"
+              onClick={() => void ask(text)}
+            >
+              <span>{text}</span>
+              <i className="bi bi-arrow-up-right" aria-hidden="true"></i>
+            </button>
+          ))}
         </div>
       )}
       <form className="work-form ai-form" onSubmit={submit}>

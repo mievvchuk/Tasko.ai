@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
+import type { AiProjectDraft } from "../aiChat";
 import { request, errorMessage } from "../api";
 import { useAuth } from "../auth";
 import { LoadError } from "../components/LoadError";
@@ -78,10 +79,17 @@ export function ProjectFormPage() {
 function ProjectForm({ project }: { project: Project | null }) {
   const { tr } = useLanguage();
   const navigate = useNavigate();
-  const [title, setTitle] = useState(project?.title || "");
-  const [description, setDescription] = useState(project?.description || "");
+  // Чернетка від Ади (кнопка «Відредагувати у формі» в чаті) заповнює нову форму
+  const location = useLocation();
+  const draft = project
+    ? null
+    : ((location.state as { draft?: AiProjectDraft } | null)?.draft ?? null);
+  const [title, setTitle] = useState(project?.title || draft?.title || "");
+  const [description, setDescription] = useState(
+    project?.description || draft?.description || "",
+  );
   const [deadline, setDeadline] = useState(
-    toDateInput(project?.deadline || null),
+    toDateInput(project?.deadline || draft?.deadline || null),
   );
   const [status, setStatus] = useState<ProjectStatus>(
     project?.status || "PLANNING",
@@ -89,10 +97,10 @@ function ProjectForm({ project }: { project: Project | null }) {
   const categories = useApi<ProjectCategory[]>("/project-categories");
   const skills = useApi<Skill[]>("/skills");
   const [budgetMin, setBudgetMin] = useState(
-    project?.budgetMin?.toString() || "",
+    (project?.budgetMin ?? draft?.budgetMin)?.toString() || "",
   );
   const [budgetMax, setBudgetMax] = useState(
-    project?.budgetMax?.toString() || "",
+    (project?.budgetMax ?? draft?.budgetMax)?.toString() || "",
   );
   const [categoryName, setCategoryName] = useState(
     project?.category?.name || "",

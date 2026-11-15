@@ -280,7 +280,8 @@ export function ProjectBoardPage() {
       return;
     if (event.pointerType !== "mouse" && !target.closest(".kanban-grip"))
       return;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    // Вказівник захоплюємо лише з початком перетягування (moveDrag): інакше
+    // click дістається картці, а не посиланню, і завдання не відкривається
     dragRef.current = {
       task,
       card: event.currentTarget,
@@ -302,6 +303,7 @@ export function ProjectBoardPage() {
       // Невеликий зсув — ще клік, а не перетягування
       if (Math.hypot(drag.lastX - drag.x, drag.lastY - drag.y) < 6) return;
       drag.moved = true;
+      drag.card.setPointerCapture(event.pointerId);
       setDragId(drag.task.id);
       drag.timer = window.setInterval(() => autoScroll(drag), 16);
     }
@@ -643,6 +645,14 @@ export function ProjectBoardPage() {
                         </div>
                         {reviewing ? (
                           <div className="kanban-review">
+                            {/* Спершу подивитися здану роботу, а тоді вирішувати */}
+                            <Link
+                              className="button ghost"
+                              to={`/tasks/${task.id}`}
+                            >
+                              <i className="bi bi-eye" aria-hidden="true"></i>
+                              {tr("Переглянути роботу")}
+                            </Link>
                             <button
                               type="button"
                               className="button primary"

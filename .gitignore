@@ -50,5 +50,8 @@ Thumbs.db
 .kubectl_*
 storage/
 .playwright-cli/
+playwright-report/
+test-results/
+.auth/
 .superpowers/
 .envrc
