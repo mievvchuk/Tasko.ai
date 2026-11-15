@@ -483,6 +483,7 @@ label {
 }
 .status-DONE,
 .status-COMPLETED,
+.status-PAID,
 .status-ACCEPTED,
 .status-RESOLVED {
   background: var(--color-accent);
@@ -5841,6 +5842,31 @@ tbody tr:nth-child(n + 6) {
 }
 .take-next-panel > div {
   flex: 1 1 320px;
+}
+
+/* Банер завершеного проєкту з пропозицією оцінити учасників */
+.completion-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  border-color: var(--color-accent);
+}
+.completion-panel > .bi {
+  font-size: 1.75rem;
+  color: var(--color-accent-text);
+}
+.completion-panel > div {
+  flex: 1 1 280px;
+}
+.completion-panel h2 {
+  margin: 0 0 var(--space-2xs);
+}
+.completion-panel p {
+  margin: 0;
+}
+.status-PAID .bi {
+  margin-right: var(--space-2xs);
 }
 
 /* Профіль фрілансера очима клієнта */

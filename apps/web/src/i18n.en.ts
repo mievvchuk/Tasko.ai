@@ -71,6 +71,14 @@ export const enText: Record<string, string> = {
   // Етапи, прив'язані до завдань
   "Етапи й оплата": "Milestones & payment",
   "Прийнято {0} з {1}": "Accepted {0} of {1}",
+  "Оплачено {0} з {1}": "Paid {0} of {1}",
+  "Проєкт завершено": "Project completed",
+  "Усі завдання й етапи виконано. Оцініть роботу фрілансерів — відгук з'явиться в їхньому профілі.":
+    "All tasks and milestones are done. Rate the freelancers — your review will appear on their profile.",
+  "Усі завдання й етапи виконано. Оцініть співпрацю із замовником.":
+    "All tasks and milestones are done. Rate your collaboration with the client.",
+  "Оцінити фрілансерів": "Rate freelancers",
+  "Оцінити замовника": "Rate the client",
   "Керувати етапами": "Manage milestones",
   "Показати всі завдання": "Show all tasks",
   "Показати завдання етапу": "Show this milestone's tasks",

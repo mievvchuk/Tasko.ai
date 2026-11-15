@@ -61,13 +61,17 @@ export function TasksTable({
                   </td>
                 )}
                 <td>
-                  {task.assigneeId
-                    ? task.assigneeName ||
-                      members.find(
-                        (member) => member.userId === task.assigneeId,
-                      )?.user?.name ||
-                      tr("Учасник недоступний")
-                    : tr("Не призначено")}
+                  {task.assigneeId ? (
+                    <Link to={`/freelancers/${task.assigneeId}`}>
+                      {task.assigneeName ||
+                        members.find(
+                          (member) => member.userId === task.assigneeId,
+                        )?.user?.name ||
+                        tr("Учасник недоступний")}
+                    </Link>
+                  ) : (
+                    tr("Не призначено")
+                  )}
                 </td>
                 <td>{tr(priorityNames[task.priority])}</td>
                 <td>
