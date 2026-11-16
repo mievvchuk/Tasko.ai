@@ -82,8 +82,8 @@ function ProjectForm({ project }: { project: Project | null }) {
   const skills = useApi<Skill[]>("/skills");
   const [budgetMin, setBudgetMin] = useState((project?.budgetMin ?? draft?.budgetMin)?.toString() || "");
   const [budgetMax, setBudgetMax] = useState((project?.budgetMax ?? draft?.budgetMax)?.toString() || "");
-  const [categoryName, setCategoryName] = useState(project?.category?.name || "");
-  const [skillNames, setSkillNames] = useState<string[]>(project?.skills?.map((skill) => skill.name) || []);
+  const [categoryName, setCategoryName] = useState(project?.category?.name || draft?.categoryName || "");
+  const [skillNames, setSkillNames] = useState<string[]>(project?.skills?.map((skill) => skill.name) || draft?.skillNames || []);
   const [skillDraft, setSkillDraft] = useState("");
 
   function addSkill() {

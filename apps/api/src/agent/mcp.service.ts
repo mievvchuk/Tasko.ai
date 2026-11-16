@@ -239,7 +239,7 @@ export class McpService {
         'draft_project',
         {
           description:
-            'Готує чернетку нового проєкту клієнта для підтвердження. Викликай лише тоді, коли користувач назвав назву, опис, бюджет і дедлайн. Проєкт НЕ створюється: користувач підтвердить його кнопкою.',
+            'Готує чернетку нового проєкту клієнта для підтвердження. Викликай лише тоді, коли користувач назвав назву, опис, бюджет, дедлайн, категорію й потрібні навички (або сказав, що категорію чи навички не вказуватиме). Проєкт НЕ створюється: користувач підтвердить його кнопкою.',
           inputSchema: z
             .object({
               title: z.string().trim().min(2).max(200),
@@ -247,16 +247,22 @@ export class McpService {
               budgetMin: z.number().int().min(0).max(10000000).optional(),
               budgetMax: z.number().int().min(0).max(10000000).optional(),
               deadline: z.string().datetime({ offset: true }).optional(),
+              // Ті самі межі, що й у формі проєкту (CreateProjectDto): наявну категорію чи навичку
+              // сервер знайде за назвою без урахування регістру, нову — створить
+              categoryName: z.string().trim().min(2).max(60).optional(),
+              skillNames: z.array(z.string().trim().min(1).max(40)).max(30).optional(),
             })
             .strict(),
           annotations,
         },
-        async (draft) =>
+        async ({ skillNames, ...draft }) =>
           result(async () => {
             validateBudget(draft.budgetMin, draft.budgetMax);
             if (draft.deadline && new Date(draft.deadline).getTime() <= Date.now())
               throw new BadRequestException('Дедлайн проєкту має бути в майбутньому.');
-            return draft;
+            // Навички в системі зберігаються малими літерами, тож одразу так і показуємо без повторів
+            const skills = [...new Set(skillNames?.map((name) => name.toLowerCase()))];
+            return skills.length ? { ...draft, skillNames: skills } : draft;
           }),
       );
     // Інструменти адміністратора: ті самі запити, що й адмін-панель (AdminService сам перевіряє роль)
