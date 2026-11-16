@@ -1,14 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  ApiError,
-  errorMessage,
-  getToken,
-  request,
-  sessionEndedEvent,
-  tokenFromOtherTabs,
-  tokenKey,
-} from "./api";
+import { ApiError, errorMessage, getToken, request, sessionEndedEvent, tokenFromOtherTabs, tokenKey } from "./api";
 import type { LoginResponse, User } from "./types";
 
 import { useLanguage } from "./i18n";
@@ -17,19 +9,9 @@ interface AuthState {
   loading: boolean;
   connectionError: string;
   notice: string;
-  login: (
-    email: string,
-    password: string,
-    code?: string,
-    rememberMe?: boolean,
-  ) => Promise<boolean>;
+  login: (email: string, password: string, code?: string, rememberMe?: boolean) => Promise<boolean>;
   // false — потрібен код 2FA (повторіть виклик з тим самим credential і кодом)
-  loginWithGoogle: (
-    credential: string,
-    code?: string,
-    rememberMe?: boolean,
-    role?: "CLIENT" | "FREELANCER",
-  ) => Promise<boolean>;
+  loginWithGoogle: (credential: string, code?: string, rememberMe?: boolean, role?: "CLIENT" | "FREELANCER") => Promise<boolean>;
   logout: () => void;
   retry: () => void;
   // Оновлює дані користувача після зміни імені чи фото на сторінці профілю
@@ -54,11 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.removeItem(tokenKey);
       localStorage.removeItem(tokenKey);
     } catch {
-      setNotice(
-        tr(
-          "Доступ до сховища браузера обмежено. Закрийте цю вкладку, щоб завершити сеанс.",
-        ),
-      );
+      setNotice(tr("Доступ до сховища браузера обмежено. Закрийте цю вкладку, щоб завершити сеанс."));
     }
     setUser(null);
     setLoading(false);
@@ -80,16 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (active) setUser(currentUser);
       } catch (error) {
         if (!active) return;
-        if (
-          error instanceof ApiError &&
-          (error.status === 401 || error.status === 403)
-        ) {
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
           logout();
-          setNotice(
-            tr(
-              "Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз.",
-            ),
-          );
+          setNotice(tr("Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз."));
         } else {
           setConnectionError(errorMessage(error));
         }
@@ -108,20 +79,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     function endSession() {
       logout();
-      setNotice(
-        tr("Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз."),
-      );
+      setNotice(tr("Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз."));
     }
     window.addEventListener(sessionEndedEvent, endSession);
     return () => window.removeEventListener(sessionEndedEvent, endSession);
   }, []);
 
-  async function login(
-    email: string,
-    password: string,
-    code?: string,
-    rememberMe = false,
-  ) {
+  async function login(email: string, password: string, code?: string, rememberMe = false) {
     const response = await request<LoginResponse>("/auth/login", {
       method: "POST",
       body: { email, password, twoFactorCode: code || undefined, rememberMe },
@@ -130,12 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return startSession(response, rememberMe);
   }
 
-  async function loginWithGoogle(
-    credential: string,
-    code?: string,
-    rememberMe = false,
-    role?: "CLIENT" | "FREELANCER",
-  ) {
+  async function loginWithGoogle(credential: string, code?: string, rememberMe = false, role?: "CLIENT" | "FREELANCER") {
     const response = await request<LoginResponse>("/auth/google", {
       method: "POST",
       body: { credential, twoFactorCode: code || undefined, rememberMe, role },
@@ -162,17 +121,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       sessionStorage.removeItem(tokenKey);
       localStorage.removeItem(tokenKey);
-      (rememberMe ? localStorage : sessionStorage).setItem(
-        tokenKey,
-        response.accessToken,
-      );
+      (rememberMe ? localStorage : sessionStorage).setItem(tokenKey, response.accessToken);
     } catch {
-      throw new ApiError(
-        0,
-        tr(
-          "Дозвольте збереження даних для цього сайту в налаштуваннях браузера.",
-        ),
-      );
+      throw new ApiError(0, tr("Дозвольте збереження даних для цього сайту в налаштуваннях браузера."));
     }
     setNotice("");
     setUser(response.user);

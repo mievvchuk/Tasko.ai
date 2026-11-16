@@ -4,9 +4,7 @@ import { expect, test as base, type Page } from "@playwright/test";
 
 // Пароль демо-акаунтів створює `npm run seed:demo` в apps/api
 export const password = (
-  JSON.parse(
-    readFileSync(new URL("../../../.tmp/demo-accounts.json", import.meta.url), "utf8"),
-  ) as { password: string }
+  JSON.parse(readFileSync(new URL("../../../.tmp/demo-accounts.json", import.meta.url), "utf8")) as { password: string }
 ).password;
 
 export const accounts = {
@@ -17,17 +15,14 @@ export const accounts = {
 
 export type Role = keyof typeof accounts;
 
-export const authFile = (role: Role) =>
-  fileURLToPath(new URL(`../.auth/${role}.json`, import.meta.url));
+export const authFile = (role: Role) => fileURLToPath(new URL(`../.auth/${role}.json`, import.meta.url));
 
 // Токен із збереженої сесії — для запитів до API (отримати id проєктів, задач тощо)
 function tokenOf(role: Role): string {
   const state = JSON.parse(readFileSync(authFile(role), "utf8")) as {
     origins: { localStorage: { name: string; value: string }[] }[];
   };
-  const item = state.origins
-    .flatMap((origin) => origin.localStorage)
-    .find((entry) => entry.name === "tasko.accessToken");
+  const item = state.origins.flatMap((origin) => origin.localStorage).find((entry) => entry.name === "tasko.accessToken");
   if (!item) throw new Error(`Немає збереженого входу для ролі ${role}`);
   return item.value;
 }
@@ -53,8 +48,7 @@ export const test = base.extend<{ jsErrors: string[] }>({
       });
       await use(errors);
       // У звіті про падіння видно, який запит до API повернув помилку
-      if (failedRequests.length)
-        await testInfo.attach("невдалі запити до API", { body: failedRequests.join("\n") });
+      if (failedRequests.length) await testInfo.attach("невдалі запити до API", { body: failedRequests.join("\n") });
       expect(errors, "JS-помилки на сторінці").toEqual([]);
     },
     { auto: true },

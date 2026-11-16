@@ -67,15 +67,7 @@ export const projectPlanJsonSchema = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: [
-                'title',
-                'description',
-                'priority',
-                'amount',
-                'rating',
-                'deadline',
-                'acceptanceCriteria',
-              ],
+              required: ['title', 'description', 'priority', 'amount', 'rating', 'deadline', 'acceptanceCriteria'],
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
@@ -95,13 +87,9 @@ export const projectPlanJsonSchema = {
 
 export function parseProjectPlan(content: string): ProjectPlan {
   try {
-    return projectPlanSchema.parse(
-      JSON.parse(content.replace(/^```(?:json)?\s*|\s*```$/g, '').trim()),
-    );
+    return projectPlanSchema.parse(JSON.parse(content.replace(/^```(?:json)?\s*|\s*```$/g, '').trim()));
   } catch {
-    throw new BadGatewayException(
-      'AI повернув некоректний або неповний план. Спробуйте ще раз.',
-    );
+    throw new BadGatewayException('AI повернув некоректний або неповний план. Спробуйте ще раз.');
   }
 }
 
@@ -112,19 +100,13 @@ export function milestoneAmount(milestone: { tasks: { amount: number }[] }) {
 }
 
 export function planTotal(plan: PlanAmounts) {
-  return plan.milestones.reduce(
-    (sum, milestone) => sum + milestoneAmount(milestone),
-    0,
-  );
+  return plan.milestones.reduce((sum, milestone) => sum + milestoneAmount(milestone), 0);
 }
 
 // Модель може помилитись в арифметиці, тож межу гарантуємо самі: якщо сума
 // перевищує доступний бюджет, пропорційно зменшуємо вартість кожного завдання
 // (округлюючи вниз до 10 грн), щоб разом вийшло не більше бюджету.
-export function fitPlanToBudget<T extends PlanAmounts>(
-  plan: T,
-  limit: number | null,
-): T {
+export function fitPlanToBudget<T extends PlanAmounts>(plan: T, limit: number | null): T {
   const total = planTotal(plan);
   if (limit === null || total <= limit) return plan;
   const ratio = limit / total;
@@ -148,9 +130,11 @@ const isoDay = (date: Date) => date.toISOString().slice(0, 10);
 
 // Модель може поставити дату в минулому або після дедлайну проєкту: підтягуємо
 // кожен дедлайн у межі [сьогодні; дедлайн проєкту].
-export function fitPlanDeadlines<
-  T extends { milestones: { tasks: { deadline: string | null }[] }[] },
->(plan: T, today: Date, projectDeadline: Date | null): T {
+export function fitPlanDeadlines<T extends { milestones: { tasks: { deadline: string | null }[] }[] }>(
+  plan: T,
+  today: Date,
+  projectDeadline: Date | null,
+): T {
   const min = isoDay(today);
   const max = projectDeadline ? isoDay(projectDeadline) : null;
   const clamp = (value: string | null) => {
@@ -171,20 +155,12 @@ export function fitPlanDeadlines<
 }
 
 // Дедлайн етапу — найпізніший дедлайн його завдань
-export function milestoneDeadline(milestone: {
-  tasks: { deadline: string | null }[];
-}) {
-  const dates = milestone.tasks
-    .map((task) => task.deadline)
-    .filter(Boolean) as string[];
+export function milestoneDeadline(milestone: { tasks: { deadline: string | null }[] }) {
+  const dates = milestone.tasks.map((task) => task.deadline).filter(Boolean) as string[];
   return dates.length ? toDate(dates.sort().at(-1)!) : null;
 }
 
-export function planDescription(
-  description: string,
-  acceptanceCriteria: string[],
-  amount?: number,
-) {
+export function planDescription(description: string, acceptanceCriteria: string[], amount?: number) {
   const cost = amount === undefined ? '' : `\n\nВартість: ${amount} грн`;
   return `${description}${cost}\n\nКритерії приймання:\n${acceptanceCriteria.map((item) => `• ${item}`).join('\n')}`;
 }

@@ -27,10 +27,7 @@ function totp(secret: string, counter: number) {
   const digest = createHmac('sha1', fromBase32(secret)).update(value).digest();
   const offset = digest[digest.length - 1] & 15;
   const number =
-    (((digest[offset] & 127) << 24) |
-      ((digest[offset + 1] & 255) << 16) |
-      ((digest[offset + 2] & 255) << 8) |
-      (digest[offset + 3] & 255)) %
+    (((digest[offset] & 127) << 24) | ((digest[offset + 1] & 255) << 16) | ((digest[offset + 2] & 255) << 8) | (digest[offset + 3] & 255)) %
     1_000_000;
   return number.toString().padStart(6, '0');
 }
@@ -40,8 +37,7 @@ function toBase32(value: Buffer) {
   for (const byte of value) bits += byte.toString(2).padStart(8, '0');
   let result = '';
   for (let index = 0; index < bits.length; index += 5) {
-    result +=
-      alphabet[Number.parseInt(bits.slice(index, index + 5).padEnd(5, '0'), 2)];
+    result += alphabet[Number.parseInt(bits.slice(index, index + 5).padEnd(5, '0'), 2)];
   }
   return result;
 }

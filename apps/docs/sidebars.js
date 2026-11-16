@@ -25,15 +25,7 @@ module.exports = {
       type: "category",
       label: "Робота над проєктом",
       collapsed: false,
-      items: [
-        "project-page",
-        "board",
-        "submit-work",
-        "milestones",
-        "messages-files",
-        "notifications-workload",
-        "ai",
-      ],
+      items: ["project-page", "board", "submit-work", "milestones", "messages-files", "notifications-workload", "ai"],
     },
     {
       type: "category",

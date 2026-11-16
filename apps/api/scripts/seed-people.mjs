@@ -7,10 +7,7 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 const api = (process.env.API_URL || 'http://localhost:3000').replace(/\/$/, '');
-const accountsFile = new URL(
-  '../../../.tmp/seed-people-accounts.json',
-  import.meta.url,
-);
+const accountsFile = new URL('../../../.tmp/seed-people-accounts.json', import.meta.url);
 
 // Спільний пароль акаунтів: із секрету SEED_PASSWORD, інакше з минулого локального запуску
 let password = process.env.SEED_PASSWORD;
@@ -43,24 +40,9 @@ const clients = [
         category: 'Веброзробка',
         skills: ['react', 'typescript', 'seo'],
         milestones: [
-          [
-            'Структура та дизайн',
-            'Карта сайту, макети головної, послуг і сторінки лікаря.',
-            '2026-12-10',
-            7000,
-          ],
-          [
-            'Верстка та онлайн-запис',
-            'Адаптивна верстка, форма запису з вибором лікаря й часу.',
-            '2027-01-25',
-            15000,
-          ],
-          [
-            'Блог, SEO та запуск',
-            'Блог, мета-теги, карта сайту, підключення домену.',
-            '2027-02-15',
-            6000,
-          ],
+          ['Структура та дизайн', 'Карта сайту, макети головної, послуг і сторінки лікаря.', '2026-12-10', 7000],
+          ['Верстка та онлайн-запис', 'Адаптивна верстка, форма запису з вибором лікаря й часу.', '2027-01-25', 15000],
+          ['Блог, SEO та запуск', 'Блог, мета-теги, карта сайту, підключення домену.', '2027-02-15', 6000],
         ],
       },
     ],
@@ -80,48 +62,22 @@ const clients = [
         category: 'Веброзробка',
         skills: ['nestjs', 'postgresql', 'react', 'typescript'],
         milestones: [
-          [
-            'Модель даних і API замовлень',
-            'Таблиці замовлень, клієнтів, кур’єрів; CRUD-ендпоінти.',
-            '2026-12-20',
-            15000,
-          ],
-          [
-            'Інтерфейс флориста',
-            'Список замовлень, фільтри, зміна статусів.',
-            '2027-02-10',
-            20000,
-          ],
-          [
-            'Кабінет кур’єра та звіти',
-            'Маршрут на день, підтвердження доставки, щоденний звіт.',
-            '2027-03-25',
-            18000,
-          ],
+          ['Модель даних і API замовлень', 'Таблиці замовлень, клієнтів, кур’єрів; CRUD-ендпоінти.', '2026-12-20', 15000],
+          ['Інтерфейс флориста', 'Список замовлень, фільтри, зміна статусів.', '2027-02-10', 20000],
+          ['Кабінет кур’єра та звіти', 'Маршрут на день, підтвердження доставки, щоденний звіт.', '2027-03-25', 18000],
         ],
       },
       {
         title: 'Telegram-бот для замовлення букетів',
-        description:
-          'Бот із каталогом букетів, кошиком, вибором часу доставки та сповіщенням менеджера про нове замовлення.',
+        description: 'Бот із каталогом букетів, кошиком, вибором часу доставки та сповіщенням менеджера про нове замовлення.',
         deadline: day('2027-01-30'),
         budgetMin: 9000,
         budgetMax: 15000,
         category: 'Веброзробка',
         skills: ['telegram-bot', 'nestjs'],
         milestones: [
-          [
-            'Каталог і кошик',
-            'Категорії букетів, фото, додавання в кошик.',
-            '2026-12-15',
-            6000,
-          ],
-          [
-            'Оформлення та сповіщення',
-            'Адреса, час доставки, повідомлення менеджеру.',
-            '2027-01-25',
-            6000,
-          ],
+          ['Каталог і кошик', 'Категорії букетів, фото, додавання в кошик.', '2026-12-15', 6000],
+          ['Оформлення та сповіщення', 'Адреса, час доставки, повідомлення менеджеру.', '2027-01-25', 6000],
         ],
       },
     ],
@@ -141,18 +97,8 @@ const clients = [
         category: 'Дизайн',
         skills: ['figma'],
         milestones: [
-          [
-            'Логотип',
-            'Три концепції, доопрацювання обраної.',
-            '2026-11-30',
-            5000,
-          ],
-          [
-            'Упаковка та вивіска',
-            'Пакети, коробки для тортів, макет вивіски.',
-            '2027-01-10',
-            6000,
-          ],
+          ['Логотип', 'Три концепції, доопрацювання обраної.', '2026-11-30', 5000],
+          ['Упаковка та вивіска', 'Пакети, коробки для тортів, макет вивіски.', '2027-01-10', 6000],
         ],
       },
     ],
@@ -164,32 +110,16 @@ const clients = [
     projects: [
       {
         title: 'SEO для інтернет-магазину велосипедів',
-        description:
-          'Технічний аудит, оптимізація категорій і карток товарів, семантика під регіони України, щомісячний звіт за трафіком.',
+        description: 'Технічний аудит, оптимізація категорій і карток товарів, семантика під регіони України, щомісячний звіт за трафіком.',
         deadline: day('2027-03-15'),
         budgetMin: 12000,
         budgetMax: 20000,
         category: 'Маркетинг',
         skills: ['seo'],
         milestones: [
-          [
-            'Аудит і семантика',
-            'Помилки індексації, швидкість, ключові запити.',
-            '2026-12-05',
-            5000,
-          ],
-          [
-            'Оптимізація каталогу',
-            'Мета-теги й тексти для 30 категорій.',
-            '2027-02-01',
-            9000,
-          ],
-          [
-            'Звіт і рекомендації',
-            'Результати за 2 місяці та план далі.',
-            '2027-03-10',
-            3000,
-          ],
+          ['Аудит і семантика', 'Помилки індексації, швидкість, ключові запити.', '2026-12-05', 5000],
+          ['Оптимізація каталогу', 'Мета-теги й тексти для 30 категорій.', '2027-02-01', 9000],
+          ['Звіт і рекомендації', 'Результати за 2 місяці та план далі.', '2027-03-10', 3000],
         ],
       },
     ],
@@ -209,24 +139,9 @@ const clients = [
         category: 'Веброзробка',
         skills: ['react', 'typescript', 'nestjs'],
         milestones: [
-          [
-            'Дизайн і прототип',
-            'Сценарії запису, макети основних екранів, клікабельний прототип.',
-            '2027-01-20',
-            15000,
-          ],
-          [
-            'Розклад, запис і абонементи',
-            'Інтеграція з розкладом студії, оплата абонементів.',
-            '2027-03-31',
-            45000,
-          ],
-          [
-            'Нагадування й публікація',
-            'Push-сповіщення, тестування, публікація в App Store та Google Play.',
-            '2027-05-10',
-            20000,
-          ],
+          ['Дизайн і прототип', 'Сценарії запису, макети основних екранів, клікабельний прототип.', '2027-01-20', 15000],
+          ['Розклад, запис і абонементи', 'Інтеграція з розкладом студії, оплата абонементів.', '2027-03-31', 45000],
+          ['Нагадування й публікація', 'Push-сповіщення, тестування, публікація в App Store та Google Play.', '2027-05-10', 20000],
         ],
       },
     ],
@@ -246,24 +161,9 @@ const clients = [
         category: 'Веброзробка',
         skills: ['react', 'nestjs', 'postgresql', 'typescript'],
         milestones: [
-          [
-            'Інтеграція з GPS-трекерами',
-            'Отримання координат і пробігу, збереження історії.',
-            '2027-01-15',
-            25000,
-          ],
-          [
-            'Карта й дашборд',
-            'Машини на карті, фільтри, графіки витрат.',
-            '2027-03-01',
-            30000,
-          ],
-          [
-            'Техобслуговування та звіти',
-            'Нагадування про ТО, експорт звітів у Excel.',
-            '2027-04-15',
-            15000,
-          ],
+          ['Інтеграція з GPS-трекерами', 'Отримання координат і пробігу, збереження історії.', '2027-01-15', 25000],
+          ['Карта й дашборд', 'Машини на карті, фільтри, графіки витрат.', '2027-03-01', 30000],
+          ['Техобслуговування та звіти', 'Нагадування про ТО, експорт звітів у Excel.', '2027-04-15', 15000],
         ],
       },
     ],
@@ -283,48 +183,22 @@ const clients = [
         category: 'Веброзробка',
         skills: ['react', 'typescript', 'nestjs', 'postgresql'],
         milestones: [
-          [
-            'Кабінет студента',
-            'Курси, уроки з відео, домашні завдання.',
-            '2027-02-15',
-            40000,
-          ],
-          [
-            'Кабінет викладача',
-            'Перевірка завдань, оцінки, коментарі.',
-            '2027-04-01',
-            30000,
-          ],
-          [
-            'Оплати й запуск',
-            'Оплата курсів, промокоди, перенесення студентів.',
-            '2027-05-25',
-            25000,
-          ],
+          ['Кабінет студента', 'Курси, уроки з відео, домашні завдання.', '2027-02-15', 40000],
+          ['Кабінет викладача', 'Перевірка завдань, оцінки, коментарі.', '2027-04-01', 30000],
+          ['Оплати й запуск', 'Оплата курсів, промокоди, перенесення студентів.', '2027-05-25', 25000],
         ],
       },
       {
         title: 'Контент-план і SEO для блогу школи',
-        description:
-          'Семантичне ядро для запитів про вивчення англійської, контент-план на 3 місяці і 12 статей, оптимізованих під пошук.',
+        description: 'Семантичне ядро для запитів про вивчення англійської, контент-план на 3 місяці і 12 статей, оптимізованих під пошук.',
         deadline: day('2027-03-01'),
         budgetMin: 10000,
         budgetMax: 18000,
         category: 'Маркетинг',
         skills: ['seo'],
         milestones: [
-          [
-            'Семантика й контент-план',
-            'Ключові запити, теми статей, графік публікацій.',
-            '2026-12-20',
-            5000,
-          ],
-          [
-            'Статті',
-            '12 статей з оптимізацією та внутрішньою перелінковкою.',
-            '2027-02-25',
-            10000,
-          ],
+          ['Семантика й контент-план', 'Ключові запити, теми статей, графік публікацій.', '2026-12-20', 5000],
+          ['Статті', '12 статей з оптимізацією та внутрішньою перелінковкою.', '2027-02-25', 10000],
         ],
       },
     ],
@@ -344,42 +218,21 @@ const clients = [
         category: 'Веброзробка',
         skills: ['telegram-bot', 'nestjs', 'postgresql'],
         milestones: [
-          [
-            'Меню й кошик',
-            'Категорії страв, фото, модифікатори, кошик.',
-            '2026-12-25',
-            9000,
-          ],
-          [
-            'Оплата, POS і кур’єри',
-            'Онлайн-оплата, передача в POS, чат кур’єрів.',
-            '2027-02-05',
-            12000,
-          ],
+          ['Меню й кошик', 'Категорії страв, фото, модифікатори, кошик.', '2026-12-25', 9000],
+          ['Оплата, POS і кур’єри', 'Онлайн-оплата, передача в POS, чат кур’єрів.', '2027-02-05', 12000],
         ],
       },
       {
         title: 'Оновлення фірмового стилю та меню ресторану',
-        description:
-          'Освіжити логотип, підібрати палітру й шрифти, зверстати друковане меню на 16 сторінок і шаблони для Instagram.',
+        description: 'Освіжити логотип, підібрати палітру й шрифти, зверстати друковане меню на 16 сторінок і шаблони для Instagram.',
         deadline: day('2027-01-31'),
         budgetMin: 12000,
         budgetMax: 20000,
         category: 'Дизайн',
         skills: ['figma'],
         milestones: [
-          [
-            'Логотип і палітра',
-            'Дві концепції оновленого логотипа, кольори, шрифти.',
-            '2026-12-15',
-            7000,
-          ],
-          [
-            'Меню та соцмережі',
-            'Макет меню до друку, 10 шаблонів постів і сторіз.',
-            '2027-01-25',
-            9000,
-          ],
+          ['Логотип і палітра', 'Дві концепції оновленого логотипа, кольори, шрифти.', '2026-12-15', 7000],
+          ['Меню та соцмережі', 'Макет меню до друку, 10 шаблонів постів і сторіз.', '2027-01-25', 9000],
         ],
       },
     ],
@@ -403,18 +256,8 @@ const freelancers = [
         'web-6',
         'React, NestJS, Stripe',
       ],
-      [
-        'Панель аналітики для логістичної компанії',
-        'Графіки доставок, KPI водіїв і звіти в PDF.',
-        'dash-2',
-        'React, PostgreSQL, Charts',
-      ],
-      [
-        'API для мобільного застосунку фітнес-клубу',
-        'Розклад, абонементи, push-сповіщення.',
-        'code-3',
-        'NestJS, PostgreSQL',
-      ],
+      ['Панель аналітики для логістичної компанії', 'Графіки доставок, KPI водіїв і звіти в PDF.', 'dash-2', 'React, PostgreSQL, Charts'],
+      ['API для мобільного застосунку фітнес-клубу', 'Розклад, абонементи, push-сповіщення.', 'code-3', 'NestJS, PostgreSQL'],
     ],
   },
   {
@@ -426,24 +269,9 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['figma'],
     portfolio: [
-      [
-        'Редизайн застосунку для доставки їжі',
-        'Нові сценарії замовлення, конверсія +18%.',
-        'mobile-1',
-        'UX, Figma, прототип',
-      ],
-      [
-        'Брендинг кав’ярні «Мелена»',
-        'Логотип, упаковка, меню.',
-        'brand-2',
-        'Брендинг, айдентика',
-      ],
-      [
-        'Дизайн-система для банківського кабінету',
-        '120 компонентів, світла й темна теми.',
-        'web-5',
-        'Design system, Figma',
-      ],
+      ['Редизайн застосунку для доставки їжі', 'Нові сценарії замовлення, конверсія +18%.', 'mobile-1', 'UX, Figma, прототип'],
+      ['Брендинг кав’ярні «Мелена»', 'Логотип, упаковка, меню.', 'brand-2', 'Брендинг, айдентика'],
+      ['Дизайн-система для банківського кабінету', '120 компонентів, світла й темна теми.', 'web-5', 'Design system, Figma'],
     ],
   },
   {
@@ -455,18 +283,8 @@ const freelancers = [
     availability: 'BUSY',
     skills: ['telegram-bot', 'nestjs', 'postgresql', 'typescript'],
     portfolio: [
-      [
-        'Бот запису до салону краси',
-        'Запис, нагадування, оплата передплати.',
-        'mobile-2',
-        'Telegram, NestJS',
-      ],
-      [
-        'Бот для замовлень піцерії',
-        'Меню, кошик, інтеграція з POS.',
-        'code-1',
-        'Telegram, PostgreSQL, POS',
-      ],
+      ['Бот запису до салону краси', 'Запис, нагадування, оплата передплати.', 'mobile-2', 'Telegram, NestJS'],
+      ['Бот для замовлень піцерії', 'Меню, кошик, інтеграція з POS.', 'code-1', 'Telegram, PostgreSQL, POS'],
     ],
   },
   {
@@ -478,18 +296,8 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['seo'],
     portfolio: [
-      [
-        'Просування мережі автомийок',
-        'Трафік з пошуку ×3 за пів року.',
-        'dash-3',
-        'SEO, локальний пошук',
-      ],
-      [
-        'Блог для онлайн-школи',
-        '25 статей, 12 у топ-10 Google.',
-        'mkt-3',
-        'Контент, SEO',
-      ],
+      ['Просування мережі автомийок', 'Трафік з пошуку ×3 за пів року.', 'dash-3', 'SEO, локальний пошук'],
+      ['Блог для онлайн-школи', '25 статей, 12 у топ-10 Google.', 'mkt-3', 'Контент, SEO'],
     ],
   },
   {
@@ -501,18 +309,8 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['react', 'typescript', 'figma'],
     portfolio: [
-      [
-        'Лендинг для музичного фестивалю',
-        'Анімації, продаж квитків, 98 балів Lighthouse.',
-        'web-1',
-        'React, анімації',
-      ],
-      [
-        'Особистий кабінет страхової компанії',
-        'Форми, валідація, доступність WCAG AA.',
-        'web-3',
-        'React, TypeScript, a11y',
-      ],
+      ['Лендинг для музичного фестивалю', 'Анімації, продаж квитків, 98 балів Lighthouse.', 'web-1', 'React, анімації'],
+      ['Особистий кабінет страхової компанії', 'Форми, валідація, доступність WCAG AA.', 'web-3', 'React, TypeScript, a11y'],
     ],
   },
   {
@@ -523,14 +321,7 @@ const freelancers = [
     hourlyRate: 250,
     availability: 'AVAILABLE',
     skills: ['react', 'typescript', 'seo'],
-    portfolio: [
-      [
-        'Сайт-візитка для фотографа',
-        'Галерея, форма зв’язку, адаптив.',
-        'web-2',
-        'React, адаптив',
-      ],
-    ],
+    portfolio: [['Сайт-візитка для фотографа', 'Галерея, форма зв’язку, адаптив.', 'web-2', 'React, адаптив']],
   },
   {
     name: 'Богдан Шевчук',
@@ -541,18 +332,8 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['react', 'typescript'],
     portfolio: [
-      [
-        'Застосунок для мережі кав’ярень',
-        'Замовлення наперед, бонусна програма, 25 тис. завантажень.',
-        'mobile-3',
-        'React Native, push',
-      ],
-      [
-        'Фітнес-трекер із планом тренувань',
-        'Інтеграція з Apple Health і Google Fit.',
-        'mobile-4',
-        'React Native, HealthKit',
-      ],
+      ['Застосунок для мережі кав’ярень', 'Замовлення наперед, бонусна програма, 25 тис. завантажень.', 'mobile-3', 'React Native, push'],
+      ['Фітнес-трекер із планом тренувань', 'Інтеграція з Apple Health і Google Fit.', 'mobile-4', 'React Native, HealthKit'],
     ],
   },
   {
@@ -564,24 +345,9 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['figma'],
     portfolio: [
-      [
-        'Айдентика для крафтової пекарні',
-        'Логотип, паперові пакети, коробки для тортів.',
-        'brand-1',
-        'Брендинг, упаковка',
-      ],
-      [
-        'Меню й вивіска для бістро',
-        'Друковане меню, лайтбокс, наліпки на вітрину.',
-        'brand-3',
-        'Поліграфія',
-      ],
-      [
-        'Фірмовий стиль квіткового магазину',
-        'Палітра, шрифти, шаблони для Instagram.',
-        'brand-4',
-        'Айдентика, SMM-шаблони',
-      ],
+      ['Айдентика для крафтової пекарні', 'Логотип, паперові пакети, коробки для тортів.', 'brand-1', 'Брендинг, упаковка'],
+      ['Меню й вивіска для бістро', 'Друковане меню, лайтбокс, наліпки на вітрину.', 'brand-3', 'Поліграфія'],
+      ['Фірмовий стиль квіткового магазину', 'Палітра, шрифти, шаблони для Instagram.', 'brand-4', 'Айдентика, SMM-шаблони'],
     ],
   },
   {
@@ -593,18 +359,8 @@ const freelancers = [
     availability: 'BUSY',
     skills: ['nestjs', 'postgresql', 'typescript'],
     portfolio: [
-      [
-        'Міграція інтернет-магазину в хмару',
-        'Docker, автоматичні бекапи, час відповіді −60%.',
-        'code-2',
-        'Docker, CI/CD, PostgreSQL',
-      ],
-      [
-        'API платіжного шлюзу для маркетплейсу',
-        'Розщеплення платежів між продавцями, 99,9% аптайму.',
-        'code-5',
-        'NestJS, черги',
-      ],
+      ['Міграція інтернет-магазину в хмару', 'Docker, автоматичні бекапи, час відповіді −60%.', 'code-2', 'Docker, CI/CD, PostgreSQL'],
+      ['API платіжного шлюзу для маркетплейсу', 'Розщеплення платежів між продавцями, 99,9% аптайму.', 'code-5', 'NestJS, черги'],
     ],
   },
   {
@@ -616,18 +372,8 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['seo'],
     portfolio: [
-      [
-        'Запуск Instagram для студії йоги',
-        '0 → 6 тис. підписників за 5 місяців, 40 записів на місяць.',
-        'mkt-1',
-        'SMM, таргет',
-      ],
-      [
-        'Рекламна кампанія для онлайн-магазину одягу',
-        'ROAS 4,2 у Meta Ads.',
-        'mkt-2',
-        'Meta Ads, аналітика',
-      ],
+      ['Запуск Instagram для студії йоги', '0 → 6 тис. підписників за 5 місяців, 40 записів на місяць.', 'mkt-1', 'SMM, таргет'],
+      ['Рекламна кампанія для онлайн-магазину одягу', 'ROAS 4,2 у Meta Ads.', 'mkt-2', 'Meta Ads, аналітика'],
     ],
   },
   {
@@ -639,24 +385,9 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['react', 'nestjs', 'postgresql', 'typescript'],
     portfolio: [
-      [
-        'Інтернет-магазин електроніки',
-        'Каталог на 15 тис. товарів, фільтри, інтеграція з 1С.',
-        'shop-1',
-        'React, NestJS, 1С',
-      ],
-      [
-        'CRM для агенції нерухомості',
-        'Об’єкти, угоди, календар показів.',
-        'dash-1',
-        'React, PostgreSQL',
-      ],
-      [
-        'Кабінет інвестора для фінтех-стартапу',
-        'Портфель, графіки дохідності, KYC.',
-        'dash-4',
-        'TypeScript, графіки',
-      ],
+      ['Інтернет-магазин електроніки', 'Каталог на 15 тис. товарів, фільтри, інтеграція з 1С.', 'shop-1', 'React, NestJS, 1С'],
+      ['CRM для агенції нерухомості', 'Об’єкти, угоди, календар показів.', 'dash-1', 'React, PostgreSQL'],
+      ['Кабінет інвестора для фінтех-стартапу', 'Портфель, графіки дохідності, KYC.', 'dash-4', 'TypeScript, графіки'],
     ],
   },
   {
@@ -668,18 +399,8 @@ const freelancers = [
     availability: 'UNAVAILABLE',
     skills: ['figma'],
     portfolio: [
-      [
-        'Дослідження й редизайн кабінету клієнта банку',
-        '15 інтерв’ю, кількість звернень у підтримку −30%.',
-        'web-4',
-        'UX research, Figma',
-      ],
-      [
-        'Онбординг для застосунку медитацій',
-        'A/B-тест трьох варіантів, утримання +12%.',
-        'mobile-1',
-        'UX, A/B-тести',
-      ],
+      ['Дослідження й редизайн кабінету клієнта банку', '15 інтерв’ю, кількість звернень у підтримку −30%.', 'web-4', 'UX research, Figma'],
+      ['Онбординг для застосунку медитацій', 'A/B-тест трьох варіантів, утримання +12%.', 'mobile-1', 'UX, A/B-тести'],
     ],
   },
   {
@@ -691,18 +412,8 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['telegram-bot', 'postgresql'],
     portfolio: [
-      [
-        'Бот-магазин для виробника меду',
-        'Каталог, оплата, відправка Новою поштою.',
-        'shop-3',
-        'Telegram, Нова пошта API',
-      ],
-      [
-        'Бот підтримки для інтернет-провайдера',
-        'Статус заявок, перевірка балансу, 70% звернень без оператора.',
-        'code-4',
-        'Telegram, CRM',
-      ],
+      ['Бот-магазин для виробника меду', 'Каталог, оплата, відправка Новою поштою.', 'shop-3', 'Telegram, Нова пошта API'],
+      ['Бот підтримки для інтернет-провайдера', 'Статус заявок, перевірка балансу, 70% звернень без оператора.', 'code-4', 'Telegram, CRM'],
     ],
   },
   {
@@ -714,18 +425,8 @@ const freelancers = [
     availability: 'AVAILABLE',
     skills: ['seo'],
     portfolio: [
-      [
-        'Тексти для сайту стоматологічної клініки',
-        '20 сторінок послуг, +45% записів з сайту.',
-        'mkt-4',
-        'Копірайтинг, SEO',
-      ],
-      [
-        'Email-розсилки для онлайн-магазину косметики',
-        'Серія листів, відкриття 38%.',
-        'shop-2',
-        'Email-маркетинг',
-      ],
+      ['Тексти для сайту стоматологічної клініки', '20 сторінок послуг, +45% записів з сайту.', 'mkt-4', 'Копірайтинг, SEO'],
+      ['Email-розсилки для онлайн-магазину косметики', 'Серія листів, відкриття 38%.', 'shop-2', 'Email-маркетинг'],
     ],
   },
 ];
@@ -757,16 +458,12 @@ async function signIn(person, role) {
     method: 'POST',
     body: { name: person.name, email: person.email, password, role },
   });
-  if (created.status >= 300 && created.status !== 409)
-    throw new Error(`${person.email}: ${JSON.stringify(created.data)}`);
+  if (created.status >= 300 && created.status !== 409) throw new Error(`${person.email}: ${JSON.stringify(created.data)}`);
   const login = await call('auth/login', {
     method: 'POST',
     body: { email: person.email, password },
   });
-  if (!login.data?.accessToken)
-    throw new Error(
-      `${person.email}: не вдалося увійти (${login.status}). Пароль інший?`,
-    );
+  if (!login.data?.accessToken) throw new Error(`${person.email}: не вдалося увійти (${login.status}). Пароль інший?`);
   return login.data.accessToken;
 }
 
@@ -776,14 +473,12 @@ async function upload(path, token, file) {
   const bytes = await readFile(new URL(`seed-assets/${file}`, import.meta.url));
   form.append('file', new Blob([bytes], { type: 'image/jpeg' }), 'photo.jpg');
   const result = await call(path, { token, method: 'POST', form });
-  if (result.status >= 300)
-    console.log(`  фото не додано: ${JSON.stringify(result.data)}`);
+  if (result.status >= 300) console.log(`  фото не додано: ${JSON.stringify(result.data)}`);
 }
 
 async function setAvatar(token, photo) {
   const me = await call('auth/me', { token });
-  if (!me.data?.avatarUrl)
-    await upload('profile/avatar', token, `avatars/${photo}.jpg`);
+  if (!me.data?.avatarUrl) await upload('profile/avatar', token, `avatars/${photo}.jpg`);
 }
 
 // Нові проєкти чекають модерації; з даними адміна схвалюємо свої, щоб вони з'явились на біржі
@@ -798,9 +493,7 @@ async function approveSeededProjects() {
   });
   const token = login.data?.accessToken;
   if (!token) throw new Error(`Адмін не увійшов (${login.status}).`);
-  const titles = new Set(
-    clients.flatMap((client) => client.projects.map((p) => p.title)),
-  );
+  const titles = new Set(clients.flatMap((client) => client.projects.map((p) => p.title)));
   const queue = list((await call('admin/moderation/projects', { token })).data);
   for (const project of queue.filter((item) => titles.has(item.title))) {
     const result = await call(`admin/moderation/projects/${project.id}`, {
@@ -808,11 +501,7 @@ async function approveSeededProjects() {
       method: 'POST',
       body: { decision: 'APPROVE' },
     });
-    console.log(
-      result.status < 300
-        ? `  схвалено: ${project.title}`
-        : `  не схвалено «${project.title}»: ${result.data?.message}`,
-    );
+    console.log(result.status < 300 ? `  схвалено: ${project.title}` : `  не схвалено «${project.title}»: ${result.data?.message}`);
   }
 }
 
@@ -823,9 +512,7 @@ async function main() {
     console.log(`Клієнт: ${client.name}`);
     const token = await signIn(client, 'CLIENT');
     await setAvatar(token, client.photo);
-    const mine = list(
-      (await call('projects?mine=true&limit=50', { token })).data,
-    );
+    const mine = list((await call('projects?mine=true&limit=50', { token })).data);
     for (const project of client.projects) {
       if (mine.some((item) => item.title === project.title)) continue;
       const { milestones, category, skills, ...fields } = project;
@@ -840,15 +527,10 @@ async function main() {
         },
       });
       if (created.status >= 300) {
-        console.log(
-          `  проєкт «${project.title}» не створено: ${JSON.stringify(created.data)}`,
-        );
+        console.log(`  проєкт «${project.title}» не створено: ${JSON.stringify(created.data)}`);
         continue;
       }
-      for (const [
-        index,
-        [title, description, deadline, amount],
-      ] of milestones.entries())
+      for (const [index, [title, description, deadline, amount]] of milestones.entries())
         await call(`projects/${created.data.id}/milestones`, {
           token,
           method: 'POST',
@@ -889,31 +571,19 @@ async function main() {
           method: 'POST',
           body: { title, description, tags },
         });
-        if (item.status < 300)
-          await upload(
-            `profile/portfolio/${item.data.id}/image`,
-            token,
-            `covers/${cover}.jpg`,
-          );
+        if (item.status < 300) await upload(`profile/portfolio/${item.data.id}/image`, token, `covers/${cover}.jpg`);
       }
       portfolio = (await call('profile/portfolio', { token })).data || [];
     }
 
     // Подає заявки на відкриті проєкти, де збігається хоч одна навичка
-    const open = list(
-      (await call('marketplace/projects?limit=50', { token })).data,
-    );
-    const matching = open.filter((project) =>
-      project.skills?.some((skill) => freelancer.skills.includes(skill.name)),
-    );
+    const open = list((await call('marketplace/projects?limit=50', { token })).data);
+    const matching = open.filter((project) => project.skills?.some((skill) => freelancer.skills.includes(skill.name)));
     for (const project of matching.slice(0, 3)) {
       const min = project.budgetMin ?? 5000;
       const max = project.budgetMax ?? min * 2;
       const share = [0.35, 0.6, 0.85, 0.5, 0.25, 0.1, 0.7][index % 7];
-      const proposedBudget = Math.max(
-        1,
-        Math.round((min + (max - min) * share) / 500) * 500,
-      );
+      const proposedBudget = Math.max(1, Math.round((min + (max - min) * share) / 500) * 500);
       const proposedDays = [21, 30, 14, 45, 28, 35, 40][index % 7];
       const result = await call(`projects/${project.id}/applications`, {
         token,
@@ -926,10 +596,7 @@ async function main() {
         },
       });
       if (result.status < 300) console.log(`  заявка → ${project.title}`);
-      else if (result.status !== 409)
-        console.log(
-          `  заявка на «${project.title}» не пройшла: ${result.data?.message}`,
-        );
+      else if (result.status !== 409) console.log(`  заявка на «${project.title}» не пройшла: ${result.data?.message}`);
     }
   }
 
@@ -952,9 +619,7 @@ async function main() {
       ),
     );
   }
-  console.log(
-    `Готово: ${clients.length} клієнтів, ${freelancers.length} фрілансерів.`,
-  );
+  console.log(`Готово: ${clients.length} клієнтів, ${freelancers.length} фрілансерів.`);
 }
 
 await main();

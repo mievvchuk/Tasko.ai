@@ -8,15 +8,7 @@ const frame = 280; // розмір рамки в CSS-пікселях
 const outputSize = 512; // розмір збереженого фото
 
 // Обрізання фото під кругле: тягнути — зсунути, повзунок — наблизити. Без сторонніх бібліотек, лише canvas.
-export function AvatarCropDialog({
-  file,
-  onCancel,
-  onSave,
-}: {
-  file: File;
-  onCancel: () => void;
-  onSave: (cropped: File) => void;
-}) {
+export function AvatarCropDialog({ file, onCancel, onSave }: { file: File; onCancel: () => void; onSave: (cropped: File) => void }) {
   const { tr } = useLanguage();
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [failed, setFailed] = useState(false);
@@ -88,9 +80,7 @@ export function AvatarCropDialog({
     canvas.width = outputSize;
     canvas.height = outputSize;
     const { source } = view;
-    canvas
-      .getContext("2d")
-      ?.drawImage(image, source.x, source.y, source.size, source.size, 0, 0, outputSize, outputSize);
+    canvas.getContext("2d")?.drawImage(image, source.x, source.y, source.size, source.size, 0, 0, outputSize, outputSize);
     canvas.toBlob(
       (blob) => {
         if (blob) onSave(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
@@ -139,14 +129,7 @@ export function AvatarCropDialog({
           <label className="avatar-crop-zoom">
             <i className="bi bi-zoom-out" aria-hidden="true"></i>
             <span className="visually-hidden">{tr("Масштаб")}</span>
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.01}
-              value={zoom}
-              onChange={(event) => changeZoom(Number(event.target.value))}
-            />
+            <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={(event) => changeZoom(Number(event.target.value))} />
             <i className="bi bi-zoom-in" aria-hidden="true"></i>
           </label>
         </div>
@@ -155,12 +138,7 @@ export function AvatarCropDialog({
         <button type="button" className="button secondary" onClick={onCancel}>
           {tr("Скасувати")}
         </button>
-        <button
-          type="button"
-          className="button primary"
-          disabled={!image}
-          onClick={save}
-        >
+        <button type="button" className="button primary" disabled={!image} onClick={save}>
           {tr("Зберегти фото")}
         </button>
       </div>

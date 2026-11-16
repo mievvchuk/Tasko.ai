@@ -62,13 +62,7 @@ function CriteriaField({
   return (
     <>
       <label htmlFor={id}>{label}</label>
-      <textarea
-        id={id}
-        required
-        maxLength={2405}
-        value={value.join("\n")}
-        onChange={(e) => onChange(e.target.value.split("\n"))}
-      />
+      <textarea id={id} required maxLength={2405} value={value.join("\n")} onChange={(e) => onChange(e.target.value.split("\n"))} />
     </>
   );
 }
@@ -103,10 +97,7 @@ function PlanTaskFields({
           className="text-button"
           disabled={!canRemove}
           onClick={onRemove}
-          aria-label={tr(
-            "Прибрати завдання {0}",
-            `${milestoneIndex + 1}.${taskIndex + 1}`,
-          )}
+          aria-label={tr("Прибрати завдання {0}", `${milestoneIndex + 1}.${taskIndex + 1}`)}
         >
           <i className="bi bi-trash" aria-hidden="true"></i>
           {tr("Прибрати")}
@@ -122,9 +113,7 @@ function PlanTaskFields({
           value={task.title}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-        <label htmlFor={`task-description-${idSuffix}`}>
-          {tr("Опис роботи")}
-        </label>
+        <label htmlFor={`task-description-${idSuffix}`}>{tr("Опис роботи")}</label>
         <textarea
           id={`task-description-${idSuffix}`}
           required
@@ -135,15 +124,11 @@ function PlanTaskFields({
         />
         <div className="plan-task-meta">
           <div>
-            <label htmlFor={`task-priority-${idSuffix}`}>
-              {tr("Пріоритет")}
-            </label>
+            <label htmlFor={`task-priority-${idSuffix}`}>{tr("Пріоритет")}</label>
             <select
               id={`task-priority-${idSuffix}`}
               value={task.priority}
-              onChange={(e) =>
-                onChange({ priority: e.target.value as PlanTask["priority"] })
-              }
+              onChange={(e) => onChange({ priority: e.target.value as PlanTask["priority"] })}
             >
               <option value="LOW">{tr("Низький")}</option>
               <option value="MEDIUM">{tr("Середній")}</option>
@@ -151,9 +136,7 @@ function PlanTaskFields({
             </select>
           </div>
           <div>
-            <label htmlFor={`task-amount-${idSuffix}`}>
-              {tr("Вартість, грн")}
-            </label>
+            <label htmlFor={`task-amount-${idSuffix}`}>{tr("Вартість, грн")}</label>
             <input
               id={`task-amount-${idSuffix}`}
               type="number"
@@ -165,10 +148,7 @@ function PlanTaskFields({
               value={Number.isFinite(task.amount) ? task.amount : ""}
               onChange={(e) =>
                 onChange({
-                  amount:
-                    e.target.value === ""
-                      ? Number.NaN
-                      : Math.max(0, Math.floor(Number(e.target.value))),
+                  amount: e.target.value === "" ? Number.NaN : Math.max(0, Math.floor(Number(e.target.value))),
                 })
               }
             />
@@ -251,9 +231,7 @@ export function PlanMilestoneFields({
       <legend className="plan-milestone-head">
         <span className="plan-step">{index + 1}</span>
         <span>{milestone.title.trim() || tr("Етап {0}", index + 1)}</span>
-        <strong className="plan-amount">
-          {formatMoney(milestoneTotal(milestone))}
-        </strong>
+        <strong className="plan-amount">{formatMoney(milestoneTotal(milestone))}</strong>
       </legend>
       <div className="work-form">
         <label htmlFor={`milestone-title-${index}`}>{tr("Назва етапу")}</label>
@@ -265,9 +243,7 @@ export function PlanMilestoneFields({
           value={milestone.title}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-        <label htmlFor={`milestone-description-${index}`}>
-          {tr("Опис етапу")}
-        </label>
+        <label htmlFor={`milestone-description-${index}`}>{tr("Опис етапу")}</label>
         <textarea
           id={`milestone-description-${index}`}
           required
@@ -299,22 +275,12 @@ export function PlanMilestoneFields({
         />
       ))}
       <div className="plan-actions section-gap">
-        <button
-          type="button"
-          className="button secondary"
-          disabled={tasks.length >= maxTasksPerMilestone}
-          onClick={addTask}
-        >
+        <button type="button" className="button secondary" disabled={tasks.length >= maxTasksPerMilestone} onClick={addTask}>
           <i className="bi bi-plus-lg" aria-hidden="true"></i>
 
           {tr("Додати завдання")}
         </button>
-        <button
-          type="button"
-          className="text-button"
-          disabled={!canRemove}
-          onClick={onRemove}
-        >
+        <button type="button" className="text-button" disabled={!canRemove} onClick={onRemove}>
           <i className="bi bi-trash" aria-hidden="true"></i>
 
           {tr("Прибрати етап")}

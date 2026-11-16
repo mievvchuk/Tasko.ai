@@ -11,13 +11,7 @@ export interface ChartItem {
 }
 
 // Горизонтальні смуги: довжина — частка від найбільшого значення
-export function BarChart({
-  title,
-  items,
-}: {
-  title: string;
-  items: ChartItem[];
-}) {
+export function BarChart({ title, items }: { title: string; items: ChartItem[] }) {
   const max = Math.max(1, ...items.map((item) => item.value));
   const total = items.reduce((sum, item) => sum + item.value, 0);
   return (
@@ -31,10 +25,7 @@ export function BarChart({
           <li key={item.label}>
             <span className="bar-label">{item.label}</span>
             <span className="bar-track" aria-hidden="true">
-              <span
-                className={`bar-fill tone-${item.tone ?? "primary"}`}
-                style={{ width: `${(item.value / max) * 100}%` }}
-              />
+              <span className={`bar-fill tone-${item.tone ?? "primary"}`} style={{ width: `${(item.value / max) * 100}%` }} />
             </span>
             <strong className="bar-value">{item.value}</strong>
           </li>
@@ -68,12 +59,7 @@ export function ColumnChart({
       </div>
       <ol className="column-chart">
         {labels.map((label, index) => (
-          <li
-            key={label}
-            aria-label={`${label}: ${series
-              .map((row) => `${row.name.toLowerCase()} ${row.values[index]}`)
-              .join(", ")}`}
-          >
+          <li key={label} aria-label={`${label}: ${series.map((row) => `${row.name.toLowerCase()} ${row.values[index]}`).join(", ")}`}>
             <span className="columns" aria-hidden="true">
               {series.map((row) => (
                 <span
@@ -137,9 +123,7 @@ export function DonutChart({
           className="donut"
           aria-hidden="true"
           style={{
-            background: stops.length
-              ? `conic-gradient(${stops.join(", ")})`
-              : "var(--color-paper-3)",
+            background: stops.length ? `conic-gradient(${stops.join(", ")})` : "var(--color-paper-3)",
           }}
         >
           <span>
@@ -151,19 +135,12 @@ export function DonutChart({
           {items.map((item) => {
             const content = (
               <>
-                <i
-                  className={`legend-dot tone-${item.tone ?? "primary"}`}
-                  aria-hidden="true"
-                />
+                <i className={`legend-dot tone-${item.tone ?? "primary"}`} aria-hidden="true" />
                 <span>{item.label}</span>
                 <strong>{item.value}</strong>
               </>
             );
-            return (
-              <li key={item.label}>
-                {item.to ? <Link to={item.to}>{content}</Link> : content}
-              </li>
-            );
+            return <li key={item.label}>{item.to ? <Link to={item.to}>{content}</Link> : content}</li>;
           })}
         </ul>
       </div>
@@ -172,17 +149,7 @@ export function DonutChart({
 }
 
 // Маленьке кільце частки: «2 з 5» видно одразу, без смужки й відсотків окремо
-export function ProgressRing({
-  value,
-  max,
-  tone = "success",
-  label,
-}: {
-  value: number;
-  max: number;
-  tone?: ChartTone;
-  label: string;
-}) {
+export function ProgressRing({ value, max, tone = "success", label }: { value: number; max: number; tone?: ChartTone; label: string }) {
   const percent = max ? Math.round((value / max) * 100) : 0;
   return (
     <span
@@ -200,13 +167,7 @@ export function ProgressRing({
 }
 
 // Вертикальні стовпчики, кожен своїм кольором (наприклад, завдання за статусами)
-export function StatusColumns({
-  title,
-  items,
-}: {
-  title: string;
-  items: (ChartItem & { to?: string })[];
-}) {
+export function StatusColumns({ title, items }: { title: string; items: (ChartItem & { to?: string })[] }) {
   const max = Math.max(1, ...items.map((item) => item.value));
   const total = items.reduce((sum, item) => sum + item.value, 0);
   return (
@@ -221,21 +182,14 @@ export function StatusColumns({
             <>
               <strong>{item.value}</strong>
               <span className="status-column-track" aria-hidden="true">
-                <span
-                  className={`tone-${item.tone ?? "primary"}`}
-                  style={{ height: `${(item.value / max) * 100}%` }}
-                />
+                <span className={`tone-${item.tone ?? "primary"}`} style={{ height: `${(item.value / max) * 100}%` }} />
               </span>
               {/* Назва лишається в посиланні для скрінрідера, а видно її в легенді:
                   «На доопрацюванні» не вміщається під вузьким стовпцем */}
               <small className="visually-hidden">{item.label}</small>
             </>
           );
-          return (
-            <li key={item.label}>
-              {item.to ? <Link to={item.to}>{body}</Link> : body}
-            </li>
-          );
+          return <li key={item.label}>{item.to ? <Link to={item.to}>{body}</Link> : body}</li>;
         })}
       </ol>
       <ul className="status-legend" aria-hidden="true">

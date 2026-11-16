@@ -16,10 +16,7 @@ export interface AppConfig {
 
 export function loadEnvironment() {
   config({
-    path: [
-      resolve(process.cwd(), '.env'),
-      fileURLToPath(new URL('../../../../.env', import.meta.url)),
-    ],
+    path: [resolve(process.cwd(), '.env'), fileURLToPath(new URL('../../../../.env', import.meta.url))],
     quiet: true,
   });
 }
@@ -33,27 +30,16 @@ export function readConfig(env: NodeJS.ProcessEnv): AppConfig {
     throw new Error('DATABASE_URL має використовувати PostgreSQL.');
   }
   const jwtSecret = env.JWT_SECRET;
-  if (
-    !jwtSecret ||
-    jwtSecret.length < 32 ||
-    jwtSecret.includes('your_super_secret')
-  ) {
-    throw new Error(
-      'JWT_SECRET має містити щонайменше 32 символи та не бути шаблоном.',
-    );
+  if (!jwtSecret || jwtSecret.length < 32 || jwtSecret.includes('your_super_secret')) {
+    throw new Error('JWT_SECRET має містити щонайменше 32 символи та не бути шаблоном.');
   }
   const port = Number(env.PORT ?? 3000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error('PORT має бути цілим числом від 1 до 65535.');
   }
   const webOrigin = env.WEB_ORIGIN ?? 'http://localhost:5173';
-  if (
-    !URL.canParse(webOrigin) ||
-    !['https:', 'http:'].includes(new URL(webOrigin).protocol)
-  )
-    throw new Error(
-      'WEB_ORIGIN має бути адресою вебзастосунку HTTP або HTTPS.',
-    );
+  if (!URL.canParse(webOrigin) || !['https:', 'http:'].includes(new URL(webOrigin).protocol))
+    throw new Error('WEB_ORIGIN має бути адресою вебзастосунку HTTP або HTTPS.');
   return {
     databaseUrl,
     jwtSecret,

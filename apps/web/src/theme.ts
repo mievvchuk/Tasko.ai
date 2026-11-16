@@ -18,13 +18,8 @@ export function storedTheme(): ThemePreference {
 }
 
 export function applyTheme(preference: ThemePreference) {
-  const theme = resolveTheme(
-    preference,
-    window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
+  const theme = resolveTheme(preference, window.matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
-  document
-    .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", theme === "dark" ? "#111522" : "#f7f8fc");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#111522" : "#f7f8fc");
 }

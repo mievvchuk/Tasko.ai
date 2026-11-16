@@ -8,10 +8,7 @@ import { DataChangeInterceptor } from './data-change.interceptor.js';
 @Module({
   imports: [AuthModule],
   controllers: [NotificationsController],
-  providers: [
-    NotificationsService,
-    { provide: APP_INTERCEPTOR, useClass: DataChangeInterceptor },
-  ],
+  providers: [NotificationsService, { provide: APP_INTERCEPTOR, useClass: DataChangeInterceptor }],
   exports: [NotificationsService],
 })
 export class NotificationsModule {}

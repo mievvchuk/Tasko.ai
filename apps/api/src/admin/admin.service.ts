@@ -1,11 +1,4 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import ExcelJS from 'exceljs';
 import { randomUUID } from 'node:crypto';
 import { unlink } from 'node:fs/promises';
@@ -14,26 +7,16 @@ import { fileURLToPath } from 'node:url';
 import { or } from '@prisma/orm-postgres/orm-client';
 import { hashPassword, verifyPassword } from '../auth/password.js';
 import { verifyTotp } from '../auth/totp.js';
-import {
-  moderationStatuses,
-  projectStatuses,
-} from '../projects/projects.dto.js';
+import { moderationStatuses, projectStatuses } from '../projects/projects.dto.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { buildReportPdf } from './report-pdf.js';
-import type {
-  CreateAdminDto,
-  ModerationDecisionDto,
-  UpdateUserDto,
-  UserQueryDto,
-} from './admin.dto.js';
+import type { CreateAdminDto, ModerationDecisionDto, UpdateUserDto, UserQueryDto } from './admin.dto.js';
 
 // Той самий каталог, що у FilesService (вкладення) і UsersService (avatars/)
-const storageDirectory = fileURLToPath(
-  new URL('../../storage/', import.meta.url),
-);
+const storageDirectory = fileURLToPath(new URL('../../storage/', import.meta.url));
 
 const duplicateEmail = 'Ця електронна пошта вже зареєстрована.';
 
@@ -44,8 +27,7 @@ export class AdminService {
     @Inject(ProjectsService) private readonly projects: ProjectsService,
   ) {}
   private requireAdmin(user: CurrentUser) {
-    if (user.role !== 'ADMIN')
-      throw new ForbiddenException('Потрібні права адміністратора.');
+    if (user.role !== 'ADMIN') throw new ForbiddenException('Потрібні права адміністратора.');
   }
 
   // Черга модерації: нові й виправлені проєкти, найстаріші першими
@@ -62,22 +44,15 @@ export class AdminService {
       .all();
     const categories = await orm.ProjectCategory.all();
     const skills = await orm.Skill.all();
-    const links = await orm.ProjectSkill.where((link) =>
-      link.projectId.in(projects.map((project) => project.id)),
-    ).all();
+    const links = await orm.ProjectSkill.where((link) => link.projectId.in(projects.map((project) => project.id))).all();
     return Promise.all(
       projects.map(async (project) => ({
         ...project,
-        client:
-          clients.find((person) => person.id === project.clientId) ?? null,
-        category:
-          categories.find((category) => category.id === project.categoryId) ??
-          null,
+        client: clients.find((person) => person.id === project.clientId) ?? null,
+        category: categories.find((category) => category.id === project.categoryId) ?? null,
         skills: links
           .filter((link) => link.projectId === project.id)
-          .flatMap((link) =>
-            skills.filter((skill) => skill.id === link.skillId),
-          ),
+          .flatMap((link) => skills.filter((skill) => skill.id === link.skillId)),
         // Для повторно надісланого проєкту — чому його відхилили минулого разу
         previousRejection: await this.projects.findRejectionReason(project.id),
       })),
@@ -89,12 +64,10 @@ export class AdminService {
     const orm = this.prisma.client.orm.public;
     const project = await orm.Project.where({ id }).first();
     if (!project) throw new NotFoundException('Проєкт не знайдено.');
-    if (project.status !== 'MODERATION')
-      throw new ConflictException('Проєкт уже не очікує модерації.');
+    if (project.status !== 'MODERATION') throw new ConflictException('Проєкт уже не очікує модерації.');
     const approved = data.decision === 'APPROVE';
     const reason = data.reason?.trim() ?? '';
-    if (!approved && reason.length < 5)
-      throw new BadRequestException('Вкажіть причину відхилення.');
+    if (!approved && reason.length < 5) throw new BadRequestException('Вкажіть причину відхилення.');
     const [updated] = await orm.Project.where({
       id,
       status: 'MODERATION',
@@ -102,8 +75,7 @@ export class AdminService {
       status: approved ? 'PLANNING' : 'REJECTED',
       updatedAt: new Date(),
     });
-    if (!updated)
-      throw new ConflictException('Проєкт уже не очікує модерації.');
+    if (!updated) throw new ConflictException('Проєкт уже не очікує модерації.');
     await this.projects.logActivity(
       user.id,
       id,
@@ -130,21 +102,10 @@ export class AdminService {
     if (filters.search?.trim()) {
       // Символи LIKE у введеному тексті шукаємо буквально.
       const search = `%${filters.search.trim().replace(/[\\%_]/g, '\\$&')}%`;
-      query = query.where((person) =>
-        or(person.name.ilike(search), person.email.ilike(search)),
-      );
+      query = query.where((person) => or(person.name.ilike(search), person.email.ilike(search)));
     }
     return query
-      .select(
-        'id',
-        'name',
-        'email',
-        'role',
-        'status',
-        'blockReason',
-        'avatarUrl',
-        'createdAt',
-      )
+      .select('id', 'name', 'email', 'role', 'status', 'blockReason', 'avatarUrl', 'createdAt')
       .orderBy((person) => person.createdAt.desc())
       .offset((filters.page - 1) * filters.limit)
       .limit(filters.limit)
@@ -156,21 +117,15 @@ export class AdminService {
       const target = await tx.orm.public.User.where({ id }).first();
       if (!target) throw new NotFoundException('Користувача не знайдено.');
       // Адміністратори (і ти сам) не змінюють ролі й статус один одного з панелі
-      if (target.role === 'ADMIN')
-        throw new ForbiddenException(
-          'Роль і статус адміністраторів у панелі змінити не можна.',
-        );
-      if (data.status === 'BLOCKED' && !data.blockReason?.trim())
-        throw new BadRequestException('Вкажіть причину блокування.');
+      if (target.role === 'ADMIN') throw new ForbiddenException('Роль і статус адміністраторів у панелі змінити не можна.');
+      if (data.status === 'BLOCKED' && !data.blockReason?.trim()) throw new BadRequestException('Вкажіть причину блокування.');
       if (data.role && data.role !== target.role) {
         const owned = await tx.orm.public.Project.where({ clientId: id }).all();
         const memberships = await tx.orm.public.ProjectMember.where({
           userId: id,
         }).all();
         if (owned.length || memberships.length)
-          throw new ConflictException(
-            'Не можна змінити роль користувача, який уже має проєкти або участь у них.',
-          );
+          throw new ConflictException('Не можна змінити роль користувача, який уже має проєкти або участь у них.');
       }
       return tx.orm.public.User.where({ id })
         .select('id', 'name', 'email', 'role', 'status', 'blockReason')
@@ -179,8 +134,7 @@ export class AdminService {
           ...(data.status
             ? {
                 status: data.status,
-                blockReason:
-                  data.status === 'BLOCKED' ? data.blockReason!.trim() : null,
+                blockReason: data.status === 'BLOCKED' ? data.blockReason!.trim() : null,
               }
             : {}),
           updatedAt: new Date(),
@@ -191,27 +145,19 @@ export class AdminService {
   // листуванням), заявками, повідомленнями, відгуками, скаргами. У чужих завданнях лише знімається з виконавця.
   async remove(user: CurrentUser, id: string) {
     this.requireAdmin(user);
-    if (id === user.id)
-      throw new BadRequestException(
-        'Власний обліковий запис видалити не можна.',
-      );
+    if (id === user.id) throw new BadRequestException('Власний обліковий запис видалити не можна.');
     const files: string[] = [];
     const result = await this.prisma.client.transaction(async (tx) => {
       const db = tx.orm.public;
       const target = await db.User.where({ id }).first();
       if (!target) throw new NotFoundException('Користувача не знайдено.');
-      if (target.role === 'ADMIN')
-        throw new ForbiddenException(
-          'Адміністраторів видаляти з панелі не можна.',
-        );
-      if (target.avatarUrl)
-        files.push(`avatars/${target.avatarUrl.split('/').pop()}`);
+      if (target.role === 'ADMIN') throw new ForbiddenException('Адміністраторів видаляти з панелі не можна.');
+      if (target.avatarUrl) files.push(`avatars/${target.avatarUrl.split('/').pop()}`);
 
       // Проєкти, де користувач замовник, — разом з усім вмістом (спершу дочірні записи)
       for (const project of await db.Project.where({ clientId: id }).all()) {
         const projectId = project.id;
-        for (const file of await db.FileAttachment.where({ projectId }).all())
-          files.push(file.storagePath);
+        for (const file of await db.FileAttachment.where({ projectId }).all()) files.push(file.storagePath);
         await db.FileAttachment.where({ projectId }).deleteAll();
         await db.Notification.where({ projectId }).deleteAll();
         for (const task of await db.Task.where({ projectId }).all()) {
@@ -284,11 +230,7 @@ export class AdminService {
       return { id, deleted: true };
     });
     // Файли — лише після успішного коміту; якийсь уже відсутній — не біда
-    await Promise.all(
-      files.map((file) =>
-        unlink(join(storageDirectory, file)).catch(() => undefined),
-      ),
-    );
+    await Promise.all(files.map((file) => unlink(join(storageDirectory, file)).catch(() => undefined)));
     return result;
   }
   // Новий адміністратор — завжди окремий акаунт; той, хто створює, підтверджує дію своїм паролем і кодом 2FA
@@ -297,19 +239,9 @@ export class AdminService {
     const me = await this.prisma.client.orm.public.User.where({
       id: user.id,
     }).first();
-    if (
-      !me?.passwordHash ||
-      !(await verifyPassword(data.currentPassword, me.passwordHash))
-    )
+    if (!me?.passwordHash || !(await verifyPassword(data.currentPassword, me.passwordHash)))
       throw new BadRequestException('Ваш пароль неправильний.');
-    if (
-      me.twoFactorEnabled &&
-      !(
-        me.twoFactorSecret &&
-        data.twoFactorCode &&
-        verifyTotp(me.twoFactorSecret, data.twoFactorCode)
-      )
-    )
+    if (me.twoFactorEnabled && !(me.twoFactorSecret && data.twoFactorCode && verifyTotp(me.twoFactorSecret, data.twoFactorCode)))
       throw new BadRequestException('Введіть правильний код 2FA.');
     if (
       await this.prisma.client.orm.public.User.where({
@@ -333,43 +265,23 @@ export class AdminService {
       const { id, name, email, role, status, createdAt } = created;
       return { id, name, email, role, status, createdAt };
     } catch (error) {
-      if (hasDatabaseCode(error, '23505'))
-        throw new ConflictException(duplicateEmail);
+      if (hasDatabaseCode(error, '23505')) throw new ConflictException(duplicateEmail);
       throw error;
     }
   }
   async report(user: CurrentUser) {
     this.requireAdmin(user);
-    const users = await this.prisma.client.orm.public.User.select(
-      'role',
-      'status',
-      'createdAt',
-    ).all();
-    const projects = await this.prisma.client.orm.public.Project.select(
-      'id',
-      'status',
-      'createdAt',
-    ).all();
-    const tasks = await this.prisma.client.orm.public.Task.select(
-      'status',
-      'deadline',
-    ).all();
-    const complaints = await this.prisma.client.orm.public.Complaint.select(
+    const users = await this.prisma.client.orm.public.User.select('role', 'status', 'createdAt').all();
+    const projects = await this.prisma.client.orm.public.Project.select('id', 'status', 'createdAt').all();
+    const tasks = await this.prisma.client.orm.public.Task.select('status', 'deadline').all();
+    const complaints = await this.prisma.client.orm.public.Complaint.select('status', 'createdAt', 'updatedAt').all();
+    const applications = await this.prisma.client.orm.public.ProjectApplication.select(
+      'projectId',
       'status',
       'createdAt',
       'updatedAt',
     ).all();
-    const applications =
-      await this.prisma.client.orm.public.ProjectApplication.select(
-        'projectId',
-        'status',
-        'createdAt',
-        'updatedAt',
-      ).all();
-    const orders = await this.prisma.client.orm.public.Order.select(
-      'status',
-      'amount',
-    ).all();
+    const orders = await this.prisma.client.orm.public.Order.select('status', 'amount').all();
     const days = lastDays(7);
     const weekStart = new Date(`${days[0]}T00:00:00Z`);
     const projectCreated = new Map(projects.map((p) => [p.id, p.createdAt]));
@@ -377,8 +289,7 @@ export class AdminService {
     const firstApplication = new Map<string, Date>();
     for (const application of applications) {
       const seen = firstApplication.get(application.projectId);
-      if (!seen || application.createdAt < seen)
-        firstApplication.set(application.projectId, application.createdAt);
+      if (!seen || application.createdAt < seen) firstApplication.set(application.projectId, application.createdAt);
     }
     const sinceProject = (projectId: string, at: Date) => {
       const created = projectCreated.get(projectId);
@@ -386,19 +297,12 @@ export class AdminService {
     };
     return {
       users: users.length,
-      blockedUsers: users.filter((person) => person.status === 'BLOCKED')
-        .length,
+      blockedUsers: users.filter((person) => person.status === 'BLOCKED').length,
       projects: projects.length,
-      activeProjects: projects.filter((project) => project.status === 'ACTIVE')
-        .length,
-      completedProjects: projects.filter(
-        (project) => project.status === 'COMPLETED',
-      ).length,
+      activeProjects: projects.filter((project) => project.status === 'ACTIVE').length,
+      completedProjects: projects.filter((project) => project.status === 'COMPLETED').length,
       tasks: tasks.length,
-      overdueTasks: tasks.filter(
-        (task) =>
-          task.status !== 'DONE' && task.deadline && task.deadline < new Date(),
-      ).length,
+      overdueTasks: tasks.filter((task) => task.status !== 'DONE' && task.deadline && task.deadline < new Date()).length,
       tasksByStatus: Object.fromEntries(
         ['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'].map((status) => [
           status,
@@ -406,83 +310,43 @@ export class AdminService {
         ]),
       ),
       usersByRole: countBy(['CLIENT', 'FREELANCER', 'ADMIN'], users, 'role'),
-      projectsByStatus: countBy(
-        [...projectStatuses, ...moderationStatuses],
-        projects,
-        'status',
-      ),
+      projectsByStatus: countBy([...projectStatuses, ...moderationStatuses], projects, 'status'),
       // Нові користувачі й проєкти за останні 6 місяців (для діаграми)
       growth: lastMonths(6).map((month) => ({
         month,
-        users: users.filter((person) => monthOf(person.createdAt) === month)
-          .length,
-        projects: projects.filter(
-          (project) => monthOf(project.createdAt) === month,
-        ).length,
+        users: users.filter((person) => monthOf(person.createdAt) === month).length,
+        projects: projects.filter((project) => monthOf(project.createdAt) === month).length,
       })),
-      complaintsByStatus: countBy(
-        ['OPEN', 'RESOLVED', 'REJECTED'],
-        complaints,
-        'status',
-      ),
-      applicationsByStatus: countBy(
-        ['PENDING', 'ACCEPTED', 'REJECTED'],
-        applications,
-        'status',
-      ),
-      ordersByStatus: countBy(
-        ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
-        orders,
-        'status',
-      ),
+      complaintsByStatus: countBy(['OPEN', 'RESOLVED', 'REJECTED'], complaints, 'status'),
+      applicationsByStatus: countBy(['PENDING', 'ACCEPTED', 'REJECTED'], applications, 'status'),
+      ordersByStatus: countBy(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'], orders, 'status'),
       // Сума виконаних угод; у старих замовлень без суми рахуємо 0
-      completedOrdersAmount: orders
-        .filter((order) => order.status === 'COMPLETED')
-        .reduce((sum, order) => sum + (order.amount ?? 0), 0),
+      completedOrdersAmount: orders.filter((order) => order.status === 'COMPLETED').reduce((sum, order) => sum + (order.amount ?? 0), 0),
       // Останні 7 днів: підсумки й щоденні ряди для лінійної діаграми
       week: {
         users: users.filter((person) => person.createdAt >= weekStart).length,
-        projects: projects.filter((project) => project.createdAt >= weekStart)
-          .length,
+        projects: projects.filter((project) => project.createdAt >= weekStart).length,
         complaints: complaints.filter((c) => c.createdAt >= weekStart).length,
-        applications: applications.filter((a) => a.createdAt >= weekStart)
-          .length,
+        applications: applications.filter((a) => a.createdAt >= weekStart).length,
         days: days.map((day) => ({
           day,
-          users: users.filter((person) => dayOf(person.createdAt) === day)
-            .length,
-          projects: projects.filter(
-            (project) => dayOf(project.createdAt) === day,
-          ).length,
-          complaints: complaints.filter((c) => dayOf(c.createdAt) === day)
-            .length,
+          users: users.filter((person) => dayOf(person.createdAt) === day).length,
+          projects: projects.filter((project) => dayOf(project.createdAt) === day).length,
+          complaints: complaints.filter((c) => dayOf(c.createdAt) === day).length,
         })),
       },
       // Середній час у годинах; null — ще немає даних
       averageHours: {
         complaintResolution: averageHours(
-          complaints
-            .filter((c) => c.status !== 'OPEN')
-            .map((c) => c.updatedAt.getTime() - c.createdAt.getTime()),
+          complaints.filter((c) => c.status !== 'OPEN').map((c) => c.updatedAt.getTime() - c.createdAt.getTime()),
         ),
-        firstApplication: averageHours(
-          [...firstApplication].map(([projectId, at]) =>
-            sinceProject(projectId, at),
-          ),
-        ),
-        hire: averageHours(
-          applications
-            .filter((a) => a.status === 'ACCEPTED')
-            .map((a) => sinceProject(a.projectId, a.updatedAt)),
-        ),
+        firstApplication: averageHours([...firstApplication].map(([projectId, at]) => sinceProject(projectId, at))),
+        hire: averageHours(applications.filter((a) => a.status === 'ACCEPTED').map((a) => sinceProject(a.projectId, a.updatedAt))),
       },
     };
   }
 
-  async exportReport(
-    user: CurrentUser,
-    format: 'json' | 'csv' | 'xlsx' | 'pdf',
-  ) {
+  async exportReport(user: CurrentUser, format: 'json' | 'csv' | 'xlsx' | 'pdf') {
     const report = await this.report(user);
     const rows = this.reportRows(report);
     const date = new Date().toISOString().slice(0, 10);
@@ -496,10 +360,7 @@ export class AdminService {
     }
 
     if (format === 'csv') {
-      const csv = [
-        ['Показник', 'Значення'],
-        ...rows.map((row) => [row.label, String(row.value)]),
-      ]
+      const csv = [['Показник', 'Значення'], ...rows.map((row) => [row.label, String(row.value)])]
         .map((row) => row.map((value) => this.csvValue(value)).join(','))
         .join('\r\n');
       return {
@@ -526,8 +387,7 @@ export class AdminService {
       const content = await workbook.xlsx.writeBuffer();
       return {
         fileName: `tasko-report-${date}.xlsx`,
-        contentType:
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         content: Buffer.from(content),
       };
     }
@@ -589,14 +449,8 @@ export class AdminService {
   }
 }
 
-function countBy<
-  K extends string,
-  T extends Record<F, unknown>,
-  F extends string,
->(keys: readonly K[], rows: T[], field: F) {
-  return Object.fromEntries(
-    keys.map((key) => [key, rows.filter((row) => row[field] === key).length]),
-  ) as Record<K, number>;
+function countBy<K extends string, T extends Record<F, unknown>, F extends string>(keys: readonly K[], rows: T[], field: F) {
+  return Object.fromEntries(keys.map((key) => [key, rows.filter((row) => row[field] === key).length])) as Record<K, number>;
 }
 
 // «2026-10» — місяць дати за UTC
@@ -612,15 +466,7 @@ function dayOf(date: Date) {
 // Останні n днів, від найстарішого до сьогодні
 export function lastDays(n: number, now = new Date()) {
   return Array.from({ length: n }, (_, index) =>
-    dayOf(
-      new Date(
-        Date.UTC(
-          now.getUTCFullYear(),
-          now.getUTCMonth(),
-          now.getUTCDate() - (n - 1 - index),
-        ),
-      ),
-    ),
+    dayOf(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (n - 1 - index)))),
   );
 }
 
@@ -633,11 +479,5 @@ function averageHours(durations: (number | null)[]) {
 
 // Останні n місяців, від найстарішого до поточного
 export function lastMonths(n: number, now = new Date()) {
-  return Array.from({ length: n }, (_, index) =>
-    monthOf(
-      new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (n - 1 - index), 1),
-      ),
-    ),
-  );
+  return Array.from({ length: n }, (_, index) => monthOf(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (n - 1 - index), 1))));
 }

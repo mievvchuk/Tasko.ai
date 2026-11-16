@@ -98,10 +98,7 @@ const ladders: Record<ComplaintCategory, Recommendation[]> = {
   ],
 };
 
-export function recommendAction(
-  category: ComplaintCategory,
-  history: TargetHistory,
-): Recommendation {
+export function recommendAction(category: ComplaintCategory, history: TargetHistory): Recommendation {
   const ladder = ladders[category] ?? ladders.OTHER;
   return ladder[Math.min(history.confirmed, ladder.length - 1)];
 }

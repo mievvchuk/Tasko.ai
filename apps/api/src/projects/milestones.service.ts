@@ -1,16 +1,7 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { CurrentUser } from '../users/users.service.js';
-import type {
-  CreateMilestoneDto,
-  UpdateMilestoneDto,
-} from './milestones.dto.js';
+import type { CreateMilestoneDto, UpdateMilestoneDto } from './milestones.dto.js';
 import { ProjectsService } from './projects.service.js';
 import { completeProjectIfDone } from './milestone-progress.js';
 
@@ -28,9 +19,7 @@ export function checkMilestoneTransition(from: string, to: string) {
 
 @Injectable()
 export class MilestonesService {
-  constructor(
-    @Inject(ProjectsService) private readonly projects: ProjectsService,
-  ) {}
+  constructor(@Inject(ProjectsService) private readonly projects: ProjectsService) {}
   private get db() {
     return this.projects.prisma.client.orm.public;
   }
@@ -71,32 +60,17 @@ export class MilestonesService {
       createdAt: now,
       updatedAt: now,
     });
-    await this.projects.logActivity(
-      user.id,
-      projectId,
-      'MILESTONE_CREATED',
-      `Створено етап «${data.title}».`,
-    );
+    await this.projects.logActivity(user.id, projectId, 'MILESTONE_CREATED', `Створено етап «${data.title}».`);
     const members = await this.db.ProjectMember.where({ projectId }).all();
     for (const member of members)
-      await this.projects.notify(
-        member.userId,
-        user.id,
-        'MILESTONE_CREATED',
-        `Створено етап «${data.title}».`,
-        projectId,
-      );
+      await this.projects.notify(member.userId, user.id, 'MILESTONE_CREATED', `Створено етап «${data.title}».`, projectId);
     return item;
   }
 
   async update(user: CurrentUser, id: string, data: UpdateMilestoneDto) {
     const item = await this.db.ProjectMilestone.where({ id }).first();
     if (!item) throw new NotFoundException('Етап не знайдено.');
-    const project = await this.projects.requireAccess(
-      user,
-      item.projectId,
-      false,
-    );
+    const project = await this.projects.requireAccess(user, item.projectId, false);
     this.projects.ensureWritable(project);
     const owner = project.clientId === user.id;
     if (
@@ -118,29 +92,18 @@ export class MilestonesService {
       status: item.status,
     }).updateAll({
       ...(data.title !== undefined ? { title: data.title } : {}),
-      ...(data.description !== undefined
-        ? { description: data.description || null }
-        : {}),
+      ...(data.description !== undefined ? { description: data.description || null } : {}),
       ...(data.position !== undefined ? { position: data.position } : {}),
-      ...(data.deadline !== undefined
-        ? { deadline: data.deadline ? new Date(data.deadline) : null }
-        : {}),
+      ...(data.deadline !== undefined ? { deadline: data.deadline ? new Date(data.deadline) : null } : {}),
       ...(data.amount !== undefined ? { amount: data.amount } : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
-      ...(data.paymentStatus !== undefined
-        ? { paymentStatus: data.paymentStatus }
-        : {}),
+      ...(data.paymentStatus !== undefined ? { paymentStatus: data.paymentStatus } : {}),
       // Платіжної системи немає: прийнятий етап вважається оплаченим
       ...(data.status === 'COMPLETED' ? { paymentStatus: 'PAID' } : {}),
       updatedAt: new Date(),
     });
     if (!updated) throw new ConflictException('Етап уже змінився.');
-    await this.projects.logActivity(
-      user.id,
-      item.projectId,
-      'MILESTONE_UPDATED',
-      `Оновлено етап «${item.title}».`,
-    );
+    await this.projects.logActivity(user.id, item.projectId, 'MILESTONE_UPDATED', `Оновлено етап «${item.title}».`);
     const recipientId = owner
       ? (
           await this.db.ProjectMember.where({
@@ -149,15 +112,8 @@ export class MilestonesService {
         )?.userId
       : project.clientId;
     if (recipientId)
-      await this.projects.notify(
-        recipientId,
-        user.id,
-        'MILESTONE_UPDATED',
-        `Оновлено етап «${item.title}».`,
-        item.projectId,
-      );
-    if (data.status === 'COMPLETED')
-      await completeProjectIfDone(this.db, item.projectId, user.id);
+      await this.projects.notify(recipientId, user.id, 'MILESTONE_UPDATED', `Оновлено етап «${item.title}».`, item.projectId);
+    if (data.status === 'COMPLETED') await completeProjectIfDone(this.db, item.projectId, user.id);
     return updated;
   }
 }

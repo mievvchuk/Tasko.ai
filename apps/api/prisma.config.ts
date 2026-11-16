@@ -25,11 +25,7 @@ export default definePrismaConfig({
         load: (context) =>
           source.load({
             ...context,
-            resolvedInputs: [
-              fileURLToPath(
-                new URL('./src/prisma/contract.prisma', import.meta.url),
-              ),
-            ],
+            resolvedInputs: [fileURLToPath(new URL('./src/prisma/contract.prisma', import.meta.url))],
           }),
       },
     },

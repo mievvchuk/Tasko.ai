@@ -7,16 +7,13 @@ import type { UserRole } from "./types";
 export type HelpSection = "guide" | "kb";
 
 // Адреса сайту довідки; англійська версія лежить у /en/
-const docsBase = (
-  import.meta.env?.VITE_DOCS_URL || "https://tasko-ai-docs.onrender.com"
-).replace(/\/$/, "");
+const docsBase = (import.meta.env?.VITE_DOCS_URL || "https://tasko-ai-docs.onrender.com").replace(/\/$/, "");
 
 // Довідка на іншому домені й не бачить localStorage застосунку, тож тему передаємо
 // параметром ?docusaurus-theme=, який Docusaurus читає сам ще до першого малювання
 export function docsUrl(language: Language, articleId = "getting-started") {
   const theme = globalThis.document?.documentElement.dataset.theme;
-  const query =
-    theme === "dark" || theme === "light" ? `?docusaurus-theme=${theme}` : "";
+  const query = theme === "dark" || theme === "light" ? `?docusaurus-theme=${theme}` : "";
   return `${docsBase}${language === "en" ? "/en" : ""}/${articleId}${query}`;
 }
 
@@ -26,16 +23,9 @@ for (const type of ["click", "auxclick"])
     type,
     (event) => {
       const link = (event.target as Element | null)?.closest?.("a[href]");
-      if (
-        !(link instanceof HTMLAnchorElement) ||
-        !link.href.startsWith(docsBase)
-      )
-        return;
+      if (!(link instanceof HTMLAnchorElement) || !link.href.startsWith(docsBase)) return;
       const url = new URL(link.href);
-      url.searchParams.set(
-        "docusaurus-theme",
-        document.documentElement.dataset.theme === "dark" ? "dark" : "light",
-      );
+      url.searchParams.set("docusaurus-theme", document.documentElement.dataset.theme === "dark" ? "dark" : "light");
       link.href = url.href;
     },
     true,
@@ -120,12 +110,7 @@ export const helpArticles: HelpArticle[] = [
     id: "board",
     section: "guide",
     icon: "bi-kanban",
-    paths: [
-      "/projects/:id/board",
-      "/tasks",
-      "/projects/:id/tasks/new",
-      "/tasks/:taskId/edit",
-    ],
+    paths: ["/projects/:id/board", "/tasks", "/projects/:id/tasks/new", "/tasks/:taskId/edit"],
     title: { uk: "Канбан-дошка і завдання", en: "Kanban board and tasks" },
     summary: {
       uk: "Завдання рухаються колонками «До виконання → У процесі → На перевірці → Завершено». Перетягуйте картки або змінюйте статус у самому завданні.",
@@ -261,23 +246,15 @@ export const helpArticles: HelpArticle[] = [
 ];
 
 export function articlesFor(role: UserRole) {
-  return helpArticles.filter(
-    (a) => !a.roles || role === "ADMIN" || a.roles.includes(role),
-  );
+  return helpArticles.filter((a) => !a.roles || role === "ADMIN" || a.roles.includes(role));
 }
 
 // Статті до поточного екрана: точний збіг шляху за шаблоном react-router
 export function articlesForPage(pathname: string, role: UserRole) {
-  return articlesFor(role).filter((a) =>
-    a.paths?.some((path) => matchPath(path, pathname)),
-  );
+  return articlesFor(role).filter((a) => a.paths?.some((path) => matchPath(path, pathname)));
 }
 
-export function searchArticles(
-  query: string,
-  role: UserRole,
-  language: Language,
-) {
+export function searchArticles(query: string, role: UserRole, language: Language) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   return articlesFor(role).filter((a) => {
     const text = `${a.title[language]} ${a.summary[language]}`.toLowerCase();

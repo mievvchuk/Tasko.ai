@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "../i18n";
-import {
-  applyTheme,
-  readThemePreference,
-  storedTheme,
-  themeKey,
-} from "../theme";
+import { applyTheme, readThemePreference, storedTheme, themeKey } from "../theme";
 import type { ThemePreference } from "../theme";
 import { IconMenu } from "./IconMenu";
 import type { IconMenuOption } from "./IconMenu";
@@ -18,8 +13,7 @@ export function ThemePicker() {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const updateSystem = () => applyTheme(preference);
     const sync = (event: StorageEvent) => {
-      if (event.key === themeKey || event.key === null)
-        setPreference(readThemePreference(event.newValue));
+      if (event.key === themeKey || event.key === null) setPreference(readThemePreference(event.newValue));
     };
     media.addEventListener("change", updateSystem);
     window.addEventListener("storage", sync);

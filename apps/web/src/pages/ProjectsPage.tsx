@@ -47,10 +47,7 @@ export function ProjectsPage() {
         });
         if (status) query.set("status", status);
         if (user?.role === "ADMIN") query.set("all", "true");
-        const result = await request<Project[]>(
-          "/projects?" + query.toString(),
-          { signal: controller.signal },
-        );
+        const result = await request<Project[]>("/projects?" + query.toString(), { signal: controller.signal });
         if (active) setProjects(result);
       } catch (error) {
         if (active && !quiet) setError(errorMessage(error));
@@ -83,18 +80,10 @@ export function ProjectsPage() {
     <>
       <div className="page-heading heading-with-action">
         <div>
-          <h1>
-            {user?.role === "ADMIN"
-              ? tr("Усі проєкти")
-              : user?.role === "FREELANCER"
-                ? tr("Робочі проєкти")
-                : tr("Мої проєкти")}
-          </h1>
+          <h1>{user?.role === "ADMIN" ? tr("Усі проєкти") : user?.role === "FREELANCER" ? tr("Робочі проєкти") : tr("Мої проєкти")}</h1>
           <p>
             {user?.role === "ADMIN"
-              ? tr(
-                  "Усі проєкти системи. Ви можете переглядати їх, але не змінювати.",
-                )
+              ? tr("Усі проєкти системи. Ви можете переглядати їх, але не змінювати.")
               : tr("Доступні вам проєкти, їхній стан і прогрес виконання.")}
           </p>
         </div>
@@ -106,21 +95,14 @@ export function ProjectsPage() {
               {tr("Створити проєкт")}
             </Link>
           )}
-          <button
-            className="button secondary"
-            onClick={refresh}
-            disabled={loading}
-          >
+          <button className="button secondary" onClick={refresh} disabled={loading}>
             <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
 
             {tr("Оновити дані")}
           </button>
         </div>
       </div>
-      <section
-        className="data-panel projects-panel"
-        aria-labelledby="projects-title"
-      >
+      <section className="data-panel projects-panel" aria-labelledby="projects-title">
         <div className="panel-heading project-toolbar">
           <div>
             <h2 id="projects-title">{tr("Список проєктів")}</h2>
@@ -128,11 +110,7 @@ export function ProjectsPage() {
           </div>
           <div className="filter-field">
             <label htmlFor="project-status">{tr("Статус проєкту")}</label>
-            <select
-              id="project-status"
-              value={status}
-              onChange={(event) => changeStatus(event.target.value)}
-            >
+            <select id="project-status" value={status} onChange={(event) => changeStatus(event.target.value)}>
               <option value="">{tr("Усі статуси")}</option>
               {Object.entries(projectStatusNames).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -160,18 +138,11 @@ export function ProjectsPage() {
                 <h3>{tr("Проєктів не знайдено")}</h3>
                 <p>
                   {user?.role === "FREELANCER"
-                    ? tr(
-                        "Тут відображатимуться проєкти, до яких вас додасть клієнт.",
-                      )
-                    : tr(
-                        "На цій сторінці немає доступних проєктів із вибраним статусом.",
-                      )}
+                    ? tr("Тут відображатимуться проєкти, до яких вас додасть клієнт.")
+                    : tr("На цій сторінці немає доступних проєктів із вибраним статусом.")}
                 </p>
                 {status && (
-                  <button
-                    className="button secondary"
-                    onClick={() => changeStatus("")}
-                  >
+                  <button className="button secondary" onClick={() => changeStatus("")}>
                     {tr("Скинути фільтр")}
                   </button>
                 )}
@@ -182,11 +153,7 @@ export function ProjectsPage() {
                 {tr("Сторінка")} {page} {tr("· Показано:")} {projects.length}
               </span>
               <div>
-                <button
-                  className="button secondary"
-                  disabled={page === 1}
-                  onClick={() => changePage(page - 1)}
-                >
+                <button className="button secondary" disabled={page === 1} onClick={() => changePage(page - 1)}>
                   {tr("← Попередня")}
                 </button>
                 <button

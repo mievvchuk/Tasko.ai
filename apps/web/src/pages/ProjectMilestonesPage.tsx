@@ -33,9 +33,7 @@ function MilestoneForm({
   const { tr } = useLanguage();
   const [title, setTitle] = useState(initial?.title || "");
   const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
-  const [deadline, setDeadline] = useState(
-    toDateInput(initial?.deadline || null),
-  );
+  const [deadline, setDeadline] = useState(toDateInput(initial?.deadline || null));
   const [description, setDescription] = useState(initial?.description || "");
   const [busy, setBusy] = useState(false);
   async function submit(event: FormEvent) {
@@ -56,31 +54,14 @@ function MilestoneForm({
     }
   }
   return (
-    <form
-      className="inline-form milestone-form"
-      onSubmit={(e) => void submit(e)}
-    >
+    <form className="inline-form milestone-form" onSubmit={(e) => void submit(e)}>
       <label>
         {tr("Назва етапу")}
-        <input
-          required
-          minLength={2}
-          maxLength={200}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <input required minLength={2} maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} />
       </label>
       <label>
         {tr("Сума, грн")}
-        <input
-          required
-          type="number"
-          min="0"
-          max="10000000"
-          step="1"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
+        <input required type="number" min="0" max="10000000" step="1" value={amount} onChange={(e) => setAmount(e.target.value)} />
       </label>
       <label>
         {tr("Дедлайн")}
@@ -94,19 +75,11 @@ function MilestoneForm({
       </label>
       <label className="milestone-form-wide">
         {tr("Опис")}
-        <textarea
-          rows={3}
-          maxLength={3000}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <textarea rows={3} maxLength={3000} value={description} onChange={(e) => setDescription(e.target.value)} />
       </label>
       <div className="page-actions">
         <button className="button primary" disabled={busy}>
-          <i
-            className={`bi ${initial ? "bi-check-lg" : "bi-plus-lg"}`}
-            aria-hidden="true"
-          ></i>
+          <i className={`bi ${initial ? "bi-check-lg" : "bi-plus-lg"}`} aria-hidden="true"></i>
           {submitLabel}
         </button>
         {onCancel && (
@@ -123,10 +96,7 @@ export function ProjectMilestonesPage() {
   const { tr } = useLanguage();
   const { id } = useParams();
   const { user } = useAuth();
-  const milestones = useApi<ProjectMilestone[]>(
-    id ? `/projects/${id}/milestones` : null,
-    { live: true },
-  );
+  const milestones = useApi<ProjectMilestone[]>(id ? `/projects/${id}/milestones` : null, { live: true });
   const project = useApi<Project>(id ? `/projects/${id}` : null, {
     live: true,
   });
@@ -138,9 +108,7 @@ export function ProjectMilestonesPage() {
     setError("");
     setNotice("");
     try {
-      const position =
-        Math.max(0, ...(milestones.data?.map((item) => item.position) || [])) +
-        1;
+      const position = Math.max(0, ...(milestones.data?.map((item) => item.position) || [])) + 1;
       await request(`/projects/${id}/milestones`, {
         method: "POST",
         body: { ...fields, deadline: fields.deadline || undefined, position },
@@ -226,11 +194,7 @@ export function ProjectMilestonesPage() {
                     <dd>
                       {item.taskCount ? (
                         <Link to={`/projects/${id}?milestone=${item.id}`}>
-                          {tr(
-                            "Виконано {0} з {1}",
-                            item.doneTaskCount,
-                            item.taskCount,
-                          )}
+                          {tr("Виконано {0} з {1}", item.doneTaskCount, item.taskCount)}
                         </Link>
                       ) : (
                         tr("Завдань ще немає")
@@ -254,19 +218,13 @@ export function ProjectMilestonesPage() {
                 </dl>
                 <div className="page-actions">
                   {owner && item.status !== "COMPLETED" && (
-                    <button
-                      className="button secondary"
-                      onClick={() => setEditingId(item.id)}
-                    >
+                    <button className="button secondary" onClick={() => setEditingId(item.id)}>
                       <i className="bi bi-pencil" aria-hidden="true"></i>
                       {tr("Редагувати")}
                     </button>
                   )}
                   {item.status === "REVIEW" && owner && (
-                    <button
-                      className="button primary"
-                      onClick={() => void update(item, { status: "COMPLETED" })}
-                    >
+                    <button className="button primary" onClick={() => void update(item, { status: "COMPLETED" })}>
                       <i className="bi bi-check2-circle" aria-hidden="true"></i>
                       {tr("Прийняти етап")}
                     </button>
@@ -275,14 +233,10 @@ export function ProjectMilestonesPage() {
                     <select
                       aria-label={tr("Оплата {0}", item.title)}
                       value={item.paymentStatus}
-                      onChange={(e) =>
-                        void update(item, { paymentStatus: e.target.value })
-                      }
+                      onChange={(e) => void update(item, { paymentStatus: e.target.value })}
                     >
                       <option value="UNPAID">{tr("Не зарезервовано")}</option>
-                      <option value="RESERVED">
-                        {tr("Умовно зарезервовано")}
-                      </option>
+                      <option value="RESERVED">{tr("Умовно зарезервовано")}</option>
                       <option value="PAID">{tr("Позначити оплаченим")}</option>
                     </select>
                   )}

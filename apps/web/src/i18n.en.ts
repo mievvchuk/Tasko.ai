@@ -44,30 +44,23 @@ export const enText: Record<string, string> = {
   "Що потрібно виправити": "What needs fixing",
   "Коротко опишіть результат і додайте посилання: репозиторій, макет, документ.":
     "Briefly describe the result and add links: repository, mockup, document.",
-  "Поясніть, що саме не так, щоб виконавець міг виправити.":
-    "Explain what's wrong so the freelancer can fix it.",
-  "Замовник отримає сповіщення й прийме роботу або поверне її.":
-    "The client will be notified and will accept or return the work.",
-  "Виконавець отримає сповіщення з цією причиною.":
-    "The freelancer will be notified with this reason.",
+  "Поясніть, що саме не так, щоб виконавець міг виправити.": "Explain what's wrong so the freelancer can fix it.",
+  "Замовник отримає сповіщення й прийме роботу або поверне її.": "The client will be notified and will accept or return the work.",
+  "Виконавець отримає сповіщення з цією причиною.": "The freelancer will be notified with this reason.",
   Передати: "Submit",
   "Видалити колонку «{0}»?": "Delete column “{0}”?",
   "Куди перенести картки ({0})": "Where to move the cards ({0})",
   "У колонці немає карток.": "The column has no cards.",
   "На доопрацюванні": "Changes requested",
-  "Пересувати картку може її виконавець або замовник.":
-    "Only the card's assignee or the client can move it.",
-  "На перевірку роботу передає призначений виконавець.":
-    "Only the assigned freelancer submits work for review.",
+  "Пересувати картку може її виконавець або замовник.": "Only the card's assignee or the client can move it.",
+  "На перевірку роботу передає призначений виконавець.": "Only the assigned freelancer submits work for review.",
   "Завершити завдання можна лише після перевірки: передайте його на перевірку.":
     "A task can be completed only after review: submit it for review.",
   "Роботу приймає замовник.": "The client accepts the work.",
   "На доопрацювання повертає замовник.": "The client requests changes.",
-  "Продовжити роботу може призначений виконавець.":
-    "Only the assigned freelancer can resume work.",
+  "Продовжити роботу може призначений виконавець.": "Only the assigned freelancer can resume work.",
   "Картка вже в цьому етапі.": "The card is already at this stage.",
-  "Такий перехід не передбачено процесом.":
-    "The workflow doesn't allow this move.",
+  "Такий перехід не передбачено процесом.": "The workflow doesn't allow this move.",
   "Картка вже в цій колонці.": "The card is already in this column.",
   // Етапи, прив'язані до завдань
   "Етапи й оплата": "Milestones & payment",
@@ -114,8 +107,7 @@ export const enText: Record<string, string> = {
   "Замінимо етапи, які ще не почали й не оплачували ({0}). Етапи в роботі чи оплачені лишаться.":
     "Milestones not yet started or paid ({0}) will be replaced. Milestones in progress or paid stay.",
   "Додати до наявних етапів": "Add to existing milestones",
-  "Нові етапи стануть після наявних, нічого не видаляється.":
-    "New milestones go after the existing ones; nothing is removed.",
+  "Нові етапи стануть після наявних, нічого не видаляється.": "New milestones go after the existing ones; nothing is removed.",
   "Наявні етапи вже в роботі або оплачені, тож новий план додасться після них.":
     "The existing milestones are already in progress or paid, so the new plan will be added after them.",
   "Перевірте назви, вартість і критерії приймання — усе можна змінити перед збереженням.":
@@ -130,12 +122,10 @@ export const enText: Record<string, string> = {
     "Previous milestones that haven't started will be replaced by this draft's milestones and tasks.",
   "Бюджет у проєкті не вказано, тож AI оцінить вартість завдань за ринковими цінами. Суми можна змінити вручну.":
     "The project has no budget, so AI will estimate task costs at market rates. You can change the amounts manually.",
-  "Ціна, погоджена з виконавцем: {0}.":
-    "Price agreed with the freelancer: {0}.",
+  "Ціна, погоджена з виконавцем: {0}.": "Price agreed with the freelancer: {0}.",
   "Бюджет проєкту: {0}.": "Project budget: {0}.",
   "Для нового плану доступно {0}.": "Available for the new plan: {0}.",
-  "Сума всіх завдань не може бути більшою.":
-    "The total of all tasks can't be higher.",
+  "Сума всіх завдань не може бути більшою.": "The total of all tasks can't be higher.",
   "Політика конфіденційності": "Privacy policy",
   "Не вдалося завантажити вхід через Google.": "Couldn't load Google sign-in.",
   "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.":
@@ -147,12 +137,10 @@ export const enText: Record<string, string> = {
   "Для кого": "Who it's for",
   Нове: "New",
   Детальніше: "Learn more",
-  "Ада складає план проєкту з етапами й завданнями з опису":
-    "Ada turns a project description into a plan with milestones and tasks",
+  "Ада складає план проєкту з етапами й завданнями з опису": "Ada turns a project description into a plan with milestones and tasks",
   "Опублікуйте проєкт, оберіть фрілансера із заявок і стежте за роботою на канбан-дошці. Ада, AI-помічниця, нагадає про дедлайни й ризики.":
     "Publish a project, pick a freelancer from the applications and follow the work on a Kanban board. Ada, the AI assistant, reminds you about deadlines and risks.",
-  "Знаходьте проєкти й здавайте роботу без хаосу":
-    "Find projects and deliver work without chaos",
+  "Знаходьте проєкти й здавайте роботу без хаосу": "Find projects and deliver work without chaos",
   "Відкриті проєкти з бюджетом і строком, заявка в кілька полів і зрозумілі етапи. Ада підкаже, за що братися сьогодні.":
     "Open projects with a budget and a deadline, an application in a few fields and clear milestones. Ada suggests what to pick up today.",
   "Знайти роботу": "Find work",
@@ -160,22 +148,17 @@ export const enText: Record<string, string> = {
   "18 000–25 000 грн": "UAH 18,000–25,000",
   "Лендинг для кав'ярні": "Coffee shop landing page",
   "6 000–9 000 грн": "UAH 6,000–9,000",
-  "Інтернет-магазин збігається з вашими навичками на 90%.":
-    "The online store matches your skills by 90%.",
+  "Інтернет-магазин збігається з вашими навичками на 90%.": "The online store matches your skills by 90%.",
   "Відкрити сайт довідки": "Open the help site",
   "відкриється в новій вкладці": "opens in a new tab",
   // Загальне, помилки, сеанс
   "Запит скасовано.": "Request cancelled.",
-  "Не вдалося виконати дію. Спробуйте ще раз.":
-    "Couldn't complete the action. Try again.",
+  "Не вдалося виконати дію. Спробуйте ще раз.": "Couldn't complete the action. Try again.",
   "Сервер недоступний або не відповідає. Перевірте з’єднання та спробуйте ще раз.":
     "The server is unavailable or not responding. Check your connection and try again.",
-  "Сервер повернув некоректну відповідь. Спробуйте пізніше.":
-    "The server returned an invalid response. Try again later.",
-  "Не вдалося виконати запит. Спробуйте пізніше.":
-    "Couldn't complete the request. Try again later.",
-  "Перевірте введені дані та спробуйте ще раз.":
-    "Check the entered data and try again.",
+  "Сервер повернув некоректну відповідь. Спробуйте пізніше.": "The server returned an invalid response. Try again later.",
+  "Не вдалося виконати запит. Спробуйте пізніше.": "Couldn't complete the request. Try again later.",
+  "Перевірте введені дані та спробуйте ще раз.": "Check the entered data and try again.",
   "Потрібно увійти до облікового запису.": "You need to sign in.",
   "У вас немає доступу до цієї дії.": "You don't have access to this action.",
   "Перевіряємо ваш сеанс…": "Checking your session…",
@@ -183,17 +166,14 @@ export const enText: Record<string, string> = {
   "Спробувати ще раз": "Try again",
   "Повернутися до входу": "Back to sign in",
   "Сторінку не знайдено": "Page not found",
-  "Перевірте адресу або поверніться до робочого простору.":
-    "Check the address or go back to your workspace.",
+  "Перевірте адресу або поверніться до робочого простору.": "Check the address or go back to your workspace.",
   "На головну": "Go to dashboard",
   "Доступ до сховища браузера обмежено. Закрийте цю вкладку, щоб завершити сеанс.":
     "Browser storage access is restricted. Close this tab to end the session.",
   "Сеанс завершено або обліковий запис недоступний. Увійдіть ще раз.":
     "The session has ended or the account is unavailable. Sign in again.",
-  "Сервер не повернув дані для входу.":
-    "The server didn't return sign-in data.",
-  "Дозвольте збереження даних для цього сайту в налаштуваннях браузера.":
-    "Allow this site to store data in your browser settings.",
+  "Сервер не повернув дані для входу.": "The server didn't return sign-in data.",
+  "Дозвольте збереження даних для цього сайту в налаштуваннях браузера.": "Allow this site to store data in your browser settings.",
   "Не вдалося завантажити дані": "Couldn't load data",
   "Завантажуємо дані…": "Loading data…",
   "Не визначено": "Not set",
@@ -257,8 +237,7 @@ export const enText: Record<string, string> = {
   "Можна прикріпити до {0} файлів.": "You can attach up to {0} files.",
   "Кожен файл має бути до 5 МБ.": "Each file must be up to 5 MB.",
   "Привіт! Я": "Hi! I'm",
-  "Запитайте про проєкти, завдання чи дедлайни.":
-    "Ask about projects, tasks or deadlines.",
+  "Запитайте про проєкти, завдання чи дедлайни.": "Ask about projects, tasks or deadlines.",
   "Ваше запитання": "Your question",
   "Прикріплені файли": "Attached files",
   "Форматуємо відповідь…": "Formatting the answer…",
@@ -269,16 +248,13 @@ export const enText: Record<string, string> = {
   "Прибрати файл {0}": "Remove file {0}",
   "Напишіть повідомлення…": "Write a message…",
   "Прикріпити файл": "Attach file",
-  "Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3":
-    "Attach a file: TXT, PDF or DOCX, up to 5 MB, no more than 3",
-  "Enter — надіслати, Shift+Enter — новий рядок":
-    "Enter to send, Shift+Enter for a new line",
+  "Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3": "Attach a file: TXT, PDF or DOCX, up to 5 MB, no more than 3",
+  "Enter — надіслати, Shift+Enter — новий рядок": "Enter to send, Shift+Enter for a new line",
   "Скасувати запит": "Cancel request",
   "Надіслати запит": "Send request",
   "Читаємо файл…": "Reading the file…",
   "Я зараз на сторінці завдання з ID {0}.": "I'm on the task page with ID {0}.",
-  "Я зараз на сторінці проєкту з ID {0}.":
-    "I'm on the project page with ID {0}.",
+  "Я зараз на сторінці проєкту з ID {0}.": "I'm on the project page with ID {0}.",
   "Відкрити помічницю {0}": "Open assistant {0}",
   "AI-помічниця {0}": "AI assistant {0}",
   "Бачить поточну сторінку": "Sees the current page",
@@ -287,8 +263,7 @@ export const enText: Record<string, string> = {
   "Відкрити на всю сторінку": "Open full page",
   "Закрити панель помічниці": "Close assistant panel",
   "Підключаємося до агента…": "Connecting to the agent…",
-  "AI-провайдер ще не підключений. Зверніться до адміністратора.":
-    "The AI provider isn't connected yet. Contact the administrator.",
+  "AI-провайдер ще не підключений. Зверніться до адміністратора.": "The AI provider isn't connected yet. Contact the administrator.",
   "AI-помічниця Tasko.ai: дедлайни, завдання, етапи, заявки й завантаження команди.":
     "Tasko.ai AI assistant: deadlines, tasks, milestones, applications and team workload.",
   "Нова розмова": "New chat",
@@ -313,18 +288,15 @@ export const enText: Record<string, string> = {
   "Допоможи створити новий проєкт": "Help me create a new project",
   "Чернетка проєкту": "Project draft",
   "Створюємо…": "Creating…",
-  "Які завдання прострочені або під ризиком?":
-    "Which tasks are overdue or at risk?",
-  "Чи є нові заявки на мої проєкти?":
-    "Are there new applications for my projects?",
+  "Які завдання прострочені або під ризиком?": "Which tasks are overdue or at risk?",
+  "Чи є нові заявки на мої проєкти?": "Are there new applications for my projects?",
   "Хто з команди найбільш завантажений?": "Who on the team is the busiest?",
   "Що мені зробити першим сьогодні?": "What should I do first today?",
   "Які мої найближчі дедлайни?": "What are my nearest deadlines?",
   "Знайди відкриті проєкти на біржі": "Find open projects on the marketplace",
   "Які в мене непрочитані сповіщення?": "What unread notifications do I have?",
   "Покажи загальну статистику": "Show overall statistics",
-  "Які проєкти мають прострочені завдання?":
-    "Which projects have overdue tasks?",
+  "Які проєкти мають прострочені завдання?": "Which projects have overdue tasks?",
   "Хто з виконавців найбільш завантажений?": "Which freelancer is the busiest?",
   "Які завдання чекають на перевірку?": "Which tasks are waiting for review?",
   "Думаю над запитанням": "Thinking about the question",
@@ -335,11 +307,9 @@ export const enText: Record<string, string> = {
 
   // Файли, команда, відгуки
   "Робочий процес": "Workflow",
-  "Файл має бути непорожнім і не перевищувати 10 МБ.":
-    "The file must not be empty and must not exceed 10 MB.",
+  "Файл має бути непорожнім і не перевищувати 10 МБ.": "The file must not be empty and must not exceed 10 MB.",
   "Файл для завантаження": "File to upload",
-  "PDF, PNG, JPG, DOCX, ZIP або TXT (UTF-8), до 10 МБ.":
-    "PDF, PNG, JPG, DOCX, ZIP or TXT (UTF-8), up to 10 MB.",
+  "PDF, PNG, JPG, DOCX, ZIP або TXT (UTF-8), до 10 МБ.": "PDF, PNG, JPG, DOCX, ZIP or TXT (UTF-8), up to 10 MB.",
   "Завантажуємо…": "Uploading…",
   "Завантажити файл": "Upload file",
   "Отримуємо файл…": "Getting the file…",
@@ -350,8 +320,7 @@ export const enText: Record<string, string> = {
   "Оберіть фрілансера": "Choose a freelancer",
   "Додаємо…": "Adding…",
   "Додати до команди": "Add to team",
-  "На цій сторінці немає інших активних фрілансерів.":
-    "There are no other active freelancers on this page.",
+  "На цій сторінці немає інших активних фрілансерів.": "There are no other active freelancers on this page.",
   "Відгук збережено": "Review saved",
   "Залишити відгук": "Leave a review",
   "Відгук про": "Review of",
@@ -367,8 +336,7 @@ export const enText: Record<string, string> = {
   "Профіль збережено.": "Profile saved.",
   "Завантажуємо профіль…": "Loading profile…",
   "Профіль фрілансера": "Freelancer profile",
-  "Ці дані бачить клієнт під час вибору виконавця.":
-    "Clients see this when choosing a freelancer.",
+  "Ці дані бачить клієнт під час вибору виконавця.": "Clients see this when choosing a freelancer.",
   "Про себе": "About me",
   "Ставка за годину, грн": "Hourly rate, UAH",
   "Ставка за годину": "Hourly rate",
@@ -382,10 +350,8 @@ export const enText: Record<string, string> = {
   Портфоліо: "Portfolio",
   "HTTPS-посилання": "HTTPS link",
   "Додати роботу": "Add work",
-  "Профіль виконавця та відгуки клієнтів.":
-    "Freelancer profile and client reviews.",
-  "Фрілансер ще не додав опис.":
-    "The freelancer hasn't added a description yet.",
+  "Профіль виконавця та відгуки клієнтів.": "Freelancer profile and client reviews.",
+  "Фрілансер ще не додав опис.": "The freelancer hasn't added a description yet.",
   "Середній рейтинг із 5": "Average rating out of 5",
   "Завершено проєктів": "Completed projects",
   "Середній строк у днях": "Average time in days",
@@ -397,16 +363,14 @@ export const enText: Record<string, string> = {
   "Клієнт не додав коментар.": "The client didn't add a comment.",
   "Завершений проєкт": "Completed project",
   "Відгуків ще немає": "No reviews yet",
-  "Перший відгук з’явиться після завершення проєкту.":
-    "The first review will appear after a project is completed.",
+  "Перший відгук з’явиться після завершення проєкту.": "The first review will appear after a project is completed.",
 
   // Безпека й профіль
   "Нові паролі не збігаються.": "The new passwords don't match.",
   "Сеанс завершено.": "Session ended.",
   Безпека: "Security",
   "Зміна пароля": "Change password",
-  "Після зміни інші активні сеанси завершаться.":
-    "Other active sessions will end after the change.",
+  "Після зміни інші активні сеанси завершаться.": "Other active sessions will end after the change.",
   "Поточний пароль": "Current password",
   "Новий пароль": "New password",
   "Повторіть новий пароль": "Repeat the new password",
@@ -414,12 +378,10 @@ export const enText: Record<string, string> = {
   "Двофакторний вхід": "Two-factor sign-in",
   Увімкнено: "On",
   Вимкнено: "Off",
-  "· код із Google Authenticator або іншого TOTP-застосунку":
-    "· code from Google Authenticator or another TOTP app",
+  "· код із Google Authenticator або іншого TOTP-застосунку": "· code from Google Authenticator or another TOTP app",
   "Увімкнути 2FA": "Turn on 2FA",
   "QR-код для налаштування 2FA": "QR code for 2FA setup",
-  "Відскануйте QR-код або введіть секрет вручну:":
-    "Scan the QR code or enter the secret manually:",
+  "Відскануйте QR-код або введіть секрет вручну:": "Scan the QR code or enter the secret manually:",
   "Код із застосунку": "Code from the app",
   "Підтвердити 2FA": "Confirm 2FA",
   "Вимкнути 2FA": "Turn off 2FA",
@@ -447,10 +409,8 @@ export const enText: Record<string, string> = {
   Проєкти: "Projects",
   "Виберіть проєкт": "Select a project",
   "Обраний проєкт": "Selected project",
-  "На цій сторінці немає доступних проєктів.":
-    "There are no available projects on this page.",
-  "Гортайте таблицю вбік, щоб побачити всі стовпці.":
-    "Scroll the table sideways to see all columns.",
+  "На цій сторінці немає доступних проєктів.": "There are no available projects on this page.",
+  "Гортайте таблицю вбік, щоб побачити всі стовпці.": "Scroll the table sideways to see all columns.",
   "Таблиця проєктів": "Projects table",
   Завдання: "Tasks",
   Дедлайн: "Deadline",
@@ -466,36 +426,29 @@ export const enText: Record<string, string> = {
   "Учасник недоступний": "Member unavailable",
   "Лише прострочені": "Overdue only",
   "Завдань не знайдено": "No tasks found",
-  "Змініть фільтри або створіть завдання.":
-    "Change the filters or create a task.",
+  "Змініть фільтри або створіть завдання.": "Change the filters or create a task.",
   "Таблиця завдань": "Tasks table",
   Пріоритет: "Priority",
   "Не задано": "Not set",
   "Не призначено": "Unassigned",
-  "Доступні вам проєкти, їхній стан і прогрес виконання.":
-    "Projects available to you, their status and progress.",
+  "Доступні вам проєкти, їхній стан і прогрес виконання.": "Projects available to you, their status and progress.",
   "Від нових до раніше створених": "Newest first",
   "Статус проєкту": "Project status",
   "Завантажуємо проєкти…": "Loading projects…",
   "Проєктів не знайдено": "No projects found",
-  "Тут відображатимуться проєкти, до яких вас додасть клієнт.":
-    "Projects a client adds you to will appear here.",
-  "На цій сторінці немає доступних проєктів із вибраним статусом.":
-    "There are no projects with the selected status on this page.",
+  "Тут відображатимуться проєкти, до яких вас додасть клієнт.": "Projects a client adds you to will appear here.",
+  "На цій сторінці немає доступних проєктів із вибраним статусом.": "There are no projects with the selected status on this page.",
   "Скинути фільтр": "Reset filter",
   "Сторінки проєктів": "Project pages",
   "Завдання з усіх ваших проєктів в одному списку. Щоб звузити, оберіть проєкт або статус.":
     "Tasks from all your projects in one list. Pick a project or status to narrow it down.",
-  "Оберіть проєкт, щоб переглянути та організувати роботу команди.":
-    "Choose a project to view and organise the team's work.",
+  "Оберіть проєкт, щоб переглянути та організувати роботу команди.": "Choose a project to view and organise the team's work.",
 
   // Адміністрування
   "Доступ заборонено": "Access denied",
-  "Ця сторінка доступна лише адміністратору.":
-    "This page is available to administrators only.",
+  "Ця сторінка доступна лише адміністратору.": "This page is available to administrators only.",
   "Панель адміністратора": "Admin dashboard",
-  "Статистика всієї платформи, облікові записи та скарги.":
-    "Platform-wide statistics, accounts and complaints.",
+  "Статистика всієї платформи, облікові записи та скарги.": "Platform-wide statistics, accounts and complaints.",
   Користувачі: "Users",
   "Пошук користувача": "Search users",
   "Ім'я або email": "Name or email",
@@ -528,8 +481,7 @@ export const enText: Record<string, string> = {
   Дії: "Actions",
   "Відкрити {0}": "Open {0}",
   Відкрити: "Open",
-  "Усі проєкти платформи з прогресом виконання.":
-    "All platform projects with their progress.",
+  "Усі проєкти платформи з прогресом виконання.": "All platform projects with their progress.",
   "Проєктів не знайдено.": "No projects found.",
   Скарга: "Complaint",
   "Автор → ціль": "Author → target",
@@ -546,8 +498,7 @@ export const enText: Record<string, string> = {
   Зареєстровано: "Registered",
   "Редагувати {0}": "Edit {0}",
   Редагувати: "Edit",
-  "Облікові записи платформи: роль і стан доступу.":
-    "Platform accounts: role and access status.",
+  "Облікові записи платформи: роль і стан доступу.": "Platform accounts: role and access status.",
   Скинути: "Reset",
   "Немає даних.": "No data.",
   Закрити: "Close",
@@ -565,8 +516,7 @@ export const enText: Record<string, string> = {
   "Роль користувача": "User role",
   "Стан користувача": "User status",
   "Зберегти користувача": "Save user",
-  "Змінити власну роль або заблокувати себе не можна.":
-    "You can't change your own role or block yourself.",
+  "Змінити власну роль або заблокувати себе не можна.": "You can't change your own role or block yourself.",
   Активний: "Active",
   Заблокований: "Blocked",
 
@@ -582,18 +532,13 @@ export const enText: Record<string, string> = {
 
   // Головна панель
   "Головна панель": "Dashboard",
-  "Ваші проєкти, завдання та терміни виконання — перед очима.":
-    "Your projects, tasks and deadlines at a glance.",
+  "Ваші проєкти, завдання та терміни виконання — перед очима.": "Your projects, tasks and deadlines at a glance.",
   "Ви керуєте власними проєктами": "You manage your own projects",
-  "Ви виконуєте проєкти, на які вас обрав клієнт":
-    "You work on projects clients chose you for",
+  "Ви виконуєте проєкти, на які вас обрав клієнт": "You work on projects clients chose you for",
   "Ви контролюєте роботу сервісу": "You oversee the service",
-  "Опублікуйте проєкт, перегляньте заявки та оберіть виконавця.":
-    "Publish a project, review applications and choose a freelancer.",
-  "Знайдіть відкритий проєкт на біржі та залиште свою пропозицію.":
-    "Find an open project on the marketplace and make your offer.",
-  "Переглядайте проєкти, користувачів і аналітичний звіт.":
-    "Review projects, users and the analytics report.",
+  "Опублікуйте проєкт, перегляньте заявки та оберіть виконавця.": "Publish a project, review applications and choose a freelancer.",
+  "Знайдіть відкритий проєкт на біржі та залиште свою пропозицію.": "Find an open project on the marketplace and make your offer.",
+  "Переглядайте проєкти, користувачів і аналітичний звіт.": "Review projects, users and the analytics report.",
   "Опублікувати проєкт": "Publish a project",
   "Перейти на біржу": "Go to marketplace",
   "Завантажуємо огляд…": "Loading overview…",
@@ -606,11 +551,9 @@ export const enText: Record<string, string> = {
   "Завдання у виконанні": "Tasks in progress",
   "Найближчий дедлайн": "Nearest deadline",
   "Прострочених завдань:": "Overdue tasks:",
-  "Останні активні проєкти, до яких ви маєте доступ":
-    "Recent active projects you have access to",
+  "Останні активні проєкти, до яких ви маєте доступ": "Recent active projects you have access to",
   "Усі проєкти": "All projects",
-  "Усі проєкти системи. Ви можете переглядати їх, але не змінювати.":
-    "All projects in the system. You can view them but not change them.",
+  "Усі проєкти системи. Ви можете переглядати їх, але не змінювати.": "All projects in the system. You can view them but not change them.",
   "Проєкти на сайті": "Projects on the site",
   "Активних проєктів поки немає": "No active projects yet",
   "Проєкти у плануванні та з іншими статусами доступні в загальному списку.":
@@ -619,20 +562,16 @@ export const enText: Record<string, string> = {
   "Завдання за статусом": "Tasks by status",
   "Розподіл усіх доступних завдань": "Breakdown of all available tasks",
   "Завдань поки немає": "No tasks yet",
-  "Статистика з'явиться після створення завдань у доступних проєктах.":
-    "Statistics will appear once tasks are created in your projects.",
+  "Статистика з'явиться після створення завдань у доступних проєктах.": "Statistics will appear once tasks are created in your projects.",
   "Дедлайни завдань": "Task deadlines",
-  "Першими показано найраніші, включно з простроченими":
-    "Earliest first, including overdue",
+  "Першими показано найраніші, включно з простроченими": "Earliest first, including overdue",
   Прострочено: "Overdue",
   "Дедлайнів немає": "No deadlines",
-  "Немає незавершених завдань із визначеним терміном.":
-    "No unfinished tasks with a set deadline.",
+  "Немає незавершених завдань із визначеним терміном.": "No unfinished tasks with a set deadline.",
 
   // Файли проєкту
   "Файли проєкту": "Project files",
-  "Проєкт закрито. Файли доступні для завантаження.":
-    "The project is closed. Files are available for download.",
+  "Проєкт закрито. Файли доступні для завантаження.": "The project is closed. Files are available for download.",
   "На цій сторінці файлів немає.": "No files on this page.",
   " · Прикріплено до результату роботи": " · Attached to a work result",
 
@@ -653,16 +592,14 @@ export const enText: Record<string, string> = {
   "Без категорії": "No category",
   "Статус заявки:": "Application status:",
   "Супровідне повідомлення": "Cover message",
-  "Коротко опишіть досвід і спосіб виконання":
-    "Briefly describe your experience and approach",
+  "Коротко опишіть досвід і спосіб виконання": "Briefly describe your experience and approach",
   "Бюджет, грн": "Budget, UAH",
   "Строк, днів": "Timeline, days",
   "Надсилаємо…": "Sending…",
   "Надіслати заявку": "Send application",
   "Залишити заявку": "Apply",
   "Відкритих проєктів поки немає": "No open projects yet",
-  "Нові пропозиції клієнтів з’являться на цій сторінці.":
-    "New client offers will appear on this page.",
+  "Нові пропозиції клієнтів з’являться на цій сторінці.": "New client offers will appear on this page.",
 
   // Повідомлення й сповіщення
   Повідомлення: "Messages",
@@ -670,10 +607,8 @@ export const enText: Record<string, string> = {
     "Project discussions are for members only; an application chat is between the client and the applicant.",
   Розмови: "Conversations",
   "Оберіть розмову зліва": "Choose a conversation on the left",
-  "Фрілансера прийнято до команди — продовжуйте в чаті проєкту.":
-    "The freelancer joined the team — continue in the project chat.",
-  "Заявку відхилено. Переписка доступна для читання.":
-    "The application was declined. The chat is read-only.",
+  "Фрілансера прийнято до команди — продовжуйте в чаті проєкту.": "The freelancer joined the team — continue in the project chat.",
+  "Заявку відхилено. Переписка доступна для читання.": "The application was declined. The chat is read-only.",
   "Заявка на «{0}» · {1}": "Application for “{0}” · {1}",
   "До заявок": "To applications",
   "До біржі": "To marketplace",
@@ -687,8 +622,7 @@ export const enText: Record<string, string> = {
   "Клієнт проєкту": "Project client",
   "Користувач ": "User ",
   "Оновити повідомлення": "Refresh messages",
-  "Проєкт закрито. Обговорення доступне для читання.":
-    "The project is closed. The discussion is read-only.",
+  "Проєкт закрито. Обговорення доступне для читання.": "The project is closed. The discussion is read-only.",
   "Нове повідомлення": "New message",
   "Надіслати повідомлення": "Send message",
   "Події ваших проєктів і завдань.": "Events in your projects and tasks.",
@@ -701,23 +635,18 @@ export const enText: Record<string, string> = {
   "Замовлень ще немає. Замовлення створюється, коли ви приймаєте заявку фрілансера.":
     "No orders yet. An order is created when you accept a freelancer's application.",
   "Сума:": "Amount:",
-  "Угоди з виконавцями, над якими зараз працюють.":
-    "Deals with freelancers that are in progress.",
-  "Клієнт прийняв усю роботу виконавця.":
-    "The client accepted all of the freelancer's work.",
-  "Угоди, які зірвалися або закриті разом зі скасованим проєктом.":
-    "Deals that fell through or closed with a cancelled project.",
+  "Угоди з виконавцями, над якими зараз працюють.": "Deals with freelancers that are in progress.",
+  "Клієнт прийняв усю роботу виконавця.": "The client accepted all of the freelancer's work.",
+  "Угоди, які зірвалися або закриті разом зі скасованим проєктом.": "Deals that fell through or closed with a cancelled project.",
   "Сума виконаних, грн": "Completed amount, UAH",
-  "Сума угод, за якими роботу прийнято.":
-    "Total of deals whose work was accepted.",
+  "Сума угод, за якими роботу прийнято.": "Total of deals whose work was accepted.",
   "Строк:": "Due:",
   "Замовлення проєкту": "Project orders",
   "Створено:": "Created:",
   "· Оновлено:": "· Updated:",
   "Розпочати замовлення": "Start order",
   "Завершити замовлення": "Complete order",
-  "Скасувати це замовлення? Повернути його в роботу буде неможливо.":
-    "Cancel this order? It can't be returned to work.",
+  "Скасувати це замовлення? Повернути його в роботу буде неможливо.": "Cancel this order? It can't be returned to work.",
   "Скасувати замовлення": "Cancel order",
   "Історія активності": "Activity history",
   Система: "System",
@@ -726,8 +655,7 @@ export const enText: Record<string, string> = {
   // Заявки
   Заявки: "Applications",
   "Заявки фрілансерів": "Freelancer applications",
-  "Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.":
-    "Compare offers, experience, rating and average delivery time.",
+  "Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.": "Compare offers, experience, rating and average delivery time.",
   "AI аналізує…": "AI is analysing…",
   "Порівняти заявки через AI": "Compare applications with AI",
   "Переглянути профіль": "View profile",
@@ -745,23 +673,18 @@ export const enText: Record<string, string> = {
   "Добирають команду": "Building a team",
   "Фрілансера прийнято до команди.": "The freelancer joined the team.",
   "Заявку відхилено.": "Application declined.",
-  "Набір закрито. Проєкт більше не показується на біржі.":
-    "Hiring closed. The project is no longer listed on the marketplace.",
-  "Можна прийняти кількох фрілансерів — кожен стане учасником команди.":
-    "You can accept several freelancers — each one joins the team.",
+  "Набір закрито. Проєкт більше не показується на біржі.": "Hiring closed. The project is no longer listed on the marketplace.",
+  "Можна прийняти кількох фрілансерів — кожен стане учасником команди.": "You can accept several freelancers — each one joins the team.",
   "Набір у команду відкрито: проєкт видно на біржі, нові заявки надходять.":
     "Hiring is open: the project is listed on the marketplace and new applications keep coming.",
   "Набір у команду закрито.": "Hiring is closed.",
   "Заявок ще немає": "No applications yet",
-  "Фрілансери побачать проєкт на біржі та зможуть відгукнутися.":
-    "Freelancers will see the project on the marketplace and can apply.",
+  "Фрілансери побачать проєкт на біржі та зможуть відгукнутися.": "Freelancers will see the project on the marketplace and can apply.",
 
   // Дошка, деталі проєкту
   "Дошка завдань": "Task board",
-  "Затисніть картку мишею й перетягніть між «До виконання» і «У процесі».":
-    "Drag a card between “To do” and “In progress”.",
-  "Статус завдання змінює призначений виконавець.":
-    "The task status is changed by the assignee.",
+  "Затисніть картку мишею й перетягніть між «До виконання» і «У процесі».": "Drag a card between “To do” and “In progress”.",
+  "Статус завдання змінює призначений виконавець.": "The task status is changed by the assignee.",
   Порожньо: "Empty",
   "Без опису": "No description",
   "Статус {0}": "Status {0}",
@@ -785,37 +708,29 @@ export const enText: Record<string, string> = {
   "Завдання проєкту": "Project tasks",
   "Усі статуси": "All statuses",
   "Усі пріоритети": "All priorities",
-  "На цій сторінці немає завдань із вибраними фільтрами.":
-    "No tasks with the selected filters on this page.",
+  "На цій сторінці немає завдань із вибраними фільтрами.": "No tasks with the selected filters on this page.",
   "Сторінки завдань": "Task pages",
   "· У проєкті:": "· In project:",
   "Учасники проєкту": "Project members",
   "Користувач недоступний": "User unavailable",
   Учасник: "Member",
-  "Виконавця ще не обрано. Перейдіть до заявок фрілансерів.":
-    "No freelancer chosen yet. Go to freelancer applications.",
+  "Виконавця ще не обрано. Перейдіть до заявок фрілансерів.": "No freelancer chosen yet. Go to freelancer applications.",
 
   // Форма проєкту
   "Редагування недоступне": "Editing unavailable",
-  "Завершений або скасований проєкт не можна змінювати.":
-    "A completed or cancelled project can't be changed.",
+  "Завершений або скасований проєкт не можна змінювати.": "A completed or cancelled project can't be changed.",
   "Створювати проєкти може клієнт, а редагувати — власник або адміністратор.":
     "Clients can create projects; the owner or an administrator can edit them.",
   "Повернутися до проєктів": "Back to projects",
-  "Назва має містити щонайменше 2 символи.":
-    "The title must be at least 2 characters.",
+  "Назва має містити щонайменше 2 символи.": "The title must be at least 2 characters.",
   "Перевірте дату дедлайну.": "Check the deadline date.",
-  "Дедлайн проєкту має бути в майбутньому.":
-    "The project deadline must be in the future.",
-  "Максимальний бюджет не може бути меншим за мінімальний.":
-    "The maximum budget can't be less than the minimum.",
+  "Дедлайн проєкту має бути в майбутньому.": "The project deadline must be in the future.",
+  "Максимальний бюджет не може бути меншим за мінімальний.": "The maximum budget can't be less than the minimum.",
   "Створити проєкт": "Create project",
   "Відредагувати у формі": "Edit in form",
-  "Назва обов’язкова. Дедлайн указується за місцевим часом.":
-    "Title is required. The deadline is in local time.",
+  "Назва обов’язкова. Дедлайн указується за місцевим часом.": "Title is required. The deadline is in local time.",
   "Назва проєкту": "Project title",
-  "Новий дедлайн має бути в майбутньому.":
-    "The new deadline must be in the future.",
+  "Новий дедлайн має бути в майбутньому.": "The new deadline must be in the future.",
   "Бюджет від, грн": "Budget from, UAH",
   "Бюджет до, грн": "Budget to, UAH",
   "Потрібні навички": "Required skills",
@@ -887,20 +802,16 @@ export const enText: Record<string, string> = {
   // AI-план
   "Назва завдання": "Task title",
   "Опис роботи": "Work description",
-  "Критерії приймання — по одному на рядок":
-    "Acceptance criteria — one per line",
+  "Критерії приймання — по одному на рядок": "Acceptance criteria — one per line",
   "Прибрати завдання": "Remove task",
   Етап: "Milestone",
   "Опис етапу": "Milestone description",
-  "Критерії приймання етапу — по одному на рядок":
-    "Milestone acceptance criteria — one per line",
+  "Критерії приймання етапу — по одному на рядок": "Milestone acceptance criteria — one per line",
   "Додати завдання": "Add task",
   "Прибрати етап": "Remove milestone",
   "AI-план проєкту": "AI project plan",
-  "Планування доступне власнику проєкту та адміністратору.":
-    "Planning is available to the project owner and administrators.",
-  "Проєкт закрито. Додавати план уже не можна.":
-    "The project is closed. A plan can no longer be added.",
+  "Планування доступне власнику проєкту та адміністратору.": "Planning is available to the project owner and administrators.",
+  "Проєкт закрито. Додавати план уже не можна.": "The project is closed. A plan can no longer be added.",
   "Від опису до конкретних кроків": "From description to concrete steps",
   "AI використає назву й опис цього проєкту та запропонує етапи, завдання і критерії приймання. Перевірте та відредагуйте чернетку перед додаванням.":
     "AI will use this project's title and description to propose milestones, tasks and acceptance criteria. Review and edit the draft before adding it.",
@@ -909,8 +820,7 @@ export const enText: Record<string, string> = {
   "Побажання до плану (необов’язково)": "Plan preferences (optional)",
   "Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP.":
     "For example: prototype first, then development and testing. Focus on the MVP.",
-  "AI готує чернетку. Це може тривати до 30 секунд.":
-    "AI is preparing a draft. This can take up to 30 seconds.",
+  "AI готує чернетку. Це може тривати до 30 секунд.": "AI is preparing a draft. This can take up to 30 seconds.",
   "Додаємо підтверджений план…": "Adding the confirmed plan…",
   "Чернетка для перевірки": "Draft for review",
   "Етапів:": "Milestones:",
@@ -939,16 +849,13 @@ export const enText: Record<string, string> = {
   "Передати результат роботи": "Submit work result",
   "Результати та перевірки": "Results and reviews",
   "Результатів на цій сторінці ще немає.": "No results on this page yet.",
-  "Перевірте права та поточний стан проєкту й завдання.":
-    "Check your permissions and the current state of the project and task.",
-  "Дедлайн завдання не може бути пізнішим за дедлайн проєкту.":
-    "The task deadline can't be later than the project deadline.",
+  "Перевірте права та поточний стан проєкту й завдання.": "Check your permissions and the current state of the project and task.",
+  "Дедлайн завдання не може бути пізнішим за дедлайн проєкту.": "The task deadline can't be later than the project deadline.",
   "Опис завдання": "Task description",
   "Виконавця спочатку потрібно додати до учасників проєкту. Під час виконання змінити виконавця не можна.":
     "The assignee must first be added to the project members. The assignee can't be changed during work.",
   "Дедлайн завдання": "Task deadline",
-  "Час місцевий. Дедлайн не може бути пізнішим за дедлайн проєкту.":
-    "Local time. The deadline can't be later than the project deadline.",
+  "Час місцевий. Дедлайн не може бути пізнішим за дедлайн проєкту.": "Local time. The deadline can't be later than the project deadline.",
   "Зберегти завдання": "Save task",
   "Відгук перевірки": "Review feedback",
   "Опишіть результат роботи.": "Describe the work result.",
@@ -972,8 +879,7 @@ export const enText: Record<string, string> = {
   "Незавершені завдання": "Unfinished tasks",
   "Високий пріоритет": "High priority",
   "Виконавців поки немає": "No freelancers yet",
-  "Додайте команду до проєкту, щоб переглядати розподіл роботи.":
-    "Add a team to a project to see how work is distributed.",
+  "Додайте команду до проєкту, щоб переглядати розподіл роботи.": "Add a team to a project to see how work is distributed.",
   "Переглянути проєкти": "View projects",
   "Незавершені:": "Unfinished:",
   "· Прострочені:": "· Overdue:",
@@ -992,8 +898,7 @@ export const enText: Record<string, string> = {
   "Через {0} дн.": "In {0} d",
 
   // Власні колонки канбану
-  "Видалити колонку «{0}»? Її завдання повернуться в «{1}».":
-    "Delete the “{0}” column? Its tasks will go back to “{1}”.",
+  "Видалити колонку «{0}»? Її завдання повернуться в «{1}».": "Delete the “{0}” column? Its tasks will go back to “{1}”.",
   "Перетягніть картку за ручку в іншу колонку або виберіть колонку у списку на картці.":
     "Drag a card by its handle to another column or pick a column from the list on the card.",
   "Видалити колонку {0}": "Delete column {0}",
@@ -1019,22 +924,19 @@ export const enText: Record<string, string> = {
   Можливості: "Features",
   "Як це працює": "How it works",
   "Фріланс-проєкти з AI-помічницею": "Freelance projects with an AI assistant",
-  "Від ідеї до прийнятого результату — в одному місці":
-    "From idea to accepted result — all in one place",
+  "Від ідеї до прийнятого результату — в одному місці": "From idea to accepted result — all in one place",
   "Tasko.ai поєднує біржу проєктів, канбан-дошку, етапи й перевірку робіт. А Ада, AI-помічниця, допомагає не пропустити жодного дедлайну.":
     "Tasko.ai brings together a project marketplace, a kanban board, milestones and work reviews. And Ada, the AI assistant, helps you never miss a deadline.",
   "Почати безкоштовно": "Get started for free",
   Увійти: "Sign in",
-  "«Кошик і оплата» здається через 2 дні. Почніть з нього.":
-    "“Cart and payment” is due in 2 days. Start with it.",
+  "«Кошик і оплата» здається через 2 дні. Почніть з нього.": "“Cart and payment” is due in 2 days. Start with it.",
   "Макет головної": "Home page mockup",
   "Тексти сторінок": "Page copy",
   "Кошик і оплата": "Cart and payment",
   Прототип: "Prototype",
   Логотип: "Logo",
   "Усе для роботи над проєктом": "Everything to run a project",
-  "Від публікації задачі до відгуку — без таблиць і чатів збоку.":
-    "From posting a task to the review — no side spreadsheets or chats.",
+  "Від публікації задачі до відгуку — без таблиць і чатів збоку.": "From posting a task to the review — no side spreadsheets or chats.",
   "Проєкти й канбан-дошка": "Projects and kanban board",
   "Завдання, пріоритети й дедлайни. Перетягуйте картки між стовпцями й бачте прогрес кожного проєкту.":
     "Tasks, priorities and deadlines. Drag cards between columns and see each project's progress.",
@@ -1062,18 +964,15 @@ export const enText: Record<string, string> = {
   "Стежте за прогресом, перевіряйте роботу й залиште відгук після завершення.":
     "Track progress, review the work and leave a review when it's done.",
   "Для клієнтів": "For clients",
-  "Публікація проєктів і вибір виконавця":
-    "Post projects and choose a freelancer",
+  "Публікація проєктів і вибір виконавця": "Post projects and choose a freelancer",
   "Канбан, етапи й умовна оплата": "Kanban, milestones and conditional payment",
   "Перевірка результатів і відгуки": "Result reviews and feedback",
   "Для фрілансерів": "For freelancers",
-  "Біржа відкритих проєктів і заявки":
-    "Open project marketplace and applications",
+  "Біржа відкритих проєктів і заявки": "Open project marketplace and applications",
   "Профіль із навичками й портфоліо": "Profile with skills and portfolio",
   "Ада підкаже пріоритети на день": "Ada suggests your priorities for the day",
   "Готові спробувати?": "Ready to try it?",
-  "Створіть акаунт клієнта або фрілансера — це займе хвилину.":
-    "Create a client or freelancer account — it takes a minute.",
+  "Створіть акаунт клієнта або фрілансера — це займе хвилину.": "Create a client or freelancer account — it takes a minute.",
   "Створити акаунт": "Create account",
 
   // Статуси, ролі, пріоритети (types.ts)
@@ -1101,8 +1000,7 @@ export const enText: Record<string, string> = {
     "Choose a person or a project and describe the problem for the administrator.",
   "На кого скарга": "Who the complaint is about",
   "Пошук за ім'ям": "Search by name",
-  "Поки немає людей, з якими ви працюєте в проєктах.":
-    "There is no one you work with in projects yet.",
+  "Поки немає людей, з якими ви працюєте в проєктах.": "There is no one you work with in projects yet.",
   "Без проєкту": "No project",
   Фільтри: "Filters",
   "Усі категорії": "All categories",
@@ -1127,10 +1025,8 @@ export const enText: Record<string, string> = {
     "Hover between columns and press “+” to add a column. Drag your own columns by their header.",
   "Назва нової колонки": "New column name",
   "Назва колонки": "Column name",
-  "Етап «До виконання». Enter — додати, Esc — скасувати.":
-    "“To do” stage. Enter adds, Esc cancels.",
-  "Етап «У процесі». Enter — додати, Esc — скасувати.":
-    "“In progress” stage. Enter adds, Esc cancels.",
+  "Етап «До виконання». Enter — додати, Esc — скасувати.": "“To do” stage. Enter adds, Esc cancels.",
+  "Етап «У процесі». Enter — додати, Esc — скасувати.": "“In progress” stage. Enter adds, Esc cancels.",
   Додати: "Add",
   "Перетягніть, щоб змінити місце колонки": "Drag to move the column",
   "Додати колонку тут": "Add a column here",
@@ -1160,8 +1056,7 @@ export const enText: Record<string, string> = {
   "Створити адміністратора": "Create administrator",
   "Завантажити {0}": "Download {0}",
   Завантажити: "Download",
-  "Ви ще не берете участі в жодному проєкті.":
-    "You are not taking part in any project yet.",
+  "Ви ще не берете участі в жодному проєкті.": "You are not taking part in any project yet.",
   Показати: "Show",
   Непрочитані: "Unread",
   "Відкрити обговорення": "Open discussion",
@@ -1179,29 +1074,22 @@ export const enText: Record<string, string> = {
   "Назад до списку": "Back to the list",
   "Підказки до цієї сторінки": "Tips for this page",
   "Пошук у довідці": "Search help",
-  "Нічого не знайдено. Спробуйте інші слова або запитайте Аду.":
-    "Nothing found. Try other words or ask Ada.",
+  "Нічого не знайдено. Спробуйте інші слова або запитайте Аду.": "Nothing found. Try other words or ask Ada.",
   "На цій сторінці": "On this page",
   Корисне: "Useful",
   "Проєкти за статусом": "Projects by status",
   виконано: "done",
   "Найближчі дедлайни": "Upcoming deadlines",
-  "Усі завдання з усіх проєктів — в одному списку з фільтрами":
-    "All tasks from all projects in one filterable list",
-  "Головна панель показує завдання й проєкти на діаграмах":
-    "The dashboard shows tasks and projects on charts",
-  "Підказки довідки відкриваються просто на сторінці":
-    "Help tips open right on the page",
+  "Усі завдання з усіх проєктів — в одному списку з фільтрами": "All tasks from all projects in one filterable list",
+  "Головна панель показує завдання й проєкти на діаграмах": "The dashboard shows tasks and projects on charts",
+  "Підказки довідки відкриваються просто на сторінці": "Help tips open right on the page",
   "Доступний для нових проєктів": "Available for new projects",
   "{0} відгуків": "{0} reviews",
   "На платформі з {0}": "On the platform since {0}",
   "Показники роботи": "Work stats",
-  "Проєкти, які клієнти прийняли як завершені.":
-    "Projects clients accepted as completed.",
-  "Частка завдань, зданих до дедлайну.":
-    "Share of tasks delivered before the deadline.",
-  "Скільки днів у середньому триває проєкт.":
-    "How many days a project takes on average.",
+  "Проєкти, які клієнти прийняли як завершені.": "Projects clients accepted as completed.",
+  "Частка завдань, зданих до дедлайну.": "Share of tasks delivered before the deadline.",
+  "Скільки днів у середньому триває проєкт.": "How many days a project takes on average.",
   "Поточна завантаженість виконавця.": "The freelancer's current workload.",
   "Розподіл оцінок": "Rating breakdown",
   "Усі розмови": "All conversations",
@@ -1210,42 +1098,33 @@ export const enText: Record<string, string> = {
   Чати: "Chats",
   проєктів: "projects",
   "Історія скарг": "Complaint history",
-  "Ваші скарги та відповіді адміністратора":
-    "Your complaints and admin replies",
+  "Ваші скарги та відповіді адміністратора": "Your complaints and admin replies",
   "Скарг ще немає": "No complaints yet",
-  "Надіслані скарги з'являться тут разом зі статусом розгляду.":
-    "Submitted complaints appear here with their review status.",
+  "Надіслані скарги з'являться тут разом зі статусом розгляду.": "Submitted complaints appear here with their review status.",
   "Причина блокування:": "Block reason:",
   "Причина блокування": "Block reason",
-  "Наприклад: спам у заявках, образи в чаті":
-    "For example: spam in applications, insults in chat",
-  "Користувач побачить цю причину, коли спробує увійти.":
-    "The user will see this reason when they try to sign in.",
+  "Наприклад: спам у заявках, образи в чаті": "For example: spam in applications, insults in chat",
+  "Користувач побачить цю причину, коли спробує увійти.": "The user will see this reason when they try to sign in.",
   користувачів: "users",
   "Редагувати профіль фрілансера": "Edit freelancer profile",
   "← До біржі": "← Back to marketplace",
   "Ваша заявка": "Your application",
   "Не більше {0} грн": "At most {0} UAH",
   Ваша: "Yours",
-  "Заявок ще немає — ваша може бути першою.":
-    "No applications yet — yours can be the first.",
+  "Заявок ще немає — ваша може бути першою.": "No applications yet — yours can be the first.",
   Заявок: "Applications",
   "Моя завантаженість": "My workload",
-  "Ваші незавершені завдання, пріоритети та строки.":
-    "Your unfinished tasks, priorities and deadlines.",
+  "Ваші незавершені завдання, пріоритети та строки.": "Your unfinished tasks, priorities and deadlines.",
   "Перший проєкт — за 5 хвилин": "Your first project in 5 minutes",
   "Оберіть, як ви працюватимете, — роль уже буде вибрана при реєстрації.":
     "Choose how you'll work — the role is preselected when you sign up.",
   "Я замовник": "I'm a client",
-  "Опублікувати проєкт і обрати виконавця":
-    "Publish a project and pick a freelancer",
+  "Опублікувати проєкт і обрати виконавця": "Publish a project and pick a freelancer",
   "Я фрілансер": "I'm a freelancer",
-  "Знайти роботу на біржі й подати заявку":
-    "Find work on the marketplace and apply",
+  "Знайти роботу на біржі й подати заявку": "Find work on the marketplace and apply",
   Відкликано: "Withdrawn",
   "Відкликати заявку": "Withdraw application",
-  "Відкликати заявку? Клієнт отримає сповіщення.":
-    "Withdraw the application? The client will be notified.",
+  "Відкликати заявку? Клієнт отримає сповіщення.": "Withdraw the application? The client will be notified.",
   Публікація: "Publication",
   "Приймання заявок": "Accepting applications",
   Виконання: "In progress",
@@ -1257,22 +1136,18 @@ export const enText: Record<string, string> = {
   "Опубліковано проєктів": "Published projects",
   "Проєкти, що пройшли модерацію.": "Projects that passed moderation.",
   "Роботу прийнято, проєкт закрито.": "Work accepted, project closed.",
-  "Проєкти, над якими зараз працюють виконавці.":
-    "Projects freelancers are working on now.",
+  "Проєкти, над якими зараз працюють виконавці.": "Projects freelancers are working on now.",
   "Найнято фрілансерів": "Freelancers hired",
-  "Скільки різних виконавців клієнт обирав.":
-    "How many different freelancers the client has hired.",
+  "Скільки різних виконавців клієнт обирав.": "How many different freelancers the client has hired.",
   "Зараз клієнт не шукає виконавців.": "The client is not hiring right now.",
   "Відгуки фрілансерів": "Freelancer reviews",
   "Фрілансер не додав коментар.": "The freelancer left no comment.",
-  "Фрілансери оцінюють клієнта після завершення спільного проєкту.":
-    "Freelancers rate the client after a completed project.",
+  "Фрілансери оцінюють клієнта після завершення спільного проєкту.": "Freelancers rate the client after a completed project.",
   "Графік роботи": "Work schedule",
   "Незавершені завдання з усіх робочих проєктів — що здати першим і чи можна брати нове.":
     "Unfinished tasks from all your work projects — what to deliver first and whether you can take on more.",
   "Мої завдання": "My tasks",
-  "Завдань багато — нові заявки краще відкласти.":
-    "You have a lot on — better hold off new applications.",
+  "Завдань багато — нові заявки краще відкласти.": "You have a lot on — better hold off new applications.",
   "Є місце для нового проєкту.": "You have room for a new project.",
   "Чат проєкту": "Project chat",
   "Перейти в чат проєкту": "Go to the project chat",
@@ -1280,11 +1155,9 @@ export const enText: Record<string, string> = {
   "Напр. Інтернет-магазин кераміки": "E.g. Ceramics online store",
   "Технології через кому": "Technologies, comma separated",
   "Що зроблено": "What was done",
-  "Задача клієнта, ваша роль і результат: що працює, які цифри":
-    "The client's task, your role and the result: what works, what numbers",
+  "Задача клієнта, ваша роль і результат: що працює, які цифри": "The client's task, your role and the result: what works, what numbers",
   "Посилання (необов'язково)": "Link (optional)",
-  "Обкладинка: PNG, JPG або WEBP, до 2 МБ":
-    "Cover: PNG, JPG or WEBP, up to 2 MB",
+  "Обкладинка: PNG, JPG або WEBP, до 2 МБ": "Cover: PNG, JPG or WEBP, up to 2 MB",
   "Попередній перегляд обкладинки": "Cover preview",
   "Видалити роботу {0}": "Delete work {0}",
   "Додайте 2–3 роботи з обкладинкою й описом — клієнти частіше обирають виконавців із портфоліо.":
@@ -1300,38 +1173,27 @@ export const enText: Record<string, string> = {
   Попередження: "Warning",
   "Тимчасове обмеження": "Temporary restriction",
   "Блокування акаунта": "Account block",
-  "Підтверджене шахрайство — блокування з першого разу.":
-    "Confirmed fraud — block on the first offence.",
-  "Неоплата: обмеження, доки клієнт не розрахується з виконавцем.":
-    "Non-payment: restrict until the client pays the freelancer.",
+  "Підтверджене шахрайство — блокування з першого разу.": "Confirmed fraud — block on the first offence.",
+  "Неоплата: обмеження, доки клієнт не розрахується з виконавцем.": "Non-payment: restrict until the client pays the freelancer.",
   "Повторна неоплата — блокування.": "Repeated non-payment — block.",
   "Перший зрив строків — попередження.": "First missed deadline — warning.",
   "Повторний зрив — обмеження на тиждень.": "Repeated — restrict for a week.",
-  "Систематичні зриви — обмеження на місяць.":
-    "Systematic — restrict for a month.",
-  "Четвертий підтверджений зрив — блокування.":
-    "Fourth confirmed case — block.",
-  "Суперечка про якість: рішення й пояснення сторонам, без санкції.":
-    "Quality dispute: a decision explained to both sides, no sanction.",
-  "Повторні претензії до якості — попередження.":
-    "Repeated quality complaints — warning.",
-  "Систематично низька якість — обмеження.":
-    "Systematically poor quality — restriction.",
+  "Систематичні зриви — обмеження на місяць.": "Systematic — restrict for a month.",
+  "Четвертий підтверджений зрив — блокування.": "Fourth confirmed case — block.",
+  "Суперечка про якість: рішення й пояснення сторонам, без санкції.": "Quality dispute: a decision explained to both sides, no sanction.",
+  "Повторні претензії до якості — попередження.": "Repeated quality complaints — warning.",
+  "Систематично низька якість — обмеження.": "Systematically poor quality — restriction.",
   "Перша образа чи спам — попередження.": "First insult or spam — warning.",
   "Повторно — обмеження на тиждень.": "Again — restrict for a week.",
   "Систематичні образи — блокування.": "Systematic insults — block.",
-  "Перша спроба вивести угоду з платформи — попередження.":
-    "First attempt to take the deal off the platform — warning.",
+  "Перша спроба вивести угоду з платформи — попередження.": "First attempt to take the deal off the platform — warning.",
   "Повторно — обмеження на два тижні.": "Again — restrict for two weeks.",
   "Систематично — блокування.": "Systematic — block.",
-  "Оцініть ситуацію за описом; санкція — за потреби.":
-    "Judge by the description; sanction if needed.",
-  "Повторні скарги на ту саму людину — попередження.":
-    "Repeated complaints about the same person — warning.",
+  "Оцініть ситуацію за описом; санкція — за потреби.": "Judge by the description; sanction if needed.",
+  "Повторні скарги на ту саму людину — попередження.": "Repeated complaints about the same person — warning.",
   "На кого": "Against",
   "Історія порушника": "Offender history",
-  "Підтверджених скарг раніше: {0} (попереджень {1}, обмежень {2})":
-    "Earlier confirmed complaints: {0} (warnings {1}, restrictions {2})",
+  "Підтверджених скарг раніше: {0} (попереджень {1}, обмежень {2})": "Earlier confirmed complaints: {0} (warnings {1}, restrictions {2})",
   "Раніше підтверджених скарг не було": "No earlier confirmed complaints",
   "Рекомендовано:": "Recommended:",
   "Санкція, якщо скаргу підтверджено": "Sanction if the complaint is confirmed",
@@ -1352,37 +1214,28 @@ export const enText: Record<string, string> = {
   "Робочих завдань поки немає": "No work tasks yet",
   "Знайдіть проєкт на біржі — після найму завдання з'являться тут.":
     "Find a project on the marketplace — tasks appear here once you're hired.",
-  "Опис не пояснює, що саме треба зробити.":
-    "The description doesn't explain what needs to be done.",
-  "Бюджет не відповідає обсягу роботи.":
-    "The budget doesn't match the scope of work.",
-  "В описі є контакти чи посилання для роботи поза платформою.":
-    "The description has contacts or links for working off the platform.",
+  "Опис не пояснює, що саме треба зробити.": "The description doesn't explain what needs to be done.",
+  "Бюджет не відповідає обсягу роботи.": "The budget doesn't match the scope of work.",
+  "В описі є контакти чи посилання для роботи поза платформою.": "The description has contacts or links for working off the platform.",
   "Проєкт порушує правила платформи.": "The project breaks the platform rules.",
-  "Дедлайн нереальний для такого обсягу.":
-    "The deadline is unrealistic for this scope.",
-  "Що саме виправити, щоб проєкт пройшов модерацію":
-    "What exactly to fix for the project to pass moderation",
-  "Видалити це повідомлення? Його не побачить ніхто.":
-    "Delete this message? No one will see it.",
+  "Дедлайн нереальний для такого обсягу.": "The deadline is unrealistic for this scope.",
+  "Що саме виправити, щоб проєкт пройшов модерацію": "What exactly to fix for the project to pass moderation",
+  "Видалити це повідомлення? Його не побачить ніхто.": "Delete this message? No one will see it.",
   Ви: "You",
   "{0} КБ": "{0} KB",
   "Видалити повідомлення": "Delete message",
-  "Можна додати ще {0} файл(ів) — решту пропущено.":
-    "You can add {0} more file(s) — the rest were skipped.",
+  "Можна додати ще {0} файл(ів) — решту пропущено.": "You can add {0} more file(s) — the rest were skipped.",
   "{0}: файл порожній або завеликий (ZIP до 50 МБ, інші до 10 МБ).":
     "{0}: the file is empty or too large (ZIP up to 50 MB, others up to 10 MB).",
   "Завантажуємо {0} з {1}…": "Uploading {0} of {1}…",
-  "Перетягніть файли сюди або оберіть на комп'ютері":
-    "Drop files here or choose from your computer",
+  "Перетягніть файли сюди або оберіть на комп'ютері": "Drop files here or choose from your computer",
   "PDF, PNG, JPG, DOCX, TXT — до 10 МБ, ZIP — до 50 МБ. Можна кілька одразу.":
     "PDF, PNG, JPG, DOCX, TXT — up to 10 MB, ZIP — up to 50 MB. Several at once.",
   "{0} МБ": "{0} MB",
   "Переглянути {0}": "Preview {0}",
   Переглянути: "Preview",
   "Прибрати {0}": "Remove {0}",
-  "Видалити файл {0}? Його не можна буде відновити.":
-    "Delete file {0}? It can't be restored.",
+  "Видалити файл {0}? Його не можна буде відновити.": "Delete file {0}? It can't be restored.",
   "Нових повідомлень: {0}": "New messages: {0}",
   "Уся довідка та база знань": "All help and knowledge base",
   "Перейти до повної довідки": "Open the full article",
@@ -1394,52 +1247,39 @@ export const enText: Record<string, string> = {
   // Огляд адміністратора: плитки, середні часи, активність
   "Усі облікові записи платформи.": "All accounts on the platform.",
   "Нові користувачі за 7 днів": "New users in 7 days",
-  "Зареєструвалися за останні 7 днів, включно з сьогодні.":
-    "Signed up in the last 7 days, including today.",
+  "Зареєструвалися за останні 7 днів, включно з сьогодні.": "Signed up in the last 7 days, including today.",
   "Усі проєкти незалежно від статусу.": "All projects regardless of status.",
   "Нові проєкти за 7 днів": "New projects in 7 days",
   "Створені за останні 7 днів.": "Created in the last 7 days.",
   "Шукають виконавця": "Looking for a freelancer",
-  "Проєкти на біржі, для яких ще не обрано фрілансера.":
-    "Projects on the marketplace with no freelancer chosen yet.",
-  "Виконавця обрано, триває робота.":
-    "A freelancer is chosen and work is under way.",
+  "Проєкти на біржі, для яких ще не обрано фрілансера.": "Projects on the marketplace with no freelancer chosen yet.",
+  "Виконавця обрано, триває робота.": "A freelancer is chosen and work is under way.",
   "Завершені проєкти": "Completed projects",
   "Роботу прийнято клієнтом.": "The client has accepted the work.",
   "Заблоковані користувачі": "Blocked users",
-  "Облікові записи, яким адміністратор закрив доступ.":
-    "Accounts an administrator has blocked.",
+  "Облікові записи, яким адміністратор закрив доступ.": "Accounts an administrator has blocked.",
   "Нові за 7 днів": "New in 7 days",
   "Скарги, подані за останні 7 днів.": "Complaints filed in the last 7 days.",
   "Очікують розгляду": "Awaiting review",
-  "Скарги без рішення адміністратора.":
-    "Complaints with no administrator decision.",
+  "Скарги без рішення адміністратора.": "Complaints with no administrator decision.",
   "Скарги, за якими вжито заходів.": "Complaints that led to action.",
   "Скарги, які не підтвердилися.": "Complaints that were not confirmed.",
-  "Заявки фрілансерів за останні 7 днів.":
-    "Freelancer applications in the last 7 days.",
+  "Заявки фрілансерів за останні 7 днів.": "Freelancer applications in the last 7 days.",
   "Очікують рішення": "Awaiting decision",
-  "Клієнт ще не прийняв і не відхилив заявку.":
-    "The client has neither accepted nor rejected the application.",
-  "Заявки, за якими обрано виконавця.":
-    "Applications that got the freelancer hired.",
+  "Клієнт ще не прийняв і не відхилив заявку.": "The client has neither accepted nor rejected the application.",
+  "Заявки, за якими обрано виконавця.": "Applications that got the freelancer hired.",
   "Заявки, які клієнт відхилив.": "Applications the client rejected.",
   "Завдання, над якими зараз працюють.": "Tasks being worked on now.",
-  "Роботу здано, клієнт ще не прийняв.":
-    "Work submitted, not yet accepted by the client.",
+  "Роботу здано, клієнт ще не прийняв.": "Work submitted, not yet accepted by the client.",
   "Прийняті завдання.": "Accepted tasks.",
-  "Незавершені завдання з дедлайном у минулому.":
-    "Unfinished tasks whose deadline has passed.",
+  "Незавершені завдання з дедлайном у минулому.": "Unfinished tasks whose deadline has passed.",
   "Основні показники": "Key metrics",
   "Середній час розгляду скарги": "Average complaint resolution time",
-  "Від подання скарги до рішення адміністратора.":
-    "From filing a complaint to the administrator's decision.",
+  "Від подання скарги до рішення адміністратора.": "From filing a complaint to the administrator's decision.",
   "Середній час до першої заявки": "Average time to first application",
-  "Від створення проєкту до першої заявки фрілансера.":
-    "From creating a project to the first freelancer application.",
+  "Від створення проєкту до першої заявки фрілансера.": "From creating a project to the first freelancer application.",
   "Середній час до вибору виконавця": "Average time to hire",
-  "Від створення проєкту до прийнятої заявки.":
-    "From creating a project to an accepted application.",
+  "Від створення проєкту до прийнятої заявки.": "From creating a project to an accepted application.",
   "Активність за 7 днів": "Activity over 7 days",
   Кількість: "Count",
   Частка: "Share",
@@ -1460,28 +1300,22 @@ export const enText: Record<string, string> = {
     "New projects reach the marketplace only after an administrator approves them.",
   "Черга модерації порожня": "The moderation queue is empty",
   "Усі нові проєкти розглянуто.": "All new projects have been reviewed.",
-  "Проєкт «{0}» схвалено й опубліковано на біржі.":
-    "Project “{0}” is approved and published on the marketplace.",
-  "Проєкт «{0}» відхилено. Клієнт отримав причину.":
-    "Project “{0}” is rejected. The client received the reason.",
+  "Проєкт «{0}» схвалено й опубліковано на біржі.": "Project “{0}” is approved and published on the marketplace.",
+  "Проєкт «{0}» відхилено. Клієнт отримав причину.": "Project “{0}” is rejected. The client received the reason.",
   Надіслано: "Submitted",
-  "Повторна подача. Минулого разу відхилено: {0}":
-    "Resubmitted. Last time it was rejected: {0}",
-  "Причина відхилення (її побачить клієнт)":
-    "Reason for rejection (the client will see it)",
+  "Повторна подача. Минулого разу відхилено: {0}": "Resubmitted. Last time it was rejected: {0}",
+  "Причина відхилення (її побачить клієнт)": "Reason for rejection (the client will see it)",
   "Відхилити проєкт": "Reject project",
   "Схвалити й опублікувати": "Approve and publish",
   "На модерації": "In moderation",
   "Відхилено модератором": "Rejected by moderator",
-  "Нові проєкти, які чекають на рішення адміністратора.":
-    "New projects waiting for an administrator's decision.",
+  "Нові проєкти, які чекають на рішення адміністратора.": "New projects waiting for an administrator's decision.",
   "Проєкт на модерації. Після схвалення адміністратором він з'явиться на біржі, і фрілансери зможуть подавати заявки.":
     "The project is in moderation. Once an administrator approves it, it appears on the marketplace and freelancers can apply.",
   "Модератор відхилив проєкт.": "The moderator rejected the project.",
   "Причина: {0}": "Reason: {0}",
   "Виправте проєкт": "Fix the project",
-  "— після збереження він знову піде на модерацію.":
-    "— after you save it, it goes back to moderation.",
+  "— після збереження він знову піде на модерацію.": "— after you save it, it goes back to moderation.",
   "Після збереження змін проєкт знову піде на модерацію адміністратору.":
     "After you save the changes, the project goes back to an administrator for moderation.",
   "Зміна назви, опису чи бюджету знову відправить проєкт на модерацію.":
@@ -1491,8 +1325,7 @@ export const enText: Record<string, string> = {
   "Спершу проєкт перевірить адміністратор. Після схвалення він отримає статус «Пошук виконавця» і з'явиться на біржі для фрілансерів.":
     "An administrator reviews the project first. Once approved, it gets the “Looking for a freelancer” status and appears on the marketplace.",
   "Поточний пароль неправильний.": "The current password is wrong.",
-  "Новий пароль має відрізнятися від поточного.":
-    "The new password must differ from the current one.",
+  "Новий пароль має відрізнятися від поточного.": "The new password must differ from the current one.",
   "Пароль неправильний.": "The password is wrong.",
   "Введіть поточний пароль": "Enter your current password",
   "Придумайте новий пароль": "Create a new password",
@@ -1506,8 +1339,7 @@ export const enText: Record<string, string> = {
   "Заблокувати {0}": "Block {0}",
   "Видалити {0}": "Delete {0}",
   "Зберегти роль": "Save role",
-  "Користувач знову зможе входити й працювати на платформі.":
-    "The user will be able to sign in and work on the platform again.",
+  "Користувач знову зможе входити й працювати на платформі.": "The user will be able to sign in and work on the platform again.",
   "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.":
     "The user won't be able to sign in, and their active sessions end. Account data is kept.",
   "Черга завдань": "Task queue",
@@ -1515,16 +1347,12 @@ export const enText: Record<string, string> = {
     "Take tasks in order: the nearest deadline and higher priority come first. You can take a new one once the previous one is sent for review.",
   "Беремо…": "Taking…",
   "Взяти наступне завдання": "Take the next task",
-  "Брати завдання з черги може фрілансер.":
-    "Only a freelancer can take tasks from the queue.",
+  "Брати завдання з черги може фрілансер.": "Only a freelancer can take tasks from the queue.",
   "Вільних завдань у черзі немає.": "There are no free tasks in the queue.",
   "Фото профілю": "Profile photo",
-  "Перетягніть фото й наблизьте його, щоб обличчя було в колі.":
-    "Drag and zoom the photo so your face fits the circle.",
-  "Не вдалося відкрити зображення. Оберіть інший файл.":
-    "Could not open the image. Choose another file.",
-  "Область фото. Стрілки зсувають зображення.":
-    "Photo area. Arrow keys move the image.",
+  "Перетягніть фото й наблизьте його, щоб обличчя було в колі.": "Drag and zoom the photo so your face fits the circle.",
+  "Не вдалося відкрити зображення. Оберіть інший файл.": "Could not open the image. Choose another file.",
+  "Область фото. Стрілки зсувають зображення.": "Photo area. Arrow keys move the image.",
   Масштаб: "Zoom",
   "Зберегти фото": "Save photo",
   "Локальна мережа": "Local network",
@@ -1535,8 +1363,7 @@ export const enText: Record<string, string> = {
   "Повідомлень ще немає.": "No messages yet.",
   "{0} / 3000 символів": "{0} / 3000 characters",
   "{0}: незавершених завдань {1}": "{0}: {1} open tasks",
-  "Оберіть фото PNG, JPG або WEBP розміром до 10 МБ.":
-    "Choose a PNG, JPG or WEBP photo up to 10 MB.",
+  "Оберіть фото PNG, JPG або WEBP розміром до 10 МБ.": "Choose a PNG, JPG or WEBP photo up to 10 MB.",
   "Проєктів, де я в команді": "Projects I am on",
   "Завдань у моїх проєктах": "Tasks in my projects",
   "Виконано командою": "Done by the team",

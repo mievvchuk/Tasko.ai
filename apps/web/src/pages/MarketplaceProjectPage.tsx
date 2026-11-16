@@ -29,9 +29,9 @@ export function MarketplaceProjectPage() {
   const { tr } = useLanguage();
   const { user } = useAuth();
   const { id } = useParams();
-  const { data, error, loading, refresh } = useApi<
-    MarketplaceProject & { bids: Bid[] }
-  >(id ? `/marketplace/projects/${id}` : null, { live: true });
+  const { data, error, loading, refresh } = useApi<MarketplaceProject & { bids: Bid[] }>(id ? `/marketplace/projects/${id}` : null, {
+    live: true,
+  });
   const [message, setMessage] = useState("");
   const [budget, setBudget] = useState("");
   const [days, setDays] = useState("");
@@ -63,8 +63,7 @@ export function MarketplaceProjectPage() {
   // Фрілансер передумав: заявка стає «Відкликано», її можна подати знову
   async function withdraw() {
     if (!data?.applicationId) return;
-    if (!window.confirm(tr("Відкликати заявку? Клієнт отримає сповіщення.")))
-      return;
+    if (!window.confirm(tr("Відкликати заявку? Клієнт отримає сповіщення."))) return;
     try {
       await request(`/applications/${data.applicationId}/withdraw`, {
         method: "POST",
@@ -100,28 +99,15 @@ export function MarketplaceProjectPage() {
                 <h1>{data.title}</h1>
                 <button
                   type="button"
-                  className={
-                    data.isFavorite
-                      ? "favorite-button active"
-                      : "favorite-button"
-                  }
+                  className={data.isFavorite ? "favorite-button active" : "favorite-button"}
                   aria-pressed={data.isFavorite}
-                  aria-label={
-                    data.isFavorite
-                      ? tr("Видалити з обраного")
-                      : tr("Додати в обране")
-                  }
+                  aria-label={data.isFavorite ? tr("Видалити з обраного") : tr("Додати в обране")}
                   onClick={() => void toggleFavorite()}
                 >
-                  <i
-                    className={`bi ${data.isFavorite ? "bi-star-fill" : "bi-star"}`}
-                    aria-hidden="true"
-                  ></i>
+                  <i className={`bi ${data.isFavorite ? "bi-star-fill" : "bi-star"}`} aria-hidden="true"></i>
                 </button>
               </div>
-              <p className="preserve-lines">
-                {data.description || tr("Клієнт не додав опис.")}
-              </p>
+              <p className="preserve-lines">{data.description || tr("Клієнт не додав опис.")}</p>
               {!!data.skills.length && (
                 <ul className="skill-chips">
                   {data.skills.map((skill) => (
@@ -135,15 +121,12 @@ export function MarketplaceProjectPage() {
 
             <section className="data-panel market-apply">
               <h2>{tr("Ваша заявка")}</h2>
-              {data.applicationStatus &&
-              data.applicationStatus !== "WITHDRAWN" ? (
+              {data.applicationStatus && data.applicationStatus !== "WITHDRAWN" ? (
                 // Статус окремим рядком, дії — кнопками однієї висоти в одному ряду
                 <div className="application-state">
                   <p>
                     <span>{tr("Статус заявки")}</span>
-                    <span
-                      className={`project-status status-${data.applicationStatus}`}
-                    >
+                    <span className={`project-status status-${data.applicationStatus}`}>
                       {tr(applicationStatusNames[data.applicationStatus])}
                     </span>
                   </p>
@@ -158,17 +141,11 @@ export function MarketplaceProjectPage() {
                         }
                       >
                         <i className="bi bi-chat-dots" aria-hidden="true"></i>
-                        {data.applicationStatus === "PENDING"
-                          ? tr("Написати клієнту")
-                          : tr("Переписка з клієнтом")}
+                        {data.applicationStatus === "PENDING" ? tr("Написати клієнту") : tr("Переписка з клієнтом")}
                       </Link>
                     )}
                     {data.applicationStatus === "PENDING" && (
-                      <button
-                        type="button"
-                        className="button secondary danger-outline"
-                        onClick={() => void withdraw()}
-                      >
+                      <button type="button" className="button secondary danger-outline" onClick={() => void withdraw()}>
                         <i className="bi bi-x-circle" aria-hidden="true"></i>
                         {tr("Відкликати заявку")}
                       </button>
@@ -176,10 +153,7 @@ export function MarketplaceProjectPage() {
                   </div>
                 </div>
               ) : (
-                <form
-                  className="application-form"
-                  onSubmit={(e) => void submit(e)}
-                >
+                <form className="application-form" onSubmit={(e) => void submit(e)}>
                   <label>
                     {tr("Супровідне повідомлення")}
                     <textarea
@@ -188,9 +162,7 @@ export function MarketplaceProjectPage() {
                       maxLength={2000}
                       required
                       onChange={(event) => setMessage(event.target.value)}
-                      placeholder={tr(
-                        "Коротко опишіть досвід і спосіб виконання",
-                      )}
+                      placeholder={tr("Коротко опишіть досвід і спосіб виконання")}
                     />
                   </label>
                   <div className="form-row">
@@ -205,22 +177,11 @@ export function MarketplaceProjectPage() {
                         value={budget}
                         onChange={(event) => setBudget(event.target.value)}
                       />
-                      {data.budgetMax !== null && (
-                        <small className="field-hint">
-                          {tr("Не більше {0} грн", data.budgetMax)}
-                        </small>
-                      )}
+                      {data.budgetMax !== null && <small className="field-hint">{tr("Не більше {0} грн", data.budgetMax)}</small>}
                     </label>
                     <label>
                       {tr("Строк, днів")}
-                      <input
-                        type="number"
-                        min="1"
-                        max="365"
-                        required
-                        value={days}
-                        onChange={(event) => setDays(event.target.value)}
-                      />
+                      <input type="number" min="1" max="365" required value={days} onChange={(event) => setDays(event.target.value)} />
                     </label>
                   </div>
                   {formError && <p className="form-error">{formError}</p>}
@@ -241,31 +202,16 @@ export function MarketplaceProjectPage() {
                 <ul className="record-list padded bid-list">
                   {data.bids.map((bid) => (
                     <li key={bid.id} className={bid.mine ? "own" : undefined}>
-                      <UserAvatar
-                        name={bid.freelancer?.name || "?"}
-                        avatarUrl={bid.freelancer?.avatarUrl}
-                        size="small"
-                      />
+                      <UserAvatar name={bid.freelancer?.name || "?"} avatarUrl={bid.freelancer?.avatarUrl} size="small" />
                       <div>
                         <strong>
-                          {bid.freelancer ? (
-                            <Link to={`/freelancers/${bid.freelancer.id}`}>
-                              {bid.freelancer.name}
-                            </Link>
-                          ) : (
-                            tr("Фрілансер")
-                          )}
-                          {bid.mine && (
-                            <span className="badge">{tr("Ваша")}</span>
-                          )}
+                          {bid.freelancer ? <Link to={`/freelancers/${bid.freelancer.id}`}>{bid.freelancer.name}</Link> : tr("Фрілансер")}
+                          {bid.mine && <span className="badge">{tr("Ваша")}</span>}
                         </strong>
                         <small>
-                          {formatDate(bid.createdAt, true)} ·{" "}
-                          {tr(applicationStatusNames[bid.status])}
+                          {formatDate(bid.createdAt, true)} · {tr(applicationStatusNames[bid.status])}
                         </small>
-                        {bid.message && (
-                          <p className="preserve-lines">{bid.message}</p>
-                        )}
+                        {bid.message && <p className="preserve-lines">{bid.message}</p>}
                       </div>
                       <span className="bid-offer">
                         <strong>{tr("{0} грн", bid.proposedBudget)}</strong>
@@ -291,15 +237,7 @@ export function MarketplaceProjectPage() {
               <dt>{tr("Категорія")}</dt>
               <dd>{data.category?.name || tr("Без категорії")}</dd>
               <dt>{tr("Клієнт")}</dt>
-              <dd>
-                {data.client ? (
-                  <Link to={`/clients/${data.client.id}`}>
-                    {data.client.name}
-                  </Link>
-                ) : (
-                  tr("Клієнт")
-                )}
-              </dd>
+              <dd>{data.client ? <Link to={`/clients/${data.client.id}`}>{data.client.name}</Link> : tr("Клієнт")}</dd>
               <dt>{tr("Опубліковано")}</dt>
               <dd>{formatDate(data.createdAt)}</dd>
               <dt>{tr("Заявок")}</dt>

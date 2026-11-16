@@ -9,22 +9,15 @@ type MilestoneStatus = 'PLANNED' | 'IN_PROGRESS' | 'REVIEW' | 'COMPLETED';
 // жодне не почате → «Заплановано», щось у роботі → «У процесі»,
 // усі прийняті замовником → «Завершено» (і етап вважається оплаченим).
 // Завершений етап більше не змінюється.
-export function milestoneStatusFor(
-  current: string,
-  taskStatuses: string[],
-): MilestoneStatus {
+export function milestoneStatusFor(current: string, taskStatuses: string[]): MilestoneStatus {
   if (current === 'COMPLETED') return 'COMPLETED';
-  if (taskStatuses.length && taskStatuses.every((status) => status === 'DONE'))
-    return 'COMPLETED';
+  if (taskStatuses.length && taskStatuses.every((status) => status === 'DONE')) return 'COMPLETED';
   if (taskStatuses.some((status) => status !== 'TODO')) return 'IN_PROGRESS';
   return 'PLANNED';
 }
 
 // Проєкт виконано, коли є завдання, усі вони прийняті й усі етапи завершено
-export function projectIsDone(
-  taskStatuses: string[],
-  milestoneStatuses: string[],
-) {
+export function projectIsDone(taskStatuses: string[], milestoneStatuses: string[]) {
   return (
     taskStatuses.length > 0 &&
     taskStatuses.every((status) => status === 'DONE') &&
@@ -32,13 +25,7 @@ export function projectIsDone(
   );
 }
 
-async function notify(
-  db: Db,
-  userIds: Iterable<string>,
-  type: string,
-  message: string,
-  projectId: string,
-) {
+async function notify(db: Db, userIds: Iterable<string>, type: string, message: string, projectId: string) {
   for (const userId of new Set(userIds)) {
     announce(userId);
     await db.Notification.create({
@@ -57,10 +44,7 @@ async function notify(
 
 // Перераховує статус етапів після зміни їхніх завдань. Платіжної системи немає,
 // тож етап, усі завдання якого прийнято, одразу позначається оплаченим.
-export async function syncMilestones(
-  db: Db,
-  milestoneIds: (string | null | undefined)[],
-) {
+export async function syncMilestones(db: Db, milestoneIds: (string | null | undefined)[]) {
   for (const id of new Set(milestoneIds.filter(Boolean) as string[])) {
     const milestone = await db.ProjectMilestone.where({ id }).first();
     if (!milestone) continue;
@@ -85,10 +69,7 @@ export async function syncMilestones(
     if (!project) continue;
     await notify(
       db,
-      [
-        project.clientId,
-        ...(tasks.map((task) => task.assigneeId).filter(Boolean) as string[]),
-      ],
+      [project.clientId, ...(tasks.map((task) => task.assigneeId).filter(Boolean) as string[])],
       'MILESTONE_UPDATED',
       `Етап «${milestone.title}» виконано й оплачено.`,
       project.id,
@@ -98,17 +79,10 @@ export async function syncMilestones(
 
 // Завершує активний проєкт, коли всю роботу прийнято, і пропонує учасникам
 // залишити відгуки одне про одного.
-export async function completeProjectIfDone(
-  db: Db,
-  projectId: string,
-  actorId: string,
-) {
+export async function completeProjectIfDone(db: Db, projectId: string, actorId: string) {
   const project = await db.Project.where({ id: projectId }).first();
   if (!project || project.status !== 'ACTIVE') return false;
-  const [tasks, milestones] = await Promise.all([
-    db.Task.where({ projectId }).all(),
-    db.ProjectMilestone.where({ projectId }).all(),
-  ]);
+  const [tasks, milestones] = await Promise.all([db.Task.where({ projectId }).all(), db.ProjectMilestone.where({ projectId }).all()]);
   if (
     !projectIsDone(
       tasks.map((task) => task.status),
@@ -137,13 +111,7 @@ export async function completeProjectIfDone(
     createdAt: now,
   });
   const members = await db.ProjectMember.where({ projectId }).all();
-  await notify(
-    db,
-    [project.clientId],
-    'PROJECT_COMPLETED',
-    `Проєкт «${project.title}» завершено. Оцініть роботу фрілансерів.`,
-    projectId,
-  );
+  await notify(db, [project.clientId], 'PROJECT_COMPLETED', `Проєкт «${project.title}» завершено. Оцініть роботу фрілансерів.`, projectId);
   await notify(
     db,
     members.map((member) => member.userId),
@@ -155,12 +123,7 @@ export async function completeProjectIfDone(
 }
 
 // Після зміни завдань: перерахувати етапи, а потім, можливо, завершити проєкт
-export async function syncProgress(
-  db: Db,
-  projectId: string,
-  milestoneIds: (string | null | undefined)[],
-  actorId: string,
-) {
+export async function syncProgress(db: Db, projectId: string, milestoneIds: (string | null | undefined)[], actorId: string) {
   await syncMilestones(db, milestoneIds);
   return completeProjectIfDone(db, projectId, actorId);
 }

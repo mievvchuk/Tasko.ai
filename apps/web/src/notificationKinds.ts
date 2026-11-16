@@ -21,14 +21,12 @@ export const notificationKinds: Record<string, [string, string]> = {
   NEW_COMPLAINT: ["Нова скарга", "bi-flag-fill"],
 };
 
-export const notificationKind = (type: string): [string, string] =>
-  notificationKinds[type] ?? ["Сповіщення", "bi-bell"];
+export const notificationKind = (type: string): [string, string] => notificationKinds[type] ?? ["Сповіщення", "bi-bell"];
 
 // Куди веде сповіщення: найконкретніше місце події
 export function notificationTarget(item: Notification, isAdmin: boolean) {
   if (item.type === "NEW_COMPLAINT" && isAdmin) return "/admin/complaints";
-  if (item.type === "NEW_MESSAGE" && item.projectId)
-    return `/messages?project=${item.projectId}`;
+  if (item.type === "NEW_MESSAGE" && item.projectId) return `/messages?project=${item.projectId}`;
   if (item.type === "APPLICATION_MESSAGE") return "/messages";
   if (item.taskId) return `/tasks/${item.taskId}`;
   if (item.projectId) return `/projects/${item.projectId}`;

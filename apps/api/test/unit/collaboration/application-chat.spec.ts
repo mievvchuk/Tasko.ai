@@ -38,9 +38,7 @@ describe('application chat', () => {
     const db = {
       ProjectApplication: { where: vi.fn(() => one(() => application)) },
       Project: {
-        where: vi.fn(() =>
-          one(() => ({ id: 'project', title: 'Сайт', clientId: client.id })),
-        ),
+        where: vi.fn(() => one(() => ({ id: 'project', title: 'Сайт', clientId: client.id }))),
       },
       ApplicationMessage: {
         create: vi.fn(async (data: unknown) => {
@@ -63,26 +61,17 @@ describe('application chat', () => {
     await service.applicationMessage(client, 'app', { content: 'Уточніть строки' });
     await service.applicationMessage(applicant, 'app', { content: '10 днів' });
     expect(created).toHaveLength(2);
-    expect(notify.mock.calls.map((call) => call[0])).toEqual([
-      applicant.id,
-      client.id,
-    ]);
+    expect(notify.mock.calls.map((call) => call[0])).toEqual([applicant.id, client.id]);
   });
 
   it('keeps other freelancers out', async () => {
-    await expect(
-      service.applicationMessage(stranger, 'app', { content: 'привіт' }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    await expect(
-      service.applicationMessageStream(stranger, 'app'),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.applicationMessage(stranger, 'app', { content: 'привіт' })).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.applicationMessageStream(stranger, 'app')).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('closes writing once the application is decided', async () => {
     application.status = 'ACCEPTED';
-    await expect(
-      service.applicationMessage(client, 'app', { content: 'ще питання' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.applicationMessage(client, 'app', { content: 'ще питання' })).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('pushes a new message only into its own application stream', async () => {
@@ -106,12 +95,8 @@ describe('application chat', () => {
     ];
     await service.applicationTyping(client, 'app');
     subs.forEach((sub) => sub.unsubscribe());
-    expect(seenByApplicant).toEqual([
-      { type: 'typing', data: { userId: client.id, name: client.name } },
-    ]);
+    expect(seenByApplicant).toEqual([{ type: 'typing', data: { userId: client.id, name: client.name } }]);
     expect(seenByClient).toEqual([]);
-    await expect(
-      service.applicationTyping(stranger, 'app'),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.applicationTyping(stranger, 'app')).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

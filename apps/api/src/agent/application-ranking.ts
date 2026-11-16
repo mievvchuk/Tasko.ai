@@ -13,12 +13,10 @@ export function parseApplicationRanking(value: string, allowedIds: string[]) {
   } catch {
     throw new BadGatewayException('AI повернув некоректний рейтинг заявок.');
   }
-  if (!Array.isArray(parsed) || parsed.length !== allowedIds.length)
-    throw new BadGatewayException('AI повернув неповний рейтинг заявок.');
+  if (!Array.isArray(parsed) || parsed.length !== allowedIds.length) throw new BadGatewayException('AI повернув неповний рейтинг заявок.');
   const result: ApplicationRanking[] = [];
   for (const item of parsed) {
-    if (!item || typeof item !== 'object')
-      throw new BadGatewayException('AI повернув некоректний рейтинг заявок.');
+    if (!item || typeof item !== 'object') throw new BadGatewayException('AI повернув некоректний рейтинг заявок.');
     const row = item as Record<string, unknown>;
     if (
       typeof row.applicationId !== 'string' ||
@@ -38,9 +36,7 @@ export function parseApplicationRanking(value: string, allowedIds: string[]) {
       reason: row.reason.trim(),
     });
   }
-  if (
-    new Set(result.map((item) => item.applicationId)).size !== allowedIds.length
-  )
+  if (new Set(result.map((item) => item.applicationId)).size !== allowedIds.length)
     throw new BadGatewayException('AI повернув повторені або невідомі заявки.');
   return result;
 }

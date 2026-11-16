@@ -28,14 +28,11 @@ const soft: Record<string, string> = {
 };
 const width = 515; // A4 мінус поля 40 + 40
 
-const fontDirectory = fileURLToPath(
-  new URL('../../node_modules/pdfmake/build/fonts/Roboto/', import.meta.url),
-);
+const fontDirectory = fileURLToPath(new URL('../../node_modules/pdfmake/build/fonts/Roboto/', import.meta.url));
 
 function hours(value: number | null) {
   if (value === null) return '—';
-  const number = (n: number) =>
-    n.toLocaleString('uk-UA', { maximumFractionDigits: 1 });
+  const number = (n: number) => n.toLocaleString('uk-UA', { maximumFractionDigits: 1 });
   if (value < 1) return `${Math.round(value * 60)} хв`;
   if (value < 48) return `${number(value)} год`;
   return `${number(value / 24)} дн.`;
@@ -86,11 +83,7 @@ function tile(label: string, value: number | string, tone: string) {
 function tileGrid(items: [string, number | string, string][], columns: number) {
   const rows: unknown[][] = [];
   for (let i = 0; i < items.length; i += columns)
-    rows.push(
-      Array.from({ length: columns }, (_, j) =>
-        items[i + j] ? tile(...items[i + j]) : { text: '' },
-      ),
-    );
+    rows.push(Array.from({ length: columns }, (_, j) => (items[i + j] ? tile(...items[i + j]) : { text: '' })));
   return {
     table: { widths: Array(columns).fill('*'), body: rows },
     layout: {
@@ -120,9 +113,7 @@ function bars(title: string, items: [string, number, string][], blockWidth: numb
             width: barWidth,
             canvas: [
               { type: 'rect', x: 0, y: 2, w: barWidth, h: 8, r: 4, color: '#efecea' },
-              ...(value
-                ? [{ type: 'rect', x: 0, y: 2, w: Math.max(8, (value / max) * barWidth), h: 8, r: 4, color: tone }]
-                : []),
+              ...(value ? [{ type: 'rect', x: 0, y: 2, w: Math.max(8, (value / max) * barWidth), h: 8, r: 4, color: tone }] : []),
             ],
           },
           { width: 30, text: String(value), fontSize: 9, bold: true, alignment: 'right' },
@@ -249,7 +240,14 @@ export async function buildReportPdf(report: Report) {
     },
   });
   const half = (width - 12) / 2;
-  const pair = (a: unknown, b: unknown) => ({ columns: [{ width: half, stack: [a] }, { width: half, stack: [b] }], columnGap: 12, margin: [0, 0, 0, 12] });
+  const pair = (a: unknown, b: unknown) => ({
+    columns: [
+      { width: half, stack: [a] },
+      { width: half, stack: [b] },
+    ],
+    columnGap: 12,
+    margin: [0, 0, 0, 12],
+  });
   const t = report.tasksByStatus;
   const p = report.projectsByStatus;
   const c = report.complaintsByStatus;
@@ -272,12 +270,22 @@ export async function buildReportPdf(report: Report) {
         {
           columns: [
             { text: [{ text: 'Tasko' }, { text: '.ai', color: color.accent }], fontSize: 16, bold: true },
-            { text: `Звіт платформи · ${new Date().toLocaleString('uk-UA')}`, fontSize: 9, color: color.muted, alignment: 'right', margin: [0, 5, 0, 0] },
+            {
+              text: `Звіт платформи · ${new Date().toLocaleString('uk-UA')}`,
+              fontSize: 9,
+              color: color.muted,
+              alignment: 'right',
+              margin: [0, 5, 0, 0],
+            },
           ],
         },
         { canvas: [{ type: 'line', x1: 0, x2: width, y1: 6, y2: 6, lineWidth: 1, lineColor: color.rule }] },
         { text: 'Статистика платформи', fontSize: 20, bold: true, margin: [0, 14, 0, 2] },
-        { text: 'Ті самі показники, що в панелі адміністратора: користувачі, проєкти, заявки, скарги й завдання.', color: color.muted, fontSize: 9.5 },
+        {
+          text: 'Ті самі показники, що в панелі адміністратора: користувачі, проєкти, заявки, скарги й завдання.',
+          color: color.muted,
+          fontSize: 9.5,
+        },
 
         heading('Основні показники'),
         tileGrid(
@@ -336,15 +344,59 @@ export async function buildReportPdf(report: Report) {
 
         heading('Розподіл за статусами'),
         pair(
-          bars('Завдання', [['До виконання', t.TODO, color.gray], ['У процесі', t.IN_PROGRESS, color.blue], ['На перевірці', t.REVIEW, color.amber], ['Завершено', t.DONE, color.green], ['Прострочені', report.overdueTasks, color.red]], half),
-          bars('Проєкти', [['Пошук виконавця', p.PLANNING, color.gray], ['У процесі', p.ACTIVE, color.blue], ['Призупинено', p.PAUSED, color.amber], ['Завершено', p.COMPLETED, color.green], ['Скасовано', p.CANCELLED, color.red]], half),
+          bars(
+            'Завдання',
+            [
+              ['До виконання', t.TODO, color.gray],
+              ['У процесі', t.IN_PROGRESS, color.blue],
+              ['На перевірці', t.REVIEW, color.amber],
+              ['Завершено', t.DONE, color.green],
+              ['Прострочені', report.overdueTasks, color.red],
+            ],
+            half,
+          ),
+          bars(
+            'Проєкти',
+            [
+              ['Пошук виконавця', p.PLANNING, color.gray],
+              ['У процесі', p.ACTIVE, color.blue],
+              ['Призупинено', p.PAUSED, color.amber],
+              ['Завершено', p.COMPLETED, color.green],
+              ['Скасовано', p.CANCELLED, color.red],
+            ],
+            half,
+          ),
         ),
         pair(
-          bars('Скарги', [['Очікують розгляду', c.OPEN, color.amber], ['Вирішено', c.RESOLVED, color.green], ['Відхилено', c.REJECTED, color.red]], half),
-          bars('Заявки', [['Очікують рішення', a.PENDING, color.amber], ['Прийнято', a.ACCEPTED, color.green], ['Відхилено', a.REJECTED, color.red]], half),
+          bars(
+            'Скарги',
+            [
+              ['Очікують розгляду', c.OPEN, color.amber],
+              ['Вирішено', c.RESOLVED, color.green],
+              ['Відхилено', c.REJECTED, color.red],
+            ],
+            half,
+          ),
+          bars(
+            'Заявки',
+            [
+              ['Очікують рішення', a.PENDING, color.amber],
+              ['Прийнято', a.ACCEPTED, color.green],
+              ['Відхилено', a.REJECTED, color.red],
+            ],
+            half,
+          ),
         ),
         pair(
-          bars('Користувачі за ролями', [['Клієнти', r.CLIENT, color.amber], ['Фрілансери', r.FREELANCER, color.blue], ['Адміністратори', r.ADMIN, color.gray]], half),
+          bars(
+            'Користувачі за ролями',
+            [
+              ['Клієнти', r.CLIENT, color.amber],
+              ['Фрілансери', r.FREELANCER, color.blue],
+              ['Адміністратори', r.ADMIN, color.gray],
+            ],
+            half,
+          ),
           growthChart(report, half),
         ),
       ],

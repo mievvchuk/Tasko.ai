@@ -11,12 +11,7 @@ import { AddProjectMember } from "../components/AddProjectMember";
 import { MilestonesPanel } from "../components/MilestonesPanel";
 import { useApi } from "../useApi";
 import { formatDate, parsePage } from "../format";
-import {
-  priorityNames,
-  projectStatusNames,
-  roleNames,
-  taskStatusNames,
-} from "../types";
+import { priorityNames, projectStatusNames, roleNames, taskStatusNames } from "../types";
 import type { Project, ProjectMember, ProjectMilestone, Task } from "../types";
 
 import { useLanguage } from "../i18n";
@@ -35,10 +30,7 @@ export function ProjectDetailsPage() {
   const assignee = params.get("assignee") || "";
   const milestone = params.get("milestone") || "";
   // Етапи з прогресом: панель над завданнями і фільтр «Етап»
-  const milestones = useApi<ProjectMilestone[]>(
-    id ? `/projects/${id}/milestones` : null,
-    { live: true },
-  );
+  const milestones = useApi<ProjectMilestone[]>(id ? `/projects/${id}/milestones` : null, { live: true });
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -113,17 +105,7 @@ export function ProjectDetailsPage() {
       active = false;
       controller.abort();
     };
-  }, [
-    id,
-    page,
-    status,
-    priority,
-    search,
-    overdue,
-    assignee,
-    milestone,
-    attempt,
-  ]);
+  }, [id, page, status, priority, search, overdue, assignee, milestone, attempt]);
 
   function changeFilter(name: string, value: string) {
     const query = new URLSearchParams(params);
@@ -152,20 +134,13 @@ export function ProjectDetailsPage() {
       </>
     );
   if (!project || project.id !== id) return null;
-  const canEdit =
-    project.clientId === user?.id &&
-    !["COMPLETED", "CANCELLED"].includes(project.status);
+  const canEdit = project.clientId === user?.id && !["COMPLETED", "CANCELLED"].includes(project.status);
 
   const isAdmin = user?.role === "ADMIN";
   return (
     <>
       <Link className="breadcrumb" to="/projects">
-        ←{" "}
-        {user?.role === "ADMIN"
-          ? tr("Усі проєкти")
-          : user?.role === "FREELANCER"
-            ? tr("Робочі проєкти")
-            : tr("Мої проєкти")}
+        ← {user?.role === "ADMIN" ? tr("Усі проєкти") : user?.role === "FREELANCER" ? tr("Робочі проєкти") : tr("Мої проєкти")}
       </Link>
       <div className="page-heading heading-with-action">
         <div>
@@ -180,20 +155,14 @@ export function ProjectDetailsPage() {
             </Link>
           )}
           {canEdit && (
-            <Link
-              className="button secondary"
-              to={`/projects/${id}/tasks/new${milestone ? `?milestone=${milestone}` : ""}`}
-            >
+            <Link className="button secondary" to={`/projects/${id}/tasks/new${milestone ? `?milestone=${milestone}` : ""}`}>
               <i className="bi bi-plus-lg" aria-hidden="true"></i>
 
               {tr("Створити завдання")}
             </Link>
           )}
           {canEdit && (
-            <Link
-              className="button secondary"
-              to={`/projects/${id}/applications`}
-            >
+            <Link className="button secondary" to={`/projects/${id}/applications`}>
               {tr("Заявки")}
             </Link>
           )}
@@ -206,22 +175,17 @@ export function ProjectDetailsPage() {
       </div>
       {project.status === "MODERATION" && (
         <p className="notice" role="status">
-          {tr(
-            "Проєкт на модерації. Після схвалення адміністратором він з'явиться на біржі, і фрілансери зможуть подавати заявки.",
-          )}
+          {tr("Проєкт на модерації. Після схвалення адміністратором він з'явиться на біржі, і фрілансери зможуть подавати заявки.")}
         </p>
       )}
       {project.status === "REJECTED" && (
         <div className="notice error" role="status">
           <p>
-            <strong>{tr("Модератор відхилив проєкт.")}</strong>{" "}
-            {project.moderationNote &&
-              tr("Причина: {0}", project.moderationNote)}
+            <strong>{tr("Модератор відхилив проєкт.")}</strong> {project.moderationNote && tr("Причина: {0}", project.moderationNote)}
           </p>
           {canEdit && (
             <p>
-              <Link to={`/projects/${id}/edit`}>{tr("Виправте проєкт")}</Link>{" "}
-              {tr("— після збереження він знову піде на модерацію.")}
+              <Link to={`/projects/${id}/edit`}>{tr("Виправте проєкт")}</Link> {tr("— після збереження він знову піде на модерацію.")}
             </p>
           )}
         </div>
@@ -268,20 +232,13 @@ export function ProjectDetailsPage() {
           </Link>
         )}
       </nav>
-      <section
-        className="data-panel project-overview"
-        aria-label={tr("Огляд проєкту")}
-      >
-        <p className="project-full-description">
-          {project.description || tr("Опис не додано.")}
-        </p>
+      <section className="data-panel project-overview" aria-label={tr("Огляд проєкту")}>
+        <p className="project-full-description">{project.description || tr("Опис не додано.")}</p>
         <dl className="project-facts">
           <div>
             <dt>{tr("Статус")}</dt>
             <dd>
-              <span className={`project-status status-${project.status}`}>
-                {tr(projectStatusNames[project.status])}
-              </span>
+              <span className={`project-status status-${project.status}`}>{tr(projectStatusNames[project.status])}</span>
             </dd>
           </div>
           <div>
@@ -294,47 +251,33 @@ export function ProjectDetailsPage() {
           </div>
           <div>
             <dt>
-              {tr("Виконано")} {project.completedTasks} {tr("із")}{" "}
-              {project.totalTasks} {tr("завдань")}
+              {tr("Виконано")} {project.completedTasks} {tr("із")} {project.totalTasks} {tr("завдань")}
             </dt>
             <dd>
-              <progress
-                className="project-progress"
-                max={100}
-                value={project.progress}
-                aria-label={tr("Прогрес проєкту")}
-              />{" "}
+              <progress className="project-progress" max={100} value={project.progress} aria-label={tr("Прогрес проєкту")} />{" "}
               {project.progress}%
             </dd>
           </div>
         </dl>
       </section>
       {/* Після завершення пропонуємо учасникам оцінити одне одного */}
-      {project.status === "COMPLETED" &&
-        (project.clientId === user?.id ||
-          members.some((member) => member.userId === user?.id)) && (
-          <section className="data-panel completion-panel" role="status">
-            <i className="bi bi-trophy" aria-hidden="true"></i>
-            <div>
-              <h2>{tr("Проєкт завершено")}</h2>
-              <p>
-                {project.clientId === user?.id
-                  ? tr(
-                      "Усі завдання й етапи виконано. Оцініть роботу фрілансерів — відгук з'явиться в їхньому профілі.",
-                    )
-                  : tr(
-                      "Усі завдання й етапи виконано. Оцініть співпрацю із замовником.",
-                    )}
-              </p>
-            </div>
-            <a className="button primary" href="#project-members-heading">
-              <i className="bi bi-star" aria-hidden="true"></i>
+      {project.status === "COMPLETED" && (project.clientId === user?.id || members.some((member) => member.userId === user?.id)) && (
+        <section className="data-panel completion-panel" role="status">
+          <i className="bi bi-trophy" aria-hidden="true"></i>
+          <div>
+            <h2>{tr("Проєкт завершено")}</h2>
+            <p>
               {project.clientId === user?.id
-                ? tr("Оцінити фрілансерів")
-                : tr("Оцінити замовника")}
-            </a>
-          </section>
-        )}
+                ? tr("Усі завдання й етапи виконано. Оцініть роботу фрілансерів — відгук з'явиться в їхньому профілі.")
+                : tr("Усі завдання й етапи виконано. Оцініть співпрацю із замовником.")}
+            </p>
+          </div>
+          <a className="button primary" href="#project-members-heading">
+            <i className="bi bi-star" aria-hidden="true"></i>
+            {project.clientId === user?.id ? tr("Оцінити фрілансерів") : tr("Оцінити замовника")}
+          </a>
+        </section>
+      )}
       {milestones.data && (
         <MilestonesPanel
           projectId={project.id}
@@ -348,52 +291,35 @@ export function ProjectDetailsPage() {
           }}
         />
       )}
-      {user?.role === "FREELANCER" &&
-        project.status === "ACTIVE" &&
-        members.some((member) => member.userId === user.id) && (
-          <section className="data-panel take-next-panel">
-            <div>
-              <h2>{tr("Черга завдань")}</h2>
-              <p className="form-note">
-                {tr(
-                  "Беріть завдання по черзі: спершу з найближчим дедлайном і вищим пріоритетом. Нове можна взяти, коли попереднє передано на перевірку.",
-                )}
-              </p>
-              {takeError && (
-                <p className="form-error" role="alert">
-                  {takeError}
-                </p>
+      {user?.role === "FREELANCER" && project.status === "ACTIVE" && members.some((member) => member.userId === user.id) && (
+        <section className="data-panel take-next-panel">
+          <div>
+            <h2>{tr("Черга завдань")}</h2>
+            <p className="form-note">
+              {tr(
+                "Беріть завдання по черзі: спершу з найближчим дедлайном і вищим пріоритетом. Нове можна взяти, коли попереднє передано на перевірку.",
               )}
-            </div>
-            <button
-              className="button primary"
-              disabled={taking}
-              onClick={() => void takeNext()}
-            >
-              <i className="bi bi-box-arrow-in-down" aria-hidden="true"></i>
-              {taking ? tr("Беремо…") : tr("Взяти наступне завдання")}
-            </button>
-          </section>
-        )}
-      <section
-        className="data-panel projects-panel"
-        aria-labelledby="project-tasks-heading"
-      >
+            </p>
+            {takeError && (
+              <p className="form-error" role="alert">
+                {takeError}
+              </p>
+            )}
+          </div>
+          <button className="button primary" disabled={taking} onClick={() => void takeNext()}>
+            <i className="bi bi-box-arrow-in-down" aria-hidden="true"></i>
+            {taking ? tr("Беремо…") : tr("Взяти наступне завдання")}
+          </button>
+        </section>
+      )}
+      <section className="data-panel projects-panel" aria-labelledby="project-tasks-heading">
         <div className="panel-heading">
           <h2 id="project-tasks-heading">{tr("Завдання проєкту")}</h2>
           <div className="task-filters">
-            <TaskSearchFilters
-              search={search}
-              overdue={overdue}
-              onChange={changeFilter}
-            />
+            <TaskSearchFilters search={search} overdue={overdue} onChange={changeFilter} />
             <div className="filter-field">
               <label htmlFor="task-status">{tr("Статус")}</label>
-              <select
-                id="task-status"
-                value={status}
-                onChange={(event) => changeFilter("status", event.target.value)}
-              >
+              <select id="task-status" value={status} onChange={(event) => changeFilter("status", event.target.value)}>
                 <option value="">{tr("Усі статуси")}</option>
                 {Object.entries(taskStatusNames).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -404,13 +330,7 @@ export function ProjectDetailsPage() {
             </div>
             <div className="filter-field">
               <label htmlFor="task-priority">{tr("Пріоритет")}</label>
-              <select
-                id="task-priority"
-                value={priority}
-                onChange={(event) =>
-                  changeFilter("priority", event.target.value)
-                }
-              >
+              <select id="task-priority" value={priority} onChange={(event) => changeFilter("priority", event.target.value)}>
                 <option value="">{tr("Усі пріоритети")}</option>
                 {Object.entries(priorityNames).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -422,13 +342,7 @@ export function ProjectDetailsPage() {
             {Boolean(milestones.data?.length) && (
               <div className="filter-field">
                 <label htmlFor="task-milestone">{tr("Етап")}</label>
-                <select
-                  id="task-milestone"
-                  value={milestone}
-                  onChange={(event) =>
-                    changeFilter("milestone", event.target.value)
-                  }
-                >
+                <select id="task-milestone" value={milestone} onChange={(event) => changeFilter("milestone", event.target.value)}>
                   <option value="">{tr("Усі етапи")}</option>
                   {milestones.data?.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -440,13 +354,7 @@ export function ProjectDetailsPage() {
             )}
             <div className="filter-field">
               <label htmlFor="task-assignee">{tr("Виконавець")}</label>
-              <select
-                id="task-assignee"
-                value={assignee}
-                onChange={(event) =>
-                  changeFilter("assignee", event.target.value)
-                }
-              >
+              <select id="task-assignee" value={assignee} onChange={(event) => changeFilter("assignee", event.target.value)}>
                 <option value="">{tr("Усі виконавці")}</option>
                 {members
                   .filter((member) => member.user?.role === "FREELANCER")
@@ -461,15 +369,8 @@ export function ProjectDetailsPage() {
         </div>
         {tasks.length ? (
           <>
-            <p className="table-hint">
-              {tr("Гортайте таблицю вбік, щоб побачити всі стовпці.")}
-            </p>
-            <div
-              className="table-scroll"
-              role="region"
-              aria-label={tr("Таблиця завдань")}
-              tabIndex={0}
-            >
+            <p className="table-hint">{tr("Гортайте таблицю вбік, щоб побачити всі стовпці.")}</p>
+            <div className="table-scroll" role="region" aria-label={tr("Таблиця завдань")} tabIndex={0}>
               <table className="projects-table tasks-table">
                 <thead>
                   <tr>
@@ -487,17 +388,11 @@ export function ProjectDetailsPage() {
                       <td>
                         <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                       </td>
-                      <td>
-                        {milestones.data?.find(
-                          (item) => item.id === task.milestoneId,
-                        )?.title ?? "—"}
-                      </td>
+                      <td>{milestones.data?.find((item) => item.id === task.milestoneId)?.title ?? "—"}</td>
                       <td>
                         {task.assigneeId ? (
                           <Link to={`/freelancers/${task.assigneeId}`}>
-                            {members.find(
-                              (member) => member.userId === task.assigneeId,
-                            )?.user?.name || tr("Учасник недоступний")}
+                            {members.find((member) => member.userId === task.assigneeId)?.user?.name || tr("Учасник недоступний")}
                           </Link>
                         ) : (
                           tr("Не призначено")
@@ -520,31 +415,19 @@ export function ProjectDetailsPage() {
         )}
         <nav className="pagination" aria-label={tr("Сторінки завдань")}>
           <span>
-            {tr("Сторінка")} {page} {tr("· Показано:")} {tasks.length}{" "}
-            {tr("· У проєкті:")} {project.totalTasks}
+            {tr("Сторінка")} {page} {tr("· Показано:")} {tasks.length} {tr("· У проєкті:")} {project.totalTasks}
           </span>
           <div>
-            <button
-              className="button secondary"
-              disabled={page === 1}
-              onClick={() => changePage(page - 1)}
-            >
+            <button className="button secondary" disabled={page === 1} onClick={() => changePage(page - 1)}>
               {tr("← Попередня")}
             </button>
-            <button
-              className="button secondary"
-              disabled={tasks.length < 10 || page === 10000}
-              onClick={() => changePage(page + 1)}
-            >
+            <button className="button secondary" disabled={tasks.length < 10 || page === 10000} onClick={() => changePage(page + 1)}>
               {tr("Наступна →")}
             </button>
           </div>
         </nav>
       </section>
-      <section
-        className="data-panel projects-panel"
-        aria-labelledby="project-members-heading"
-      >
+      <section className="data-panel projects-panel" aria-labelledby="project-members-heading">
         <div className="panel-heading">
           <h2 id="project-members-heading">{tr("Учасники проєкту")}</h2>
         </div>
@@ -570,47 +453,24 @@ export function ProjectDetailsPage() {
               <li key={member.id}>
                 <span>
                   <strong>
-                    {member.user ? (
-                      <Link to={`/freelancers/${member.user.id}`}>
-                        {member.user.name}
-                      </Link>
-                    ) : (
-                      tr("Користувач недоступний")
-                    )}
+                    {member.user ? <Link to={`/freelancers/${member.user.id}`}>{member.user.name}</Link> : tr("Користувач недоступний")}
                   </strong>
                   <small>{member.user?.email}</small>
                 </span>
-                <span>
-                  {member.user
-                    ? tr(roleNames[member.user.role])
-                    : tr("Учасник")}
-                </span>
+                <span>{member.user ? tr(roleNames[member.user.role]) : tr("Учасник")}</span>
                 {/* Фрілансер оцінює клієнта у своєму рядку команди */}
-                {project.status === "COMPLETED" &&
-                  user?.role === "FREELANCER" &&
-                  member.user?.id === user.id && (
-                    <ReviewForm
-                      projectId={project.id}
-                      freelancerName={tr("клієнта")}
-                    />
-                  )}
-                {project.status === "COMPLETED" &&
-                  project.clientId === user?.id &&
-                  member.user && (
-                    <ReviewForm
-                      projectId={project.id}
-                      freelancerId={member.user.id}
-                      freelancerName={member.user.name}
-                    />
-                  )}
+                {project.status === "COMPLETED" && user?.role === "FREELANCER" && member.user?.id === user.id && (
+                  <ReviewForm projectId={project.id} freelancerName={tr("клієнта")} />
+                )}
+                {project.status === "COMPLETED" && project.clientId === user?.id && member.user && (
+                  <ReviewForm projectId={project.id} freelancerId={member.user.id} freelancerName={member.user.name} />
+                )}
               </li>
             ))}
           </ul>
         ) : (
           <div className="empty-state compact">
-            <p>
-              {tr("Виконавця ще не обрано. Перейдіть до заявок фрілансерів.")}
-            </p>
+            <p>{tr("Виконавця ще не обрано. Перейдіть до заявок фрілансерів.")}</p>
           </div>
         )}
       </section>

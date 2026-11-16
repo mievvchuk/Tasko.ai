@@ -12,14 +12,8 @@ export function useApi<T>(path: string | null, options?: { live?: boolean }) {
     error: string;
     loading: boolean;
   }>({ path: null, data: null, error: "", loading: false });
-  const refresh = useCallback(
-    () => setVersion((value) => ({ count: value.count + 1, silent: false })),
-    [],
-  );
-  const reload = useCallback(
-    () => setVersion((value) => ({ count: value.count + 1, silent: true })),
-    [],
-  );
+  const refresh = useCallback(() => setVersion((value) => ({ count: value.count + 1, silent: false })), []);
+  const reload = useCallback(() => setVersion((value) => ({ count: value.count + 1, silent: true })), []);
   useLiveRefresh(reload, Boolean(options?.live && path));
   useEffect(() => {
     if (!path) {
@@ -30,9 +24,7 @@ export function useApi<T>(path: string | null, options?: { live?: boolean }) {
     let active = true;
     const silent = version.silent;
     setState((previous) =>
-      silent && previous.path === path && previous.data !== null
-        ? previous
-        : { path, data: null, error: "", loading: true },
+      silent && previous.path === path && previous.data !== null ? previous : { path, data: null, error: "", loading: true },
     );
     void request<T>(path, { signal: controller.signal })
       .then((data) => {
@@ -52,7 +44,6 @@ export function useApi<T>(path: string | null, options?: { live?: boolean }) {
       controller.abort();
     };
   }, [path, version]);
-  if (state.path !== path)
-    return { data: null, error: "", loading: Boolean(path), refresh };
+  if (state.path !== path) return { data: null, error: "", loading: Boolean(path), refresh };
   return { ...state, refresh };
 }

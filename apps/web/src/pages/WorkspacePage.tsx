@@ -24,10 +24,7 @@ export function WorkspacePage() {
   const { user, updateUser } = useAuth();
   // Адмінові статистика платформи вже є на «Панелі адміністратора», тут не потрібна
   const admin = user?.role === "ADMIN";
-  const stats = useApi<DashboardSummary>(
-    admin ? null : "/analytics/dashboard",
-    { live: true },
-  );
+  const stats = useApi<DashboardSummary>(admin ? null : "/analytics/dashboard", { live: true });
   const fileInput = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState("");
@@ -73,10 +70,7 @@ export function WorkspacePage() {
     setCropFile(null);
     const body = new FormData();
     body.append("file", file);
-    await run(
-      () => request<User>("/profile/avatar", { method: "POST", body }),
-      tr("Фото профілю оновлено."),
-    );
+    await run(() => request<User>("/profile/avatar", { method: "POST", body }), tr("Фото профілю оновлено."));
   }
 
   async function saveName(event: FormEvent<HTMLFormElement>) {
@@ -97,17 +91,13 @@ export function WorkspacePage() {
   const statItems = stats.data
     ? [
         {
-          label: freelancer
-            ? tr("Проєктів, де я в команді")
-            : tr("Мої проєкти"),
+          label: freelancer ? tr("Проєктів, де я в команді") : tr("Мої проєкти"),
           value: stats.data.projects,
         },
         { label: tr("Активні проєкти"), value: stats.data.activeProjects },
         { label: tr("Завдань у моїх проєктах"), value: stats.data.tasks },
         {
-          label: freelancer
-            ? tr("Виконано командою")
-            : tr("Виконано виконавцями"),
+          label: freelancer ? tr("Виконано командою") : tr("Виконано виконавцями"),
           value: stats.data.completedTasks,
         },
       ]
@@ -117,17 +107,10 @@ export function WorkspacePage() {
     <>
       <div className="page-heading">
         <h1>{tr("Мій профіль")}</h1>
-        <p>
-          {tr(
-            "Фото, особисті дані, профіль виконавця та безпека облікового запису.",
-          )}
-        </p>
+        <p>{tr("Фото, особисті дані, профіль виконавця та безпека облікового запису.")}</p>
       </div>
 
-      <section
-        className="data-panel profile-hero"
-        aria-labelledby="profile-name"
-      >
+      <section className="data-panel profile-hero" aria-labelledby="profile-name">
         <div className="profile-photo">
           <UserAvatar name={user.name} avatarUrl={user.avatarUrl} size="xl" />
           <input
@@ -140,12 +123,7 @@ export function WorkspacePage() {
             onChange={choosePhoto}
           />
           <div className="profile-photo-actions">
-            <button
-              type="button"
-              className="button primary"
-              disabled={busy}
-              onClick={() => fileInput.current?.click()}
-            >
+            <button type="button" className="button primary" disabled={busy} onClick={() => fileInput.current?.click()}>
               <i className="bi bi-camera" aria-hidden="true"></i>
               {user.avatarUrl ? tr("Змінити фото") : tr("Додати фото")}
             </button>
@@ -154,13 +132,7 @@ export function WorkspacePage() {
                 type="button"
                 className="button secondary"
                 disabled={busy}
-                onClick={() =>
-                  void run(
-                    () =>
-                      request<User>("/profile/avatar", { method: "DELETE" }),
-                    tr("Фото профілю видалено."),
-                  )
-                }
+                onClick={() => void run(() => request<User>("/profile/avatar", { method: "DELETE" }), tr("Фото профілю видалено."))}
               >
                 <i className="bi bi-trash3" aria-hidden="true"></i>
 
@@ -168,15 +140,9 @@ export function WorkspacePage() {
               </button>
             )}
           </div>
-          <small className="form-note">
-            {tr("PNG, JPG або WEBP, до 10 МБ")}
-          </small>
+          <small className="form-note">{tr("PNG, JPG або WEBP, до 10 МБ")}</small>
           {cropFile && (
-            <AvatarCropDialog
-              file={cropFile}
-              onCancel={() => setCropFile(null)}
-              onSave={(cropped) => void uploadPhoto(cropped)}
-            />
+            <AvatarCropDialog file={cropFile} onCancel={() => setCropFile(null)} onSave={(cropped) => void uploadPhoto(cropped)} />
           )}
         </div>
 
@@ -197,12 +163,7 @@ export function WorkspacePage() {
                 <button className="button primary" disabled={busy}>
                   {tr("Зберегти")}
                 </button>
-                <button
-                  type="button"
-                  className="button secondary"
-                  disabled={busy}
-                  onClick={() => setEditingName(false)}
-                >
+                <button type="button" className="button secondary" disabled={busy} onClick={() => setEditingName(false)}>
                   {tr("Скасувати")}
                 </button>
               </div>
@@ -224,11 +185,7 @@ export function WorkspacePage() {
               </button>
             </div>
           )}
-          {user.role === "ADMIN" ? (
-            <span className="role-pill">{tr(roleNames[user.role])}</span>
-          ) : (
-            <RoleSwitch />
-          )}
+          {user.role === "ADMIN" ? <span className="role-pill">{tr(roleNames[user.role])}</span> : <RoleSwitch />}
           <dl className="profile-facts">
             <div>
               <dt>
@@ -251,16 +208,11 @@ export function WorkspacePage() {
 
                 {tr("Двофакторний вхід")}
               </dt>
-              <dd>
-                {user.twoFactorEnabled ? tr("Увімкнено") : tr("Вимкнено")}
-              </dd>
+              <dd>{user.twoFactorEnabled ? tr("Увімкнено") : tr("Вимкнено")}</dd>
             </div>
           </dl>
           {user.role === "FREELANCER" && (
-            <Link
-              className="profile-public-link"
-              to={`/freelancers/${user.id}`}
-            >
+            <Link className="profile-public-link" to={`/freelancers/${user.id}`}>
               <i className="bi bi-eye" aria-hidden="true"></i>
 
               {tr("Як мій профіль бачать клієнти")}

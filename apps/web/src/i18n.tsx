@@ -10,8 +10,7 @@ const uk = {
   register: "Реєстрація",
   workspace: "ВАШ РОБОЧИЙ ПРОСТІР",
   introTitle: "Менше хаосу. Більше зробленого.",
-  introText:
-    "Проєкти, команда та результати роботи в одному зрозумілому просторі.",
+  introText: "Проєкти, команда та результати роботи в одному зрозумілому просторі.",
   plan: "Плануйте",
   work: "Виконуйте",
   approve: "Приймайте",
@@ -148,10 +147,8 @@ export function useLanguage() {
   return {
     language,
     t: (key: TranslationKey) => current.t(key),
-    tr: (text: string, ...args: (string | number)[]) =>
-      current.t(text, { ...args }),
-    toggleLanguage: () =>
-      void current.changeLanguage(language === "uk" ? "en" : "uk"),
+    tr: (text: string, ...args: (string | number)[]) => current.t(text, { ...args }),
+    toggleLanguage: () => void current.changeLanguage(language === "uk" ? "en" : "uk"),
   };
 }
 

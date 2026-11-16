@@ -13,15 +13,7 @@ export function AccountMenu() {
   if (!user) return null;
 
   const roleLabel =
-    language === "uk"
-      ? roleNames[user.role]
-      : t(
-          user.role === "CLIENT"
-            ? "client"
-            : user.role === "FREELANCER"
-              ? "freelancer"
-              : "admin",
-        );
+    language === "uk" ? roleNames[user.role] : t(user.role === "CLIENT" ? "client" : user.role === "FREELANCER" ? "freelancer" : "admin");
 
   return (
     <div
@@ -45,11 +37,7 @@ export function AccountMenu() {
       {open && (
         <>
           {/* Прозора підкладка на весь екран: клік поза меню закриває його */}
-          <div
-            className="account-backdrop"
-            aria-hidden="true"
-            onClick={() => setOpen(false)}
-          />
+          <div className="account-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
           <div className="account-dropdown" id="account-dropdown">
             <div className="account-info">
               <strong>{user.name}</strong>

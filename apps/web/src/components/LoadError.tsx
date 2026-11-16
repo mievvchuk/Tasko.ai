@@ -1,11 +1,5 @@
 import { useLanguage } from "../i18n";
-export function LoadError({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry: () => void;
-}) {
+export function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   const { tr } = useLanguage();
   return (
     <div className="load-error" role="alert">

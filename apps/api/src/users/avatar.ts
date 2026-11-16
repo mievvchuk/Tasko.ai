@@ -15,8 +15,7 @@ const formats: {
   {
     extension: 'png',
     mime: 'image/png',
-    matches: (b) =>
-      b.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])),
+    matches: (b) => b.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])),
   },
   {
     extension: 'jpg',
@@ -26,9 +25,7 @@ const formats: {
   {
     extension: 'webp',
     mime: 'image/webp',
-    matches: (b) =>
-      b.subarray(0, 4).toString('latin1') === 'RIFF' &&
-      b.subarray(8, 12).toString('latin1') === 'WEBP',
+    matches: (b) => b.subarray(0, 4).toString('latin1') === 'RIFF' && b.subarray(8, 12).toString('latin1') === 'WEBP',
   },
 ];
 
@@ -36,17 +33,10 @@ const formats: {
 // тож перейменований .exe чи HTML під виглядом картинки не пройде.
 export function validateAvatar(file: UploadedFile | undefined) {
   if (!file) throw new BadRequestException('Додайте фото в поле file.');
-  if (
-    file.size === 0 ||
-    file.size > maxAvatarSize ||
-    file.size !== file.buffer.length
-  )
+  if (file.size === 0 || file.size > maxAvatarSize || file.size !== file.buffer.length)
     throw new BadRequestException('Фото має бути розміром до 2 МБ.');
   const format = formats.find((item) => item.matches(file.buffer));
-  if (!format)
-    throw new BadRequestException(
-      'Дозволено фото у форматі PNG, JPG або WEBP.',
-    );
+  if (!format) throw new BadRequestException('Дозволено фото у форматі PNG, JPG або WEBP.');
   return format;
 }
 

@@ -23,15 +23,11 @@ const hooks = registerHooks({
   },
 });
 after(() => hooks.deregister());
-const { default: MarkdownAnswer } =
-  await import("../src/components/MarkdownAnswer.tsx");
-const render = (children) =>
-  renderToStaticMarkup(createElement(MarkdownAnswer, { children }));
+const { default: MarkdownAnswer } = await import("../src/components/MarkdownAnswer.tsx");
+const render = (children) => renderToStaticMarkup(createElement(MarkdownAnswer, { children }));
 
 test("agent table renders headers, bold text and a scrollable region", () => {
-  const html = render(
-    "| Поле | Значення |\n| --- | --- |\n| **Назва** | Тестовий проєкт |",
-  );
+  const html = render("| Поле | Значення |\n| --- | --- |\n| **Назва** | Тестовий проєкт |");
   assert.match(html, /role="region"/);
   assert.match(html, /tabindex="0"/);
   assert.match(html, /<th>Поле<\/th>/);
@@ -43,34 +39,21 @@ test("headings, lists, quotes and code render as structured content", () => {
   const html = render(
     "## Пріоритети\n\n1. **Важливо**\n2. *Пізніше*\n\n- Завдання\n\n> Порада\n\n`status`\n\n```js\nconst done = true;\n```",
   );
-  for (const tag of [
-    "h2",
-    "ol",
-    "ul",
-    "strong",
-    "em",
-    "blockquote",
-    "pre",
-    "code",
-  ]) {
+  for (const tag of ["h2", "ol", "ul", "strong", "em", "blockquote", "pre", "code"]) {
     assert.match(html, new RegExp(`<${tag}[ >]`));
   }
 });
 
 test("technical ids are hidden but project links keep them", () => {
   const id = "912c6411-0ae0-4b76-9cd9-50cc27569576";
-  const html = render(
-    `- **Застосунок** (ID ${id}) – завдання\n- [Макет](/projects/${id}) ${id} готово`,
-  );
+  const html = render(`- **Застосунок** (ID ${id}) – завдання\n- [Макет](/projects/${id}) ${id} готово`);
   assert.equal(html.split(id).length - 1, 1);
   assert.match(html, new RegExp(`href="/projects/${id}"`));
   assert.doesNotMatch(html, /\(ID/);
 });
 
 test("safe links open separately and javascript URLs are rejected", () => {
-  const html = render(
-    "[Довідка](https://example.com/help) [Небезпечно](javascript:alert%281%29)",
-  );
+  const html = render("[Довідка](https://example.com/help) [Небезпечно](javascript:alert%281%29)");
   assert.match(html, /href="https:\/\/example.com\/help"/);
   assert.match(html, /target="_blank"/);
   assert.match(html, /rel="noopener noreferrer"/);

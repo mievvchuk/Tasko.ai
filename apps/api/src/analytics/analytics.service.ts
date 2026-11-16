@@ -1,48 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProjectsService } from '../projects/projects.service.js';
-import {
-  moderationStatuses,
-  projectStatuses,
-} from '../projects/projects.dto.js';
+import { moderationStatuses, projectStatuses } from '../projects/projects.dto.js';
 import type { CurrentUser } from '../users/users.service.js';
 import type { AllTasksQueryDto } from '../tasks/tasks.dto.js';
 
-export function taskRisk(
-  task: { status: string; priority: string; deadline: Date | null },
-  now = new Date(),
-) {
+export function taskRisk(task: { status: string; priority: string; deadline: Date | null }, now = new Date()) {
   if (task.status === 'DONE') return 'NONE';
   if (task.deadline && task.deadline < now) return 'OVERDUE';
-  if (
-    task.deadline &&
-    task.deadline.getTime() - now.getTime() <= 3 * 24 * 60 * 60 * 1000
-  )
-    return 'NEAR_DEADLINE';
+  if (task.deadline && task.deadline.getTime() - now.getTime() <= 3 * 24 * 60 * 60 * 1000) return 'NEAR_DEADLINE';
   return task.priority === 'HIGH' ? 'HIGH_PRIORITY' : 'NONE';
 }
 
-export function nearestDeadline(
-  tasks: { status: string; deadline: Date | null }[],
-  now = new Date(),
-) {
+export function nearestDeadline(tasks: { status: string; deadline: Date | null }[], now = new Date()) {
   let nearest: Date | null = null;
   for (const task of tasks) {
-    if (
-      task.status !== 'DONE' &&
-      task.deadline &&
-      task.deadline >= now &&
-      (!nearest || task.deadline < nearest)
-    )
-      nearest = task.deadline;
+    if (task.status !== 'DONE' && task.deadline && task.deadline >= now && (!nearest || task.deadline < nearest)) nearest = task.deadline;
   }
   return nearest;
 }
 
 @Injectable()
 export class AnalyticsService {
-  constructor(
-    @Inject(ProjectsService) private readonly projects: ProjectsService,
-  ) {}
+  constructor(@Inject(ProjectsService) private readonly projects: ProjectsService) {}
   private get db() {
     return this.projects.prisma.client.orm.public;
   }
@@ -51,8 +30,7 @@ export class AnalyticsService {
     // Адміністратор не має власних проєктів, а переглядати може всі: його аналітика
     // (і Ада для нього) — по всій платформі
     if (user.role === 'ADMIN') return this.db.Project.all();
-    if (user.role === 'CLIENT')
-      return this.db.Project.where({ clientId: user.id }).all();
+    if (user.role === 'CLIENT') return this.db.Project.where({ clientId: user.id }).all();
     const memberships = await this.db.ProjectMember.where({
       userId: user.id,
     }).all();
@@ -63,17 +41,14 @@ export class AnalyticsService {
   async visibleTasks(user: CurrentUser) {
     const projects = await this.visibleProjects(user);
     if (!projects.length) return [];
-    return this.db.Task.where((task) =>
-      task.projectId.in(projects.map((project) => project.id)),
-    ).all();
+    return this.db.Task.where((task) => task.projectId.in(projects.map((project) => project.id))).all();
   }
   async dashboard(user: CurrentUser) {
     const projects = await this.visibleProjects(user);
     const tasks = await this.visibleTasks(user);
     return {
       projects: projects.length,
-      activeProjects: projects.filter((project) => project.status === 'ACTIVE')
-        .length,
+      activeProjects: projects.filter((project) => project.status === 'ACTIVE').length,
       tasks: tasks.length,
       projectsByStatus: Object.fromEntries(
         [...projectStatuses, ...moderationStatuses].map((status) => [
@@ -94,37 +69,25 @@ export class AnalyticsService {
   }
   // Усі завдання користувача з назвою проєкту — щоб не обирати проєкт перед пошуком
   async tasks(user: CurrentUser, filters: AllTasksQueryDto) {
-    const projects = (await this.visibleProjects(user)).filter(
-      (project) => !filters.projectId || project.id === filters.projectId,
-    );
+    const projects = (await this.visibleProjects(user)).filter((project) => !filters.projectId || project.id === filters.projectId);
     if (!projects.length) return [];
-    const titles = new Map(
-      projects.map((project) => [project.id, project.title]),
-    );
-    let query = this.db.Task.where((task) =>
-      task.projectId.in([...titles.keys()]),
-    );
+    const titles = new Map(projects.map((project) => [project.id, project.title]));
+    let query = this.db.Task.where((task) => task.projectId.in([...titles.keys()]));
     if (filters.status) query = query.where({ status: filters.status });
     if (filters.priority) query = query.where({ priority: filters.priority });
-    if (filters.assigneeId)
-      query = query.where({ assigneeId: filters.assigneeId });
+    if (filters.assigneeId) query = query.where({ assigneeId: filters.assigneeId });
     if (filters.search) {
       // Символи LIKE у введеному тексті шукаємо буквально.
       const search = filters.search.replace(/[\\%_]/g, '\\$&');
       query = query.where((task) => task.title.ilike(`%${search}%`));
     }
-    if (filters.overdue)
-      query = query
-        .where((task) => task.deadline.lt(new Date()))
-        .where((task) => task.status.neq('DONE'));
+    if (filters.overdue) query = query.where((task) => task.deadline.lt(new Date())).where((task) => task.status.neq('DONE'));
     const rows = await query
       .orderBy((task) => task.createdAt.desc())
       .offset((filters.page - 1) * filters.limit)
       .limit(filters.limit)
       .all();
-    const assigneeIds = [
-      ...new Set(rows.flatMap((task) => task.assigneeId ?? [])),
-    ];
+    const assigneeIds = [...new Set(rows.flatMap((task) => task.assigneeId ?? []))];
     const names = new Map(
       (assigneeIds.length
         ? await this.db.User.where((row) => row.id.in(assigneeIds))
@@ -136,20 +99,13 @@ export class AnalyticsService {
     return rows.map((task) => ({
       ...task,
       projectTitle: titles.get(task.projectId) ?? null,
-      assigneeName: task.assigneeId
-        ? (names.get(task.assigneeId) ?? null)
-        : null,
+      assigneeName: task.assigneeId ? (names.get(task.assigneeId) ?? null) : null,
     }));
   }
   async deadlines(user: CurrentUser) {
     const tasks = await this.visibleTasks(user);
     // Назва проєкту поруч з ID — щоб AI-агент і UI могли показати її людині
-    const titles = new Map(
-      (await this.visibleProjects(user)).map((project) => [
-        project.id,
-        project.title,
-      ]),
-    );
+    const titles = new Map((await this.visibleProjects(user)).map((project) => [project.id, project.title]));
     return tasks
       .filter((task) => task.deadline && task.status !== 'DONE')
       .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())
@@ -169,39 +125,24 @@ export class AnalyticsService {
     const tasks = await this.visibleTasks(user);
     const projects = await this.visibleProjects(user);
     if (!projects.length) return [];
-    const members = await this.db.ProjectMember.where((member) =>
-      member.projectId.in(projects.map((project) => project.id)),
-    ).all();
+    const members = await this.db.ProjectMember.where((member) => member.projectId.in(projects.map((project) => project.id))).all();
     // Фрілансер бачить лише власне навантаження, а не колег з інших проєктів
-    const ids =
-      user.role === 'FREELANCER'
-        ? [user.id]
-        : [...new Set(members.map((member) => member.userId))];
+    const ids = user.role === 'FREELANCER' ? [user.id] : [...new Set(members.map((member) => member.userId))];
     return Promise.all(
       ids.map(async (id) => {
-        const person = await this.db.User.where({ id })
-          .select('id', 'name', 'avatarUrl')
-          .first();
-        const assigned = tasks.filter(
-          (task) => task.assigneeId === id && task.status !== 'DONE',
-        );
+        const person = await this.db.User.where({ id }).select('id', 'name', 'avatarUrl').first();
+        const assigned = tasks.filter((task) => task.assigneeId === id && task.status !== 'DONE');
         assigned.sort((first, second) => {
           const firstDeadline = first.deadline?.getTime() ?? Infinity;
           const secondDeadline = second.deadline?.getTime() ?? Infinity;
-          return (
-            firstDeadline - secondDeadline ||
-            first.title.localeCompare(second.title)
-          );
+          return firstDeadline - secondDeadline || first.title.localeCompare(second.title);
         });
         return {
           user: person,
           activeTasks: assigned.length,
-          overdueTasks: assigned.filter((task) => taskRisk(task) === 'OVERDUE')
-            .length,
-          highPriorityTasks: assigned.filter((task) => task.priority === 'HIGH')
-            .length,
-          nearestDeadline:
-            assigned.find((task) => task.deadline)?.deadline ?? null,
+          overdueTasks: assigned.filter((task) => taskRisk(task) === 'OVERDUE').length,
+          highPriorityTasks: assigned.filter((task) => task.priority === 'HIGH').length,
+          nearestDeadline: assigned.find((task) => task.deadline)?.deadline ?? null,
           tasks: assigned.map((task) => ({
             id: task.id,
             projectId: task.projectId,

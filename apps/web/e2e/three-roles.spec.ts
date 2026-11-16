@@ -2,9 +2,9 @@ import { readFileSync } from "node:fs";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
 // Пароль демо-акаунтів створює `npm run seed:demo` в apps/api
-const { password } = JSON.parse(
-  readFileSync(new URL("../../../.tmp/demo-accounts.json", import.meta.url), "utf8"),
-) as { password: string };
+const { password } = JSON.parse(readFileSync(new URL("../../../.tmp/demo-accounts.json", import.meta.url), "utf8")) as {
+  password: string;
+};
 
 const accounts = {
   client: "olena.koval@tasko.ai",
@@ -23,9 +23,7 @@ async function signIn(browser: Browser, email: string): Promise<Page> {
   return page;
 }
 
-test("клієнт, адмін і фрилансер проходять шлях проєкту від створення до заявки", async ({
-  browser,
-}) => {
+test("клієнт, адмін і фрилансер проходять шлях проєкту від створення до заявки", async ({ browser }) => {
   const title = `E2E проєкт ${Date.now()}`;
   const client = await signIn(browser, accounts.client);
   const admin = await signIn(browser, accounts.admin);
@@ -51,9 +49,7 @@ test("клієнт, адмін і фрилансер проходять шлях
   await test.step("фрилансер знаходить проєкт на біржі й подає заявку", async () => {
     await freelancer.goto("/marketplace");
     await freelancer.getByRole("link", { name: title }).first().click();
-    await freelancer.getByLabel("Супровідне повідомлення").fill(
-      "Маю досвід у схожих проєктах, готовий почати одразу.",
-    );
+    await freelancer.getByLabel("Супровідне повідомлення").fill("Маю досвід у схожих проєктах, готовий почати одразу.");
     await freelancer.getByLabel("Бюджет, грн").fill("8000");
     await freelancer.getByLabel("Строк, днів").fill("14");
     await freelancer.getByRole("button", { name: "Надіслати заявку" }).click();

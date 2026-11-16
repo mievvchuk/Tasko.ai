@@ -50,11 +50,7 @@ export function AdminPage() {
         </div>
         <ReportExport />
       </div>
-      <ResourceState
-        loading={report.loading}
-        error={report.error}
-        onRetry={report.refresh}
-      />
+      <ResourceState loading={report.loading} error={report.error} onRetry={report.refresh} />
       {report.data && (
         <>
           <AdminStats report={report.data} />
@@ -65,25 +61,14 @@ export function AdminPage() {
                 <h2>{tr("Нові користувачі")}</h2>
                 <Link to="/admin/users">{tr("Усі")}</Link>
               </div>
-              <ResourceState
-                loading={latest.loading}
-                error={latest.error}
-                onRetry={latest.refresh}
-              />
+              <ResourceState loading={latest.loading} error={latest.error} onRetry={latest.refresh} />
               <ul>
                 {latest.data?.map((person) => (
                   <li key={person.id}>
-                    <UserAvatar
-                      name={person.name}
-                      avatarUrl={person.avatarUrl}
-                      size="small"
-                    />
+                    <UserAvatar name={person.name} avatarUrl={person.avatarUrl} size="small" />
                     <span>
                       {profilePath(person) ? (
-                        <Link
-                          className="admin-recent-link"
-                          to={profilePath(person)!}
-                        >
+                        <Link className="admin-recent-link" to={profilePath(person)!}>
                           {person.name}
                         </Link>
                       ) : (
@@ -157,12 +142,7 @@ export function AdminUsersPage() {
       key: "status",
       label: tr("Стан"),
       sort: (row) => row.status,
-      render: (row) => (
-        <StatusPill
-          status={row.status}
-          label={tr(accountStatusNames[row.status])}
-        />
-      ),
+      render: (row) => <StatusPill status={row.status} label={tr(accountStatusNames[row.status])} />,
     },
     {
       key: "createdAt",
@@ -192,26 +172,11 @@ export function AdminUsersPage() {
             </button>
             <button
               className="icon-action"
-              aria-label={
-                row.status === "BLOCKED"
-                  ? tr("Розблокувати {0}", row.name)
-                  : tr("Заблокувати {0}", row.name)
-              }
-              data-tip={
-                row.status === "BLOCKED"
-                  ? tr("Розблокувати")
-                  : tr("Заблокувати")
-              }
+              aria-label={row.status === "BLOCKED" ? tr("Розблокувати {0}", row.name) : tr("Заблокувати {0}", row.name)}
+              data-tip={row.status === "BLOCKED" ? tr("Розблокувати") : tr("Заблокувати")}
               onClick={() => setEditing({ user: row, action: "status" })}
             >
-              <i
-                className={
-                  row.status === "BLOCKED"
-                    ? "bi bi-unlock"
-                    : "bi bi-slash-circle"
-                }
-                aria-hidden="true"
-              ></i>
+              <i className={row.status === "BLOCKED" ? "bi bi-unlock" : "bi bi-slash-circle"} aria-hidden="true"></i>
             </button>
             <button
               className="icon-action danger"
@@ -246,28 +211,16 @@ export function AdminUsersPage() {
           onSearch={(value) => set("search", value)}
           onReset={reset}
         >
-          <FilterSelect
-            label={tr("Роль")}
-            value={role}
-            onChange={(value) => set("role", value)}
-          >
+          <FilterSelect label={tr("Роль")} value={role} onChange={(value) => set("role", value)}>
             <option value="">{tr("Усі ролі")}</option>
             <RoleOptions />
           </FilterSelect>
-          <FilterSelect
-            label={tr("Стан облікового запису")}
-            value={status}
-            onChange={(value) => set("status", value)}
-          >
+          <FilterSelect label={tr("Стан облікового запису")} value={status} onChange={(value) => set("status", value)}>
             <option value="">{tr("Усі стани")}</option>
             <AccountStatusOptions />
           </FilterSelect>
         </ListToolbar>
-        <ResourceState
-          loading={users.loading}
-          error={users.error}
-          onRetry={users.refresh}
-        />
+        <ResourceState loading={users.loading} error={users.error} onRetry={users.refresh} />
         {users.data && (
           <>
             <DataTable
@@ -275,33 +228,16 @@ export function AdminUsersPage() {
               columns={columns}
               rows={users.data}
               empty={
-                search || role || status
-                  ? tr("За цими умовами користувачів не знайдено.")
-                  : tr("На цій сторінці користувачів не знайдено.")
+                search || role || status ? tr("За цими умовами користувачів не знайдено.") : tr("На цій сторінці користувачів не знайдено.")
               }
             />
-            <Pagination
-              page={page}
-              count={users.data.length}
-              onChange={(value) => set("page", String(value))}
-            />
+            <Pagination page={page} count={users.data.length} onChange={(value) => set("page", String(value))} />
           </>
         )}
       </section>
-      {editing && (
-        <UserDialog
-          user={editing.user}
-          action={editing.action}
-          onSaved={users.refresh}
-          onClose={() => setEditing(null)}
-        />
-      )}
+      {editing && <UserDialog user={editing.user} action={editing.action} onSaved={users.refresh} onClose={() => setEditing(null)} />}
       {creating && (
-        <AdminCreateDialog
-          twoFactor={Boolean(user?.twoFactorEnabled)}
-          onSaved={users.refresh}
-          onClose={() => setCreating(false)}
-        />
+        <AdminCreateDialog twoFactor={Boolean(user?.twoFactorEnabled)} onSaved={users.refresh} onClose={() => setCreating(false)} />
       )}
     </>
   );

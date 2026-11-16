@@ -3034,22 +3034,9 @@ input[type="file"]::file-selector-button:hover {
 .welcome,
 .auth-shell {
   background:
-    radial-gradient(
-      60rem 40rem at 85% -10%,
-      color-mix(in oklch, var(--color-accent-text) 16%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      50rem 36rem at -10% 35%,
-      color-mix(in oklch, var(--data-amber) 14%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      44rem 32rem at 70% 110%,
-      color-mix(in oklch, var(--data-blue) 9%, transparent),
-      transparent 70%
-    ),
-    var(--color-paper);
+    radial-gradient(60rem 40rem at 85% -10%, color-mix(in oklch, var(--color-accent-text) 16%, transparent), transparent 70%),
+    radial-gradient(50rem 36rem at -10% 35%, color-mix(in oklch, var(--data-amber) 14%, transparent), transparent 70%),
+    radial-gradient(44rem 32rem at 70% 110%, color-mix(in oklch, var(--data-blue) 9%, transparent), transparent 70%), var(--color-paper);
   background-attachment: fixed;
 }
 .public-header {
@@ -3394,11 +3381,7 @@ input[type="file"]::file-selector-button:hover {
   width: 70%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--color-accent-text) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, var(--color-accent-text) 0%, transparent 65%);
   opacity: 0.16;
   animation: drift 11s ease-in-out infinite alternate;
 }
@@ -3662,11 +3645,7 @@ input[type="file"]::file-selector-button:hover {
   left: 52px;
   right: calc(-1 * var(--space-xl));
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-text),
-    var(--color-rule)
-  );
+  background: linear-gradient(90deg, var(--color-accent-text), var(--color-rule));
   transform-origin: left;
 }
 .welcome-roles {
@@ -3718,11 +3697,7 @@ input[type="file"]::file-selector-button:hover {
   padding: var(--space-xl);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-card);
-  background: linear-gradient(
-    120deg,
-    var(--color-surface) 40%,
-    color-mix(in oklch, var(--color-accent-soft) 85%, var(--color-surface))
-  );
+  background: linear-gradient(120deg, var(--color-surface) 40%, color-mix(in oklch, var(--color-accent-soft) 85%, var(--color-surface)));
   color: var(--color-ink);
   box-shadow: var(--edge-stock), var(--cast-stock);
 }
@@ -3734,11 +3709,7 @@ input[type="file"]::file-selector-button:hover {
   width: 60%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--color-accent-text) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, var(--color-accent-text) 0%, transparent 65%);
   opacity: 0.16;
   animation: drift 9s ease-in-out infinite alternate;
 }
@@ -4341,10 +4312,7 @@ dl.admin-details > dd {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(
-    var(--load) var(--load-percent, 0%),
-    var(--color-paper-3) 0
-  );
+  background: conic-gradient(var(--load) var(--load-percent, 0%), var(--color-paper-3) 0);
   -webkit-mask: radial-gradient(circle, transparent 23px, #000 24px);
   mask: radial-gradient(circle, transparent 23px, #000 24px);
 }
@@ -5438,8 +5406,7 @@ tbody tr:nth-child(n + 6) {
     z-index: var(--z-sticky-nav);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    padding: var(--space-2xs) var(--space-2xs)
-      calc(var(--space-2xs) + env(safe-area-inset-bottom));
+    padding: var(--space-2xs) var(--space-2xs) calc(var(--space-2xs) + env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-rule);
     background: var(--color-paper-2);
   }
@@ -5551,11 +5518,7 @@ tbody tr:nth-child(n + 6) {
   width: 70vmax;
   height: 70vmax;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--color-accent-soft) 0%,
-    transparent 65%
-  );
+  background: radial-gradient(circle, var(--color-accent-soft) 0%, transparent 65%);
   animation: drift 18s var(--ease-out) infinite alternate;
   pointer-events: none;
 }

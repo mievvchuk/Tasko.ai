@@ -1,11 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { strToU8, zipSync } from 'fflate';
-import {
-  extractAttachment,
-  extractAttachments,
-  maxAttachmentChars,
-  maxTotalAttachmentChars,
-} from '../../../src/agent/attachments.js';
+import { extractAttachment, extractAttachments, maxAttachmentChars, maxTotalAttachmentChars } from '../../../src/agent/attachments.js';
 import { withAttachments } from '../../../src/agent/agent.service.js';
 
 function file(name: string, content: Buffer | string) {
@@ -31,9 +26,7 @@ function pdfWith(text: string) {
   });
   const xref = body.length;
   body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  body += offsets
-    .map((offset) => `${String(offset).padStart(10, '0')} 00000 n \n`)
-    .join('');
+  body += offsets.map((offset) => `${String(offset).padStart(10, '0')} 00000 n \n`).join('');
   body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
   return Buffer.from(body, 'latin1');
 }
@@ -46,9 +39,7 @@ describe('AI chat attachments', () => {
       text: 'Потрібен лендінг',
       truncated: false,
     });
-    await expect(
-      extractAttachment(file('old.txt', Buffer.from([0xcf, 0xf0, 0xe8]))),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(extractAttachment(file('old.txt', Buffer.from([0xcf, 0xf0, 0xe8])))).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('reads paragraphs from a DOCX document', async () => {
@@ -58,16 +49,12 @@ describe('AI chat attachments', () => {
           '<w:p><w:r><w:t>Етап 2</w:t></w:r></w:p></w:body></w:document>',
       ),
     });
-    const result = await extractAttachment(
-      file('brief.docx', Buffer.from(docx)),
-    );
+    const result = await extractAttachment(file('brief.docx', Buffer.from(docx)));
     expect(result.text).toBe('Етап 1 & дизайн\nЕтап 2');
   });
 
   it('reads text from a PDF document', async () => {
-    const result = await extractAttachment(
-      file('spec.pdf', pdfWith('Hello Tasko')),
-    );
+    const result = await extractAttachment(file('spec.pdf', pdfWith('Hello Tasko')));
     expect(result.text).toContain('Hello Tasko');
   });
 
@@ -78,20 +65,14 @@ describe('AI chat attachments', () => {
       file('photo.png', 'png'),
       file('empty.txt', ''),
     ])
-      await expect(extractAttachment(fake)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(extractAttachment(fake)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('truncates long text and limits the number of files', async () => {
-    const long = await extractAttachment(
-      file('long.txt', 'а'.repeat(maxAttachmentChars + 50)),
-    );
+    const long = await extractAttachment(file('long.txt', 'а'.repeat(maxAttachmentChars + 50)));
     expect(long.text).toHaveLength(maxAttachmentChars);
     expect(long.truncated).toBe(true);
-    await expect(
-      extractAttachments([1, 2, 3, 4].map((n) => file(`${n}.txt`, 'текст'))),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(extractAttachments([1, 2, 3, 4].map((n) => file(`${n}.txt`, 'текст')))).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('wraps attachments as clearly marked data within the total budget', () => {

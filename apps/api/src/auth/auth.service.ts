@@ -14,20 +14,8 @@ import { APP_CONFIG } from '../config/config.module.js';
 import type { AppConfig } from '../config/config.js';
 import { hasDatabaseCode } from '../prisma/database-error.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import {
-  UsersService,
-  toPublicUser,
-  type CurrentUser,
-  type PublicUser,
-} from '../users/users.service.js';
-import type {
-  ChangePasswordDto,
-  DisableTwoFactorDto,
-  GoogleLoginDto,
-  LoginDto,
-  RegisterDto,
-  TwoFactorCodeDto,
-} from './auth.dto.js';
+import { UsersService, toPublicUser, type CurrentUser, type PublicUser } from '../users/users.service.js';
+import type { ChangePasswordDto, DisableTwoFactorDto, GoogleLoginDto, LoginDto, RegisterDto, TwoFactorCodeDto } from './auth.dto.js';
 import { GoogleVerifier } from './google.js';
 import { nameWithoutEmoji } from './auth.dto.js';
 import { hashPassword, verifyPassword } from './password.js';
@@ -60,8 +48,7 @@ export class AuthService {
 
   // Реєструє користувача; пошту не підтверджуємо, тож вхід доступний одразу.
   async register(data: RegisterDto) {
-    if (await this.users.findByEmail(data.email))
-      throw new ConflictException(duplicateEmailMessage);
+    if (await this.users.findByEmail(data.email)) throw new ConflictException(duplicateEmailMessage);
 
     try {
       const user = await this.users.create({
@@ -73,8 +60,7 @@ export class AuthService {
       return this.publicUser(user);
     } catch (error) {
       // 23505 — інший запит встиг зареєструвати цю пошту одночасно з нами.
-      if (hasDatabaseCode(error, '23505'))
-        throw new ConflictException(duplicateEmailMessage);
+      if (hasDatabaseCode(error, '23505')) throw new ConflictException(duplicateEmailMessage);
       throw error;
     }
   }
@@ -83,10 +69,7 @@ export class AuthService {
   async login(data: LoginDto, metadata: LoginMetadata = {}) {
     const user = await this.users.findByEmail(data.email);
     // Акаунт без пароля (створений через Google) отримує ту саму відповідь: не підказуємо, які пошти є
-    if (
-      !user?.passwordHash ||
-      !(await verifyPassword(data.password, user.passwordHash))
-    )
+    if (!user?.passwordHash || !(await verifyPassword(data.password, user.passwordHash)))
       throw new UnauthorizedException('Неправильна пошта або пароль.');
     return this.startSession(user, data, metadata);
   }
@@ -95,9 +78,7 @@ export class AuthService {
   // інакше створює новий акаунт з роллю, обраною на головній (за замовчуванням — клієнт)
   async loginWithGoogle(data: GoogleLoginDto, metadata: LoginMetadata = {}) {
     const profile = await this.google.verify(data.credential);
-    let user =
-      (await this.db.User.where({ googleId: profile.googleId }).first()) ??
-      (await this.users.findByEmail(profile.email));
+    let user = (await this.db.User.where({ googleId: profile.googleId }).first()) ?? (await this.users.findByEmail(profile.email));
     let created = false;
     if (!user) {
       try {
@@ -110,10 +91,7 @@ export class AuthService {
         });
         created = true;
       } catch (error) {
-        if (hasDatabaseCode(error, '23505'))
-          throw new ConflictException(
-            'Акаунт створюється в іншій вкладці. Спробуйте ще раз.',
-          );
+        if (hasDatabaseCode(error, '23505')) throw new ConflictException('Акаунт створюється в іншій вкладці. Спробуйте ще раз.');
         throw error;
       }
     } else if (!user.googleId) {
@@ -124,9 +102,7 @@ export class AuthService {
           updatedAt: new Date(),
         })) ?? user;
     } else if (user.googleId !== profile.googleId) {
-      throw new ConflictException(
-        "Ця пошта вже прив'язана до іншого акаунта Google.",
-      );
+      throw new ConflictException("Ця пошта вже прив'язана до іншого акаунта Google.");
     }
     return { ...(await this.startSession(user, data, metadata)), created };
   }
@@ -143,21 +119,14 @@ export class AuthService {
       // Без коду просимо клієнт показати поле для коду 2FA.
       if (!data.twoFactorCode) return { requiresTwoFactor: true };
       if (!this.isValidTotp(user.twoFactorSecret, data.twoFactorCode))
-        throw new UnauthorizedException(
-          'Неправильний код двофакторного входу.',
-        );
+        throw new UnauthorizedException('Неправильний код двофакторного входу.');
     }
 
-    const lifetime = data.rememberMe
-      ? this.rememberedSessionLifetime
-      : this.sessionLifetime;
+    const lifetime = data.rememberMe ? this.rememberedSessionLifetime : this.sessionLifetime;
     const sessionId = await this.createSession(user.id, metadata, lifetime);
     return {
       requiresTwoFactor: false,
-      accessToken: await this.jwt.signAsync(
-        { sub: user.id, sid: sessionId },
-        { expiresIn: lifetime / 1000 },
-      ),
+      accessToken: await this.jwt.signAsync({ sub: user.id, sid: sessionId }, { expiresIn: lifetime / 1000 }),
       tokenType: 'Bearer',
       expiresIn: lifetime / 1000,
       user: this.publicUser(user),
@@ -197,10 +166,7 @@ export class AuthService {
       .orderBy((session) => session.createdAt.desc())
       .all();
     return sessions
-      .filter(
-        (session) =>
-          !session.revokedAt && !this.isExpired(session.expiresAt, now),
-      )
+      .filter((session) => !session.revokedAt && !this.isExpired(session.expiresAt, now))
       .map((session) => ({
         id: session.id,
         userAgent: session.userAgent,
@@ -225,20 +191,14 @@ export class AuthService {
   // Змінює пароль і завершує всі інші сеанси користувача.
   async changePassword(user: CurrentUser, data: ChangePasswordDto) {
     const account = await this.users.findById(user.id);
-    if (!account)
-      throw new BadRequestException('Поточний пароль неправильний.');
+    if (!account) throw new BadRequestException('Поточний пароль неправильний.');
     // Акаунт із Google без пароля може встановити пароль, не вводячи поточного
-    if (
-      account.passwordHash &&
-      !(await verifyPassword(data.currentPassword ?? '', account.passwordHash))
-    ) {
+    if (account.passwordHash && !(await verifyPassword(data.currentPassword ?? '', account.passwordHash))) {
       // 400, а не 401: інакше інтерфейс вважає сеанс завершеним і виходить з акаунта
       throw new BadRequestException('Поточний пароль неправильний.');
     }
     if (account.passwordHash && data.currentPassword === data.newPassword)
-      throw new BadRequestException(
-        'Новий пароль має відрізнятися від поточного.',
-      );
+      throw new BadRequestException('Новий пароль має відрізнятися від поточного.');
     await this.db.User.where({ id: user.id }).update({
       passwordHash: await hashPassword(data.newPassword),
       updatedAt: new Date(),
@@ -265,8 +225,7 @@ export class AuthService {
   // Вмикає 2FA, якщо користувач ввів правильний код із застосунку.
   async enableTwoFactor(user: CurrentUser, data: TwoFactorCodeDto) {
     const account = await this.users.findById(user.id);
-    if (!this.isValidTotp(account?.twoFactorSecret, data.code))
-      throw new BadRequestException('Код 2FA неправильний або прострочений.');
+    if (!this.isValidTotp(account?.twoFactorSecret, data.code)) throw new BadRequestException('Код 2FA неправильний або прострочений.');
     await this.db.User.where({ id: user.id }).update({
       twoFactorEnabled: true,
       updatedAt: new Date(),
@@ -277,14 +236,9 @@ export class AuthService {
   // Вимикає 2FA після перевірки пароля та поточного коду.
   async disableTwoFactor(user: CurrentUser, data: DisableTwoFactorDto) {
     const account = await this.users.findById(user.id);
-    if (
-      !account ||
-      (account.passwordHash &&
-        !(await verifyPassword(data.password ?? '', account.passwordHash)))
-    )
+    if (!account || (account.passwordHash && !(await verifyPassword(data.password ?? '', account.passwordHash))))
       throw new BadRequestException('Пароль неправильний.');
-    if (!this.isValidTotp(account.twoFactorSecret, data.code))
-      throw new BadRequestException('Код 2FA неправильний або прострочений.');
+    if (!this.isValidTotp(account.twoFactorSecret, data.code)) throw new BadRequestException('Код 2FA неправильний або прострочений.');
     await this.db.User.where({ id: user.id }).update({
       twoFactorEnabled: false,
       twoFactorSecret: null,
@@ -296,9 +250,7 @@ export class AuthService {
   private ensureActive(user: { status: string; blockReason?: string | null }) {
     if (user.status !== 'ACTIVE')
       throw new ForbiddenException(
-        user.blockReason
-          ? `Обліковий запис заблоковано. Причина: ${user.blockReason}`
-          : 'Обліковий запис заблоковано.',
+        user.blockReason ? `Обліковий запис заблоковано. Причина: ${user.blockReason}` : 'Обліковий запис заблоковано.',
       );
   }
 
@@ -311,11 +263,7 @@ export class AuthService {
     return verifyTotp(secret, code);
   }
 
-  private async createSession(
-    userId: string,
-    metadata: LoginMetadata,
-    lifetime: number,
-  ) {
+  private async createSession(userId: string, metadata: LoginMetadata, lifetime: number) {
     const sessionId = randomUUID();
     await this.db.AuthSession.create({
       id: sessionId,

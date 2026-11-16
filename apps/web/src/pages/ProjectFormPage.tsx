@@ -48,14 +48,10 @@ export function ProjectFormPage() {
         {tr("Завантажуємо проєкт…")}
       </div>
     );
-  if (error)
-    return (
-      <LoadError message={error} onRetry={() => setAttempt(attempt + 1)} />
-    );
+  if (error) return <LoadError message={error} onRetry={() => setAttempt(attempt + 1)} />;
   if (id && (!project || project.id !== id)) return null;
   const canEdit = project && project.clientId === user?.id;
-  const closed =
-    project?.status === "COMPLETED" || project?.status === "CANCELLED";
+  const closed = project?.status === "COMPLETED" || project?.status === "CANCELLED";
   if ((!id && user?.role !== "CLIENT") || (id && !canEdit) || closed) {
     return (
       <section className="account-panel">
@@ -63,13 +59,9 @@ export function ProjectFormPage() {
         <p>
           {closed
             ? tr("Завершений або скасований проєкт не можна змінювати.")
-            : tr(
-                "Створювати проєкти може клієнт, а редагувати — власник або адміністратор.",
-              )}
+            : tr("Створювати проєкти може клієнт, а редагувати — власник або адміністратор.")}
         </p>
-        <Link to={id ? `/projects/${id}` : "/projects"}>
-          {tr("Повернутися до проєктів")}
-        </Link>
+        <Link to={id ? `/projects/${id}` : "/projects"}>{tr("Повернутися до проєктів")}</Link>
       </section>
     );
   }
@@ -81,39 +73,22 @@ function ProjectForm({ project }: { project: Project | null }) {
   const navigate = useNavigate();
   // Чернетка від Ади (кнопка «Відредагувати у формі» в чаті) заповнює нову форму
   const location = useLocation();
-  const draft = project
-    ? null
-    : ((location.state as { draft?: AiProjectDraft } | null)?.draft ?? null);
+  const draft = project ? null : ((location.state as { draft?: AiProjectDraft } | null)?.draft ?? null);
   const [title, setTitle] = useState(project?.title || draft?.title || "");
-  const [description, setDescription] = useState(
-    project?.description || draft?.description || "",
-  );
-  const [deadline, setDeadline] = useState(
-    toDateInput(project?.deadline || draft?.deadline || null),
-  );
-  const [status, setStatus] = useState<ProjectStatus>(
-    project?.status || "PLANNING",
-  );
+  const [description, setDescription] = useState(project?.description || draft?.description || "");
+  const [deadline, setDeadline] = useState(toDateInput(project?.deadline || draft?.deadline || null));
+  const [status, setStatus] = useState<ProjectStatus>(project?.status || "PLANNING");
   const categories = useApi<ProjectCategory[]>("/project-categories");
   const skills = useApi<Skill[]>("/skills");
-  const [budgetMin, setBudgetMin] = useState(
-    (project?.budgetMin ?? draft?.budgetMin)?.toString() || "",
-  );
-  const [budgetMax, setBudgetMax] = useState(
-    (project?.budgetMax ?? draft?.budgetMax)?.toString() || "",
-  );
-  const [categoryName, setCategoryName] = useState(
-    project?.category?.name || "",
-  );
-  const [skillNames, setSkillNames] = useState<string[]>(
-    project?.skills?.map((skill) => skill.name) || [],
-  );
+  const [budgetMin, setBudgetMin] = useState((project?.budgetMin ?? draft?.budgetMin)?.toString() || "");
+  const [budgetMax, setBudgetMax] = useState((project?.budgetMax ?? draft?.budgetMax)?.toString() || "");
+  const [categoryName, setCategoryName] = useState(project?.category?.name || "");
+  const [skillNames, setSkillNames] = useState<string[]>(project?.skills?.map((skill) => skill.name) || []);
   const [skillDraft, setSkillDraft] = useState("");
 
   function addSkill() {
     const name = skillDraft.trim().toLowerCase();
-    if (name && !skillNames.includes(name) && skillNames.length < 30)
-      setSkillNames([...skillNames, name]);
+    if (name && !skillNames.includes(name) && skillNames.length < 30) setSkillNames([...skillNames, name]);
     setSkillDraft("");
   }
   const [error, setError] = useState("");
@@ -121,11 +96,7 @@ function ProjectForm({ project }: { project: Project | null }) {
   const backUrl = project ? `/projects/${project.id}` : "/projects";
   const originalDeadline = toDateInput(project?.deadline || null);
   const deadlineChanged = deadline !== originalDeadline;
-  const keepingOverdueDeadline =
-    project &&
-    !deadlineChanged &&
-    deadline &&
-    dateInputEnd(deadline).getTime() <= Date.now();
+  const keepingOverdueDeadline = project && !deadlineChanged && deadline && dateInputEnd(deadline).getTime() <= Date.now();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -139,11 +110,7 @@ function ProjectForm({ project }: { project: Project | null }) {
       setError(tr("Перевірте дату дедлайну."));
       return;
     }
-    if (
-      deadline &&
-      deadlineChanged &&
-      dateInputEnd(deadline).getTime() <= Date.now()
-    ) {
+    if (deadline && deadlineChanged && dateInputEnd(deadline).getTime() <= Date.now()) {
       setError(tr("Дедлайн проєкту має бути в майбутньому."));
       return;
     }
@@ -169,12 +136,11 @@ function ProjectForm({ project }: { project: Project | null }) {
       body.skillNames = skillNames;
       if (project && !inModeration(project.status)) body.status = status;
       // Незмінений дедлайн не перезаписуємо, щоб зберегти точність часу в БД.
-      if (deadlineChanged)
-        body.deadline = deadline ? dateInputEnd(deadline).toISOString() : null;
-      const result = await request<{ id: string }>(
-        project ? `/projects/${project.id}` : "/projects",
-        { method: project ? "PATCH" : "POST", body },
-      );
+      if (deadlineChanged) body.deadline = deadline ? dateInputEnd(deadline).toISOString() : null;
+      const result = await request<{ id: string }>(project ? `/projects/${project.id}` : "/projects", {
+        method: project ? "PATCH" : "POST",
+        body,
+      });
       await navigate(`/projects/${project?.id || result.id}`, {
         replace: true,
       });
@@ -225,11 +191,7 @@ function ProjectForm({ project }: { project: Project | null }) {
               <input
                 id="project-deadline"
                 type="date"
-                min={
-                  keepingOverdueDeadline
-                    ? undefined
-                    : toDateInput(new Date().toISOString())
-                }
+                min={keepingOverdueDeadline ? undefined : toDateInput(new Date().toISOString())}
                 value={deadline}
                 onInvalid={(event) => {
                   event.preventDefault();
@@ -242,29 +204,15 @@ function ProjectForm({ project }: { project: Project | null }) {
                 onChange={(event) => setDeadline(event.target.value)}
               />
             </label>
-            <p className="form-note">
-              {tr("Новий дедлайн має бути в майбутньому.")}
-            </p>
+            <p className="form-note">{tr("Новий дедлайн має бути в майбутньому.")}</p>
             <div className="form-row">
               <label>
                 {tr("Бюджет від, грн")}
-                <input
-                  type="number"
-                  min="0"
-                  max="10000000"
-                  value={budgetMin}
-                  onChange={(e) => setBudgetMin(e.target.value)}
-                />
+                <input type="number" min="0" max="10000000" value={budgetMin} onChange={(e) => setBudgetMin(e.target.value)} />
               </label>
               <label>
                 {tr("Бюджет до, грн")}
-                <input
-                  type="number"
-                  min="0"
-                  max="10000000"
-                  value={budgetMax}
-                  onChange={(e) => setBudgetMax(e.target.value)}
-                />
+                <input type="number" min="0" max="10000000" value={budgetMax} onChange={(e) => setBudgetMax(e.target.value)} />
               </label>
             </div>
             <label>
@@ -284,17 +232,13 @@ function ProjectForm({ project }: { project: Project | null }) {
               </datalist>
             </label>
             <fieldset className="skill-picker">
-              <legend className="form-section-title">
-                {tr("Потрібні навички")}
-              </legend>
+              <legend className="form-section-title">{tr("Потрібні навички")}</legend>
               {skillNames.map((name) => (
                 <label key={name}>
                   <input
                     type="checkbox"
                     checked
-                    onChange={() =>
-                      setSkillNames(skillNames.filter((item) => item !== name))
-                    }
+                    onChange={() => setSkillNames(skillNames.filter((item) => item !== name))}
                     aria-label={tr("Прибрати навичку {0}", name)}
                   />{" "}
                   {name}
@@ -322,12 +266,7 @@ function ProjectForm({ project }: { project: Project | null }) {
                       <option key={skill.id} value={skill.name} />
                     ))}
                 </datalist>
-                <button
-                  type="button"
-                  className="button secondary"
-                  onClick={addSkill}
-                  disabled={!skillDraft.trim()}
-                >
+                <button type="button" className="button secondary" onClick={addSkill} disabled={!skillDraft.trim()}>
                   {tr("Додати")}
                 </button>
               </div>
@@ -335,31 +274,17 @@ function ProjectForm({ project }: { project: Project | null }) {
             {project && inModeration(project.status) && (
               <p className="form-note">
                 {project.status === "REJECTED"
-                  ? tr(
-                      "Після збереження змін проєкт знову піде на модерацію адміністратору.",
-                    )
-                  : tr(
-                      "Проєкт на модерації. Статус можна буде змінити після схвалення адміністратором.",
-                    )}
+                  ? tr("Після збереження змін проєкт знову піде на модерацію адміністратору.")
+                  : tr("Проєкт на модерації. Статус можна буде змінити після схвалення адміністратором.")}
               </p>
             )}
             {project?.status === "PLANNING" && (
-              <p className="form-note">
-                {tr(
-                  "Зміна назви, опису чи бюджету знову відправить проєкт на модерацію.",
-                )}
-              </p>
+              <p className="form-note">{tr("Зміна назви, опису чи бюджету знову відправить проєкт на модерацію.")}</p>
             )}
             {project && !inModeration(project.status) && (
               <div className="project-form-field">
                 <label htmlFor="edit-project-status">{tr("Статус")}</label>
-                <select
-                  id="edit-project-status"
-                  value={status}
-                  onChange={(event) =>
-                    setStatus(event.target.value as ProjectStatus)
-                  }
-                >
+                <select id="edit-project-status" value={status} onChange={(event) => setStatus(event.target.value as ProjectStatus)}>
                   {Object.entries(projectStatusNames)
                     .filter(([value]) => !inModeration(value as ProjectStatus))
                     .map(([value, label]) => (
@@ -379,9 +304,7 @@ function ProjectForm({ project }: { project: Project | null }) {
             )}
             {project && (status === "COMPLETED" || status === "CANCELLED") && (
               <p className="notice">
-                {tr(
-                  "Після закриття редагування буде недоступне. Для завершення всі завдання мають бути завершені.",
-                )}
+                {tr("Після закриття редагування буде недоступне. Для завершення всі завдання мають бути завершені.")}
               </p>
             )}
             {error && (

@@ -1,31 +1,8 @@
-import {
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Length,
-  Max,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min, ValidateIf } from 'class-validator';
 
 // Що сталося: від категорії залежить рекомендована санкція (див. довідку «Правила платформи»)
-export const complaintCategories = [
-  'NON_PAYMENT',
-  'FRAUD',
-  'NOT_DELIVERED',
-  'POOR_QUALITY',
-  'ABUSE',
-  'OFF_PLATFORM',
-  'OTHER',
-] as const;
-export const complaintActions = [
-  'NONE',
-  'WARNING',
-  'RESTRICT',
-  'BLOCK',
-] as const;
+export const complaintCategories = ['NON_PAYMENT', 'FRAUD', 'NOT_DELIVERED', 'POOR_QUALITY', 'ABUSE', 'OFF_PLATFORM', 'OTHER'] as const;
+export const complaintActions = ['NONE', 'WARNING', 'RESTRICT', 'BLOCK'] as const;
 
 export class CreateComplaintDto {
   @IsOptional() @IsUUID() targetUserId?: string;

@@ -7,28 +7,20 @@ import { enText, i18n, trNow } from "../src/i18n.en.ts";
 import * as types from "../src/types.ts";
 
 // Усі тексти з tr("…") і trNow("…") у src, а також значення словників статусів з types.ts
-export function translationKeys(
-  dir = fileURLToPath(new URL("../src", import.meta.url)),
-) {
+export function translationKeys(dir = fileURLToPath(new URL("../src", import.meta.url))) {
   const keys = new Set();
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
-    if (entry.isDirectory())
-      translationKeys(path).forEach((key) => keys.add(key));
+    if (entry.isDirectory()) translationKeys(path).forEach((key) => keys.add(key));
     else if (/\.tsx?$/.test(entry.name))
-      for (const match of readFileSync(path, "utf8").matchAll(
-        /\btr(?:Now)?\(\s*("(?:[^"\\]|\\.)*")/g,
-      ))
-        keys.add(JSON.parse(match[1]));
+      for (const match of readFileSync(path, "utf8").matchAll(/\btr(?:Now)?\(\s*("(?:[^"\\]|\\.)*")/g)) keys.add(JSON.parse(match[1]));
   }
   return keys;
 }
 
 function allKeys() {
   const keys = translationKeys();
-  for (const value of Object.values(types))
-    if (value && typeof value === "object")
-      Object.values(value).forEach((text) => keys.add(text));
+  for (const value of Object.values(types)) if (value && typeof value === "object") Object.values(value).forEach((text) => keys.add(text));
   return keys;
 }
 
@@ -39,8 +31,7 @@ test("every UI text has an English translation", () => {
 
 test("translations keep their {0} placeholders", () => {
   const slots = (text) => (text.match(/\{\d+\}/g) ?? []).sort();
-  for (const [uk, en] of Object.entries(enText))
-    assert.deepEqual(slots(en), slots(uk), uk);
+  for (const [uk, en] of Object.entries(enText)) assert.deepEqual(slots(en), slots(uk), uk);
 });
 
 test("i18next falls back to Ukrainian and fills values", async () => {

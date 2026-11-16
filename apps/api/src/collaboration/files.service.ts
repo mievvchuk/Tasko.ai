@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { basename, extname, join } from 'node:path';
@@ -42,15 +35,8 @@ export function validateFile(file: UploadedFile) {
     '.txt': { mime: 'text/plain', signature: [] },
   };
   const format = formats[extension];
-  if (
-    !format ||
-    file.size === 0 ||
-    file.size > (extension === '.zip' ? maxArchiveSize : maxFileSize) ||
-    file.size !== file.buffer.length
-  )
-    throw new BadRequestException(
-      'Дозволено PDF, PNG, JPG, DOCX, TXT до 10 МБ і ZIP до 50 МБ.',
-    );
+  if (!format || file.size === 0 || file.size > (extension === '.zip' ? maxArchiveSize : maxFileSize) || file.size !== file.buffer.length)
+    throw new BadRequestException('Дозволено PDF, PNG, JPG, DOCX, TXT до 10 МБ і ZIP до 50 МБ.');
   if (!format.signature.every((byte, index) => file.buffer[index] === byte))
     throw new BadRequestException('Вміст файлу не відповідає його типу.');
   if (extension === '.txt') {
@@ -86,12 +72,8 @@ export async function readStoredFile(
 
 @Injectable()
 export class FilesService {
-  private readonly directory = fileURLToPath(
-    new URL('../../storage/', import.meta.url),
-  );
-  constructor(
-    @Inject(ProjectsService) private readonly projects: ProjectsService,
-  ) {}
+  private readonly directory = fileURLToPath(new URL('../../storage/', import.meta.url));
+  constructor(@Inject(ProjectsService) private readonly projects: ProjectsService) {}
   private get files() {
     return this.projects.prisma.client.orm.public.FileAttachment;
   }
@@ -100,38 +82,19 @@ export class FilesService {
     await this.projects.requireAccess(user, projectId);
     return this.files
       .where({ projectId })
-      .select(
-        'id',
-        'fileName',
-        'mimeType',
-        'size',
-        'uploadedBy',
-        'uploadedAt',
-        'submissionId',
-      )
+      .select('id', 'fileName', 'mimeType', 'size', 'uploadedBy', 'uploadedAt', 'submissionId')
       .orderBy((file) => file.uploadedAt.desc())
       .offset((page.page - 1) * page.limit)
       .limit(page.limit)
       .all();
   }
-  async upload(
-    user: CurrentUser,
-    projectId: string,
-    file: UploadedFile | undefined,
-  ) {
-    this.projects.ensureWritable(
-      await this.projects.requireAccess(user, projectId, false),
-    );
+  async upload(user: CurrentUser, projectId: string, file: UploadedFile | undefined) {
+    this.projects.ensureWritable(await this.projects.requireAccess(user, projectId, false));
     if (!file) throw new BadRequestException('Додайте файл у поле file.');
     const { extension, mime } = validateFile(file);
     const storagePath = `${randomUUID()}${extension}`;
-    const fileName = Array.from(
-      basename(file.originalname.replaceAll('\\', '/')),
-    )
-      .filter(
-        (character) =>
-          character.charCodeAt(0) > 31 && character.charCodeAt(0) !== 127,
-      )
+    const fileName = Array.from(basename(file.originalname.replaceAll('\\', '/')))
+      .filter((character) => character.charCodeAt(0) > 31 && character.charCodeAt(0) !== 127)
       .join('')
       .slice(0, 200);
     // Вміст і запис про файл — в одній транзакції: або обидва, або нічого
@@ -141,13 +104,7 @@ export class FilesService {
         content: file.buffer,
         createdAt: new Date(),
       });
-      return tx.orm.public.FileAttachment.select(
-        'id',
-        'fileName',
-        'mimeType',
-        'size',
-        'uploadedAt',
-      ).create({
+      return tx.orm.public.FileAttachment.select('id', 'fileName', 'mimeType', 'size', 'uploadedAt').create({
         id: randomUUID(),
         projectId,
         uploadedBy: user.id,
@@ -164,15 +121,9 @@ export class FilesService {
   async remove(user: CurrentUser, id: string) {
     const file = await this.files.where({ id }).first();
     if (!file) throw new NotFoundException('Файл не знайдено.');
-    this.projects.ensureWritable(
-      await this.projects.requireAccess(user, file.projectId, false),
-    );
-    if (file.uploadedBy !== user.id)
-      throw new ForbiddenException('Видалити можна лише власний файл.');
-    if (file.submissionId)
-      throw new ConflictException(
-        'Файл уже є частиною зданого результату — його не можна видалити.',
-      );
+    this.projects.ensureWritable(await this.projects.requireAccess(user, file.projectId, false));
+    if (file.uploadedBy !== user.id) throw new ForbiddenException('Видалити можна лише власний файл.');
+    if (file.submissionId) throw new ConflictException('Файл уже є частиною зданого результату — його не можна видалити.');
     await this.projects.prisma.client.transaction(async (tx) => {
       await tx.orm.public.FileAttachment.where({ id }).delete();
       await tx.orm.public.StoredFile.where({ id: file.storagePath }).delete();
@@ -183,13 +134,8 @@ export class FilesService {
     const file = await this.files.where({ id }).first();
     if (!file) throw new NotFoundException('Файл не знайдено.');
     await this.projects.requireAccess(user, file.projectId);
-    if (!/^[a-f0-9-]{36}\.[a-z]+$/.test(file.storagePath))
-      throw new NotFoundException('Файл недоступний.');
-    const content = await readStoredFile(
-      this.projects.prisma.client.orm.public,
-      file.storagePath,
-      join(this.directory, file.storagePath),
-    );
+    if (!/^[a-f0-9-]{36}\.[a-z]+$/.test(file.storagePath)) throw new NotFoundException('Файл недоступний.');
+    const content = await readStoredFile(this.projects.prisma.client.orm.public, file.storagePath, join(this.directory, file.storagePath));
     if (!content) throw new NotFoundException('Файл відсутній у сховищі.');
     return { content, name: file.fileName, mime: file.mimeType };
   }

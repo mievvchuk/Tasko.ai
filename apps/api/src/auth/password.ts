@@ -9,17 +9,9 @@ export async function hashPassword(password: string): Promise<string> {
   return `scrypt:${salt}:${key.toString('hex')}`;
 }
 
-export async function verifyPassword(
-  password: string,
-  storedHash: string,
-): Promise<boolean> {
+export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
   const parts = storedHash.split(':');
-  if (
-    parts.length !== 3 ||
-    parts[0] !== 'scrypt' ||
-    !/^[a-f0-9]{32}$/.test(parts[1]) ||
-    !/^[a-f0-9]{128}$/.test(parts[2])
-  ) {
+  if (parts.length !== 3 || parts[0] !== 'scrypt' || !/^[a-f0-9]{32}$/.test(parts[1]) || !/^[a-f0-9]{128}$/.test(parts[2])) {
     return false;
   }
   const actual = (await deriveKey(password, parts[1], 64)) as Buffer;

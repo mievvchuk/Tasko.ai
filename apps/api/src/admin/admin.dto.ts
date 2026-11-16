@@ -1,11 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
-import {
-  IsIn,
-  IsOptional,
-  IsString,
-  Length,
-  ValidateIf,
-} from 'class-validator';
+import { IsIn, IsOptional, IsString, Length, ValidateIf } from 'class-validator';
 import { RegisterDto } from '../auth/auth.dto.js';
 import { PageDto } from '../projects/projects.dto.js';
 

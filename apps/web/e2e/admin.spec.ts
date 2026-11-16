@@ -34,9 +34,7 @@ test.describe("адміністратор", () => {
     await page.goto("/admin/moderation");
     const card = page.locator(".moderation-card").filter({ hasText: title });
     await card.getByRole("button", { name: "Відхилити", exact: true }).click();
-    await card.getByPlaceholder("Що саме виправити, щоб проєкт пройшов модерацію").fill(
-      "Додайте опис і бюджет проєкту.",
-    );
+    await card.getByPlaceholder("Що саме виправити, щоб проєкт пройшов модерацію").fill("Додайте опис і бюджет проєкту.");
     await card.getByRole("button", { name: "Відхилити проєкт" }).click();
     await expect(card).toHaveCount(0);
   });

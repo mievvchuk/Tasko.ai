@@ -27,10 +27,7 @@ test("the freelancer moves work forward but never completes it", () => {
   });
   assert.equal(moveRule(task("REVIEW"), "DONE", assignee).allowed, false);
   assert.equal(moveRule(task("IN_PROGRESS"), "DONE", assignee).allowed, false);
-  assert.equal(
-    moveRule(task("REVISION"), "IN_PROGRESS", assignee).allowed,
-    true,
-  );
+  assert.equal(moveRule(task("REVISION"), "IN_PROGRESS", assignee).allowed, true);
 });
 
 test("the client accepts work or returns it with a reason", () => {

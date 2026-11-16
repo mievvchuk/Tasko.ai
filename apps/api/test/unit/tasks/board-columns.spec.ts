@@ -1,15 +1,7 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
-import {
-  TasksService,
-  columnKey,
-  planColumnOrder,
-} from '../../../src/tasks/tasks.service.js';
+import { TasksService, columnKey, planColumnOrder } from '../../../src/tasks/tasks.service.js';
 
 describe('kanban board columns', () => {
   const freelancer: CurrentUser = {
@@ -102,9 +94,7 @@ describe('kanban board columns', () => {
         columnId: 'other-column',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      tasks.transition(freelancer, task.id, 'TODO', { columnId: 'own-column' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(tasks.transition(freelancer, task.id, 'TODO', { columnId: 'own-column' })).rejects.toBeInstanceOf(BadRequestException);
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -112,9 +102,7 @@ describe('kanban board columns', () => {
     await tasks.transition(freelancer, task.id, 'TODO', {
       columnId: 'backlog',
     });
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'TODO', columnId: 'backlog' }),
-    );
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'TODO', columnId: 'backlog' }));
     await expect(
       tasks.transition(freelancer, task.id, 'IN_PROGRESS', {
         columnId: 'backlog',
@@ -127,16 +115,12 @@ describe('kanban board columns', () => {
     await tasks.transition(owner, task.id, 'IN_PROGRESS');
     expect(update).toHaveBeenCalled();
     const stranger = { ...freelancer, id: 'stranger-id' };
-    await expect(
-      tasks.transition(stranger, task.id, 'IN_PROGRESS'),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(tasks.transition(stranger, task.id, 'IN_PROGRESS')).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('clears the column when a task goes back to To do', async () => {
     await tasks.transition(freelancer, task.id, 'TODO');
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'TODO', columnId: null }),
-    );
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'TODO', columnId: null }));
   });
 
   it('adds columns at the end of their stage and stops at eight', async () => {
@@ -146,12 +130,7 @@ describe('kanban board columns', () => {
       position: 2100,
       status: 'IN_PROGRESS',
     });
-    const backlog = await tasks.addColumn(
-      freelancer,
-      'project-id',
-      'Беклог',
-      'TODO',
-    );
+    const backlog = await tasks.addColumn(freelancer, 'project-id', 'Беклог', 'TODO');
     expect(backlog).toMatchObject({ status: 'TODO', position: 100 });
     columns = [1, 2, 3, 4, 5, 6, 7, 8].map((position) => ({
       id: `c${position}`,
@@ -159,9 +138,7 @@ describe('kanban board columns', () => {
       position,
       status: 'IN_PROGRESS',
     }));
-    await expect(
-      tasks.addColumn(freelancer, 'project-id', 'Зайва'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(tasks.addColumn(freelancer, 'project-id', 'Зайва')).rejects.toBeInstanceOf(ConflictException);
   });
 });
 
@@ -173,12 +150,7 @@ describe('kanban column order', () => {
   });
 
   it('derives stage and position from the place on the board', () => {
-    expect(
-      planColumnOrder(
-        ['a', 'TODO', 'b', 'IN_PROGRESS', 'c', 'd'],
-        ['a', 'b', 'c', 'd'],
-      ),
-    ).toEqual([
+    expect(planColumnOrder(['a', 'TODO', 'b', 'IN_PROGRESS', 'c', 'd'], ['a', 'b', 'c', 'd'])).toEqual([
       { id: 'a', position: 100, status: 'TODO' },
       { id: 'b', position: 1100, status: 'TODO' },
       { id: 'c', position: 2100, status: 'IN_PROGRESS' },
@@ -187,24 +159,16 @@ describe('kanban column order', () => {
   });
 
   it('rejects incomplete orders and swapped standard lanes', () => {
-    expect(() => planColumnOrder(['TODO', 'IN_PROGRESS'], ['a'])).toThrow(
-      BadRequestException,
-    );
-    expect(() => planColumnOrder(['IN_PROGRESS', 'a', 'TODO'], ['a'])).toThrow(
-      BadRequestException,
-    );
-    expect(() =>
-      planColumnOrder(['TODO', 'a', 'a', 'IN_PROGRESS'], ['a', 'b']),
-    ).toThrow(BadRequestException);
+    expect(() => planColumnOrder(['TODO', 'IN_PROGRESS'], ['a'])).toThrow(BadRequestException);
+    expect(() => planColumnOrder(['IN_PROGRESS', 'a', 'TODO'], ['a'])).toThrow(BadRequestException);
+    expect(() => planColumnOrder(['TODO', 'a', 'a', 'IN_PROGRESS'], ['a', 'b'])).toThrow(BadRequestException);
   });
 });
 
 describe('kanban column reorder', () => {
   it('keeps submitted and accepted tasks when their column changes stage', async () => {
     const owner = { id: 'client-id', role: 'CLIENT' } as CurrentUser;
-    const columns = [
-      { id: 'col', projectId: 'p', position: 2100, status: 'IN_PROGRESS' },
-    ];
+    const columns = [{ id: 'col', projectId: 'p', position: 2100, status: 'IN_PROGRESS' }];
     const tasksInColumn = ['IN_PROGRESS', 'REVIEW', 'DONE'].map((status) => ({
       id: status,
       columnId: 'col',
@@ -213,16 +177,11 @@ describe('kanban column reorder', () => {
     const Task = {
       // Фільтр статусу застосовується справжнім предикатом, тож без нього тест упаде
       where: () => ({
-        where: (
-          pick: (row: {
-            status: { in: (list: string[]) => string[] };
-          }) => string[],
-        ) => {
+        where: (pick: (row: { status: { in: (list: string[]) => string[] } }) => string[]) => {
           const allowed = pick({ status: { in: (list) => list } });
           return {
             updateAll: async (data: object) => {
-              for (const task of tasksInColumn)
-                if (allowed.includes(task.status)) Object.assign(task, data);
+              for (const task of tasksInColumn) if (allowed.includes(task.status)) Object.assign(task, data);
               return [];
             },
           };
@@ -241,9 +200,7 @@ describe('kanban column reorder', () => {
       prisma: {
         client: {
           orm,
-          transaction: async (
-            run: (tx: { orm: typeof orm }) => Promise<unknown>,
-          ) => run({ orm }),
+          transaction: async (run: (tx: { orm: typeof orm }) => Promise<unknown>) => run({ orm }),
         },
       },
       requireOwner: vi.fn(async () => ({ status: 'ACTIVE' })),

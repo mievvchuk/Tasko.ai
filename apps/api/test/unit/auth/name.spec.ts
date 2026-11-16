@@ -17,18 +17,14 @@ const nameErrors = async (name: string) => {
 };
 
 describe('імена без емодзі', () => {
-  it.each(['Олена Коваль', "Анна-Марія О'Брайен", 'westik03', 'Ігор Бойко'])(
-    'приймає «%s»',
-    async (name) => expect(await nameErrors(name)).toHaveLength(0),
+  it.each(['Олена Коваль', "Анна-Марія О'Брайен", 'westik03', 'Ігор Бойко'])('приймає «%s»', async (name) =>
+    expect(await nameErrors(name)).toHaveLength(0),
   );
-  it.each(['🤯🤯🤯', 'Олена 😊', 'Іван 🇺🇦', 'Мак❤️с', 'Зірка ⭐'])(
-    'відхиляє «%s»',
-    async (name) => expect(await nameErrors(name)).not.toHaveLength(0),
+  it.each(['🤯🤯🤯', 'Олена 😊', 'Іван 🇺🇦', 'Мак❤️с', 'Зірка ⭐'])('відхиляє «%s»', async (name) =>
+    expect(await nameErrors(name)).not.toHaveLength(0),
   );
   it('перевіряє й зміну імені в профілі', async () => {
-    const errors = await validate(
-      plainToInstance(UpdateAccountDto, { name: 'Тест 🤯' }),
-    );
+    const errors = await validate(plainToInstance(UpdateAccountDto, { name: 'Тест 🤯' }));
     expect(errors).not.toHaveLength(0);
   });
 });

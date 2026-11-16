@@ -36,8 +36,7 @@ describe('ComplaintsService.decide', () => {
       {
         client: {
           orm,
-          transaction: (run: (tx: { orm: typeof orm }) => unknown) =>
-            run({ orm }),
+          transaction: (run: (tx: { orm: typeof orm }) => unknown) => run({ orm }),
         },
       } as unknown as PrismaService,
       { notify } as unknown as ProjectsService,
@@ -74,10 +73,7 @@ describe('ComplaintsService.decide', () => {
       action: 'RESTRICT',
       restrictDays: 14,
     });
-    expect(notify.mock.calls.map((call) => call[0])).toEqual([
-      'freelancer',
-      'client',
-    ]);
+    expect(notify.mock.calls.map((call) => call[0])).toEqual(['freelancer', 'client']);
   });
 
   it('blocks with the decision as the block reason', async () => {

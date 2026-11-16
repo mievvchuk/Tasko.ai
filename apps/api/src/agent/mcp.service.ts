@@ -1,16 +1,7 @@
-import {
-  BadRequestException,
-  HttpException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import {
-  ProjectsService,
-  validateBudget,
-} from '../projects/projects.service.js';
+import { ProjectsService, validateBudget } from '../projects/projects.service.js';
 import { AnalyticsService } from '../analytics/analytics.service.js';
 import { MilestonesService } from '../projects/milestones.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
@@ -21,13 +12,7 @@ import type { CurrentUser } from '../users/users.service.js';
 
 // Поля, які моделі не потрібні для відповіді (UUID і службові дати), та порожні значення:
 // у результатах інструментів вони займали левову частку токенів запиту
-const noiseKeys = new Set([
-  'clientId',
-  'categoryId',
-  'columnId',
-  'avatarUrl',
-  'updatedAt',
-]);
+const noiseKeys = new Set(['clientId', 'categoryId', 'columnId', 'avatarUrl', 'updatedAt']);
 export function withoutNoise(key: string, value: unknown) {
   return value === null || noiseKeys.has(key) ? undefined : value;
 }
@@ -60,17 +45,13 @@ export class McpService {
           ],
         };
       } catch (error) {
-        if (!(error instanceof HttpException))
-          this.logger.error('Не вдалося виконати інструмент MCP.');
+        if (!(error instanceof HttpException)) this.logger.error('Не вдалося виконати інструмент MCP.');
         return {
           isError: true,
           content: [
             {
               type: 'text' as const,
-              text:
-                error instanceof HttpException
-                  ? error.message
-                  : 'Не вдалося отримати дані.',
+              text: error instanceof HttpException ? error.message : 'Не вдалося отримати дані.',
             },
           ],
         };
@@ -97,14 +78,11 @@ export class McpService {
       server.registerTool(
         'list_tasks',
         {
-          description:
-            'Доступні завдання зі статусами, пріоритетами та дедлайнами.',
+          description: 'Доступні завдання зі статусами, пріоритетами та дедлайнами.',
           inputSchema: z
             .object({
               projectId: z.string().uuid().optional(),
-              status: z
-                .enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE'])
-                .optional(),
+              status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'REVISION', 'DONE']).optional(),
               ...pagination,
             })
             .strict(),
@@ -112,21 +90,11 @@ export class McpService {
         },
         async (args) =>
           result(async () => {
-            if (args.projectId)
-              await this.projects.requireAccess(user, args.projectId, false);
+            if (args.projectId) await this.projects.requireAccess(user, args.projectId, false);
             const tasks = await this.analytics.visibleTasks(user);
-            const titles = new Map(
-              (await this.analytics.visibleProjects(user)).map((project) => [
-                project.id,
-                project.title,
-              ]),
-            );
+            const titles = new Map((await this.analytics.visibleProjects(user)).map((project) => [project.id, project.title]));
             return tasks
-              .filter(
-                (task) =>
-                  (!args.projectId || task.projectId === args.projectId) &&
-                  (!args.status || task.status === args.status),
-              )
+              .filter((task) => (!args.projectId || task.projectId === args.projectId) && (!args.status || task.status === args.status))
               .slice((args.page - 1) * args.limit, args.page * args.limit)
               .map((task) => ({
                 ...task,
@@ -141,8 +109,7 @@ export class McpService {
           inputSchema: z.object({ projectId: z.string().uuid() }).strict(),
           annotations,
         },
-        async ({ projectId }) =>
-          result(() => this.analytics.summary(user, projectId)),
+        async ({ projectId }) => result(() => this.analytics.summary(user, projectId)),
       );
       server.registerTool(
         'get_upcoming_deadlines',
@@ -167,8 +134,7 @@ export class McpService {
       server.registerTool(
         'get_dashboard',
         {
-          description:
-            'Загальна статистика користувача: кількість проєктів, завдань за статусами, прострочення.',
+          description: 'Загальна статистика користувача: кількість проєктів, завдань за статусами, прострочення.',
           inputSchema: z.object({}).strict(),
           annotations,
         },
@@ -177,8 +143,7 @@ export class McpService {
       server.registerTool(
         'get_task_details',
         {
-          description:
-            'Повна інформація про завдання: опис, критерії приймання та здані роботи з коментарями перевірки.',
+          description: 'Повна інформація про завдання: опис, критерії приймання та здані роботи з коментарями перевірки.',
           inputSchema: z.object({ taskId: z.string().uuid() }).strict(),
           annotations,
         },
@@ -198,28 +163,22 @@ export class McpService {
           inputSchema: z.object({ projectId: z.string().uuid() }).strict(),
           annotations,
         },
-        async ({ projectId }) =>
-          result(() => this.milestones.list(user, projectId)),
+        async ({ projectId }) => result(() => this.milestones.list(user, projectId)),
       );
       server.registerTool(
         'list_project_messages',
         {
-          description:
-            'Останні повідомлення в чаті проєкту (від нових до старих).',
-          inputSchema: z
-            .object({ projectId: z.string().uuid(), ...pagination })
-            .strict(),
+          description: 'Останні повідомлення в чаті проєкту (від нових до старих).',
+          inputSchema: z.object({ projectId: z.string().uuid(), ...pagination }).strict(),
           annotations,
         },
-        async ({ projectId, ...page }) =>
-          result(() => this.collaboration.messages(user, projectId, page)),
+        async ({ projectId, ...page }) => result(() => this.collaboration.messages(user, projectId, page)),
       );
     }
     server.registerTool(
       'list_notifications',
       {
-        description:
-          'Останні сповіщення користувача та кількість непрочитаних.',
+        description: 'Останні сповіщення користувача та кількість непрочитаних.',
         inputSchema: z.object({}).strict(),
         annotations,
       },
@@ -231,8 +190,7 @@ export class McpService {
       server.registerTool(
         'search_open_projects',
         {
-          description:
-            'Відкриті проєкти на біржі (шукають виконавців або добирають команду) з бюджетом і навичками. Для фрілансерів.',
+          description: 'Відкриті проєкти на біржі (шукають виконавців або добирають команду) з бюджетом і навичками. Для фрілансерів.',
           inputSchema: z
             .object({
               search: z.string().min(1).max(200).optional(),
@@ -253,33 +211,26 @@ export class McpService {
           inputSchema: z.object(pagination).strict(),
           annotations,
         },
-        async (page) =>
-          result(async () => await this.projects.directory(user, page)),
+        async (page) => result(async () => await this.projects.directory(user, page)),
       );
       server.registerTool(
         'list_project_applications',
         {
-          description:
-            'Заявки фрілансерів на проєкт клієнта: бюджет, строки, AI-оцінка. Лише для власника проєкту.',
-          inputSchema: z
-            .object({ projectId: z.string().uuid(), ...pagination })
-            .strict(),
+          description: 'Заявки фрілансерів на проєкт клієнта: бюджет, строки, AI-оцінка. Лише для власника проєкту.',
+          inputSchema: z.object({ projectId: z.string().uuid(), ...pagination }).strict(),
           annotations,
         },
-        async ({ projectId, ...page }) =>
-          result(() => this.projects.applications(user, projectId, page)),
+        async ({ projectId, ...page }) => result(() => this.projects.applications(user, projectId, page)),
       );
     }
     server.registerTool(
       'get_freelancer_profile',
       {
-        description:
-          'Профіль фрілансера: навички, ставка, доступність, портфоліо та відгуки.',
+        description: 'Профіль фрілансера: навички, ставка, доступність, портфоліо та відгуки.',
         inputSchema: z.object({ userId: z.string().uuid() }).strict(),
         annotations,
       },
-      async ({ userId }) =>
-        result(() => this.projects.freelancerProfile(user, userId)),
+      async ({ userId }) => result(() => this.projects.freelancerProfile(user, userId)),
     );
     // Нічого не записує: повертає чернетку, а створює проєкт сам клієнт кнопкою
     // через звичайний POST /projects з тією ж валідацією, що й у формі.
@@ -303,13 +254,8 @@ export class McpService {
         async (draft) =>
           result(async () => {
             validateBudget(draft.budgetMin, draft.budgetMax);
-            if (
-              draft.deadline &&
-              new Date(draft.deadline).getTime() <= Date.now()
-            )
-              throw new BadRequestException(
-                'Дедлайн проєкту має бути в майбутньому.',
-              );
+            if (draft.deadline && new Date(draft.deadline).getTime() <= Date.now())
+              throw new BadRequestException('Дедлайн проєкту має бути в майбутньому.');
             return draft;
           }),
       );
@@ -330,8 +276,7 @@ export class McpService {
             .strict(),
           annotations,
         },
-        async (filters) =>
-          result(async () => await this.admin.list(user, filters)),
+        async (filters) => result(async () => await this.admin.list(user, filters)),
       );
       server.registerTool(
         'platform_report',

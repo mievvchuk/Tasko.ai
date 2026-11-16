@@ -31,8 +31,7 @@ module.exports = function searchIndex(context) {
         .map((file) => {
           const raw = fs.readFileSync(path.join(dir, file), "utf8").replace(/\r/g, "");
           const [, front = "", body = raw] = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
-          const field = (name) =>
-            (front.match(new RegExp(`^${name}:\\s*(.*)$`, "m"))?.[1] ?? "").trim().replace(/^"(.*)"$/, "$1");
+          const field = (name) => (front.match(new RegExp(`^${name}:\\s*(.*)$`, "m"))?.[1] ?? "").trim().replace(/^"(.*)"$/, "$1");
           return {
             id: field("id") || file.replace(/\.md$/, ""),
             title: field("title"),

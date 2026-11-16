@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import type { AppConfig } from '../../../src/config/config.js';
@@ -51,13 +45,9 @@ describe('authentication', () => {
     port: 3000,
     webOrigin: 'http://localhost:5173',
   };
-  const auth = new AuthService(
-    users as unknown as UsersService,
-    jwt,
-    prisma as unknown as PrismaService,
-    config,
-    { verify: vi.fn() } as unknown as GoogleVerifier,
-  );
+  const auth = new AuthService(users as unknown as UsersService, jwt, prisma as unknown as PrismaService, config, {
+    verify: vi.fn(),
+  } as unknown as GoogleVerifier);
   const credentials = {
     email: 'client@example.com',
     password: 'Coursework-test-123',
@@ -102,33 +92,26 @@ describe('authentication', () => {
       role: 'CLIENT',
     });
     expect(result).not.toHaveProperty('passwordHash');
-    expect(users.create.mock.calls[0][0].passwordHash).not.toBe(
-      credentials.password,
-    );
+    expect(users.create.mock.calls[0][0].passwordHash).not.toBe(credentials.password);
   });
 
   it('rejects a duplicate email', async () => {
     users.findByEmail.mockResolvedValue(user);
-    await expect(
-      auth.register({ ...credentials, name: 'Client', role: 'CLIENT' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(auth.register({ ...credentials, name: 'Client', role: 'CLIENT' })).rejects.toBeInstanceOf(ConflictException);
     expect(users.create).not.toHaveBeenCalled();
   });
 
   it('handles a duplicate created concurrently', async () => {
     users.findByEmail.mockResolvedValue(null);
     users.create.mockRejectedValue({ cause: { code: '23505' } });
-    await expect(
-      auth.register({ ...credentials, name: 'Client', role: 'CLIENT' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(auth.register({ ...credentials, name: 'Client', role: 'CLIENT' })).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('creates a session and issues an expiring token', async () => {
     users.findByEmail.mockResolvedValue(user);
     const result = await auth.login(credentials);
     expect(result).toHaveProperty('accessToken');
-    if (typeof result.accessToken !== 'string')
-      throw new Error('JWT was not issued');
+    if (typeof result.accessToken !== 'string') throw new Error('JWT was not issued');
     const payload = await jwt.verifyAsync<{
       sub: string;
       sid: string;
@@ -146,25 +129,17 @@ describe('authentication', () => {
     users.findByEmail.mockResolvedValue(user);
     const before = Date.now();
     const result = await auth.login({ ...credentials, rememberMe: true });
-    const payload = await jwt.verifyAsync<{ exp: number; iat: number }>(
-      String(result.accessToken),
-    );
+    const payload = await jwt.verifyAsync<{ exp: number; iat: number }>(String(result.accessToken));
     const days30 = 30 * 24 * 60 * 60;
     expect(payload.exp - payload.iat).toBe(days30);
     expect(result.expiresIn).toBe(days30);
-    const [session] = db.AuthSession.create.mock.calls.at(-1) as [
-      { expiresAt: Date },
-    ];
-    expect(session.expiresAt.getTime() - before).toBeGreaterThanOrEqual(
-      days30 * 1000,
-    );
+    const [session] = db.AuthSession.create.mock.calls.at(-1) as [{ expiresAt: Date }];
+    expect(session.expiresAt.getTime() - before).toBeGreaterThanOrEqual(days30 * 1000);
   });
 
   it('rejects the wrong password', async () => {
     users.findByEmail.mockResolvedValue(user);
-    await expect(
-      auth.login({ ...credentials, password: 'wrong-password' }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(auth.login({ ...credentials, password: 'wrong-password' })).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('rejects a wrong current password without ending the session', async () => {
@@ -194,23 +169,17 @@ describe('authentication', () => {
 
   it('rejects blocked accounts even with an active session', async () => {
     users.findById.mockResolvedValue({ ...user, status: 'BLOCKED' });
-    await expect(auth.authenticate(user.id, sessionId)).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
+    await expect(auth.authenticate(user.id, sessionId)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('uses the current database role', async () => {
     users.findById.mockResolvedValue({ ...user, role: 'FREELANCER' });
-    expect((await auth.authenticate(user.id, sessionId)).role).toBe(
-      'FREELANCER',
-    );
+    expect((await auth.authenticate(user.id, sessionId)).role).toBe('FREELANCER');
   });
 
   it('rejects a revoked session', async () => {
     sessionQuery.first.mockResolvedValue({ ...session, revokedAt: new Date() });
-    await expect(auth.authenticate(user.id, sessionId)).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(auth.authenticate(user.id, sessionId)).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('lists active sessions and marks the current one', async () => {
@@ -244,9 +213,7 @@ describe('authentication', () => {
     expect(sessionQuery.update).toHaveBeenCalled();
 
     sessionQuery.first.mockResolvedValue(null);
-    await expect(
-      auth.revokeSession(current, randomUUID()),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(auth.revokeSession(current, randomUUID())).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('creates a 2FA secret and rejects an invalid activation code', async () => {
@@ -259,15 +226,11 @@ describe('authentication', () => {
       ...user,
       twoFactorSecret: setup.secret,
     });
-    await expect(
-      auth.enableTwoFactor(current, { code: '000000' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(auth.enableTwoFactor(current, { code: '000000' })).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('propagates database failures', async () => {
     users.findByEmail.mockRejectedValue(new Error('database unavailable'));
-    await expect(auth.login(credentials)).rejects.toThrow(
-      'database unavailable',
-    );
+    await expect(auth.login(credentials)).rejects.toThrow('database unavailable');
   });
 });

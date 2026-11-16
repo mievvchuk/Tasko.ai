@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  type CanActivate,
-  type ExecutionContext,
-} from '@nestjs/common';
+import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { HitCounter } from '../common/hit-counter.js';
 
@@ -21,12 +17,8 @@ export class AuthEmailRateLimitGuard implements CanActivate {
     const handler = context.getHandler().name;
     const ipKey = `${request.ip || request.socket.remoteAddress}:${handler}`;
     // Guard працює до ValidationPipe, тож тіло ще сире: беремо лише рядок допустимої довжини
-    const raw: unknown = (request.body as { email?: unknown } | undefined)
-      ?.email;
-    const email =
-      typeof raw === 'string' && raw.length <= 254
-        ? raw.trim().toLowerCase()
-        : '';
+    const raw: unknown = (request.body as { email?: unknown } | undefined)?.email;
+    const email = typeof raw === 'string' && raw.length <= 254 ? raw.trim().toLowerCase() : '';
     const keys: [string, number][] = [[ipKey, perIp(handler)]];
     if (email) keys.push([`${ipKey}:${email}`, perEmail]);
     this.counter.hit(keys, http.getResponse<Response>());

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  type CanActivate,
-  type ExecutionContext,
-} from '@nestjs/common';
+import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import type { Response } from 'express';
 import { HitCounter } from '../common/hit-counter.js';
 import type { AuthenticatedRequest } from '../auth/jwt-auth.guard.js';
@@ -18,10 +14,7 @@ export class AiRateLimitGuard implements CanActivate {
     const http = context.switchToHttp();
     // Стоїть після JwtAuthGuard контролера, тож користувач уже відомий
     const { user } = http.getRequest<AuthenticatedRequest>();
-    this.counter.hit(
-      [[`ai:${user.id}`, aiRequestsPerHour]],
-      http.getResponse<Response>(),
-    );
+    this.counter.hit([[`ai:${user.id}`, aiRequestsPerHour]], http.getResponse<Response>());
     return true;
   }
 }

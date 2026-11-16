@@ -26,17 +26,10 @@ export function ReviewForm({
     setSubmitting(true);
     setError("");
     try {
-      await request(
-        freelancerId
-          ? `/projects/${projectId}/reviews`
-          : `/projects/${projectId}/client-review`,
-        {
-          method: "POST",
-          body: freelancerId
-            ? { freelancerId, rating: Number(rating), comment }
-            : { rating: Number(rating), comment },
-        },
-      );
+      await request(freelancerId ? `/projects/${projectId}/reviews` : `/projects/${projectId}/client-review`, {
+        method: "POST",
+        body: freelancerId ? { freelancerId, rating: Number(rating), comment } : { rating: Number(rating), comment },
+      });
       setSaved(true);
       setOpen(false);
     } catch (error) {
@@ -46,8 +39,7 @@ export function ReviewForm({
     }
   }
 
-  if (saved)
-    return <span className="success-text">{tr("Відгук збережено")}</span>;
+  if (saved) return <span className="success-text">{tr("Відгук збережено")}</span>;
   if (!open)
     return (
       <button className="link-button" onClick={() => setOpen(true)}>
@@ -61,10 +53,7 @@ export function ReviewForm({
       </strong>
       <label>
         {tr("Оцінка")}
-        <select
-          value={rating}
-          onChange={(event) => setRating(event.target.value)}
-        >
+        <select value={rating} onChange={(event) => setRating(event.target.value)}>
           <option value="5">{tr("5 — Відмінно")}</option>
           <option value="4">{tr("4 — Добре")}</option>
           <option value="3">{tr("3 — Задовільно")}</option>
@@ -87,11 +76,7 @@ export function ReviewForm({
         <button className="button primary" disabled={submitting}>
           {submitting ? tr("Зберігаємо…") : tr("Зберегти")}
         </button>
-        <button
-          type="button"
-          className="button secondary"
-          onClick={() => setOpen(false)}
-        >
+        <button type="button" className="button secondary" onClick={() => setOpen(false)}>
           {tr("Скасувати")}
         </button>
       </div>

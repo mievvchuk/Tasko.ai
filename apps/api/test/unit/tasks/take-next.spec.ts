@@ -1,14 +1,7 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
-import {
-  TasksService,
-  compareQueue,
-} from '../../../src/tasks/tasks.service.js';
+import { TasksService, compareQueue } from '../../../src/tasks/tasks.service.js';
 
 describe('taking the next task from the queue', () => {
   const freelancer: CurrentUser = {
@@ -48,12 +41,7 @@ describe('taking the next task from the queue', () => {
         all: async () => rows,
         // Перевірка «чи не взяв фрілансер уже щось паралельно»
         where: () => ({
-          all: async () =>
-            rows.filter(
-              (row) =>
-                row.assigneeId === filter.assigneeId &&
-                ['TODO', 'IN_PROGRESS'].includes(row.status),
-            ),
+          all: async () => rows.filter((row) => row.assigneeId === filter.assigneeId && ['TODO', 'IN_PROGRESS'].includes(row.status)),
         }),
         updateAll: async (data: object) => {
           update(filter, data);
@@ -85,13 +73,7 @@ describe('taking the next task from the queue', () => {
       task({ id: 'soon-high', deadline: day(10), priority: 'HIGH' }),
       task({ id: 'old', createdAt: day(1) }),
     ].sort(compareQueue);
-    expect(queue.map((item) => item.id)).toEqual([
-      'soon-high',
-      'soon-low',
-      'later',
-      'no-deadline-high',
-      'old',
-    ]);
+    expect(queue.map((item) => item.id)).toEqual(['soon-high', 'soon-low', 'later', 'no-deadline-high', 'old']);
   });
 
   it('assigns the first free task and tells the client', async () => {
@@ -130,32 +112,19 @@ describe('taking the next task from the queue', () => {
   });
 
   it('refuses while the freelancer still has an unfinished task', async () => {
-    rows = [
-      task({ id: 'mine', assigneeId: freelancer.id, status: 'IN_PROGRESS' }),
-      task({ id: 'free' }),
-    ];
-    await expect(
-      tasks.takeNext(freelancer, 'project-id'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    rows = [task({ id: 'mine', assigneeId: freelancer.id, status: 'IN_PROGRESS' }), task({ id: 'free' })];
+    await expect(tasks.takeNext(freelancer, 'project-id')).rejects.toBeInstanceOf(ConflictException);
     expect(update).not.toHaveBeenCalled();
   });
 
   it('reports an empty queue, a closed project and non-freelancers', async () => {
-    rows = [
-      task({ id: 'review', status: 'REVIEW', assigneeId: freelancer.id }),
-    ];
-    await expect(
-      tasks.takeNext(freelancer, 'project-id'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    rows = [task({ id: 'review', status: 'REVIEW', assigneeId: freelancer.id })];
+    await expect(tasks.takeNext(freelancer, 'project-id')).rejects.toBeInstanceOf(NotFoundException);
     projects.requireAccess.mockResolvedValueOnce({
       status: 'PAUSED',
       clientId: 'client-id',
     });
-    await expect(
-      tasks.takeNext(freelancer, 'project-id'),
-    ).rejects.toBeInstanceOf(ConflictException);
-    await expect(
-      tasks.takeNext({ ...freelancer, role: 'CLIENT' }, 'project-id'),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(tasks.takeNext(freelancer, 'project-id')).rejects.toBeInstanceOf(ConflictException);
+    await expect(tasks.takeNext({ ...freelancer, role: 'CLIENT' }, 'project-id')).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

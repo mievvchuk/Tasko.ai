@@ -1,15 +1,7 @@
 import { LoadError } from "./LoadError";
 
 import { useLanguage } from "../i18n";
-export function ResourceState({
-  loading,
-  error,
-  onRetry,
-}: {
-  loading: boolean;
-  error: string;
-  onRetry: () => void;
-}) {
+export function ResourceState({ loading, error, onRetry }: { loading: boolean; error: string; onRetry: () => void }) {
   const { tr } = useLanguage();
   if (loading)
     return (
@@ -41,18 +33,10 @@ export function Pagination({
         {tr("Сторінка")} {page} {tr("· Показано:")} {count}
       </span>
       <div>
-        <button
-          className="button secondary"
-          disabled={page === 1}
-          onClick={() => onChange(page - 1)}
-        >
+        <button className="button secondary" disabled={page === 1} onClick={() => onChange(page - 1)}>
           {tr("← Попередня")}
         </button>
-        <button
-          className="button secondary"
-          disabled={count < size || page === 10000}
-          onClick={() => onChange(page + 1)}
-        >
+        <button className="button secondary" disabled={count < size || page === 10000} onClick={() => onChange(page + 1)}>
           {tr("Наступна →")}
         </button>
       </div>

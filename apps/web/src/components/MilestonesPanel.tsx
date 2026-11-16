@@ -3,11 +3,7 @@ import { Link } from "react-router";
 import { errorMessage, request } from "../api";
 import { formatMoney } from "../format";
 import { useLanguage } from "../i18n";
-import {
-  milestonePaymentNames,
-  milestoneStatusNames,
-  type ProjectMilestone,
-} from "../types";
+import { milestonePaymentNames, milestoneStatusNames, type ProjectMilestone } from "../types";
 
 // Етапи проєкту — оплата частинами за групи завдань. Статус етапу рахується із завдань:
 // коли всі виконано, етап чекає, поки замовник його прийме. Клік по етапу фільтрує завдання нижче.
@@ -50,34 +46,18 @@ export function MilestonesPanel({
   const total = milestones.reduce((sum, item) => sum + item.amount, 0);
   // Платіжної системи немає: виконаний етап одразу вважається оплаченим
   const paid = milestones
-    .filter(
-      (item) => item.status === "COMPLETED" || item.paymentStatus === "PAID",
-    )
+    .filter((item) => item.status === "COMPLETED" || item.paymentStatus === "PAID")
     .reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <section
-      className="data-panel milestones-panel"
-      aria-labelledby="milestones-heading"
-    >
+    <section className="data-panel milestones-panel" aria-labelledby="milestones-heading">
       <div className="panel-heading">
         <div>
           <h2 id="milestones-heading">{tr("Етапи й оплата")}</h2>
-          {milestones.length > 0 && (
-            <p className="form-note">
-              {tr(
-                "Оплачено {0} з {1}",
-                formatMoney(paid),
-                formatMoney(total),
-              )}
-            </p>
-          )}
+          {milestones.length > 0 && <p className="form-note">{tr("Оплачено {0} з {1}", formatMoney(paid), formatMoney(total))}</p>}
         </div>
         {owner && (
-          <Link
-            className="button secondary"
-            to={`/projects/${projectId}/milestones`}
-          >
+          <Link className="button secondary" to={`/projects/${projectId}/milestones`}>
             <i className="bi bi-sliders" aria-hidden="true"></i>
             {tr("Керувати етапами")}
           </Link>
@@ -91,47 +71,26 @@ export function MilestonesPanel({
       {milestones.length ? (
         <ol className="milestone-cards">
           {milestones.map((item, index) => {
-            const percent = item.taskCount
-              ? Math.round((item.doneTaskCount / item.taskCount) * 100)
-              : 0;
+            const percent = item.taskCount ? Math.round((item.doneTaskCount / item.taskCount) * 100) : 0;
             const active = selected === item.id;
             return (
-              <li
-                key={item.id}
-                className={`milestone-card${active ? " selected" : ""}`}
-              >
+              <li key={item.id} className={`milestone-card${active ? " selected" : ""}`}>
                 <button
                   type="button"
                   className="milestone-card-main"
                   aria-pressed={active}
                   onClick={() => onSelect(active ? "" : item.id)}
-                  title={
-                    active
-                      ? tr("Показати всі завдання")
-                      : tr("Показати завдання етапу")
-                  }
+                  title={active ? tr("Показати всі завдання") : tr("Показати завдання етапу")}
                 >
                   <span className="milestone-card-head">
                     <span className="milestone-index">{index + 1}</span>
                     <strong>{item.title}</strong>
-                    <span className="milestone-amount">
-                      {formatMoney(item.amount)}
-                    </span>
+                    <span className="milestone-amount">{formatMoney(item.amount)}</span>
                   </span>
-                  <progress
-                    max={100}
-                    value={percent}
-                    aria-label={tr("Прогрес етапу {0}", item.title)}
-                  />
+                  <progress max={100} value={percent} aria-label={tr("Прогрес етапу {0}", item.title)} />
                   <span className="milestone-card-meta">
                     <span>
-                      {item.taskCount
-                        ? tr(
-                            "Виконано {0} з {1} завдань",
-                            item.doneTaskCount,
-                            item.taskCount,
-                          )
-                        : tr("Завдань ще немає")}
+                      {item.taskCount ? tr("Виконано {0} з {1} завдань", item.doneTaskCount, item.taskCount) : tr("Завдань ще немає")}
                     </span>
                     {item.status === "COMPLETED" ? (
                       <span className="project-status status-PAID">
@@ -139,11 +98,7 @@ export function MilestonesPanel({
                         {tr(milestonePaymentNames.PAID)}
                       </span>
                     ) : (
-                      <span
-                        className={`project-status status-${item.status}`}
-                      >
-                        {tr(milestoneStatusNames[item.status])}
-                      </span>
+                      <span className={`project-status status-${item.status}`}>{tr(milestoneStatusNames[item.status])}</span>
                     )}
                   </span>
                 </button>
@@ -164,9 +119,7 @@ export function MilestonesPanel({
         </ol>
       ) : (
         <p className="form-note">
-          {tr(
-            "Етапів ще немає. Розбийте роботу на етапи через AI-планування або додайте їх вручну — оплата йтиме частинами.",
-          )}
+          {tr("Етапів ще немає. Розбийте роботу на етапи через AI-планування або додайте їх вручну — оплата йтиме частинами.")}
         </p>
       )}
     </section>

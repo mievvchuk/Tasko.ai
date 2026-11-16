@@ -95,7 +95,15 @@ describe('hit counter', () => {
   it('does not count a rejected request against the other keys', () => {
     const counter = new HitCounter(60_000);
     counter.hit([['email', 1]], response());
-    expect(() => counter.hit([['ip', 2], ['email', 1]], response())).toThrow();
+    expect(() =>
+      counter.hit(
+        [
+          ['ip', 2],
+          ['email', 1],
+        ],
+        response(),
+      ),
+    ).toThrow();
     // Відхилений запит не зарахувався: з «ip» ще можна двічі
     counter.hit([['ip', 2]], response());
     counter.hit([['ip', 2]], response());

@@ -24,15 +24,8 @@ export function TasksTable({
     );
   return (
     <>
-      <p className="table-hint">
-        {tr("Гортайте таблицю вбік, щоб побачити всі стовпці.")}
-      </p>
-      <div
-        className="table-scroll"
-        role="region"
-        aria-label={tr("Таблиця завдань")}
-        tabIndex={0}
-      >
+      <p className="table-hint">{tr("Гортайте таблицю вбік, щоб побачити всі стовпці.")}</p>
+      <div className="table-scroll" role="region" aria-label={tr("Таблиця завдань")} tabIndex={0}>
         <table className="projects-table tasks-table">
           <thead>
             <tr>
@@ -52,10 +45,7 @@ export function TasksTable({
                 </td>
                 {showProject && (
                   <td>
-                    <Link
-                      className="task-project-link"
-                      to={`/tasks?project=${task.projectId}`}
-                    >
+                    <Link className="task-project-link" to={`/tasks?project=${task.projectId}`}>
                       {task.projectTitle}
                     </Link>
                   </td>
@@ -64,9 +54,7 @@ export function TasksTable({
                   {task.assigneeId ? (
                     <Link to={`/freelancers/${task.assigneeId}`}>
                       {task.assigneeName ||
-                        members.find(
-                          (member) => member.userId === task.assigneeId,
-                        )?.user?.name ||
+                        members.find((member) => member.userId === task.assigneeId)?.user?.name ||
                         tr("Учасник недоступний")}
                     </Link>
                   ) : (
@@ -75,25 +63,10 @@ export function TasksTable({
                 </td>
                 <td>{tr(priorityNames[task.priority])}</td>
                 <td>
-                  <span className={`project-status status-${task.status}`}>
-                    {tr(taskStatusNames[task.status])}
-                  </span>
+                  <span className={`project-status status-${task.status}`}>{tr(taskStatusNames[task.status])}</span>
                 </td>
-                <td
-                  className={
-                    isOverdue(task) ? "deadline-cell overdue" : "deadline-cell"
-                  }
-                >
-                  {task.deadline && (
-                    <i
-                      className={
-                        isOverdue(task)
-                          ? "bi bi-clock-history"
-                          : "bi bi-calendar3"
-                      }
-                      aria-hidden="true"
-                    ></i>
-                  )}
+                <td className={isOverdue(task) ? "deadline-cell overdue" : "deadline-cell"}>
+                  {task.deadline && <i className={isOverdue(task) ? "bi bi-clock-history" : "bi bi-calendar3"} aria-hidden="true"></i>}
                   {formatDate(task.deadline)}
                 </td>
               </tr>

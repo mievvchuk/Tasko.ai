@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { ProjectsService } from '../projects/projects.service.js';
 import type { CurrentUser } from '../users/users.service.js';
@@ -30,17 +25,10 @@ const replaceable = (milestone: { status: string; paymentStatus: string }) =>
 // завдання з етапом) позначали етап лише першим рядком опису «Етап: …».
 const planTaskOf =
   (milestone: { id: string; title: string }) =>
-  (task: {
-    milestoneId: string | null;
-    description: string | null;
-    status: string;
-    assigneeId: string | null;
-  }) =>
+  (task: { milestoneId: string | null; description: string | null; status: string; assigneeId: string | null }) =>
     task.status === 'TODO' &&
     !task.assigneeId &&
-    (task.milestoneId === milestone.id ||
-      (!task.milestoneId &&
-        Boolean(task.description?.startsWith(`Етап: ${milestone.title}\n\n`))));
+    (task.milestoneId === milestone.id || (!task.milestoneId && Boolean(task.description?.startsWith(`Етап: ${milestone.title}\n\n`))));
 
 @Injectable()
 export class ProjectPlanningService {
@@ -51,10 +39,7 @@ export class ProjectPlanningService {
 
   // Бюджет для плану: ціна прийнятих пропозицій фрілансерів (на неї вже погодились),
   // інакше — бюджет проєкту. Наявні етапи вже забирають частину цієї суми.
-  private async budgetOf(
-    db: Db,
-    project: { id: string; budgetMin: number | null; budgetMax: number | null },
-  ) {
+  private async budgetOf(db: Db, project: { id: string; budgetMin: number | null; budgetMax: number | null }) {
     const accepted = await db.ProjectApplication.where({
       projectId: project.id,
       status: 'ACCEPTED',
@@ -66,8 +51,7 @@ export class ProjectPlanningService {
       projectId: project.id,
     }).all();
     const kept = milestones.filter((item) => !replaceable(item));
-    const sum = (items: { amount: number }[]) =>
-      items.reduce((total, item) => total + item.amount, 0);
+    const sum = (items: { amount: number }[]) => items.reduce((total, item) => total + item.amount, 0);
     return {
       limit,
       source: accepted.length ? 'BID' : limit === null ? null : 'PROJECT',
@@ -79,10 +63,7 @@ export class ProjectPlanningService {
     } as const;
   }
 
-  private available(
-    budget: Awaited<ReturnType<ProjectPlanningService['budgetOf']>>,
-    replace: boolean,
-  ) {
+  private available(budget: Awaited<ReturnType<ProjectPlanningService['budgetOf']>>, replace: boolean) {
     if (budget.limit === null) return null;
     const used = replace ? budget.committedAfterReplace : budget.committed;
     return Math.max(0, budget.limit - used);
@@ -94,18 +75,10 @@ export class ProjectPlanningService {
     return this.budgetOf(this.projects.prisma.client.orm.public, project);
   }
 
-  async generate(
-    user: CurrentUser,
-    projectId: string,
-    instructions?: string,
-    replace = false,
-  ) {
+  async generate(user: CurrentUser, projectId: string, instructions?: string, replace = false) {
     const project = await this.projects.requireOwner(user, projectId);
     this.projects.ensureWritable(project);
-    const budget = this.available(
-      await this.budgetOf(this.projects.prisma.client.orm.public, project),
-      replace,
-    );
+    const budget = this.available(await this.budgetOf(this.projects.prisma.client.orm.public, project), replace);
     // Send only the selected project's brief, never credentials or private files.
     const plan = await this.agent.generateProjectPlan({
       title: project.title,
@@ -115,51 +88,25 @@ export class ProjectPlanningService {
       budget,
       today: new Date().toISOString().slice(0, 10),
     });
-    return fitPlanDeadlines(
-      fitPlanToBudget(plan, budget),
-      new Date(),
-      project.deadline,
-    );
+    return fitPlanDeadlines(fitPlanToBudget(plan, budget), new Date(), project.deadline);
   }
 
-  async apply(
-    user: CurrentUser,
-    projectId: string,
-    requestId: string,
-    input: unknown,
-    replace = false,
-  ) {
+  async apply(user: CurrentUser, projectId: string, requestId: string, input: unknown, replace = false) {
     const parsed = projectPlanSchema.safeParse(input);
     if (!parsed.success)
-      throw new BadRequestException(
-        'Перевірте назви, описи, пріоритети, рейтинги, суми, дедлайни та критерії приймання плану.',
-      );
+      throw new BadRequestException('Перевірте назви, описи, пріоритети, рейтинги, суми, дедлайни та критерії приймання плану.');
     const project = await this.projects.requireOwner(user, projectId);
     const late = parsed.data.milestones
       .flatMap((milestone) => milestone.tasks)
-      .find(
-        (task) =>
-          task.deadline &&
-          project.deadline &&
-          toDate(task.deadline) > project.deadline,
-      );
-    if (late)
-      throw new BadRequestException(
-        `Дедлайн завдання «${late.title}» пізніший за дедлайн проєкту.`,
-      );
+      .find((task) => task.deadline && project.deadline && toDate(task.deadline) > project.deadline);
+    if (late) throw new BadRequestException(`Дедлайн завдання «${late.title}» пізніший за дедлайн проєкту.`);
     const client = this.projects.prisma.client;
     const previous = await client.orm.public.ActivityLog.where({
       id: requestId,
     }).first();
     if (previous) {
-      if (
-        previous.projectId !== projectId ||
-        previous.actorId !== user.id ||
-        previous.type !== 'AI_PLAN_APPLIED'
-      ) {
-        throw new ConflictException(
-          'Ідентифікатор підтвердження вже використано.',
-        );
+      if (previous.projectId !== projectId || previous.actorId !== user.id || previous.type !== 'AI_PLAN_APPLIED') {
+        throw new ConflictException('Ідентифікатор підтвердження вже використано.');
       }
       return { applied: true, alreadyApplied: true };
     }
@@ -171,28 +118,20 @@ export class ProjectPlanningService {
         // Lock the project row so simultaneous plans append milestone positions safely.
         await db.Project.where({ id: projectId }).update({ updatedAt: now });
         const current = await db.Project.where({ id: projectId }).first();
-        if (!current || current.clientId !== user.id)
-          throw new ConflictException('Проєкт змінився. Оновіть сторінку.');
+        if (!current || current.clientId !== user.id) throw new ConflictException('Проєкт змінився. Оновіть сторінку.');
         this.projects.ensureWritable(current);
         // Сума плану не може перевищити бюджет (з урахуванням етапів, що лишаються)
-        const budget = this.available(
-          await this.budgetOf(db, current),
-          replace,
-        );
+        const budget = this.available(await this.budgetOf(db, current), replace);
         const total = planTotal(parsed.data);
         if (budget !== null && total > budget)
-          throw new BadRequestException(
-            `Сума плану ${total} грн перевищує доступний бюджет ${budget} грн. Зменште вартість завдань.`,
-          );
+          throw new BadRequestException(`Сума плану ${total} грн перевищує доступний бюджет ${budget} грн. Зменште вартість завдань.`);
         // A unique activity ID makes retries safe, including a lost HTTP response.
         await db.ActivityLog.create({
           id: requestId,
           projectId,
           actorId: user.id,
           type: 'AI_PLAN_APPLIED',
-          message: replace
-            ? 'Власник замінив попередні етапи новим AI-планом.'
-            : 'Власник підтвердив і додав AI-план проєкту.',
+          message: replace ? 'Власник замінив попередні етапи новим AI-планом.' : 'Власник підтвердив і додав AI-план проєкту.',
           createdAt: now,
         });
         let existing = await db.ProjectMilestone.where({ projectId }).all();
@@ -201,8 +140,7 @@ export class ProjectPlanningService {
           for (const milestone of existing.filter(replaceable)) {
             for (const task of tasks.filter(planTaskOf(milestone))) {
               // Невзяте в роботу завдання не має здач, лише можливі сповіщення
-              if (await db.WorkSubmission.where({ taskId: task.id }).first())
-                continue;
+              if (await db.WorkSubmission.where({ taskId: task.id }).first()) continue;
               await db.Notification.where({ taskId: task.id }).deleteAll();
               await db.Task.where({ id: task.id }).delete();
             }
@@ -214,10 +152,7 @@ export class ProjectPlanningService {
           }
           existing = existing.filter((item) => !replaceable(item));
         }
-        let position = existing.reduce(
-          (max, item) => Math.max(max, item.position),
-          0,
-        );
+        let position = existing.reduce((max, item) => Math.max(max, item.position), 0);
         for (const milestone of parsed.data.milestones) {
           position++;
           const milestoneId = randomUUID();
@@ -225,10 +160,7 @@ export class ProjectPlanningService {
             id: milestoneId,
             projectId,
             title: milestone.title,
-            description: planDescription(
-              milestone.description,
-              milestone.acceptanceCriteria,
-            ),
+            description: planDescription(milestone.description, milestone.acceptanceCriteria),
             position,
             deadline: milestoneDeadline(milestone),
             amount: milestoneAmount(milestone),
@@ -242,11 +174,7 @@ export class ProjectPlanningService {
               id: randomUUID(),
               projectId,
               title: task.title,
-              description: planDescription(
-                task.description,
-                task.acceptanceCriteria,
-                task.amount,
-              ),
+              description: planDescription(task.description, task.acceptanceCriteria, task.amount),
               assigneeId: null,
               priority: task.priority,
               rating: task.rating,
@@ -266,11 +194,7 @@ export class ProjectPlanningService {
         const saved = await client.orm.public.ActivityLog.where({
           id: requestId,
         }).first();
-        if (
-          saved?.projectId === projectId &&
-          saved.actorId === user.id &&
-          saved.type === 'AI_PLAN_APPLIED'
-        )
+        if (saved?.projectId === projectId && saved.actorId === user.id && saved.type === 'AI_PLAN_APPLIED')
           return { applied: true, alreadyApplied: true };
       }
       throw error;

@@ -1,10 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  type CallHandler,
-  type ExecutionContext,
-  type NestInterceptor,
-} from '@nestjs/common';
+import { Inject, Injectable, type CallHandler, type ExecutionContext, type NestInterceptor } from '@nestjs/common';
 import { from, switchMap, tap } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { announceDataChange } from './data-events.js';
@@ -34,11 +28,7 @@ export class DataChangeInterceptor implements NestInterceptor {
     const path = request.path ?? request.url.split('?')[0];
     if (!mutating.has(request.method) || quiet.test(path)) return next.handle();
     return from(this.projectOf(path, request.params?.id)).pipe(
-      switchMap((projectId) =>
-        next
-          .handle()
-          .pipe(tap({ complete: () => announceDataChange(projectId) })),
-      ),
+      switchMap((projectId) => next.handle().pipe(tap({ complete: () => announceDataChange(projectId) }))),
     );
   }
 
@@ -54,25 +44,15 @@ export class DataChangeInterceptor implements NestInterceptor {
         case 'tasks':
           return (await db.Task.where({ id }).first())?.projectId ?? null;
         case 'columns':
-          return (
-            (await db.BoardColumn.where({ id }).first())?.projectId ?? null
-          );
+          return (await db.BoardColumn.where({ id }).first())?.projectId ?? null;
         case 'milestones':
-          return (
-            (await db.ProjectMilestone.where({ id }).first())?.projectId ?? null
-          );
+          return (await db.ProjectMilestone.where({ id }).first())?.projectId ?? null;
         case 'applications':
-          return (
-            (await db.ProjectApplication.where({ id }).first())?.projectId ??
-            null
-          );
+          return (await db.ProjectApplication.where({ id }).first())?.projectId ?? null;
         case 'submissions': {
           const submission = await db.WorkSubmission.where({ id }).first();
           if (!submission) return null;
-          return (
-            (await db.Task.where({ id: submission.taskId }).first())
-              ?.projectId ?? null
-          );
+          return (await db.Task.where({ id: submission.taskId }).first())?.projectId ?? null;
         }
         default:
           return null;

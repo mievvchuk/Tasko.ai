@@ -1,28 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Inject,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
-import {
-  ChangePasswordDto,
-  DisableTwoFactorDto,
-  GoogleLoginDto,
-  LoginDto,
-  RegisterDto,
-  TwoFactorCodeDto,
-} from './auth.dto.js';
+import { ChangePasswordDto, DisableTwoFactorDto, GoogleLoginDto, LoginDto, RegisterDto, TwoFactorCodeDto } from './auth.dto.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { Actor } from './current-user.decorator.js';
 import type { CurrentUser } from '../users/users.service.js';
@@ -91,10 +71,7 @@ export class AuthController {
   @Delete('sessions/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  revokeSession(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  revokeSession(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.auth.revokeSession(user, id);
   }
 
@@ -122,10 +99,7 @@ export class AuthController {
   @Post('2fa/disable')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  disableTwoFactor(
-    @Actor() user: CurrentUser,
-    @Body() data: DisableTwoFactorDto,
-  ) {
+  disableTwoFactor(@Actor() user: CurrentUser, @Body() data: DisableTwoFactorDto) {
     return this.auth.disableTwoFactor(user, data);
   }
 }

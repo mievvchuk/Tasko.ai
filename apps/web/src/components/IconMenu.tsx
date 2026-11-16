@@ -43,11 +43,7 @@ export function IconMenu<T extends string>({
       </button>
       {open && (
         <>
-          <div
-            className="account-backdrop"
-            aria-hidden="true"
-            onClick={() => setOpen(false)}
-          />
+          <div className="account-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
           <ul className="icon-menu-list" id={id} aria-label={label}>
             {options.map((option) => (
               <li key={option.value}>
@@ -59,13 +55,9 @@ export function IconMenu<T extends string>({
                     setOpen(false);
                   }}
                 >
-                  {option.icon && (
-                    <i className={`bi ${option.icon}`} aria-hidden="true"></i>
-                  )}
+                  {option.icon && <i className={`bi ${option.icon}`} aria-hidden="true"></i>}
                   <span>{option.label}</span>
-                  {option.value === value && (
-                    <i className="bi bi-check2 icon-menu-check" aria-hidden="true"></i>
-                  )}
+                  {option.value === value && <i className="bi bi-check2 icon-menu-check" aria-hidden="true"></i>}
                 </button>
               </li>
             ))}

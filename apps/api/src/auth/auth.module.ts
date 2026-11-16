@@ -7,10 +7,7 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
-import {
-  AvatarsController,
-  UsersController,
-} from '../users/users.controller.js';
+import { AvatarsController, UsersController } from '../users/users.controller.js';
 import { AuthEmailRateLimitGuard } from './email-rate-limit.guard.js';
 import { GoogleVerifier } from './google.js';
 
@@ -35,13 +32,7 @@ import { GoogleVerifier } from './google.js';
     }),
   ],
   controllers: [AuthController, UsersController, AvatarsController],
-  providers: [
-    UsersService,
-    AuthService,
-    JwtAuthGuard,
-    AuthEmailRateLimitGuard,
-    GoogleVerifier,
-  ],
+  providers: [UsersService, AuthService, JwtAuthGuard, AuthEmailRateLimitGuard, GoogleVerifier],
   exports: [UsersService, AuthService, JwtAuthGuard, JwtModule],
 })
 export class AuthModule {}

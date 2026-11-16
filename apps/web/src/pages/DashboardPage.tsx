@@ -9,13 +9,7 @@ import { useAuth } from "../auth";
 import { projectStatusNames, taskStatusNames } from "../types";
 import { DonutChart, ProgressRing, StatusColumns } from "../components/Charts";
 import type { ChartTone } from "../components/Charts";
-import type {
-  DashboardSummary,
-  Project,
-  ProjectStatus,
-  TaskDeadline,
-  TaskStatus,
-} from "../types";
+import type { DashboardSummary, Project, ProjectStatus, TaskDeadline, TaskStatus } from "../types";
 
 import { useLanguage } from "../i18n";
 interface DashboardData {
@@ -92,15 +86,9 @@ export function DashboardPage() {
       <div className="page-heading heading-with-action">
         <div>
           <h1>{tr("Головна панель")}</h1>
-          <p>
-            {tr("Ваші проєкти, завдання та терміни виконання — перед очима.")}
-          </p>
+          <p>{tr("Ваші проєкти, завдання та терміни виконання — перед очима.")}</p>
         </div>
-        <button
-          className="button secondary"
-          onClick={refresh}
-          disabled={loading}
-        >
+        <button className="button secondary" onClick={refresh} disabled={loading}>
           {tr("Оновити дані")} <span aria-hidden="true">↻</span>
         </button>
       </div>
@@ -115,13 +103,9 @@ export function DashboardPage() {
           </strong>
           <p>
             {user?.role === "CLIENT"
-              ? tr(
-                  "Опублікуйте проєкт, перегляньте заявки та оберіть виконавця.",
-                )
+              ? tr("Опублікуйте проєкт, перегляньте заявки та оберіть виконавця.")
               : user?.role === "FREELANCER"
-                ? tr(
-                    "Знайдіть відкритий проєкт на біржі та залиште свою пропозицію.",
-                  )
+                ? tr("Знайдіть відкритий проєкт на біржі та залиште свою пропозицію.")
                 : tr("Переглядайте проєкти, користувачів і аналітичний звіт.")}
           </p>
         </div>
@@ -149,18 +133,11 @@ export function DashboardPage() {
           <section className="stats-grid" aria-label={tr("Статистика")}>
             <Link className="stat-card" to="/projects?status=ACTIVE">
               <span className="stat-label">{tr("Активні проєкти")}</span>
-              <strong data-testid="active-projects">
-                {data.summary.activeProjects}
-              </strong>
+              <strong data-testid="active-projects">{data.summary.activeProjects}</strong>
               <span className="stat-note">
                 {tr("Із")} {data.summary.projects} {tr("доступних проєктів")}
               </span>
-              <ProgressRing
-                value={data.summary.activeProjects}
-                max={data.summary.projects}
-                tone="primary"
-                label={tr("Активні проєкти")}
-              />
+              <ProgressRing value={data.summary.activeProjects} max={data.summary.projects} tone="primary" label={tr("Активні проєкти")} />
             </Link>
             <Link className="stat-card" to="/tasks">
               <span className="stat-label">{tr("Усі завдання")}</span>
@@ -168,17 +145,11 @@ export function DashboardPage() {
               <span className="stat-note">
                 {tr("Завершено:")} {data.summary.completedTasks}
               </span>
-              <ProgressRing
-                value={data.summary.completedTasks}
-                max={data.summary.tasks}
-                label={tr("Завершено:")}
-              />
+              <ProgressRing value={data.summary.completedTasks} max={data.summary.tasks} label={tr("Завершено:")} />
             </Link>
             <Link className="stat-card" to="/tasks?status=IN_PROGRESS">
               <span className="stat-label">{tr("У процесі")}</span>
-              <strong data-testid="in-progress-tasks">
-                {data.summary.tasksByStatus.IN_PROGRESS}
-              </strong>
+              <strong data-testid="in-progress-tasks">{data.summary.tasksByStatus.IN_PROGRESS}</strong>
               <span className="stat-note">{tr("Завдання у виконанні")}</span>
               <ProgressRing
                 value={data.summary.tasksByStatus.IN_PROGRESS}
@@ -189,11 +160,7 @@ export function DashboardPage() {
             </Link>
             <Link className="stat-card deadline-card" to="/tasks?overdue=true">
               <span className="stat-label">{tr("Найближчий дедлайн")}</span>
-              <strong className="stat-date">
-                {data.summary.nearestDeadline
-                  ? formatDate(data.summary.nearestDeadline)
-                  : "—"}
-              </strong>
+              <strong className="stat-date">{data.summary.nearestDeadline ? formatDate(data.summary.nearestDeadline) : "—"}</strong>
               <span className="stat-note">
                 {tr("Прострочених завдань:")} {data.summary.overdueTasks}
               </span>
@@ -208,14 +175,12 @@ export function DashboardPage() {
           <div className="dashboard-bottom dashboard-charts">
             <StatusColumns
               title={tr("Завдання за статусом")}
-              items={(Object.keys(taskStatusNames) as TaskStatus[]).map(
-                (status) => ({
-                  label: tr(taskStatusNames[status]),
-                  value: data.summary.tasksByStatus[status],
-                  tone: taskTones[status],
-                  to: `/tasks?status=${status}`,
-                }),
-              )}
+              items={(Object.keys(taskStatusNames) as TaskStatus[]).map((status) => ({
+                label: tr(taskStatusNames[status]),
+                value: data.summary.tasksByStatus[status],
+                tone: taskTones[status],
+                to: `/tasks?status=${status}`,
+              }))}
             />
             <DonutChart
               title={tr("Проєкти за статусом")}
@@ -230,10 +195,7 @@ export function DashboardPage() {
                   to: `/projects?status=${status}`,
                 }))}
             />
-            <section
-              className="data-panel deadlines-panel"
-              aria-labelledby="deadlines-title"
-            >
+            <section className="data-panel deadlines-panel" aria-labelledby="deadlines-title">
               <div className="panel-heading">
                 <h2 id="deadlines-title">{tr("Найближчі дедлайни")}</h2>
                 <Link className="text-link" to="/tasks?overdue=true">
@@ -249,18 +211,10 @@ export function DashboardPage() {
                           <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                         </strong>
                         <span>
-                          {task.projectTitle} ·{" "}
-                          {tr(taskStatusNames[task.status])}
+                          {task.projectTitle} · {tr(taskStatusNames[task.status])}
                         </span>
                       </div>
-                      <span
-                        className={
-                          task.risk === "OVERDUE"
-                            ? "days-left overdue"
-                            : "days-left"
-                        }
-                        title={formatDate(task.deadline, true)}
-                      >
+                      <span className={task.risk === "OVERDUE" ? "days-left overdue" : "days-left"} title={formatDate(task.deadline, true)}>
                         {deadlineLabel(task.deadline)}
                       </span>
                     </li>
@@ -269,17 +223,12 @@ export function DashboardPage() {
               ) : (
                 <div className="empty-state compact">
                   <h3>{tr("Дедлайнів немає")}</h3>
-                  <p>
-                    {tr("Немає незавершених завдань із визначеним терміном.")}
-                  </p>
+                  <p>{tr("Немає незавершених завдань із визначеним терміном.")}</p>
                 </div>
               )}
             </section>
           </div>
-          <section
-            className="data-panel"
-            aria-labelledby="active-projects-title"
-          >
+          <section className="data-panel" aria-labelledby="active-projects-title">
             <div className="panel-heading">
               <div>
                 <h2 id="active-projects-title">{tr("Активні проєкти")}</h2>
@@ -295,11 +244,7 @@ export function DashboardPage() {
               <div className="empty-state">
                 <i className="bi bi-inbox empty-symbol" aria-hidden="true"></i>
                 <h3>{tr("Активних проєктів поки немає")}</h3>
-                <p>
-                  {tr(
-                    "Проєкти у плануванні та з іншими статусами доступні в загальному списку.",
-                  )}
-                </p>
+                <p>{tr("Проєкти у плануванні та з іншими статусами доступні в загальному списку.")}</p>
                 <Link to="/projects" className="text-link">
                   {tr("Переглянути проєкти →")}
                 </Link>

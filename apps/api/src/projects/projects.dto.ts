@@ -15,13 +15,7 @@ import {
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
-export const projectStatuses = [
-  'PLANNING',
-  'ACTIVE',
-  'PAUSED',
-  'COMPLETED',
-  'CANCELLED',
-] as const;
+export const projectStatuses = ['PLANNING', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED'] as const;
 // Новий проєкт спершу чекає на модерацію; відхилений клієнт виправляє й надсилає знову
 export const moderationStatuses = ['MODERATION', 'REJECTED'] as const;
 const allProjectStatuses = [...projectStatuses, ...moderationStatuses];
@@ -56,8 +50,7 @@ export class ProjectQueryDto extends PageDto {
   @Transform(({ value }) => value === true || value === 'true')
   mine?: boolean;
   @ApiPropertyOptional({
-    description:
-      'Усі проєкти платформи (лише для адміністратора, з адмін-панелі)',
+    description: 'Усі проєкти платформи (лише для адміністратора, з адмін-панелі)',
   })
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')
@@ -92,9 +85,7 @@ export class MarketplaceQueryDto extends PageDto {
 
 export class CreateProjectDto {
   @ApiProperty({ minLength: 2, maxLength: 200 })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 200)
   title: string;
@@ -146,9 +137,7 @@ export class CreateProjectDto {
     description: 'Назва категорії: наявна або нова, яку буде створено',
   })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 60)
   categoryName?: string;
@@ -182,9 +171,7 @@ export class AddMemberDto {
 
 export class CreateApplicationDto {
   @ApiProperty({ minLength: 10, maxLength: 2000 })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(10, 2000)
   message: string;
@@ -220,9 +207,7 @@ export class CreateClientReviewDto {
 
   @ApiPropertyOptional({ maxLength: 2000 })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(0, 2000)
   comment?: string;
@@ -242,9 +227,7 @@ export class CreateFreelancerReviewDto {
 
   @ApiPropertyOptional({ maxLength: 2000 })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(0, 2000)
   comment?: string;

@@ -60,10 +60,7 @@ export class UsersController {
       limits: { fileSize: maxAvatarSize, files: 1, fields: 0 },
     }),
   )
-  uploadAvatar(
-    @Actor() user: CurrentUser,
-    @UploadedFile() file: UploadedFileData | undefined,
-  ) {
+  uploadAvatar(@Actor() user: CurrentUser, @UploadedFile() file: UploadedFileData | undefined) {
     return this.users.setAvatar(user, file);
   }
 
@@ -78,10 +75,7 @@ export class UsersController {
   }
 
   @Patch('profile/freelancer')
-  updateProfile(
-    @Actor() user: CurrentUser,
-    @Body() data: UpdateFreelancerProfileDto,
-  ) {
+  updateProfile(@Actor() user: CurrentUser, @Body() data: UpdateFreelancerProfileDto) {
     return this.users.updateFreelancerProfile(user, data);
   }
 
@@ -91,19 +85,12 @@ export class UsersController {
   }
 
   @Post('profile/portfolio')
-  createPortfolio(
-    @Actor() user: CurrentUser,
-    @Body() data: CreatePortfolioItemDto,
-  ) {
+  createPortfolio(@Actor() user: CurrentUser, @Body() data: CreatePortfolioItemDto) {
     return this.users.createPortfolioItem(user, data);
   }
 
   @Patch('profile/portfolio/:id')
-  updatePortfolio(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: UpdatePortfolioItemDto,
-  ) {
+  updatePortfolio(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: UpdatePortfolioItemDto) {
     return this.users.updatePortfolioItem(user, id, data);
   }
 
@@ -130,10 +117,7 @@ export class UsersController {
   }
 
   @Delete('profile/portfolio/:id')
-  deletePortfolio(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  deletePortfolio(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.users.deletePortfolioItem(user, id);
   }
 

@@ -1,11 +1,4 @@
-import {
-  Link,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useLocation,
-} from "react-router";
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { useAuth } from "./auth";
 import { AuthLayout } from "./components/AuthLayout";
 import { Layout } from "./components/Layout";
@@ -32,10 +25,7 @@ import { ClientProfilePage } from "./pages/ClientProfilePage";
 import { ProjectApplicationsPage } from "./pages/ProjectApplicationsPage";
 import { FreelancerProfilePage } from "./pages/FreelancerProfilePage";
 import { WelcomePage } from "./pages/WelcomePage";
-import {
-  GettingStartedPage,
-  justRegisteredKey,
-} from "./pages/GettingStartedPage";
+import { GettingStartedPage, justRegisteredKey } from "./pages/GettingStartedPage";
 import { WorkloadPage } from "./pages/WorkloadPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { ProjectBoardPage } from "./pages/ProjectBoardPage";
@@ -51,8 +41,7 @@ function ProtectedRoute() {
   const { user } = useAuth();
   // Гість, що відкрив головну, бачить вітальну сторінку; інші адреси ведуть на вхід
   const { pathname } = useLocation();
-  if (!user)
-    return <Navigate to={pathname === "/" ? "/welcome" : "/login"} replace />;
+  if (!user) return <Navigate to={pathname === "/" ? "/welcome" : "/login"} replace />;
   return <Outlet />;
 }
 
@@ -128,22 +117,13 @@ export function App() {
           <Route path="projects/:id" element={<ProjectDetailsPage />} />
           <Route path="projects/:id/board" element={<ProjectBoardPage />} />
           <Route path="projects/:id/plan" element={<ProjectPlanPage />} />
-          <Route
-            path="projects/:id/milestones"
-            element={<ProjectMilestonesPage />}
-          />
-          <Route
-            path="projects/:id/activity"
-            element={<ProjectActivityPage />}
-          />
+          <Route path="projects/:id/milestones" element={<ProjectMilestonesPage />} />
+          <Route path="projects/:id/activity" element={<ProjectActivityPage />} />
           <Route path="projects/:id/edit" element={<ProjectFormPage />} />
           <Route path="projects/:id/tasks/new" element={<TaskFormPage />} />
           <Route path="projects/:id/files" element={<FilesPage />} />
           <Route path="projects/:id/orders" element={<OrdersPage />} />
-          <Route
-            path="projects/:id/applications"
-            element={<ProjectApplicationsPage />}
-          />
+          <Route path="projects/:id/applications" element={<ProjectApplicationsPage />} />
           <Route path="marketplace" element={<MarketplacePage />} />
           <Route path="marketplace/:id" element={<MarketplaceProjectPage />} />
           <Route path="freelancers/:id" element={<FreelancerProfilePage />} />
@@ -163,14 +143,9 @@ export function App() {
             path="*"
             element={
               <section className="account-panel not-found">
-                <i
-                  className="bi bi-exclamation-triangle"
-                  aria-hidden="true"
-                ></i>
+                <i className="bi bi-exclamation-triangle" aria-hidden="true"></i>
                 <h1>{tr("Сторінку не знайдено")}</h1>
-                <p>
-                  {tr("Перевірте адресу або поверніться до робочого простору.")}
-                </p>
+                <p>{tr("Перевірте адресу або поверніться до робочого простору.")}</p>
                 <Link className="button primary" to="/">
                   {tr("На головну")}
                 </Link>

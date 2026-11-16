@@ -13,39 +13,18 @@ import { useLanguage } from "../i18n";
 export function TaskFormPage() {
   const { id, taskId } = useParams();
   const task = useApi<Task>(taskId ? `/tasks/${taskId}` : null);
-  if (taskId && !task.data)
-    return (
-      <ResourceState
-        loading={task.loading}
-        error={task.error}
-        onRetry={task.refresh}
-      />
-    );
+  if (taskId && !task.data) return <ResourceState loading={task.loading} error={task.error} onRetry={task.refresh} />;
   const projectId = task.data?.projectId || id;
   if (!projectId) return null;
-  return (
-    <TaskFormContext
-      key={taskId || projectId}
-      projectId={projectId}
-      task={task.data}
-    />
-  );
+  return <TaskFormContext key={taskId || projectId} projectId={projectId} task={task.data} />;
 }
 
-function TaskFormContext({
-  projectId,
-  task,
-}: {
-  projectId: string;
-  task: Task | null;
-}) {
+function TaskFormContext({ projectId, task }: { projectId: string; task: Task | null }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
   const project = useApi<Project>(`/projects/${projectId}`);
   const members = useApi<ProjectMember[]>(`/projects/${projectId}/members`);
-  const milestones = useApi<ProjectMilestone[]>(
-    `/projects/${projectId}/milestones`,
-  );
+  const milestones = useApi<ProjectMilestone[]>(`/projects/${projectId}/milestones`);
   if (!project.data || !members.data || !milestones.data)
     return (
       <ResourceState
@@ -70,14 +49,7 @@ function TaskFormContext({
         <Link to={`/projects/${projectId}`}>{tr("До проєкту")}</Link>
       </section>
     );
-  return (
-    <TaskForm
-      project={project.data}
-      members={members.data}
-      milestones={milestones.data}
-      task={task}
-    />
-  );
+  return <TaskForm project={project.data} members={members.data} milestones={milestones.data} task={task} />;
 }
 
 function TaskForm({
@@ -95,19 +67,13 @@ function TaskForm({
   const navigate = useNavigate();
   const [params] = useSearchParams();
   // Нове завдання зі сторінки проєкту з вибраним етапом одразу потрапляє в цей етап
-  const [milestoneId, setMilestoneId] = useState(
-    task ? task.milestoneId || "" : params.get("milestone") || "",
-  );
+  const [milestoneId, setMilestoneId] = useState(task ? task.milestoneId || "" : params.get("milestone") || "");
   // У прийнятий етап нові завдання не додаються
-  const openMilestones = milestones.filter(
-    (item) => item.status !== "COMPLETED" || item.id === task?.milestoneId,
-  );
+  const openMilestones = milestones.filter((item) => item.status !== "COMPLETED" || item.id === task?.milestoneId);
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
   const [assigneeId, setAssigneeId] = useState(task?.assigneeId || "");
-  const [priority, setPriority] = useState<Task["priority"]>(
-    task?.priority || "MEDIUM",
-  );
+  const [priority, setPriority] = useState<Task["priority"]>(task?.priority || "MEDIUM");
   const [rating, setRating] = useState(task?.rating ? String(task.rating) : "");
   const [deadline, setDeadline] = useState(toDateInput(task?.deadline || null));
   const [busy, setBusy] = useState(false);
@@ -124,14 +90,8 @@ function TaskForm({
       setError(tr("Перевірте дату дедлайну."));
       return;
     }
-    if (
-      deadline &&
-      project.deadline &&
-      deadline > toDateInput(project.deadline)
-    ) {
-      setError(
-        tr("Дедлайн завдання не може бути пізнішим за дедлайн проєкту."),
-      );
+    if (deadline && project.deadline && deadline > toDateInput(project.deadline)) {
+      setError(tr("Дедлайн завдання не може бути пізнішим за дедлайн проєкту."));
       return;
     }
     setBusy(true);
@@ -150,22 +110,18 @@ function TaskForm({
         priority,
         rating: rating ? Number(rating) : null,
       };
-      if (assigneeId !== (task?.assigneeId || ""))
-        body.assigneeId = assigneeId || null;
-      if (milestoneId !== (task?.milestoneId || ""))
-        body.milestoneId = milestoneId || null;
+      if (assigneeId !== (task?.assigneeId || "")) body.assigneeId = assigneeId || null;
+      if (milestoneId !== (task?.milestoneId || "")) body.milestoneId = milestoneId || null;
       if (deadline !== toDateInput(task?.deadline || null)) {
         // У день дедлайну проєкту завдання не може закінчуватися пізніше за сам проєкт
         const due = deadline ? dateInputEnd(deadline) : null;
         const cap = project.deadline ? new Date(project.deadline) : null;
-        body.deadline = due
-          ? (cap && due > cap ? cap : due).toISOString()
-          : null;
+        body.deadline = due ? (cap && due > cap ? cap : due).toISOString() : null;
       }
-      const result = await request<{ id: string }>(
-        task ? `/tasks/${task.id}` : `/projects/${project.id}/tasks`,
-        { method: task ? "PATCH" : "POST", body },
-      );
+      const result = await request<{ id: string }>(task ? `/tasks/${task.id}` : `/projects/${project.id}/tasks`, {
+        method: task ? "PATCH" : "POST",
+        body,
+      });
       await navigate(`/tasks/${task?.id || result.id}`, { replace: true });
     } catch (error) {
       setError(errorMessage(error));
@@ -175,10 +131,7 @@ function TaskForm({
   }
   return (
     <>
-      <Link
-        className="breadcrumb"
-        to={task ? `/tasks/${task.id}` : `/projects/${project.id}`}
-      >
+      <Link className="breadcrumb" to={task ? `/tasks/${task.id}` : `/projects/${project.id}`}>
         {tr("← Повернутися")}
       </Link>
       <div className="page-heading">
@@ -209,11 +162,7 @@ function TaskForm({
             {openMilestones.length > 0 && (
               <>
                 <label htmlFor="task-milestone">{tr("Етап")}</label>
-                <select
-                  id="task-milestone"
-                  value={milestoneId}
-                  onChange={(event) => setMilestoneId(event.target.value)}
-                >
+                <select id="task-milestone" value={milestoneId} onChange={(event) => setMilestoneId(event.target.value)}>
                   <option value="">{tr("Без етапу")}</option>
                   {openMilestones.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -221,11 +170,7 @@ function TaskForm({
                     </option>
                   ))}
                 </select>
-                <p className="form-note">
-                  {tr(
-                    "Етап закривається, коли виконано всі його завдання, і тоді ви приймаєте його оплату.",
-                  )}
-                </p>
+                <p className="form-note">{tr("Етап закривається, коли виконано всі його завдання, і тоді ви приймаєте його оплату.")}</p>
               </>
             )}
             <h2 className="form-section-title">{tr("Хто і коли")}</h2>
@@ -246,20 +191,12 @@ function TaskForm({
                 ))}
             </select>
             <p className="form-note">
-              {tr(
-                "Виконавця спочатку потрібно додати до учасників проєкту. Під час виконання змінити виконавця не можна.",
-              )}
+              {tr("Виконавця спочатку потрібно додати до учасників проєкту. Під час виконання змінити виконавця не можна.")}
             </p>
             <div className="form-row">
               <div className="project-form-field">
                 <label htmlFor="task-form-priority">{tr("Пріоритет")}</label>
-                <select
-                  id="task-form-priority"
-                  value={priority}
-                  onChange={(event) =>
-                    setPriority(event.target.value as Task["priority"])
-                  }
-                >
+                <select id="task-form-priority" value={priority} onChange={(event) => setPriority(event.target.value as Task["priority"])}>
                   {Object.entries(priorityNames).map(([value, label]) => (
                     <option key={value} value={value}>
                       {tr(label)}
@@ -269,11 +206,7 @@ function TaskForm({
               </div>
               <div className="project-form-field">
                 <label htmlFor="task-form-rating">{tr("Рейтинг")}</label>
-                <select
-                  id="task-form-rating"
-                  value={rating}
-                  onChange={(event) => setRating(event.target.value)}
-                >
+                <select id="task-form-rating" value={rating} onChange={(event) => setRating(event.target.value)}>
                   <option value="">{tr("Не задано")}</option>
                   {[1, 2, 3, 4, 5].map((value) => (
                     <option key={value} value={value}>
@@ -283,9 +216,7 @@ function TaskForm({
                 </select>
               </div>
               <div className="project-form-field">
-                <label htmlFor="task-form-deadline">
-                  {tr("Дедлайн завдання")}
-                </label>
+                <label htmlFor="task-form-deadline">{tr("Дедлайн завдання")}</label>
                 <input
                   id="task-form-deadline"
                   type="date"
@@ -296,11 +227,7 @@ function TaskForm({
                 />
               </div>
             </div>
-            <p className="form-note">
-              {tr(
-                "Час місцевий. Дедлайн не може бути пізнішим за дедлайн проєкту.",
-              )}
-            </p>
+            <p className="form-note">{tr("Час місцевий. Дедлайн не може бути пізнішим за дедлайн проєкту.")}</p>
             {error && (
               <p className="notice error" role="alert">
                 {error}
@@ -311,10 +238,7 @@ function TaskForm({
                 {busy ? tr("Зберігаємо…") : tr("Зберегти завдання")}
               </button>
               {!busy && (
-                <Link
-                  className="button secondary"
-                  to={task ? `/tasks/${task.id}` : `/projects/${project.id}`}
-                >
+                <Link className="button secondary" to={task ? `/tasks/${task.id}` : `/projects/${project.id}`}>
                   {tr("Скасувати")}
                 </Link>
               )}

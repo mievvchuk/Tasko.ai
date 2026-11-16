@@ -31,17 +31,12 @@ describe('deleting own messages and files', () => {
         },
       },
     };
-    const service = new CollaborationService(
-      projects as unknown as ProjectsService,
-      {} as TasksService,
-    );
+    const service = new CollaborationService(projects as unknown as ProjectsService, {} as TasksService);
     await expect(service.deleteMessage(me, 'p1', 'm1')).resolves.toEqual({
       deleted: true,
     });
     message = { ...message, senderId: 'someone-else' };
-    await expect(service.deleteMessage(me, 'p1', 'm1')).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
+    await expect(service.deleteMessage(me, 'p1', 'm1')).rejects.toBeInstanceOf(ForbiddenException);
     expect(deleted).toHaveLength(1);
   });
 
@@ -65,8 +60,7 @@ describe('deleting own messages and files', () => {
       prisma: {
         client: {
           orm,
-          transaction: (run: (tx: { orm: typeof orm }) => unknown) =>
-            run({ orm }),
+          transaction: (run: (tx: { orm: typeof orm }) => unknown) => run({ orm }),
         },
       },
     };
@@ -74,12 +68,8 @@ describe('deleting own messages and files', () => {
     await expect(files.remove(me, 'f1')).resolves.toEqual({ deleted: true });
     expect(deleted).toHaveLength(2);
     file = { ...file, submissionId: 's1' };
-    await expect(files.remove(me, 'f1')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(files.remove(me, 'f1')).rejects.toBeInstanceOf(ConflictException);
     file = { ...file, submissionId: null, uploadedBy: 'other' };
-    await expect(files.remove(me, 'f1')).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
+    await expect(files.remove(me, 'f1')).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

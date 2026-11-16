@@ -27,11 +27,7 @@ import { AgentService } from './agent.service.js';
 import { McpService } from './mcp.service.js';
 import { AiRateLimitGuard } from './ai-rate-limit.guard.js';
 import type { UploadedFile as UploadedFileData } from '../collaboration/files.service.js';
-import {
-  extractAttachments,
-  maxAttachmentFiles,
-  maxAttachmentSize,
-} from './attachments.js';
+import { extractAttachments, maxAttachmentFiles, maxAttachmentSize } from './attachments.js';
 
 @ApiTags('AI and MCP')
 @ApiBearerAuth()
@@ -47,10 +43,7 @@ export class AgentController {
   @Get('agent/status') status() {
     return this.agent.status();
   }
-  @Post('agent/chat') @HttpCode(200) @UseGuards(AiRateLimitGuard) chat(
-    @Actor() user: CurrentUser,
-    @Body() data: ChatDto,
-  ) {
+  @Post('agent/chat') @HttpCode(200) @UseGuards(AiRateLimitGuard) chat(@Actor() user: CurrentUser, @Body() data: ChatDto) {
     return this.agent.chat(user, data.message, data.history, data.attachments);
   }
   // Витягує текст із TXT/PDF/DOCX для AI-чату; самі файли ніде не зберігаються
@@ -82,54 +75,30 @@ export class AgentController {
   @Post('projects/:id/applications/ai-rank')
   @HttpCode(200)
   @UseGuards(AiRateLimitGuard)
-  rankApplications(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  rankApplications(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.agent.rankApplications(user, id);
   }
   @Post('projects/:id/ai-plan')
   @HttpCode(200)
   @UseGuards(AiRateLimitGuard)
-  generatePlan(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: GeneratePlanDto,
-  ) {
+  generatePlan(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: GeneratePlanDto) {
     return this.planning.generate(user, id, data.instructions, data.replace);
   }
 
   // Бюджет для плану й наявні етапи: сторінка плану показує, скільки можна розподілити
   @Get('projects/:id/ai-plan/context')
-  planContext(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  planContext(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.planning.context(user, id);
   }
 
   @Post('projects/:id/ai-plan/apply')
   @HttpCode(200)
-  applyPlan(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: ApplyPlanDto,
-  ) {
-    return this.planning.apply(
-      user,
-      id,
-      data.requestId,
-      data.plan,
-      data.replace,
-    );
+  applyPlan(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: ApplyPlanDto) {
+    return this.planning.apply(user, id, data.requestId, data.plan, data.replace);
   }
 
   @All('mcp')
-  async handleMcp(
-    @Actor() user: CurrentUser,
-    @Req() request: Request,
-    @Res() response: Response,
-  ) {
+  async handleMcp(@Actor() user: CurrentUser, @Req() request: Request, @Res() response: Response) {
     if (request.method !== 'POST') {
       response.setHeader('Allow', 'POST');
       response.status(405).json({ message: 'MCP підтримує лише POST.' });

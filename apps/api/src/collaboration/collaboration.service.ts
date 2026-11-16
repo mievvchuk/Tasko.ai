@@ -1,28 +1,13 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import {
-  syncMilestones,
-  syncProgress,
-} from '../projects/milestone-progress.js';
+import { syncMilestones, syncProgress } from '../projects/milestone-progress.js';
 import { moveRule } from '../tasks/task-workflow.js';
 import { Subject, filter, interval, map, merge, type Observable } from 'rxjs';
 import { ProjectsService } from '../projects/projects.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
 import type { CurrentUser } from '../users/users.service.js';
 import type { PageDto } from '../projects/projects.dto.js';
-import type {
-  MessageDto,
-  MoveTaskDto,
-  ReviewDto,
-  SubmissionDto,
-} from './collaboration.dto.js';
+import type { MessageDto, MoveTaskDto, ReviewDto, SubmissionDto } from './collaboration.dto.js';
 import { announce } from '../notifications/notification-events.js';
 
 @Injectable()
@@ -40,18 +25,11 @@ export class CollaborationService {
     data: unknown;
     senderId: string;
   }>();
-  private stream(
-    key: string,
-    userId: string,
-  ): Observable<{ type: string; data: unknown }> {
+  private stream(key: string, userId: string): Observable<{ type: string; data: unknown }> {
     return merge(
       this.posted.pipe(
         // власний набір автору назад не шлемо
-        filter(
-          (event) =>
-            event.key === key &&
-            !(event.type === 'typing' && event.senderId === userId),
-        ),
+        filter((event) => event.key === key && !(event.type === 'typing' && event.senderId === userId)),
         map(({ type, data }) => ({ type, data })),
       ),
       interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
@@ -61,10 +39,7 @@ export class CollaborationService {
     return this.projects.prisma.client;
   }
   // Потік нових повідомлень проєкту (SSE). Пінг раз на 25 с не дає проксі закрити з'єднання.
-  async messageStream(
-    user: CurrentUser,
-    projectId: string,
-  ): Promise<Observable<{ type: string; data: unknown }>> {
+  async messageStream(user: CurrentUser, projectId: string): Promise<Observable<{ type: string; data: unknown }>> {
     await this.projects.requireAccess(user, projectId, false);
     return this.stream(`project:${projectId}`, user.id);
   }
@@ -138,17 +113,8 @@ export class CollaborationService {
     const members = await this.client.orm.public.ProjectMember.where({
       projectId,
     }).all();
-    for (const recipientId of new Set([
-      project.clientId,
-      ...members.map((member) => member.userId),
-    ]))
-      await this.projects.notify(
-        recipientId,
-        user.id,
-        'NEW_MESSAGE',
-        'Нове повідомлення у проєкті.',
-        projectId,
-      );
+    for (const recipientId of new Set([project.clientId, ...members.map((member) => member.userId)]))
+      await this.projects.notify(recipientId, user.id, 'NEW_MESSAGE', 'Нове повідомлення у проєкті.', projectId);
     const signed = this.signed(message, user);
     this.posted.next({
       key: `project:${projectId}`,
@@ -165,8 +131,7 @@ export class CollaborationService {
     const messages = this.client.orm.public.Message;
     const message = await messages.where({ id: messageId, projectId }).first();
     if (!message) throw new NotFoundException('Повідомлення не знайдено.');
-    if (message.senderId !== user.id)
-      throw new ForbiddenException('Видалити можна лише власне повідомлення.');
+    if (message.senderId !== user.id) throw new ForbiddenException('Видалити можна лише власне повідомлення.');
     await messages.where({ id: messageId }).delete();
     this.posted.next({
       key: `project:${projectId}`,
@@ -177,19 +142,12 @@ export class CollaborationService {
     return { deleted: true };
   }
 
-  async deleteApplicationMessage(
-    user: CurrentUser,
-    applicationId: string,
-    messageId: string,
-  ) {
+  async deleteApplicationMessage(user: CurrentUser, applicationId: string, messageId: string) {
     await this.applicationChat(user, applicationId);
     const messages = this.client.orm.public.ApplicationMessage;
-    const message = await messages
-      .where({ id: messageId, applicationId })
-      .first();
+    const message = await messages.where({ id: messageId, applicationId }).first();
     if (!message) throw new NotFoundException('Повідомлення не знайдено.');
-    if (message.senderId !== user.id)
-      throw new ForbiddenException('Видалити можна лише власне повідомлення.');
+    if (message.senderId !== user.id) throw new ForbiddenException('Видалити можна лише власне повідомлення.');
     await messages.where({ id: messageId }).delete();
     this.posted.next({
       key: `application:${applicationId}`,
@@ -220,13 +178,10 @@ export class CollaborationService {
     application: { id: string; status: string; freelancerId: string },
     project: { id: string; title: string; clientId: string },
   ) {
-    const people = await this.client.orm.public.User.where((user) =>
-      user.id.in([project.clientId, application.freelancerId]),
-    )
+    const people = await this.client.orm.public.User.where((user) => user.id.in([project.clientId, application.freelancerId]))
       .select('id', 'name')
       .all();
-    const name = (id: string) =>
-      people.find((person) => person.id === id)?.name ?? null;
+    const name = (id: string) => people.find((person) => person.id === id)?.name ?? null;
     return {
       id: application.id,
       status: application.status,
@@ -240,29 +195,19 @@ export class CollaborationService {
   }
 
   async applicationChatInfo(user: CurrentUser, applicationId: string) {
-    const { application, project } = await this.applicationChat(
-      user,
-      applicationId,
-    );
+    const { application, project } = await this.applicationChat(user, applicationId);
     return this.chatSummary(application, project);
   }
 
   // Розмови щодо заявок, де вже є хоч одне повідомлення
   async applicationConversations(user: CurrentUser) {
     const db = this.client.orm.public;
-    const ownProjectIds =
-      user.role === 'CLIENT'
-        ? (await db.Project.where({ clientId: user.id }).all()).map(
-            (project) => project.id,
-          )
-        : [];
+    const ownProjectIds = user.role === 'CLIENT' ? (await db.Project.where({ clientId: user.id }).all()).map((project) => project.id) : [];
     const applications =
       user.role === 'FREELANCER'
         ? await db.ProjectApplication.where({ freelancerId: user.id }).all()
         : ownProjectIds.length
-          ? await db.ProjectApplication.where((application) =>
-              application.projectId.in(ownProjectIds),
-            ).all()
+          ? await db.ProjectApplication.where((application) => application.projectId.in(ownProjectIds)).all()
           : [];
     const result = [];
     for (const application of applications) {
@@ -281,18 +226,10 @@ export class CollaborationService {
         lastMessageAt: last.createdAt,
       });
     }
-    return result.sort(
-      (a, b) =>
-        new Date(b.lastMessageAt).getTime() -
-        new Date(a.lastMessageAt).getTime(),
-    );
+    return result.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
   }
 
-  async applicationMessages(
-    user: CurrentUser,
-    applicationId: string,
-    page: PageDto,
-  ) {
+  async applicationMessages(user: CurrentUser, applicationId: string, page: PageDto) {
     await this.applicationChat(user, applicationId);
     return this.withSenders(
       await this.client.orm.public.ApplicationMessage.where({ applicationId })
@@ -308,16 +245,9 @@ export class CollaborationService {
     return this.stream(`application:${applicationId}`, user.id);
   }
 
-  async applicationMessage(
-    user: CurrentUser,
-    applicationId: string,
-    data: MessageDto,
-  ) {
+  async applicationMessage(user: CurrentUser, applicationId: string, data: MessageDto) {
     await this.projects.ensureNotRestricted(user.id);
-    const { application, project } = await this.applicationChat(
-      user,
-      applicationId,
-    );
+    const { application, project } = await this.applicationChat(user, applicationId);
     if (application.status !== 'PENDING')
       throw new ConflictException(
         application.status === 'ACCEPTED'
@@ -332,9 +262,7 @@ export class CollaborationService {
       createdAt: new Date(),
     });
     await this.projects.notify(
-      user.id === project.clientId
-        ? application.freelancerId
-        : project.clientId,
+      user.id === project.clientId ? application.freelancerId : project.clientId,
       user.id,
       'APPLICATION_MESSAGE',
       `Нове повідомлення щодо заявки на «${project.title}».`,
@@ -375,12 +303,9 @@ export class CollaborationService {
   async submit(user: CurrentUser, taskId: string, data: SubmissionDto) {
     const task = await this.tasks.find(user, taskId);
     const project = await this.projects.requireAccess(user, task.projectId);
-    if (project.status !== 'ACTIVE')
-      throw new ConflictException('Проєкт має бути активним.');
-    if (task.assigneeId !== user.id)
-      throw new ForbiddenException('Роботу здає призначений виконавець.');
-    if (task.status !== 'IN_PROGRESS')
-      throw new ConflictException('Здати можна лише завдання у виконанні.');
+    if (project.status !== 'ACTIVE') throw new ConflictException('Проєкт має бути активним.');
+    if (task.assigneeId !== user.id) throw new ForbiddenException('Роботу здає призначений виконавець.');
+    if (task.status !== 'IN_PROGRESS') throw new ConflictException('Здати можна лише завдання у виконанні.');
     return this.client.transaction(async (tx) => {
       const [updated] = await tx.orm.public.Task.where({
         id: taskId,
@@ -407,10 +332,7 @@ export class CollaborationService {
           uploadedBy: user.id,
           submissionId: null,
         }).first();
-        if (!file)
-          throw new BadRequestException(
-            'Файл недоступний або вже прикріплений до іншої роботи.',
-          );
+        if (!file) throw new BadRequestException('Файл недоступний або вже прикріплений до іншої роботи.');
         const [attached] = await tx.orm.public.FileAttachment.where({
           id: fileId,
           submissionId: null,
@@ -448,30 +370,24 @@ export class CollaborationService {
     if (!rule.allowed) throw new ForbiddenException(rule.reason);
     const comment = data.comment?.trim();
     if (data.status === 'REVIEW') {
-      if (!comment)
-        throw new BadRequestException(
-          'Опишіть результат або додайте посилання на нього.',
-        );
+      if (!comment) throw new BadRequestException('Опишіть результат або додайте посилання на нього.');
       await this.submit(user, taskId, {
         description: comment,
         fileIds: data.fileIds,
       });
     } else if (task.status === 'REVIEW') {
       const reason = data.reason?.trim();
-      if (data.status === 'REVISION' && !reason)
-        throw new BadRequestException('Вкажіть причину повернення.');
+      if (data.status === 'REVISION' && !reason) throw new BadRequestException('Вкажіть причину повернення.');
       const submission = await this.client.orm.public.WorkSubmission.where({
         taskId,
         status: 'SUBMITTED',
       })
         .orderBy((item) => item.submittedAt.desc())
         .first();
-      if (!submission)
-        throw new ConflictException('Немає результату роботи для перевірки.');
+      if (!submission) throw new ConflictException('Немає результату роботи для перевірки.');
       await this.review(user, submission.id, {
         decision: data.status === 'DONE' ? 'APPROVE' : 'NEEDS_REVISION',
-        feedback:
-          data.status === 'DONE' ? comment || 'Роботу прийнято.' : reason!,
+        feedback: data.status === 'DONE' ? comment || 'Роботу прийнято.' : reason!,
       });
     } else {
       await this.tasks.transition(user, taskId, data.status, {
@@ -486,14 +402,10 @@ export class CollaborationService {
     const submission = await this.client.orm.public.WorkSubmission.where({
       id,
     }).first();
-    if (!submission)
-      throw new NotFoundException('Результат роботи не знайдено.');
+    if (!submission) throw new NotFoundException('Результат роботи не знайдено.');
     const task = await this.tasks.find(user, submission.taskId);
-    this.projects.ensureWritable(
-      await this.projects.requireOwner(user, task.projectId),
-    );
-    if (submission.status !== 'SUBMITTED' || task.status !== 'REVIEW')
-      throw new ConflictException('Цю роботу вже перевірено.');
+    this.projects.ensureWritable(await this.projects.requireOwner(user, task.projectId));
+    if (submission.status !== 'SUBMITTED' || task.status !== 'REVIEW') throw new ConflictException('Цю роботу вже перевірено.');
     return this.client.transaction(async (tx) => {
       const [reviewed] = await tx.orm.public.WorkSubmission.where({
         id,
@@ -515,13 +427,7 @@ export class CollaborationService {
       });
       if (!updated) throw new ConflictException('Стан завдання вже змінився.');
       // Останнє прийняте завдання завершує (й оплачує) етап, а за ним і проєкт
-      if (data.decision === 'APPROVE')
-        await syncProgress(
-          tx.orm.public,
-          task.projectId,
-          [task.milestoneId],
-          user.id,
-        );
+      if (data.decision === 'APPROVE') await syncProgress(tx.orm.public, task.projectId, [task.milestoneId], user.id);
       else await syncMilestones(tx.orm.public, [task.milestoneId]);
       announce(submission.submittedBy);
       await tx.orm.public.Notification.create({

@@ -59,10 +59,7 @@ afterEach(() => {
 test("GET sends JWT and returns the server response", async () => {
   assert.deepEqual(await request("/auth/me"), { id: "test-result" });
   assert.equal(calls[0].url, "/api/auth/me");
-  assert.equal(
-    calls[0].options.headers.get("Authorization"),
-    "Bearer test-only-token",
-  );
+  assert.equal(calls[0].options.headers.get("Authorization"), "Bearer test-only-token");
   assert.equal(calls[0].options.body, undefined);
 });
 
@@ -77,22 +74,15 @@ test("protected download returns binary content and sends JWT", async () => {
     responseType: "blob",
   });
   assert.deepEqual([...new Uint8Array(await blob.arrayBuffer())], [0, 1, 255]);
-  assert.equal(
-    calls[0].options.headers.get("Authorization"),
-    "Bearer test-only-token",
-  );
+  assert.equal(calls[0].options.headers.get("Authorization"), "Bearer test-only-token");
 });
 
 test("binary download preserves authorization errors", async () => {
-  globalThis.fetch = async () =>
-    Response.json(
-      { message: "Немає доступу до цього проєкту." },
-      { status: 403 },
-    );
-  await assert.rejects(
-    request("/files/test-id/download", { responseType: "blob" }),
-    { status: 403, message: "Немає доступу до цього проєкту." },
-  );
+  globalThis.fetch = async () => Response.json({ message: "Немає доступу до цього проєкту." }, { status: 403 });
+  await assert.rejects(request("/files/test-id/download", { responseType: "blob" }), {
+    status: 403,
+    message: "Немає доступу до цього проєкту.",
+  });
 });
 
 test("public POST sends JSON without a token", async () => {
@@ -102,14 +92,8 @@ test("public POST sends JSON without a token", async () => {
     auth: false,
   });
   assert.equal(calls[0].options.headers.get("Authorization"), null);
-  assert.equal(
-    calls[0].options.headers.get("Content-Type"),
-    "application/json",
-  );
-  assert.equal(
-    calls[0].options.body,
-    JSON.stringify({ email: "test@example.com" }),
-  );
+  assert.equal(calls[0].options.headers.get("Content-Type"), "application/json");
+  assert.equal(calls[0].options.body, JSON.stringify({ email: "test@example.com" }));
 });
 
 test("supports PATCH, PUT and DELETE including an empty 204 response", async () => {
@@ -135,8 +119,7 @@ test("protected 401 ends the session", async () => {
   window.addEventListener(sessionEndedEvent, () => {
     ended = true;
   });
-  globalThis.fetch = async () =>
-    Response.json({ message: "Токен прострочений." }, { status: 401 });
+  globalThis.fetch = async () => Response.json({ message: "Токен прострочений." }, { status: 401 });
   await assert.rejects(request("/auth/me"), {
     status: 401,
     message: "Токен прострочений.",
@@ -149,15 +132,8 @@ test("incorrect login does not end an existing session", async () => {
   window.addEventListener(sessionEndedEvent, () => {
     ended = true;
   });
-  globalThis.fetch = async () =>
-    Response.json(
-      { message: "Неправильна пошта або пароль." },
-      { status: 401 },
-    );
-  await assert.rejects(
-    request("/auth/login", { method: "POST", auth: false }),
-    { status: 401 },
-  );
+  globalThis.fetch = async () => Response.json({ message: "Неправильна пошта або пароль." }, { status: 401 });
+  await assert.rejects(request("/auth/login", { method: "POST", auth: false }), { status: 401 });
   assert.equal(ended, false);
 });
 
@@ -166,19 +142,16 @@ test("ordinary forbidden access preserves the session; blocking ends it", async 
   window.addEventListener(sessionEndedEvent, () => {
     ended++;
   });
-  globalThis.fetch = async () =>
-    Response.json({ message: "Немає доступу до проєкту." }, { status: 403 });
+  globalThis.fetch = async () => Response.json({ message: "Немає доступу до проєкту." }, { status: 403 });
   await assert.rejects(request("/test-resource"), { status: 403 });
   assert.equal(ended, 0);
-  globalThis.fetch = async () =>
-    Response.json({ message: "Обліковий запис заблоковано." }, { status: 403 });
+  globalThis.fetch = async () => Response.json({ message: "Обліковий запис заблоковано." }, { status: 403 });
   await assert.rejects(request("/auth/me"), { status: 403 });
   assert.equal(ended, 1);
 });
 
 test("validation errors remain readable in Ukrainian", async () => {
-  globalThis.fetch = async () =>
-    Response.json({ message: ["email must be an email"] }, { status: 400 });
+  globalThis.fetch = async () => Response.json({ message: ["email must be an email"] }, { status: 400 });
   await assert.rejects(request("/auth/register", { auth: false }), {
     status: 400,
     message: "Перевірте введені дані та спробуйте ще раз.",
@@ -189,12 +162,8 @@ test("network failures and invalid JSON produce useful errors", async () => {
   globalThis.fetch = async () => {
     throw new TypeError("Failed to fetch");
   };
-  await assert.rejects(
-    request("/auth/me"),
-    (error) => error instanceof ApiError && error.status === 0,
-  );
-  globalThis.fetch = async () =>
-    new Response("<html>proxy error</html>", { status: 502 });
+  await assert.rejects(request("/auth/me"), (error) => error instanceof ApiError && error.status === 0);
+  globalThis.fetch = async () => new Response("<html>proxy error</html>", { status: 502 });
   await assert.rejects(request("/auth/me"), { status: 502 });
 });
 
