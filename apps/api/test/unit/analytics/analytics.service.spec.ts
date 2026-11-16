@@ -1,10 +1,6 @@
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
-import {
-  AnalyticsService,
-  nearestDeadline,
-  taskRisk,
-} from '../../../src/analytics/analytics.service.js';
+import { AnalyticsService, nearestDeadline, taskRisk } from '../../../src/analytics/analytics.service.js';
 
 describe('nearest deadline', () => {
   const now = new Date('2026-10-17T12:00:00Z');
@@ -37,34 +33,15 @@ describe('nearest deadline', () => {
 describe('task risk', () => {
   const now = new Date('2026-10-10T12:00:00Z');
   it('ignores completed tasks even when overdue', () => {
-    expect(
-      taskRisk(
-        { status: 'DONE', priority: 'HIGH', deadline: new Date('2026-10-01') },
-        now,
-      ),
-    ).toBe('NONE');
+    expect(taskRisk({ status: 'DONE', priority: 'HIGH', deadline: new Date('2026-10-01') }, now)).toBe('NONE');
   });
   it('detects overdue and approaching deadlines', () => {
-    expect(
-      taskRisk(
-        { status: 'TODO', priority: 'LOW', deadline: new Date('2026-10-09') },
-        now,
-      ),
-    ).toBe('OVERDUE');
-    expect(
-      taskRisk(
-        { status: 'TODO', priority: 'LOW', deadline: new Date('2026-10-12') },
-        now,
-      ),
-    ).toBe('NEAR_DEADLINE');
+    expect(taskRisk({ status: 'TODO', priority: 'LOW', deadline: new Date('2026-10-09') }, now)).toBe('OVERDUE');
+    expect(taskRisk({ status: 'TODO', priority: 'LOW', deadline: new Date('2026-10-12') }, now)).toBe('NEAR_DEADLINE');
   });
   it('handles high priority without a deadline', () => {
-    expect(
-      taskRisk({ status: 'TODO', priority: 'HIGH', deadline: null }, now),
-    ).toBe('HIGH_PRIORITY');
-    expect(
-      taskRisk({ status: 'TODO', priority: 'LOW', deadline: null }, now),
-    ).toBe('NONE');
+    expect(taskRisk({ status: 'TODO', priority: 'HIGH', deadline: null }, now)).toBe('HIGH_PRIORITY');
+    expect(taskRisk({ status: 'TODO', priority: 'LOW', deadline: null }, now)).toBe('NONE');
   });
 });
 
@@ -101,9 +78,7 @@ describe('AnalyticsService', () => {
   const projectWhere = { all: vi.fn(async () => projects) };
   const taskWhere = { all: vi.fn(async () => tasks) };
   const memberWhere = {
-    all: vi.fn(async () => [
-      { projectId: 'project-id', userId: 'freelancer-id' },
-    ]),
+    all: vi.fn(async () => [{ projectId: 'project-id', userId: 'freelancer-id' }]),
   };
   const personWhere = {
     select: vi.fn(() => ({
@@ -123,9 +98,7 @@ describe('AnalyticsService', () => {
     prisma: { client: { orm: { public: db } } },
     detail: vi.fn(async () => ({ ...projects[0], progress: 50 })),
   };
-  const analytics = new AnalyticsService(
-    projectService as unknown as ProjectsService,
-  );
+  const analytics = new AnalyticsService(projectService as unknown as ProjectsService);
 
   beforeEach(() => vi.clearAllMocks());
 
@@ -162,9 +135,7 @@ describe('AnalyticsService', () => {
       overdueTasks: 1,
       highPriorityTasks: 1,
     });
-    expect(result[0]).toHaveProperty('tasks', [
-      expect.objectContaining({ id: 'task-1', risk: 'OVERDUE' }),
-    ]);
+    expect(result[0]).toHaveProperty('tasks', [expect.objectContaining({ id: 'task-1', risk: 'OVERDUE' })]);
     expect(result[0]).toHaveProperty('nearestDeadline', tasks[0].deadline);
   });
 

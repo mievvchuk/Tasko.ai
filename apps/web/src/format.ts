@@ -60,8 +60,7 @@ export function dateInputEnd(value: string) {
 
 // Скільки календарних днів до дедлайну: 0 — сьогодні, від'ємне — прострочено
 export function daysLeft(deadline: string, now = new Date()) {
-  const day = (date: Date) =>
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = (date: Date) => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
   return Math.round((day(new Date(deadline)) - day(now)) / 86_400_000);
 }
 
@@ -94,25 +93,15 @@ export function describeAddress(ip: string | null) {
   if (!ip) return trNow("IP невідомий");
   const address = ip.replace(/^::ffff:/i, "");
   const local =
-    address === "::1" ||
-    /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/.test(
-      address,
-    ) ||
-    /^f[cd]|^fe80:/i.test(address);
+    address === "::1" || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/.test(address) || /^f[cd]|^fe80:/i.test(address);
   return local ? trNow("Локальна мережа") : address;
 }
 
 // Квадрат для обрізання фото: зображення накриває рамку size×size,
 // offset — зсув верхнього лівого кута зображення від рамки (≤ 0), zoom ≥ 1
-export function cropFrame(
-  image: { width: number; height: number },
-  size: number,
-  zoom: number,
-  offset: { x: number; y: number },
-) {
+export function cropFrame(image: { width: number; height: number }, size: number, zoom: number, offset: { x: number; y: number }) {
   const scale = (size / Math.min(image.width, image.height)) * zoom;
-  const clamp = (value: number, shown: number) =>
-    Math.min(0, Math.max(size - shown, value));
+  const clamp = (value: number, shown: number) => Math.min(0, Math.max(size - shown, value));
   const x = clamp(offset.x, image.width * scale);
   const y = clamp(offset.y, image.height * scale);
   // source — ділянка оригіналу, яка потрапить у кругле фото

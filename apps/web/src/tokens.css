@@ -14,71 +14,103 @@
 /* ---------- Спільне для обох тем ---------- */
 :root {
   /* Шкала відступів: усі padding, margin і gap беруть значення лише звідси */
-  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px;
-  --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 144px;
 
   /* Розміри тексту: крок 1.2 від 16px */
-  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem;
-  --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
-  --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.44rem;
+  --text-2xl: 1.728rem;
+  --text-3xl: 2.074rem;
+  --text-display: 1.728rem;
+  --text-section: 1.2rem;
+  --text-title: 1rem;
 
   /* Шрифт: один, Manrope (файл лежить у public/fonts) */
   --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
-  --tracking-display: -0.02em; --display-weight: 700;
+  --tracking-display: -0.02em;
+  --display-weight: 700;
 
   /* Рух: короткі переходи лише для стану (наведення, натискання) */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
 
   /* Заокруглення й розміри каркаса */
-  --radius-card: 8px; --radius-input: 6px; --radius-small: 6px; --radius-pill: 999px;
-  --control: 40px;      /* висота кнопок і полів */
-  --sidebar: 248px;     /* ширина бічної панелі */
-  --header: 60px;       /* висота верхньої панелі робочого простору */
-  --container: 1200px;  /* максимальна ширина вмісту */
+  --radius-card: 8px;
+  --radius-input: 6px;
+  --radius-small: 6px;
+  --radius-pill: 999px;
+  --control: 40px; /* висота кнопок і полів */
+  --sidebar: 248px; /* ширина бічної панелі */
+  --header: 60px; /* висота верхньої панелі робочого простору */
+  --container: 1200px; /* максимальна ширина вмісту */
 
   /* Шари над сторінкою */
-  --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+  --z-modal: 400;
 }
 
 /* ---------- Світла тема (папір) ---------- */
 :root {
   color-scheme: light;
-  --color-paper: oklch(97% 0.006 55);       /* фон сторінки */
-  --color-paper-2: oklch(94.5% 0.007 55);   /* бічна панель, заголовки таблиць */
-  --color-paper-3: oklch(91.5% 0.009 55);   /* наведення, колонки Kanban, сірі пілюлі */
-  --color-surface: oklch(98.8% 0.0045 80);  /* картки й поля: бавовняний папір */
-  --color-field: oklch(98.8% 0.0045 80);    /* поля вводу */
-  --color-ink: oklch(21% 0.012 38);         /* основний текст */
-  --color-ink-2: oklch(29% 0.013 40);       /* другорядний текст */
-  --color-muted: oklch(47% 0.013 45);       /* підписи, рамки полів */
-  --color-rule: oklch(87% 0.009 55);        /* тонкі лінії */
-  --color-rule-2: oklch(81% 0.011 55);      /* рамки кнопок */
+  --color-paper: oklch(97% 0.006 55); /* фон сторінки */
+  --color-paper-2: oklch(94.5% 0.007 55); /* бічна панель, заголовки таблиць */
+  --color-paper-3: oklch(91.5% 0.009 55); /* наведення, колонки Kanban, сірі пілюлі */
+  --color-surface: oklch(98.8% 0.0045 80); /* картки й поля: бавовняний папір */
+  --color-field: oklch(98.8% 0.0045 80); /* поля вводу */
+  --color-ink: oklch(21% 0.012 38); /* основний текст */
+  --color-ink-2: oklch(29% 0.013 40); /* другорядний текст */
+  --color-muted: oklch(47% 0.013 45); /* підписи, рамки полів */
+  --color-rule: oklch(87% 0.009 55); /* тонкі лінії */
+  --color-rule-2: oklch(81% 0.011 55); /* рамки кнопок */
 
-  --color-accent: oklch(22% 0.011 40);      /* чорнильна дошка: головна дія, вибране */
+  --color-accent: oklch(22% 0.011 40); /* чорнильна дошка: головна дія, вибране */
   --color-accent-deep: oklch(30% 0.012 40); /* дошка при наведенні */
   --color-accent-soft: oklch(93.5% 0.028 40); /* легкий кораловий відтиск: «у роботі», активний пункт */
-  --color-accent-text: oklch(50% 0.16 29);  /* глибокий корал: посилання, активний текст */
+  --color-accent-text: oklch(50% 0.16 29); /* глибокий корал: посилання, активний текст */
   --color-accent-ink: oklch(96.5% 0.006 70); /* текст на чорнильній кнопці */
-  --color-focus: oklch(54% 0.17 30);        /* кільце фокуса з клавіатури */
+  --color-focus: oklch(54% 0.17 30); /* кільце фокуса з клавіатури */
 
-  --color-error: oklch(50% 0.19 27);        /* помилки й прострочене */
+  --color-error: oklch(50% 0.19 27); /* помилки й прострочене */
   --color-error-soft: oklch(95% 0.03 27);
   --color-error-ink: oklch(99% 0.005 27);
   /* Кольори даних: різні відтінки, щоб ряди й статуси розрізнялись навіть на слабкому екрані */
-  --data-blue: oklch(55% 0.16 255); --data-amber: oklch(72% 0.15 70); --data-green: oklch(58% 0.14 150);
-  --data-red: oklch(57% 0.19 27); --data-gray: oklch(70% 0.015 60);
+  --data-blue: oklch(55% 0.16 255);
+  --data-amber: oklch(72% 0.15 70);
+  --data-green: oklch(58% 0.14 150);
+  --data-red: oklch(57% 0.19 27);
+  --data-gray: oklch(70% 0.015 60);
 
   --color-scrim: oklch(21% 0.012 38 / 0.4); /* затемнення під панелями */
   --shadow-pop: 0 10px 24px -6px oklch(32% 0.03 50 / 0.28); /* спливні меню й панелі, тінь вправо-вниз */
 
   /* Папір: одне світло зліва — світлий край угорі, тінь падає вправо */
-  --shade: 32% 0.03 50; --lit: 100% 0.005 80;
-  --edge-stock: inset 0 1px 0 oklch(var(--lit) / 0.9), inset 0 -1px 0 oklch(var(--shade) / 0.07), 0 0 0 0.5px oklch(var(--shade) / 0.22), 0 1px 0 oklch(var(--shade) / 0.12);
+  --shade: 32% 0.03 50;
+  --lit: 100% 0.005 80;
+  --edge-stock:
+    inset 0 1px 0 oklch(var(--lit) / 0.9), inset 0 -1px 0 oklch(var(--shade) / 0.07), 0 0 0 0.5px oklch(var(--shade) / 0.22),
+    0 1px 0 oklch(var(--shade) / 0.12);
   --cast-stock: 6px 5px 10px -6px oklch(var(--shade) / 0.3);
   --cast-stock-lift: 12px 10px 18px -8px oklch(var(--shade) / 0.3);
-  --tex-cotton: url("/textures/cotton.svg"); --tex-desk: url("/textures/felt.svg");
+  --tex-cotton: url("/textures/cotton.svg");
+  --tex-desk: url("/textures/felt.svg");
 }
 
 /* ---------- Темна тема (чорнильна дошка) ----------
@@ -87,33 +119,37 @@
   color-scheme: dark;
   /* Кроки світлоти ≥ 4–5 %: фон, вкладена «лунка» і картка мають розрізнятися на слабкому екрані */
   --color-paper: oklch(14.5% 0.009 40);
-  --color-paper-2: oklch(18.5% 0.01 40);    /* вкладені блоки й поля в картці — темніші за неї */
+  --color-paper-2: oklch(18.5% 0.01 40); /* вкладені блоки й поля в картці — темніші за неї */
   --color-paper-3: oklch(30% 0.012 40);
   --color-surface: oklch(24% 0.011 42);
-  --color-field: oklch(17.5% 0.01 40);      /* поля вводу: заглиблені в картку */
+  --color-field: oklch(17.5% 0.01 40); /* поля вводу: заглиблені в картку */
   --color-ink: oklch(96.5% 0.006 70);
   --color-ink-2: oklch(85% 0.01 60);
   --color-muted: oklch(72% 0.013 55);
   --color-rule: oklch(35% 0.012 40);
   --color-rule-2: oklch(47% 0.013 40);
 
-  --color-accent: oklch(96.5% 0.006 70);    /* світлий аркуш: головна дія */
+  --color-accent: oklch(96.5% 0.006 70); /* світлий аркуш: головна дія */
   --color-accent-deep: oklch(89% 0.008 65);
   --color-accent-soft: oklch(30% 0.045 32);
-  --color-accent-text: oklch(78% 0.12 32);  /* світлий корал */
+  --color-accent-text: oklch(78% 0.12 32); /* світлий корал */
   --color-accent-ink: oklch(21% 0.012 38);
   --color-focus: oklch(76% 0.13 32);
 
   --color-error: oklch(72% 0.14 25);
   --color-error-soft: oklch(28% 0.06 25);
   --color-error-ink: oklch(16% 0.02 25);
-  --data-blue: oklch(70% 0.14 255); --data-amber: oklch(80% 0.14 75); --data-green: oklch(74% 0.15 150);
-  --data-red: oklch(70% 0.17 27); --data-gray: oklch(58% 0.015 60);
+  --data-blue: oklch(70% 0.14 255);
+  --data-amber: oklch(80% 0.14 75);
+  --data-green: oklch(74% 0.15 150);
+  --data-red: oklch(70% 0.17 27);
+  --data-gray: oklch(58% 0.015 60);
 
   --color-scrim: oklch(7% 0.01 40 / 0.6);
   --shadow-pop: 0 0 0 1px oklch(39% 0.013 40), 10px 12px 24px -8px oklch(7% 0.01 40 / 0.7);
 
-  --shade: 7% 0.01 40; --lit: 40% 0.012 45;
+  --shade: 7% 0.01 40;
+  --lit: 40% 0.012 45;
   /* Повна 1px рамка: у темряві тінь не видно, тож межу картки тримає лінія */
   --edge-stock: inset 0 1px 0 oklch(var(--lit) / 0.5), 0 0 0 1px oklch(35% 0.012 40);
   --cast-stock: 6px 5px 12px -6px oklch(var(--shade) / 0.7);

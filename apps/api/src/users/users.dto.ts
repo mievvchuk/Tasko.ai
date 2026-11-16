@@ -1,26 +1,12 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import {
-  ArrayMaxSize,
-  IsArray,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Length,
-  Matches,
-  Max,
-  Min,
-} from 'class-validator';
+import { ArrayMaxSize, IsArray, IsIn, IsInt, IsOptional, IsString, IsUrl, Length, Matches, Max, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { nameWithoutEmoji, nameWithoutEmojiMessage } from '../auth/auth.dto.js';
 
 // Зміна імені на сторінці профілю — ті самі правила, що й при реєстрації
 export class UpdateAccountDto {
   @ApiProperty({ example: 'Іван', minLength: 2, maxLength: 100 })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 100)
   @Matches(/\S/)
@@ -82,6 +68,4 @@ export class CreatePortfolioItemDto {
   tags?: string;
 }
 
-export class UpdatePortfolioItemDto extends PartialType(
-  CreatePortfolioItemDto,
-) {}
+export class UpdatePortfolioItemDto extends PartialType(CreatePortfolioItemDto) {}

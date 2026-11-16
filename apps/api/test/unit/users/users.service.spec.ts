@@ -57,16 +57,12 @@ describe('UsersService role choice', () => {
   it('refuses once the user has a project', async () => {
     const update = vi.fn();
     const service = new UsersService(prisma({ project: { id: 'p' }, update }));
-    await expect(
-      service.updateRole(client, { role: 'FREELANCER' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.updateRole(client, { role: 'FREELANCER' })).rejects.toBeInstanceOf(ConflictException);
     expect(update).not.toHaveBeenCalled();
   });
 
   it('never changes an admin', async () => {
     const service = new UsersService({} as PrismaService);
-    await expect(
-      service.updateRole({ ...client, role: 'ADMIN' }, { role: 'CLIENT' }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.updateRole({ ...client, role: 'ADMIN' }, { role: 'CLIENT' })).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

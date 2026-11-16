@@ -12,15 +12,7 @@ import { McpService } from './mcp.service.js';
 import { ProjectPlanningService } from './project-planning.service.js';
 
 @Module({
-  imports: [
-    AdminModule,
-    AuthModule,
-    ProjectsModule,
-    AnalyticsModule,
-    TasksModule,
-    CollaborationModule,
-    NotificationsModule,
-  ],
+  imports: [AdminModule, AuthModule, ProjectsModule, AnalyticsModule, TasksModule, CollaborationModule, NotificationsModule],
   controllers: [AgentController],
   providers: [AgentService, McpService, ProjectPlanningService],
   exports: [McpService],

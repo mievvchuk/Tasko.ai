@@ -17,9 +17,7 @@ export function RegisterPage() {
   const [params] = useSearchParams();
   const preset = params.get("role");
   const fromLanding = preset === "CLIENT" || preset === "FREELANCER";
-  const [role, setRole] = useState<"CLIENT" | "FREELANCER">(
-    preset === "FREELANCER" ? "FREELANCER" : "CLIENT",
-  );
+  const [role, setRole] = useState<"CLIENT" | "FREELANCER">(preset === "FREELANCER" ? "FREELANCER" : "CLIENT");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,33 +74,18 @@ export function RegisterPage() {
   }
 
   return (
-    <section
-      className="auth-card register-card"
-      aria-labelledby="register-title"
-    >
+    <section className="auth-card register-card" aria-labelledby="register-title">
       <h2 id="register-title">{t("registerTitle")}</h2>
       <p className="card-description">{t("registerDescription")}</p>
       <form onSubmit={submit} aria-busy={submitting}>
         <fieldset disabled={submitting} className="form-fields">
           {!fromLanding && (
-            <div
-              className="segmented"
-              role="group"
-              aria-label={tr("Що ви плануєте робити?")}
-            >
-              <button
-                type="button"
-                aria-pressed={role === "CLIENT"}
-                onClick={() => setRole("CLIENT")}
-              >
+            <div className="segmented" role="group" aria-label={tr("Що ви плануєте робити?")}>
+              <button type="button" aria-pressed={role === "CLIENT"} onClick={() => setRole("CLIENT")}>
                 <i className="bi bi-briefcase" aria-hidden="true"></i>
                 {tr("Шукаю виконавця")}
               </button>
-              <button
-                type="button"
-                aria-pressed={role === "FREELANCER"}
-                onClick={() => setRole("FREELANCER")}
-              >
+              <button type="button" aria-pressed={role === "FREELANCER"} onClick={() => setRole("FREELANCER")}>
                 <i className="bi bi-laptop" aria-hidden="true"></i>
                 {tr("Шукаю замовлення")}
               </button>
@@ -137,13 +120,7 @@ export function RegisterPage() {
             />
           </div>
           <div className="form-grid">
-            <PasswordInput
-              id="password"
-              label={t("password")}
-              value={password}
-              onChange={setPassword}
-              autoComplete="new-password"
-            >
+            <PasswordInput id="password" label={t("password")} value={password} onChange={setPassword} autoComplete="new-password">
               <PasswordStrength password={password} />
             </PasswordInput>
             <PasswordInput

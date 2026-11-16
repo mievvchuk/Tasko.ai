@@ -32,10 +32,7 @@ async function run(method: string, path: string, id?: string, fail = false) {
   const handler: CallHandler = {
     handle: () => (fail ? throwError(() => new Error('boom')) : of({})),
   };
-  const result = new DataChangeInterceptor(prisma).intercept(
-    context(method, path, id),
-    handler,
-  );
+  const result = new DataChangeInterceptor(prisma).intercept(context(method, path, id), handler);
   await lastValueFrom(result).catch(() => undefined);
 }
 

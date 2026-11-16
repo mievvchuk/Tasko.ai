@@ -1,16 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ArrayMaxSize,
-  IsArray,
-  IsBoolean,
-  IsIn,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Length,
-  ValidateNested,
-} from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsIn, IsObject, IsOptional, IsString, IsUUID, Length, ValidateNested } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 // Одна попередня репліка розмови — щоб агент розумів уточнення на кшталт «а що з другим?»
@@ -68,9 +57,7 @@ export class ChatDto {
     minLength: 1,
     maxLength: 2000,
   })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(1, 2000)
   message: string;
@@ -87,8 +74,7 @@ export class GeneratePlanDto {
   instructions?: string;
 
   @ApiPropertyOptional({
-    description:
-      'План замінить етапи, які ще не почали й не оплачували (а не додасться до них)',
+    description: 'План замінить етапи, які ще не почали й не оплачували (а не додасться до них)',
   })
   @IsOptional()
   @IsBoolean()
@@ -112,8 +98,7 @@ export class ApplyPlanDto {
   plan: Record<string, unknown>;
 
   @ApiPropertyOptional({
-    description:
-      'Замінити етапи, які ще не почали й не оплачували, разом із їхніми невзятими завданнями',
+    description: 'Замінити етапи, які ще не почали й не оплачували, разом із їхніми невзятими завданнями',
   })
   @IsOptional()
   @IsBoolean()

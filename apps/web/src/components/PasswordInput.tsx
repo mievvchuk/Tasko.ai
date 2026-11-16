@@ -15,16 +15,7 @@ interface PasswordInputProps {
   children?: ReactNode;
 }
 
-export function PasswordInput({
-  id,
-  value,
-  onChange,
-  label,
-  autoComplete,
-  placeholder,
-  error,
-  children,
-}: PasswordInputProps) {
+export function PasswordInput({ id, value, onChange, label, autoComplete, placeholder, error, children }: PasswordInputProps) {
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
   const displayLabel = label || t("password");
@@ -44,12 +35,7 @@ export function PasswordInput({
           required
           minLength={8}
           maxLength={128}
-          placeholder={
-            placeholder ??
-            (displayLabel === t("password")
-              ? t("enterPassword")
-              : t("enterPasswordAgain"))
-          }
+          placeholder={placeholder ?? (displayLabel === t("password") ? t("enterPassword") : t("enterPasswordAgain"))}
         />
         <button
           type="button"
@@ -58,10 +44,7 @@ export function PasswordInput({
           aria-label={visible ? t("hidePassword") : t("showPassword")}
           aria-pressed={visible}
         >
-          <i
-            className={visible ? "bi bi-eye-slash" : "bi bi-eye"}
-            aria-hidden="true"
-          ></i>
+          <i className={visible ? "bi bi-eye-slash" : "bi bi-eye"} aria-hidden="true"></i>
         </button>
       </div>
       {children}

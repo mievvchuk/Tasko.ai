@@ -2,39 +2,18 @@
 // Патерни (таблиця з тулбаром і пагінацією, діалоги дій, картки-метрики)
 // взято з shadcn-admin (MIT, © Sat Naing, https://github.com/satnaing/shadcn-admin).
 import { useEffect, useId, useRef, useState } from "react";
-import {
-  complaintActionNames,
-  complaintCategoryNames,
-  recommendAction,
-} from "../complaintRules";
+import { complaintActionNames, complaintCategoryNames, recommendAction } from "../complaintRules";
 import type { ComplaintAction } from "../complaintRules";
 import type { FormEvent, ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { downloadApiFile, request, errorMessage } from "../api";
 import { formatDate, parsePage } from "../format";
 import { ColumnChart, DonutChart } from "../components/Charts";
-import {
-  AverageRow,
-  BreakdownTable,
-  KpiGrid,
-  LineChart,
-} from "../components/Metrics";
+import { AverageRow, BreakdownTable, KpiGrid, LineChart } from "../components/Metrics";
 import type { KpiItem } from "../components/Metrics";
 import type { ChartItem, ChartTone } from "../components/Charts";
-import {
-  complaintStatusNames,
-  projectStatusNames,
-  roleNames,
-  taskStatusNames,
-} from "../types";
-import type {
-  AdminUser,
-  AdminReport,
-  UserRole,
-  TaskStatus,
-  ProjectStatus,
-  Complaint,
-} from "../types";
+import { complaintStatusNames, projectStatusNames, roleNames, taskStatusNames } from "../types";
+import type { AdminUser, AdminReport, UserRole, TaskStatus, ProjectStatus, Complaint } from "../types";
 
 import { useLanguage } from "../i18n";
 import { uiLocale } from "../i18n.en";
@@ -209,9 +188,7 @@ export function DataTable<T extends { id: string }>({
         const left = sortBy(a);
         const right = sortBy(b);
         const order =
-          typeof left === "number" && typeof right === "number"
-            ? left - right
-            : String(left).localeCompare(String(right), uiLocale());
+          typeof left === "number" && typeof right === "number" ? left - right : String(left).localeCompare(String(right), uiLocale());
         return sort?.desc ? -order : order;
       })
     : rows;
@@ -231,28 +208,12 @@ export function DataTable<T extends { id: string }>({
             {columns.map((column) => {
               const active = sort?.key === column.key;
               return (
-                <th
-                  key={column.key}
-                  scope="col"
-                  aria-sort={
-                    active
-                      ? sort.desc
-                        ? "descending"
-                        : "ascending"
-                      : undefined
-                  }
-                >
+                <th key={column.key} scope="col" aria-sort={active ? (sort.desc ? "descending" : "ascending") : undefined}>
                   {column.sort ? (
                     <button type="button" onClick={() => toggle(column.key)}>
                       {column.label}
                       <i
-                        className={`bi ${
-                          active
-                            ? sort.desc
-                              ? "bi-arrow-down"
-                              : "bi-arrow-up"
-                            : "bi-arrow-down-up"
-                        }`}
+                        className={`bi ${active ? (sort.desc ? "bi-arrow-down" : "bi-arrow-up") : "bi-arrow-down-up"}`}
                         aria-hidden="true"
                       ></i>
                     </button>
@@ -323,12 +284,7 @@ export function AdminDialog({
             </h2>
             {description && <p>{description}</p>}
           </div>
-          <button
-            type="button"
-            className="admin-dialog-close"
-            aria-label={tr("Закрити")}
-            onClick={() => ref.current?.close()}
-          >
+          <button type="button" className="admin-dialog-close" aria-label={tr("Закрити")} onClick={() => ref.current?.close()}>
             <i className="bi bi-x-lg" aria-hidden="true"></i>
           </button>
         </div>
@@ -373,12 +329,7 @@ export function UserDialog({
           ? { method: "DELETE" }
           : {
               method: "PATCH",
-              body:
-                action === "role"
-                  ? { role }
-                  : blocked
-                    ? { status: "ACTIVE" }
-                    : { status: "BLOCKED", blockReason: reason.trim() },
+              body: action === "role" ? { role } : blocked ? { status: "ACTIVE" } : { status: "BLOCKED", blockReason: reason.trim() },
             },
       );
       onSaved();
@@ -391,50 +342,32 @@ export function UserDialog({
 
   const titles: Record<UserAction, string> = {
     role: tr("Змінити роль"),
-    status: blocked
-      ? tr("Розблокувати користувача")
-      : tr("Заблокувати користувача"),
+    status: blocked ? tr("Розблокувати користувача") : tr("Заблокувати користувача"),
     delete: tr("Видалити користувача"),
   };
 
   return (
-    <AdminDialog
-      title={titles[action]}
-      description={`${user.name} · ${user.email}`}
-      onClose={onClose}
-    >
+    <AdminDialog title={titles[action]} description={`${user.name} · ${user.email}`} onClose={onClose}>
       <form onSubmit={run} className="work-form admin-dialog-form">
         {action === "role" && (
           <>
             <fieldset disabled={busy} className="user-controls">
               <div>
-                <label htmlFor={`user-role-${user.id}`}>
-                  {tr("Роль користувача")}
-                </label>
-                <select
-                  id={`user-role-${user.id}`}
-                  value={role}
-                  onChange={(event) => setRole(event.target.value as UserRole)}
-                >
+                <label htmlFor={`user-role-${user.id}`}>{tr("Роль користувача")}</label>
+                <select id={`user-role-${user.id}`} value={role} onChange={(event) => setRole(event.target.value as UserRole)}>
                   <option value="CLIENT">{tr(roleNames.CLIENT)}</option>
                   <option value="FREELANCER">{tr(roleNames.FREELANCER)}</option>
                 </select>
               </div>
             </fieldset>
-            <p className="form-note">
-              {tr(
-                "Роль адміністратора так не видається — створіть окремий акаунт адміністратора.",
-              )}
-            </p>
+            <p className="form-note">{tr("Роль адміністратора так не видається — створіть окремий акаунт адміністратора.")}</p>
           </>
         )}
         {action === "status" && (
           <p className={blocked ? "notice" : "notice error"}>
             {blocked
               ? tr("Користувач знову зможе входити й працювати на платформі.")
-              : tr(
-                  "Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.",
-                )}
+              : tr("Користувач не зможе увійти, а його активні сеанси завершаться. Дані акаунта збережуться.")}
           </p>
         )}
         {action === "status" && blocked && user.blockReason && (
@@ -454,9 +387,7 @@ export function UserDialog({
               onChange={(event) => setReason(event.target.value)}
               placeholder={tr("Наприклад: спам у заявках, образи в чаті")}
             />
-            <small className="field-hint">
-              {tr("Користувач побачить цю причину, коли спробує увійти.")}
-            </small>
+            <small className="field-hint">{tr("Користувач побачить цю причину, коли спробує увійти.")}</small>
           </label>
         )}
         {action === "delete" && (
@@ -477,18 +408,12 @@ export function UserDialog({
             {tr("Скасувати")}
           </button>
           {action === "role" && (
-            <button
-              className="button primary"
-              disabled={role === user.role || busy}
-            >
+            <button className="button primary" disabled={role === user.role || busy}>
               {busy ? tr("Зберігаємо…") : tr("Зберегти роль")}
             </button>
           )}
           {action === "status" && (
-            <button
-              className={blocked ? "button primary" : "button danger-outline"}
-              disabled={busy}
-            >
+            <button className={blocked ? "button primary" : "button danger-outline"} disabled={busy}>
               {blocked ? tr("Розблокувати") : tr("Заблокувати")}
             </button>
           )}
@@ -504,15 +429,7 @@ export function UserDialog({
 }
 
 // Новий адміністратор — окремий акаунт; дію підтверджує паролем (і кодом 2FA) той, хто створює.
-export function AdminCreateDialog({
-  twoFactor,
-  onSaved,
-  onClose,
-}: {
-  twoFactor: boolean;
-  onSaved: () => void;
-  onClose: () => void;
-}) {
+export function AdminCreateDialog({ twoFactor, onSaved, onClose }: { twoFactor: boolean; onSaved: () => void; onClose: () => void }) {
   const { tr } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -545,9 +462,7 @@ export function AdminCreateDialog({
   return (
     <AdminDialog
       title={tr("Новий адміністратор")}
-      description={tr(
-        "Створюється окремий акаунт: роль адміністратора не видається наявним користувачам.",
-      )}
+      description={tr("Створюється окремий акаунт: роль адміністратора не видається наявним користувачам.")}
       onClose={onClose}
     >
       <form onSubmit={save} className="work-form admin-dialog-form">
@@ -562,37 +477,16 @@ export function AdminCreateDialog({
           </label>
           <label>
             {tr("Пароль нового адміністратора")}
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              maxLength={128}
-              autoComplete="new-password"
-            />
+            <input name="password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" />
           </label>
           <label>
             {tr("Ваш пароль для підтвердження")}
-            <input
-              name="currentPassword"
-              type="password"
-              required
-              minLength={8}
-              maxLength={128}
-              autoComplete="current-password"
-            />
+            <input name="currentPassword" type="password" required minLength={8} maxLength={128} autoComplete="current-password" />
           </label>
           {twoFactor && (
             <label>
               {tr("Код 2FA")}
-              <input
-                name="twoFactorCode"
-                required
-                inputMode="numeric"
-                pattern="\d{6}"
-                maxLength={6}
-                autoComplete="one-time-code"
-              />
+              <input name="twoFactorCode" required inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="one-time-code" />
             </label>
           )}
         </fieldset>
@@ -634,12 +528,8 @@ export function ComplaintDialog({
     restrictions: 0,
   };
   const advice = recommendAction(category, history);
-  const canSanction = Boolean(
-    complaint.targetUserId && complaint.targetUser?.role !== "ADMIN",
-  );
-  const [action, setAction] = useState<ComplaintAction>(
-    canSanction ? advice.action : "NONE",
-  );
+  const canSanction = Boolean(complaint.targetUserId && complaint.targetUser?.role !== "ADMIN");
+  const [action, setAction] = useState<ComplaintAction>(canSanction ? advice.action : "NONE");
   const [days, setDays] = useState(String(advice.days ?? 7));
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -647,11 +537,7 @@ export function ComplaintDialog({
 
   async function decide(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const status =
-      (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") ===
-      "REJECTED"
-        ? "REJECTED"
-        : "RESOLVED";
+    const status = (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "REJECTED" ? "REJECTED" : "RESOLVED";
     setBusy(true);
     setError("");
     try {
@@ -663,9 +549,7 @@ export function ComplaintDialog({
           ...(status === "RESOLVED"
             ? {
                 action,
-                ...(action === "RESTRICT"
-                  ? { restrictDays: Number(days) }
-                  : {}),
+                ...(action === "RESTRICT" ? { restrictDays: Number(days) } : {}),
               }
             : {}),
         },
@@ -679,18 +563,11 @@ export function ComplaintDialog({
   }
 
   return (
-    <AdminDialog
-      title={complaint.reason}
-      description={tr(complaintCategoryNames[category])}
-      onClose={onClose}
-    >
+    <AdminDialog title={complaint.reason} description={tr(complaintCategoryNames[category])} onClose={onClose}>
       <dl className="admin-details">
         <dt>{tr("Статус")}</dt>
         <dd>
-          <StatusPill
-            status={complaint.status}
-            label={tr(complaintStatusNames[complaint.status])}
-          />
+          <StatusPill status={complaint.status} label={tr(complaintStatusNames[complaint.status])} />
         </dd>
         <dt>{tr("Автор")}</dt>
         <dd>{complaint.reporter?.name || tr("не вказано")}</dd>
@@ -722,9 +599,7 @@ export function ComplaintDialog({
               {complaint.action && complaint.action !== "NONE" && (
                 <strong>
                   {tr(complaintActionNames[complaint.action])}
-                  {complaint.restrictDays
-                    ? ` · ${tr("{0} дн.", complaint.restrictDays)}`
-                    : ""}
+                  {complaint.restrictDays ? ` · ${tr("{0} дн.", complaint.restrictDays)}` : ""}
                   {". "}
                 </strong>
               )}
@@ -734,17 +609,13 @@ export function ComplaintDialog({
         )}
       </dl>
       {complaint.status === "OPEN" && (
-        <form
-          className="work-form admin-dialog-form"
-          onSubmit={(e) => void decide(e)}
-        >
+        <form className="work-form admin-dialog-form" onSubmit={(e) => void decide(e)}>
           {canSanction && (
             <p className="complaint-advice">
               <i className="bi bi-lightbulb" aria-hidden="true"></i>
               <span>
                 <strong>
-                  {tr("Рекомендовано:")}{" "}
-                  {tr(complaintActionNames[advice.action])}
+                  {tr("Рекомендовано:")} {tr(complaintActionNames[advice.action])}
                   {advice.days ? ` · ${tr("{0} дн.", advice.days)}` : ""}
                 </strong>
                 {tr(advice.why)}
@@ -754,34 +625,18 @@ export function ComplaintDialog({
           {canSanction && (
             <fieldset className="complaint-actions" disabled={busy}>
               <legend>{tr("Санкція, якщо скаргу підтверджено")}</legend>
-              {(Object.keys(complaintActionNames) as ComplaintAction[]).map(
-                (key) => (
-                  <label key={key} className="checkbox-field">
-                    <input
-                      type="radio"
-                      name="complaint-action"
-                      checked={action === key}
-                      onChange={() => setAction(key)}
-                    />
-                    {tr(complaintActionNames[key])}
-                  </label>
-                ),
-              )}
+              {(Object.keys(complaintActionNames) as ComplaintAction[]).map((key) => (
+                <label key={key} className="checkbox-field">
+                  <input type="radio" name="complaint-action" checked={action === key} onChange={() => setAction(key)} />
+                  {tr(complaintActionNames[key])}
+                </label>
+              ))}
               {action === "RESTRICT" && (
                 <label>
                   {tr("Строк обмеження, днів")}
-                  <input
-                    type="number"
-                    min="1"
-                    max="90"
-                    required
-                    value={days}
-                    onChange={(event) => setDays(event.target.value)}
-                  />
+                  <input type="number" min="1" max="90" required value={days} onChange={(event) => setDays(event.target.value)} />
                   <small className="field-hint">
-                    {tr(
-                      "Поки діє обмеження, людина не публікує проєкти, не подає заявки й не пише повідомлень.",
-                    )}
+                    {tr("Поки діє обмеження, людина не публікує проєкти, не подає заявки й не пише повідомлень.")}
                   </small>
                 </label>
               )}
@@ -796,9 +651,7 @@ export function ComplaintDialog({
             maxLength={1000}
             value={note}
             disabled={busy}
-            placeholder={tr(
-              "Що встановлено й чому таке рішення — це побачать автор скарги й порушник",
-            )}
+            placeholder={tr("Що встановлено й чому таке рішення — це побачать автор скарги й порушник")}
             onChange={(event) => setNote(event.target.value)}
           />
           {error && (
@@ -807,17 +660,11 @@ export function ComplaintDialog({
             </p>
           )}
           <div className="admin-dialog-actions">
-            <button
-              className="button secondary"
-              value="REJECTED"
-              disabled={busy}
-            >
+            <button className="button secondary" value="REJECTED" disabled={busy}>
               {tr("Відхилити скаргу")}
             </button>
             <button className="button primary" value="RESOLVED" disabled={busy}>
-              {action !== "NONE" && canSanction
-                ? tr("Підтвердити й застосувати")
-                : tr("Підтвердити скаргу")}
+              {action !== "NONE" && canSanction ? tr("Підтвердити й застосувати") : tr("Підтвердити скаргу")}
             </button>
           </div>
         </form>
@@ -830,13 +677,7 @@ export function complaintTarget(complaint: ComplaintWithDetails) {
   return complaint.targetUser?.name || complaint.project?.title || "";
 }
 
-export function StatusPill({
-  status,
-  label,
-}: {
-  status: string;
-  label: string;
-}) {
+export function StatusPill({ status, label }: { status: string; label: string }) {
   return <span className={`project-status status-${status}`}>{label}</span>;
 }
 
@@ -850,10 +691,7 @@ export function ReportExport() {
     setExporting(format);
     setExportError("");
     try {
-      await downloadApiFile(
-        `/admin/report/export?format=${format}`,
-        `tasko-report.${format}`,
-      );
+      await downloadApiFile(`/admin/report/export?format=${format}`, `tasko-report.${format}`);
     } catch (error) {
       setExportError(errorMessage(error));
     } finally {
@@ -866,12 +704,7 @@ export function ReportExport() {
       <div className="export-actions" aria-label={tr("Експорт звіту")}>
         <strong>{tr("Завантажити звіт:")}</strong>
         {reportFormats.map((format) => (
-          <button
-            key={format}
-            className="button secondary"
-            disabled={Boolean(exporting)}
-            onClick={() => exportReport(format)}
-          >
+          <button key={format} className="button secondary" disabled={Boolean(exporting)} onClick={() => exportReport(format)}>
             <i className="bi bi-download" aria-hidden="true"></i>
             {exporting === format ? tr("Готуємо…") : format.toUpperCase()}
           </button>
@@ -1035,9 +868,7 @@ export function AdminStats({ report }: { report: AdminReport }) {
       value: report.ordersByStatus.CANCELLED,
       icon: "bi-x-circle",
       tone: "danger",
-      hint: tr(
-        "Угоди, які зірвалися або закриті разом зі скасованим проєктом.",
-      ),
+      hint: tr("Угоди, які зірвалися або закриті разом зі скасованим проєктом."),
     },
     {
       label: tr("Сума виконаних, грн"),
@@ -1153,13 +984,9 @@ export function AdminStats({ report }: { report: AdminReport }) {
 }
 
 // 0.5 → «30 хв», 5 → «5 год», 50 → «2,1 дн.»; null → «—»
-export function formatHours(
-  hours: number | null,
-  tr: (text: string, ...args: (string | number)[]) => string,
-) {
+export function formatHours(hours: number | null, tr: (text: string, ...args: (string | number)[]) => string) {
   if (hours === null) return "—";
-  const number = (value: number) =>
-    value.toLocaleString(uiLocale(), { maximumFractionDigits: 1 });
+  const number = (value: number) => value.toLocaleString(uiLocale(), { maximumFractionDigits: 1 });
   if (hours < 1) return tr("{0} хв", Math.round(hours * 60));
   if (hours < 48) return tr("{0} год", number(hours));
   return tr("{0} дн.", number(hours / 24));
@@ -1200,47 +1027,27 @@ export function GrowthChart({ report }: { report: AdminReport }) {
 export function BreakdownCharts({ report }: { report: AdminReport }) {
   const { tr } = useLanguage();
   const nonZero = (items: ChartItem[]) => items.filter((item) => item.value);
-  const total = (items: ChartItem[]) =>
-    String(items.reduce((sum, item) => sum + item.value, 0));
+  const total = (items: ChartItem[]) => String(items.reduce((sum, item) => sum + item.value, 0));
   const roles = (Object.keys(roleNames) as UserRole[]).map((role) => ({
     label: tr(roleNames[role]),
     value: report.usersByRole[role],
     tone: roleTones[role],
   }));
-  const projects = (Object.keys(projectStatusNames) as ProjectStatus[]).map(
-    (status) => ({
-      label: tr(projectStatusNames[status]),
-      value: report.projectsByStatus[status],
-      tone: projectTones[status],
-    }),
-  );
-  const tasks = (Object.keys(taskStatusNames) as TaskStatus[]).map(
-    (status) => ({
-      label: tr(taskStatusNames[status]),
-      value: report.tasksByStatus[status],
-      tone: taskTones[status],
-    }),
-  );
+  const projects = (Object.keys(projectStatusNames) as ProjectStatus[]).map((status) => ({
+    label: tr(projectStatusNames[status]),
+    value: report.projectsByStatus[status],
+    tone: projectTones[status],
+  }));
+  const tasks = (Object.keys(taskStatusNames) as TaskStatus[]).map((status) => ({
+    label: tr(taskStatusNames[status]),
+    value: report.tasksByStatus[status],
+    tone: taskTones[status],
+  }));
   return (
     <div className="admin-breakdown">
-      <DonutChart
-        title={tr("Користувачі за ролями")}
-        items={nonZero(roles)}
-        center={total(roles)}
-        centerNote={tr("користувачів")}
-      />
-      <DonutChart
-        title={tr("Проєкти за статусами")}
-        items={nonZero(projects)}
-        center={total(projects)}
-        centerNote={tr("проєктів")}
-      />
-      <DonutChart
-        title={tr("Завдання за статусами")}
-        items={nonZero(tasks)}
-        center={total(tasks)}
-        centerNote={tr("завдань")}
-      />
+      <DonutChart title={tr("Користувачі за ролями")} items={nonZero(roles)} center={total(roles)} centerNote={tr("користувачів")} />
+      <DonutChart title={tr("Проєкти за статусами")} items={nonZero(projects)} center={total(projects)} centerNote={tr("проєктів")} />
+      <DonutChart title={tr("Завдання за статусами")} items={nonZero(tasks)} center={total(tasks)} centerNote={tr("завдань")} />
     </div>
   );
 }

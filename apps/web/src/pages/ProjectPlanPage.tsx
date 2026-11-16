@@ -5,13 +5,7 @@ import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { ResourceState } from "../components/ResourceState";
 import type { Project } from "../types";
-import {
-  PlanMilestoneFields,
-  planTotal,
-  type Plan,
-  type PlanMilestone,
-  type PlanTask,
-} from "./ProjectPlanFields";
+import { PlanMilestoneFields, planTotal, type Plan, type PlanMilestone, type PlanTask } from "./ProjectPlanFields";
 import { formatMoney } from "../format";
 
 import { useLanguage } from "../i18n";
@@ -39,9 +33,7 @@ function ProjectPlanEditor() {
   const { user } = useAuth();
   const project = useApi<Project>(id ? `/projects/${id}` : null);
   const provider = useApi<{ configured: boolean }>("/agent/status");
-  const context = useApi<PlanContext>(
-    id ? `/projects/${id}/ai-plan/context` : null,
-  );
+  const context = useApi<PlanContext>(id ? `/projects/${id}/ai-plan/context` : null);
   const [instructions, setInstructions] = useState("");
   // Замінити попередні етапи чи додати до них; null — власник ще не обирав
   const [replaceChoice, setReplaceChoice] = useState<boolean | null>(null);
@@ -57,26 +49,15 @@ function ProjectPlanEditor() {
   useEffect(() => () => controller.current?.abort(), []);
 
   const owner = Boolean(user) && project.data?.clientId === user?.id;
-  const writable =
-    project.data && !["COMPLETED", "CANCELLED"].includes(project.data.status);
+  const writable = project.data && !["COMPLETED", "CANCELLED"].includes(project.data.status);
   const editingLocked = Boolean(busy) || saveAttempted;
   const ctx = context.data;
   const canReplace = Boolean(ctx && ctx.replaceableMilestones > 0);
   // Якщо є що замінити, за замовчуванням план замінює попередні етапи
   const replace = canReplace && (replaceChoice ?? true);
-  const available =
-    ctx && ctx.limit !== null
-      ? Math.max(
-          0,
-          ctx.limit - (replace ? ctx.committedAfterReplace : ctx.committed),
-        )
-      : null;
+  const available = ctx && ctx.limit !== null ? Math.max(0, ctx.limit - (replace ? ctx.committedAfterReplace : ctx.committed)) : null;
   const total = plan ? planTotal(plan) : 0;
-  const invalidAmount = Boolean(
-    plan?.milestones.some((m) =>
-      m.tasks.some((t) => !Number.isFinite(t.amount)),
-    ),
-  );
+  const invalidAmount = Boolean(plan?.milestones.some((m) => m.tasks.some((t) => !Number.isFinite(t.amount))));
   const overBudget = available !== null && total > available;
 
   function startRequest(action: BusyAction) {
@@ -152,11 +133,7 @@ function ProjectPlanEditor() {
     );
   }
 
-  function changeTask(
-    milestoneIndex: number,
-    taskIndex: number,
-    patch: Partial<PlanTask>,
-  ) {
+  function changeTask(milestoneIndex: number, taskIndex: number, patch: Partial<PlanTask>) {
     setPlan(
       (previous) =>
         previous && {
@@ -204,11 +181,7 @@ function ProjectPlanEditor() {
           {tr("Планування доступне власнику проєкту та адміністратору.")}
         </p>
       )}
-      {owner && !writable && (
-        <p className="notice">
-          {tr("Проєкт закрито. Додавати план уже не можна.")}
-        </p>
-      )}
+      {owner && !writable && <p className="notice">{tr("Проєкт закрито. Додавати план уже не можна.")}</p>}
       {owner && writable && (
         <>
           <section className="data-panel padded plan-intro">
@@ -229,25 +202,16 @@ function ProjectPlanEditor() {
             {ctx && <BudgetNote context={ctx} available={available} />}
             {ctx && ctx.milestones > 0 && (
               <fieldset className="plan-mode" disabled={editingLocked}>
-                <legend>
-                  {tr("У проєкті вже є етапи: {0}", ctx.milestones)}
-                </legend>
+                <legend>{tr("У проєкті вже є етапи: {0}", ctx.milestones)}</legend>
                 {canReplace ? (
                   <>
                     <label className="plan-mode-option">
-                      <input
-                        type="radio"
-                        name="plan-mode"
-                        checked={replace}
-                        onChange={() => setReplaceChoice(true)}
-                      />
+                      <input type="radio" name="plan-mode" checked={replace} onChange={() => setReplaceChoice(true)} />
                       <span>
                         <strong>{tr("Замінити попередні етапи")}</strong>
                         <small>
                           {ctx.replaceableMilestones === ctx.milestones
-                            ? tr(
-                                "Етапи та їхні завдання, які ще ніхто не взяв у роботу, буде видалено й замінено новим планом.",
-                              )
+                            ? tr("Етапи та їхні завдання, які ще ніхто не взяв у роботу, буде видалено й замінено новим планом.")
                             : tr(
                                 "Замінимо етапи, які ще не почали й не оплачували ({0}). Етапи в роботі чи оплачені лишаться.",
                                 ctx.replaceableMilestones,
@@ -256,40 +220,23 @@ function ProjectPlanEditor() {
                       </span>
                     </label>
                     <label className="plan-mode-option">
-                      <input
-                        type="radio"
-                        name="plan-mode"
-                        checked={!replace}
-                        onChange={() => setReplaceChoice(false)}
-                      />
+                      <input type="radio" name="plan-mode" checked={!replace} onChange={() => setReplaceChoice(false)} />
                       <span>
                         <strong>{tr("Додати до наявних етапів")}</strong>
-                        <small>
-                          {tr(
-                            "Нові етапи стануть після наявних, нічого не видаляється.",
-                          )}
-                        </small>
+                        <small>{tr("Нові етапи стануть після наявних, нічого не видаляється.")}</small>
                       </span>
                     </label>
                   </>
                 ) : (
-                  <p className="form-note">
-                    {tr(
-                      "Наявні етапи вже в роботі або оплачені, тож новий план додасться після них.",
-                    )}
-                  </p>
+                  <p className="form-note">{tr("Наявні етапи вже в роботі або оплачені, тож новий план додасться після них.")}</p>
                 )}
               </fieldset>
             )}
-            {!provider.loading &&
-              provider.data &&
-              !provider.data.configured && (
-                <p role="alert" className="notice error">
-                  {tr(
-                    "AI-провайдер ще не підключений. Зверніться до адміністратора.",
-                  )}
-                </p>
-              )}
+            {!provider.loading && provider.data && !provider.data.configured && (
+              <p role="alert" className="notice error">
+                {tr("AI-провайдер ще не підключений. Зверніться до адміністратора.")}
+              </p>
+            )}
             <form
               className="work-form"
               onSubmit={(event) => {
@@ -297,9 +244,7 @@ function ProjectPlanEditor() {
                 void generate();
               }}
             >
-              <label htmlFor="plan-instructions">
-                {tr("Побажання до плану (необов’язково)")}
-              </label>
+              <label htmlFor="plan-instructions">{tr("Побажання до плану (необов’язково)")}</label>
               <textarea
                 id="plan-instructions"
                 value={instructions}
@@ -307,18 +252,11 @@ function ProjectPlanEditor() {
                 maxLength={3000}
                 rows={2}
                 disabled={editingLocked}
-                placeholder={tr(
-                  "Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP.",
-                )}
+                placeholder={tr("Наприклад: спершу прототип, потім розробка й тестування. Зосередитися на MVP.")}
               />
               <div className="plan-form-bar">
-                <small className="form-note">
-                  {tr("{0} / 3000 символів", instructions.length)}
-                </small>
-                <button
-                  className="button primary"
-                  disabled={editingLocked || !provider.data?.configured}
-                >
+                <small className="form-note">{tr("{0} / 3000 символів", instructions.length)}</small>
+                <button className="button primary" disabled={editingLocked || !provider.data?.configured}>
                   <i className="bi bi-stars" aria-hidden="true"></i>
                   {tr(generateButtonLabel(busy, plan !== null))}
                 </button>
@@ -327,9 +265,7 @@ function ProjectPlanEditor() {
           </section>
           {busy && (
             <p role="status" className="notice">
-              {busy === "generate"
-                ? tr("AI готує чернетку. Це може тривати до 30 секунд.")
-                : tr("Додаємо підтверджений план…")}
+              {busy === "generate" ? tr("AI готує чернетку. Це може тривати до 30 секунд.") : tr("Додаємо підтверджений план…")}
             </p>
           )}
           {error && (
@@ -349,11 +285,7 @@ function ProjectPlanEditor() {
               <div className="plan-summary">
                 <div>
                   <h2>{tr("Чернетка для перевірки")}</h2>
-                  <p>
-                    {tr(
-                      "Перевірте назви, вартість і критерії приймання — усе можна змінити перед збереженням.",
-                    )}
-                  </p>
+                  <p>{tr("Перевірте назви, вартість і критерії приймання — усе можна змінити перед збереженням.")}</p>
                 </div>
                 <dl className="plan-stats">
                   <div>
@@ -365,21 +297,14 @@ function ProjectPlanEditor() {
                     <dd>{countTasks(plan)}</dd>
                   </div>
                   <div className={overBudget ? "over" : undefined}>
-                    <dt>
-                      {available === null
-                        ? tr("Сума плану")
-                        : tr("Сума плану з {0}", formatMoney(available))}
-                    </dt>
+                    <dt>{available === null ? tr("Сума плану") : tr("Сума плану з {0}", formatMoney(available))}</dt>
                     <dd>{formatMoney(total)}</dd>
                   </div>
                 </dl>
               </div>
               {overBudget && (
                 <p role="alert" className="notice error">
-                  {tr(
-                    "Сума плану перевищує доступний бюджет на {0}. Зменште вартість завдань.",
-                    formatMoney(total - (available ?? 0)),
-                  )}
+                  {tr("Сума плану перевищує доступний бюджет на {0}. Зменште вартість завдань.", formatMoney(total - (available ?? 0)))}
                 </p>
               )}
               {saveAttempted && !busy && (
@@ -398,27 +323,18 @@ function ProjectPlanEditor() {
                   canRemove={plan.milestones.length > 1}
                   maxDate={project.data?.deadline?.slice(0, 10)}
                   onChange={(patch) => changeMilestone(index, patch)}
-                  onChangeTask={(taskIndex, patch) =>
-                    changeTask(index, taskIndex, patch)
-                  }
+                  onChangeTask={(taskIndex, patch) => changeTask(index, taskIndex, patch)}
                   onRemove={() => removeMilestone(index)}
                 />
               ))}
               <div className="plan-actions">
-                <button
-                  className="button primary"
-                  disabled={Boolean(busy) || overBudget || invalidAmount}
-                >
+                <button className="button primary" disabled={Boolean(busy) || overBudget || invalidAmount}>
                   {tr(applyButtonLabel(busy, saveAttempted, replace))}
                 </button>
                 <p className="form-note">
                   {replace
-                    ? tr(
-                        "Попередні етапи, які ще не почали, буде замінено етапами й завданнями цієї чернетки.",
-                      )
-                    : tr(
-                        "Після підтвердження буде створено всі етапи та завдання цієї чернетки.",
-                      )}
+                    ? tr("Попередні етапи, які ще не почали, буде замінено етапами й завданнями цієї чернетки.")
+                    : tr("Після підтвердження буде створено всі етапи та завдання цієї чернетки.")}
                 </p>
               </div>
             </form>
@@ -434,19 +350,12 @@ function PlanSavedPanel({ projectId }: { projectId?: string }) {
   return (
     <section className="data-panel padded" role="status">
       <h2>{tr("План додано до проєкту")}</h2>
-      <p>
-        {tr(
-          "Етапи та завдання збережено разом із критеріями приймання в описах.",
-        )}
-      </p>
+      <p>{tr("Етапи та завдання збережено разом із критеріями приймання в описах.")}</p>
       <div className="plan-actions">
         <Link className="button primary" to={`/projects/${projectId}/board`}>
           {tr("Відкрити Kanban")}
         </Link>
-        <Link
-          className="button secondary"
-          to={`/projects/${projectId}/milestones`}
-        >
+        <Link className="button secondary" to={`/projects/${projectId}/milestones`}>
           {tr("Переглянути етапи")}
         </Link>
       </div>
@@ -455,19 +364,12 @@ function PlanSavedPanel({ projectId }: { projectId?: string }) {
 }
 
 // Повертає копію масиву, у якій елемент з index змінено полями з patch.
-function updateAt<T extends object>(
-  items: T[],
-  index: number,
-  patch: Partial<T>,
-): T[] {
+function updateAt<T extends object>(items: T[], index: number, patch: Partial<T>): T[] {
   return items.map((item, i) => (i === index ? { ...item, ...patch } : item));
 }
 
 function countTasks(plan: Plan) {
-  return plan.milestones.reduce(
-    (sum, milestone) => sum + milestone.tasks.length,
-    0,
-  );
+  return plan.milestones.reduce((sum, milestone) => sum + milestone.tasks.length, 0);
 }
 
 function generateButtonLabel(busy: BusyAction | null, hasPlan: boolean) {
@@ -476,11 +378,7 @@ function generateButtonLabel(busy: BusyAction | null, hasPlan: boolean) {
   return "Запропонувати план";
 }
 
-function applyButtonLabel(
-  busy: BusyAction | null,
-  saveAttempted: boolean,
-  replace: boolean,
-) {
+function applyButtonLabel(busy: BusyAction | null, saveAttempted: boolean, replace: boolean) {
   if (busy === "apply") return "Зберігаємо…";
   if (saveAttempted) return "Повторити підтвердження";
   if (replace) return "Замінити попередні етапи";
@@ -488,36 +386,20 @@ function applyButtonLabel(
 }
 
 // Звідки взято межу суми плану і скільки ще можна розподілити
-function BudgetNote({
-  context,
-  available,
-}: {
-  context: PlanContext;
-  available: number | null;
-}) {
+function BudgetNote({ context, available }: { context: PlanContext; available: number | null }) {
   const { tr } = useLanguage();
   return (
     <p className="plan-budget">
       <i className="bi bi-cash-coin" aria-hidden="true"></i>
       <span>
         {context.limit === null ? (
-          tr(
-            "Бюджет у проєкті не вказано, тож AI оцінить вартість завдань за ринковими цінами. Суми можна змінити вручну.",
-          )
+          tr("Бюджет у проєкті не вказано, тож AI оцінить вартість завдань за ринковими цінами. Суми можна змінити вручну.")
         ) : (
           <>
             {context.source === "BID"
-              ? tr(
-                  "Ціна, погоджена з виконавцем: {0}.",
-                  formatMoney(context.limit),
-                )
+              ? tr("Ціна, погоджена з виконавцем: {0}.", formatMoney(context.limit))
               : tr("Бюджет проєкту: {0}.", formatMoney(context.limit))}{" "}
-            <strong>
-              {tr(
-                "Для нового плану доступно {0}.",
-                formatMoney(available ?? 0),
-              )}
-            </strong>{" "}
+            <strong>{tr("Для нового плану доступно {0}.", formatMoney(available ?? 0))}</strong>{" "}
             {tr("Сума всіх завдань не може бути більшою.")}
           </>
         )}

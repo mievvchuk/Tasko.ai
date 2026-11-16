@@ -15,22 +15,13 @@ function upload(bytes: number[] | Buffer, name = 'photo.png') {
 
 describe('Avatar validation', () => {
   it('detects PNG, JPG and WEBP by their content', () => {
-    expect(
-      validateAvatar(upload([137, 80, 78, 71, 13, 10, 26, 10, 0])).extension,
-    ).toBe('png');
-    expect(validateAvatar(upload([0xff, 0xd8, 0xff, 0xe0])).extension).toBe(
-      'jpg',
-    );
-    expect(
-      validateAvatar(upload(Buffer.from('RIFF\0\0\0\0WEBPVP8 ', 'latin1')))
-        .extension,
-    ).toBe('webp');
+    expect(validateAvatar(upload([137, 80, 78, 71, 13, 10, 26, 10, 0])).extension).toBe('png');
+    expect(validateAvatar(upload([0xff, 0xd8, 0xff, 0xe0])).extension).toBe('jpg');
+    expect(validateAvatar(upload(Buffer.from('RIFF\0\0\0\0WEBPVP8 ', 'latin1'))).extension).toBe('webp');
   });
 
   it('rejects HTML disguised as an image', () => {
-    expect(() =>
-      validateAvatar(upload(Buffer.from('<script>alert(1)</script>'))),
-    ).toThrow(BadRequestException);
+    expect(() => validateAvatar(upload(Buffer.from('<script>alert(1)</script>')))).toThrow(BadRequestException);
   });
 
   it('rejects missing, empty and oversized files', () => {
@@ -43,14 +34,7 @@ describe('Avatar validation', () => {
 
   it('serves only generated avatar file names', async () => {
     const service = new UsersService({} as PrismaService);
-    for (const name of [
-      '../../.env',
-      '..%2F.env',
-      'photo.png',
-      'd3e00000-0000-4000-8000-000000000001.svg',
-    ])
-      await expect(service.avatarFile(name)).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+    for (const name of ['../../.env', '..%2F.env', 'photo.png', 'd3e00000-0000-4000-8000-000000000001.svg'])
+      await expect(service.avatarFile(name)).rejects.toBeInstanceOf(NotFoundException);
   });
 });

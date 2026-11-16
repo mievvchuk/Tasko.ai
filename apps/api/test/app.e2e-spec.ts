@@ -86,23 +86,14 @@ describe('API authorization (e2e)', () => {
 
   it('requires a Bearer token', async () => {
     await request(app.getHttpServer()).get('/auth/me').expect(401);
-    await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', 'Bearer invalid')
-      .expect(401);
+    await request(app.getHttpServer()).get('/auth/me').set('Authorization', 'Bearer invalid').expect(401);
   });
 
   it('does not bypass the email rate limit with a differently cased URL', async () => {
     for (let attempt = 0; attempt < 10; attempt++) {
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({})
-        .expect(400);
+      await request(app.getHttpServer()).post('/auth/register').send({}).expect(400);
     }
-    await request(app.getHttpServer())
-      .post('/AUTH/Register/')
-      .send({})
-      .expect(429);
+    await request(app.getHttpServer()).post('/AUTH/Register/').send({}).expect(429);
   });
 
   it('logs in and retrieves the current user through JWT', async () => {
@@ -137,10 +128,7 @@ describe('API authorization (e2e)', () => {
       restrictionReason: null,
     });
     users.findById.mockResolvedValue({ ...user, status: 'BLOCKED' });
-    await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', `Bearer ${login.body.accessToken}`)
-      .expect(403);
+    await request(app.getHttpServer()).get('/auth/me').set('Authorization', `Bearer ${login.body.accessToken}`).expect(403);
   });
 
   it('rejects the same JWT after logout', async () => {
@@ -161,33 +149,16 @@ describe('API authorization (e2e)', () => {
       .send({ email: user.email, password: 'Coursework-test-123' })
       .expect(200);
     const authorization = `Bearer ${login.body.accessToken}`;
-    await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', authorization)
-      .expect(200);
-    await request(app.getHttpServer())
-      .post('/auth/logout')
-      .set('Authorization', authorization)
-      .expect(200);
-    await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', authorization)
-      .expect(401);
+    await request(app.getHttpServer()).get('/auth/me').set('Authorization', authorization).expect(200);
+    await request(app.getHttpServer()).post('/auth/logout').set('Authorization', authorization).expect(200);
+    await request(app.getHttpServer()).get('/auth/me').set('Authorization', authorization).expect(401);
   });
 
   it('documents Bearer authorization and registration fields', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/docs-json')
-      .expect(200);
-    expect(response.body.components.securitySchemes.bearer.scheme).toBe(
-      'bearer',
-    );
-    expect(
-      response.body.components.schemas.RegisterDto.properties.role.enum,
-    ).toEqual(['CLIENT', 'FREELANCER']);
-    expect(response.body.paths['/auth/me'].get.security).toEqual([
-      { bearer: [] },
-    ]);
+    const response = await request(app.getHttpServer()).get('/docs-json').expect(200);
+    expect(response.body.components.securitySchemes.bearer.scheme).toBe('bearer');
+    expect(response.body.components.schemas.RegisterDto.properties.role.enum).toEqual(['CLIENT', 'FREELANCER']);
+    expect(response.body.paths['/auth/me'].get.security).toEqual([{ bearer: [] }]);
   });
 
   afterEach(async () => {

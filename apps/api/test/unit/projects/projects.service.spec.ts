@@ -1,15 +1,7 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { PrismaService } from '../../../src/prisma/prisma.service.js';
 import type { CurrentUser } from '../../../src/users/users.service.js';
-import {
-  ProjectsService,
-  validateBudget,
-} from '../../../src/projects/projects.service.js';
+import { ProjectsService, validateBudget } from '../../../src/projects/projects.service.js';
 
 describe('validateBudget', () => {
   it('rejects a maximum below the minimum', () => {
@@ -103,17 +95,11 @@ describe('ProjectsService', () => {
 
   it('rejects an unknown project and a user without membership', async () => {
     db.Project = { where: vi.fn(() => chain(null)) };
-    await expect(
-      service.requireAccess(client, 'missing'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.requireAccess(client, 'missing')).rejects.toBeInstanceOf(NotFoundException);
 
-    db.Project.where.mockReturnValue(
-      chain({ id: 'project-id', clientId: client.id }),
-    );
+    db.Project.where.mockReturnValue(chain({ id: 'project-id', clientId: client.id }));
     db.ProjectMember = { where: vi.fn(() => chain(null)) };
-    await expect(
-      service.requireAccess(freelancer, 'project-id'),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.requireAccess(freelancer, 'project-id')).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('keeps private parts (messages) closed to an admin outside the project', async () => {
@@ -121,40 +107,26 @@ describe('ProjectsService', () => {
       where: vi.fn(() => chain({ id: 'project-id', clientId: client.id })),
     };
     db.ProjectMember = { where: vi.fn(() => chain(null)) };
-    await expect(
-      service.requireAccess(admin, 'project-id'),
-    ).resolves.toBeTruthy();
-    await expect(
-      service.requireAccess(admin, 'project-id', false),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.requireAccess(admin, 'project-id')).resolves.toBeTruthy();
+    await expect(service.requireAccess(admin, 'project-id', false)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('lets an admin view but not manage a project they do not own', async () => {
     const project = { id: 'project-id', clientId: client.id, status: 'ACTIVE' };
     db.Project = { where: vi.fn(() => chain(project)) };
     db.ProjectMember = { where: vi.fn(() => chain(null)) };
-    await expect(service.requireAccess(admin, project.id)).resolves.toBe(
-      project,
-    );
-    await expect(
-      service.requireOwner(admin, project.id),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    await expect(service.requireOwner(client, project.id)).resolves.toBe(
-      project,
-    );
+    await expect(service.requireAccess(admin, project.id)).resolves.toBe(project);
+    await expect(service.requireOwner(admin, project.id)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.requireOwner(client, project.id)).resolves.toBe(project);
   });
 
   it('lists only own projects for an admin in the workspace, all from the admin panel', async () => {
-    const everyone = [
-      { id: 'project-id', clientId: client.id, status: 'ACTIVE' },
-    ];
+    const everyone = [{ id: 'project-id', clientId: client.id, status: 'ACTIVE' }];
     // Без where (all=true) — усі проєкти; where({ clientId: admin }) — жодного
     db.Project = { ...chain(everyone), where: vi.fn(() => chain([])) };
     db.ProjectMember = { where: vi.fn(() => chain([])) };
     db.Task = { where: vi.fn(() => chain([])) };
-    await expect(service.list(admin, { page: 1, limit: 20 })).resolves.toEqual(
-      [],
-    );
+    await expect(service.list(admin, { page: 1, limit: 20 })).resolves.toEqual([]);
     const all = await service.list(admin, { page: 1, limit: 20, all: true });
     expect(all.map((p) => p.id)).toEqual(['project-id']);
   });
@@ -162,9 +134,7 @@ describe('ProjectsService', () => {
   it('only lets a client create a planning project', async () => {
     db.Project = { create: vi.fn(async (data: unknown) => data) };
 
-    await expect(
-      service.create(freelancer, { title: 'Landing page' }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.create(freelancer, { title: 'Landing page' })).rejects.toBeInstanceOf(ForbiddenException);
     const project = await service.create(client, {
       title: 'Landing page',
       description: 'Description',
@@ -179,9 +149,7 @@ describe('ProjectsService', () => {
   });
 
   it('calculates project progress in the list', async () => {
-    const projects = [
-      { id: 'project-id', clientId: client.id, status: 'ACTIVE' },
-    ];
+    const projects = [{ id: 'project-id', clientId: client.id, status: 'ACTIVE' }];
     const projectQuery = chain(projects);
     db.Project = { where: vi.fn(() => projectQuery) };
     db.Task = {
@@ -201,25 +169,20 @@ describe('ProjectsService', () => {
     });
   });
 
-  it.each([-86400000, -1, 0])(
-    'rejects creation with a deadline at or before now (%i ms)',
-    async (offset) => {
-      db.Project = { create: vi.fn(async (data: unknown) => data) };
-      await expect(
-        service.create(client, {
-          title: 'Past deadline',
-          deadline: new Date(Date.now() + offset).toISOString(),
-        }),
-      ).rejects.toThrow('Дедлайн проєкту має бути в майбутньому.');
-      expect(db.Project.create).not.toHaveBeenCalled();
-    },
-  );
+  it.each([-86400000, -1, 0])('rejects creation with a deadline at or before now (%i ms)', async (offset) => {
+    db.Project = { create: vi.fn(async (data: unknown) => data) };
+    await expect(
+      service.create(client, {
+        title: 'Past deadline',
+        deadline: new Date(Date.now() + offset).toISOString(),
+      }),
+    ).rejects.toThrow('Дедлайн проєкту має бути в майбутньому.');
+    expect(db.Project.create).not.toHaveBeenCalled();
+  });
 
   it('rejects an invalid deadline even when the service is called directly', async () => {
     db.Project = { create: vi.fn() };
-    await expect(
-      service.create(client, { title: 'Invalid date', deadline: 'invalid' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create(client, { title: 'Invalid date', deadline: 'invalid' })).rejects.toBeInstanceOf(BadRequestException);
     expect(db.Project.create).not.toHaveBeenCalled();
   });
 
@@ -240,9 +203,7 @@ describe('ProjectsService', () => {
     db.Project = { where: vi.fn(() => chain(project)) };
     db.Task = { where: vi.fn(() => chain([])) };
     const deadline = new Date(Date.now() + 86400000).toISOString();
-    expect(
-      await service.update(client, project.id, { deadline }),
-    ).toMatchObject({
+    expect(await service.update(client, project.id, { deadline })).toMatchObject({
       deadline: new Date(deadline),
     });
   });
@@ -279,21 +240,15 @@ describe('ProjectsService', () => {
     };
     db.Order = { where: vi.fn(() => chain([])) };
 
-    await expect(
-      service.update(client, project.id, { status: 'COMPLETED' }),
-    ).rejects.toBeInstanceOf(ConflictException);
-    expect(() => service.ensureWritable({ status: 'CANCELLED' })).toThrow(
-      ConflictException,
-    );
+    await expect(service.update(client, project.id, { status: 'COMPLETED' })).rejects.toBeInstanceOf(ConflictException);
+    expect(() => service.ensureWritable({ status: 'CANCELLED' })).toThrow(ConflictException);
   });
 
   it('validates a project deadline against its tasks', async () => {
     const project = { id: 'project-id', clientId: client.id, status: 'ACTIVE' };
     db.Project = { where: vi.fn(() => chain(project)) };
     db.Task = {
-      where: vi.fn(() =>
-        chain([{ deadline: new Date('2027-01-01T12:00:00.000Z') }]),
-      ),
+      where: vi.fn(() => chain([{ deadline: new Date('2027-01-01T12:00:00.000Z') }])),
     };
     await expect(
       service.update(client, project.id, {
@@ -330,9 +285,7 @@ describe('ProjectsService', () => {
 
   it('refuses a bid above the client maximum budget', async () => {
     db.Project = {
-      where: vi.fn(() =>
-        chain({ id: 'project-id', status: 'PLANNING', budgetMax: 5000 }),
-      ),
+      where: vi.fn(() => chain({ id: 'project-id', status: 'PLANNING', budgetMax: 5000 })),
     };
     db.ProjectApplication = {
       where: vi.fn(() => chain(null)),
@@ -377,19 +330,13 @@ describe('ProjectsService', () => {
     db.Project = {
       where: vi.fn(() => chain({ id: 'project-id', clientId: client.id })),
     };
-    await expect(
-      service.withdrawApplication(freelancer, 'app-1'),
-    ).resolves.toMatchObject({ status: 'WITHDRAWN' });
+    await expect(service.withdrawApplication(freelancer, 'app-1')).resolves.toMatchObject({ status: 'WITHDRAWN' });
     expect(db.Notification.create).toHaveBeenCalled();
-    await expect(
-      service.withdrawApplication({ ...freelancer, id: 'other' }, 'app-1'),
-    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.withdrawApplication({ ...freelancer, id: 'other' }, 'app-1')).rejects.toBeInstanceOf(NotFoundException);
     db.ProjectApplication = {
       where: vi.fn(() => chain({ ...pending, status: 'ACCEPTED' })),
     };
-    await expect(
-      service.withdrawApplication(freelancer, 'app-1'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.withdrawApplication(freelancer, 'app-1')).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('reopens a withdrawn application instead of creating a duplicate', async () => {
@@ -486,9 +433,7 @@ describe('ProjectsService', () => {
     });
     expect(result.map((item) => item.id)).toEqual(['project-id', 'hiring']);
     expect(result[0]).toMatchObject({ applicationStatus: 'PENDING' });
-    await expect(
-      service.marketplace(client, { page: 1, limit: 20 }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.marketplace(client, { page: 1, limit: 20 })).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('hires the first freelancer, keeps other applications and opens hiring', async () => {
@@ -514,9 +459,8 @@ describe('ProjectsService', () => {
       create: vi.fn(async (data: unknown) => data),
     };
     db.Order = { create: vi.fn(async (data: unknown) => data) };
-    prisma.client.transaction.mockImplementation(
-      async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
-        action({ orm: { public: db } }),
+    prisma.client.transaction.mockImplementation(async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
+      action({ orm: { public: db } }),
     );
 
     const result = await service.acceptApplication(client, application.id);
@@ -537,18 +481,14 @@ describe('ProjectsService', () => {
       amount: 1200,
       status: 'IN_PROGRESS',
     });
-    expect(order.deadline.getTime() - order.createdAt.getTime()).toBe(
-      10 * 86_400_000,
-    );
+    expect(order.deadline.getTime() - order.createdAt.getTime()).toBe(10 * 86_400_000);
     // Оновлено лише прийняту заявку — інших не відхиляємо
     expect(applicationQuery.update).toHaveBeenCalledOnce();
     expect(db.ProjectApplication.where).toHaveBeenCalledWith({
       id: application.id,
       status: 'PENDING',
     });
-    expect(projectQuery.update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'ACTIVE', hiringOpen: true }),
-    );
+    expect(projectQuery.update).toHaveBeenCalledWith(expect.objectContaining({ status: 'ACTIVE', hiringOpen: true }));
   });
 
   it('adds one more freelancer to an active team without re-adding a member', async () => {
@@ -571,9 +511,8 @@ describe('ProjectsService', () => {
       create: vi.fn(),
     };
     db.Order = { create: vi.fn() };
-    prisma.client.transaction.mockImplementation(
-      async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
-        action({ orm: { public: db } }),
+    prisma.client.transaction.mockImplementation(async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
+      action({ orm: { public: db } }),
     );
 
     await service.acceptApplication(client, application.id);
@@ -583,9 +522,7 @@ describe('ProjectsService', () => {
 
   it('refuses to accept after hiring is closed', async () => {
     db.ProjectApplication = {
-      where: vi.fn(() =>
-        chain({ id: 'a', projectId: 'project-id', status: 'PENDING' }),
-      ),
+      where: vi.fn(() => chain({ id: 'a', projectId: 'project-id', status: 'PENDING' })),
     };
     db.Project = {
       where: vi.fn(() =>
@@ -597,9 +534,7 @@ describe('ProjectsService', () => {
         }),
       ),
     };
-    await expect(service.acceptApplication(client, 'a')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(service.acceptApplication(client, 'a')).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('closes hiring and rejects the remaining applications', async () => {
@@ -615,23 +550,18 @@ describe('ProjectsService', () => {
     ]);
     db.Project = { where: vi.fn(() => projectQuery) };
     db.ProjectApplication = { where: vi.fn(() => applicationQuery) };
-    prisma.client.transaction.mockImplementation(
-      async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
-        action({ orm: { public: db } }),
+    prisma.client.transaction.mockImplementation(async (action: (tx: { orm: { public: typeof db } }) => unknown) =>
+      action({ orm: { public: db } }),
     );
 
     expect(await service.closeHiring(client, 'project-id')).toEqual({
       hiringOpen: false,
       rejected: 2,
     });
-    expect(projectQuery.update).toHaveBeenCalledWith(
-      expect.objectContaining({ hiringOpen: false }),
-    );
+    expect(projectQuery.update).toHaveBeenCalledWith(expect.objectContaining({ hiringOpen: false }));
     expect(applicationQuery.update).toHaveBeenCalledTimes(2);
     expect(db.Notification.create).toHaveBeenCalledTimes(2);
     db.ProjectMember = { where: vi.fn(() => chain({ id: 'member-id' })) };
-    await expect(
-      service.closeHiring(freelancer, 'project-id'),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.closeHiring(freelancer, 'project-id')).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

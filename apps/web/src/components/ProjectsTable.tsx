@@ -9,15 +9,8 @@ export function ProjectsTable({ projects }: { projects: Project[] }) {
   const { tr } = useLanguage();
   return (
     <>
-      <p className="table-hint">
-        {tr("Гортайте таблицю вбік, щоб побачити всі стовпці.")}
-      </p>
-      <div
-        className="table-scroll"
-        role="region"
-        aria-label={tr("Таблиця проєктів")}
-        tabIndex={0}
-      >
+      <p className="table-hint">{tr("Гортайте таблицю вбік, щоб побачити всі стовпці.")}</p>
+      <div className="table-scroll" role="region" aria-label={tr("Таблиця проєктів")} tabIndex={0}>
         <table className="projects-table">
           <thead>
             <tr>
@@ -34,28 +27,17 @@ export function ProjectsTable({ projects }: { projects: Project[] }) {
                   <strong>
                     <Link to={`/projects/${project.id}`}>{project.title}</Link>
                   </strong>
-                  <p className="project-excerpt">
-                    {project.description || tr("Опис не додано.")}
-                  </p>
+                  <p className="project-excerpt">{project.description || tr("Опис не додано.")}</p>
                 </td>
                 <td>
-                  <span className={"project-status status-" + project.status}>
-                    {tr(projectStatusNames[project.status])}
-                  </span>
+                  <span className={"project-status status-" + project.status}>{tr(projectStatusNames[project.status])}</span>
                 </td>
                 <td>
-                  <ProgressRing
-                    value={project.completedTasks}
-                    max={project.totalTasks}
-                    label={tr("Виконання проєкту ") + project.title}
-                  />
+                  <ProgressRing value={project.completedTasks} max={project.totalTasks} label={tr("Виконання проєкту ") + project.title} />
                 </td>
                 <td>
                   {project.deadline ? (
-                    <time
-                      dateTime={project.deadline}
-                      title={formatDate(project.deadline, true)}
-                    >
+                    <time dateTime={project.deadline} title={formatDate(project.deadline, true)}>
                       {formatDate(project.deadline)}
                     </time>
                   ) : (

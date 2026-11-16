@@ -16,22 +16,13 @@ async function run(page) {
     const options = { data: body, headers: {} };
     if (token) options.headers.Authorization = `Bearer ${token}`;
     const response = await page.request[method](base + "/api" + path, options);
-    assert(
-      response.status() === expected,
-      `${method} ${path} returned ${response.status()}, expected ${expected}`,
-    );
+    assert(response.status() === expected, `${method} ${path} returned ${response.status()}, expected ${expected}`);
     return response.json();
   }
   async function account(role, suffix) {
     const email = `final-${suffix}-${run}@example.com`;
     const name = `Фінальна перевірка ${suffix} ${run}`;
-    const user = await call(
-      "post",
-      "/auth/register",
-      { name, email, password, role },
-      null,
-      201,
-    );
+    const user = await call("post", "/auth/register", { name, email, password, role }, null, 201);
     const login = await call("post", "/auth/login", { email, password });
     return { ...user, password, token: login.accessToken };
   }
@@ -47,21 +38,15 @@ async function run(page) {
   }
   async function openTask(id) {
     await page.goto(base + "/tasks/" + id);
-    await page
-      .getByRole("heading", { name: /Перевірити повний цикл/ })
-      .waitFor();
+    await page.getByRole("heading", { name: /Перевірити повний цикл/ }).waitFor();
   }
   async function upload(name, text) {
-    await page
-      .getByLabel("Файл для завантаження", { exact: true })
-      .setInputFiles({
-        name,
-        mimeType: "text/plain",
-        buffer: Buffer.from(text),
-      });
-    await page
-      .getByRole("button", { name: "Завантажити файл", exact: true })
-      .click();
+    await page.getByLabel("Файл для завантаження", { exact: true }).setInputFiles({
+      name,
+      mimeType: "text/plain",
+      buffer: Buffer.from(text),
+    });
+    await page.getByRole("button", { name: "Завантажити файл", exact: true }).click();
     await page.getByRole("button", { name, exact: true }).waitFor();
   }
   const client = await account("CLIENT", "client");
@@ -74,164 +59,76 @@ async function run(page) {
   admin.token = adminLogin.accessToken;
   await signIn(client);
   await page.getByRole("link", { name: "Мої проєкти", exact: true }).click();
-  await page
-    .getByRole("link", { name: "Створити проєкт", exact: true })
-    .click();
+  await page.getByRole("link", { name: "Створити проєкт", exact: true }).click();
   const projectTitle = "Фінальний цикл " + run;
   await page.getByLabel("Назва проєкту", { exact: true }).fill(projectTitle);
-  await page
-    .getByLabel("Опис", { exact: true })
-    .fill("Перевірка справжнього робочого циклу клієнта та фрілансера.");
+  await page.getByLabel("Опис", { exact: true }).fill("Перевірка справжнього робочого циклу клієнта та фрілансера.");
   await page.getByLabel("Дедлайн", { exact: true }).fill("2027-12-20T15:30");
-  await page
-    .getByRole("button", { name: "Зберегти проєкт", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: projectTitle, exact: true })
-    .waitFor();
+  await page.getByRole("button", { name: "Зберегти проєкт", exact: true }).click();
+  await page.getByRole("heading", { name: projectTitle, exact: true }).waitFor();
   const projectId = page.url().split("/").pop();
-  await page
-    .getByRole("button", { name: "Додати учасника", exact: true })
-    .click();
-  await page
-    .getByLabel("Фрілансер", { exact: true })
-    .selectOption(freelancer.id);
-  await page
-    .getByRole("button", { name: "Додати до проєкту", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Додати учасника", exact: true }).click();
+  await page.getByLabel("Фрілансер", { exact: true }).selectOption(freelancer.id);
+  await page.getByRole("button", { name: "Додати до проєкту", exact: true }).click();
   await page.getByText(freelancer.name, { exact: true }).waitFor();
-  await page
-    .getByRole("link", { name: "Редагувати проєкт", exact: true })
-    .click();
+  await page.getByRole("link", { name: "Редагувати проєкт", exact: true }).click();
   await page.getByLabel("Статус", { exact: true }).selectOption("ACTIVE");
-  await page
-    .getByRole("button", { name: "Зберегти проєкт", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: projectTitle, exact: true })
-    .waitFor();
-  await page
-    .getByRole("link", { name: "Створити завдання", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Зберегти проєкт", exact: true }).click();
+  await page.getByRole("heading", { name: projectTitle, exact: true }).waitFor();
+  await page.getByRole("link", { name: "Створити завдання", exact: true }).click();
   const taskTitle = "Перевірити повний цикл " + run;
   await page.getByLabel("Назва завдання", { exact: true }).fill(taskTitle);
-  await page
-    .getByLabel("Опис завдання", { exact: true })
-    .fill("Підготувати результат і пройти перевірку клієнта.");
-  await page
-    .getByLabel("Виконавець", { exact: true })
-    .selectOption(freelancer.id);
+  await page.getByLabel("Опис завдання", { exact: true }).fill("Підготувати результат і пройти перевірку клієнта.");
+  await page.getByLabel("Виконавець", { exact: true }).selectOption(freelancer.id);
   await page.getByLabel("Пріоритет", { exact: true }).selectOption("HIGH");
-  await page
-    .getByLabel("Дедлайн завдання", { exact: true })
-    .fill("2028-01-01T12:00");
-  await page
-    .getByRole("button", { name: "Зберегти завдання", exact: true })
-    .click();
-  await page
-    .getByRole("alert")
-    .filter({ hasText: "Дедлайн завдання не може бути пізнішим" })
-    .waitFor();
-  await page
-    .getByLabel("Дедлайн завдання", { exact: true })
-    .fill("2027-12-19T12:00");
-  await page
-    .getByRole("button", { name: "Зберегти завдання", exact: true })
-    .click();
+  await page.getByLabel("Дедлайн завдання", { exact: true }).fill("2028-01-01T12:00");
+  await page.getByRole("button", { name: "Зберегти завдання", exact: true }).click();
+  await page.getByRole("alert").filter({ hasText: "Дедлайн завдання не може бути пізнішим" }).waitFor();
+  await page.getByLabel("Дедлайн завдання", { exact: true }).fill("2027-12-19T12:00");
+  await page.getByRole("button", { name: "Зберегти завдання", exact: true }).click();
   await page.getByRole("heading", { name: taskTitle, exact: true }).waitFor();
   const taskId = page.url().split("/").pop();
-  assert(
-    (await page
-      .getByRole("button", { name: "Почати виконання", exact: true })
-      .count()) === 0,
-    "Client cannot start freelancer task",
-  );
-  await page
-    .getByRole("link", { name: "Редагувати завдання", exact: true })
-    .click();
-  await page
-    .getByLabel("Опис завдання", { exact: true })
-    .fill("Оновлений опис завдання.");
-  await page
-    .getByRole("button", { name: "Зберегти завдання", exact: true })
-    .click();
+  assert((await page.getByRole("button", { name: "Почати виконання", exact: true }).count()) === 0, "Client cannot start freelancer task");
+  await page.getByRole("link", { name: "Редагувати завдання", exact: true }).click();
+  await page.getByLabel("Опис завдання", { exact: true }).fill("Оновлений опис завдання.");
+  await page.getByRole("button", { name: "Зберегти завдання", exact: true }).click();
   await page.getByText("Оновлений опис завдання.", { exact: true }).waitFor();
 
   await page.goto(base + `/messages?project=${projectId}`);
-  await page
-    .getByLabel("Нове повідомлення", { exact: true })
-    .fill("Вітаю! Починаємо роботу.");
-  await page
-    .getByRole("button", { name: "Надіслати повідомлення", exact: true })
-    .click();
+  await page.getByLabel("Нове повідомлення", { exact: true }).fill("Вітаю! Починаємо роботу.");
+  await page.getByRole("button", { name: "Надіслати повідомлення", exact: true }).click();
   await page.getByText("Вітаю! Починаємо роботу.", { exact: true }).waitFor();
   await page.goto(base + `/projects/${projectId}/files`);
-  await page
-    .getByLabel("Файл для завантаження", { exact: true })
-    .setInputFiles({
-      name: "fake.pdf",
-      mimeType: "application/pdf",
-      buffer: Buffer.from("MZ-invalid-file"),
-    });
-  await page
-    .getByRole("button", { name: "Завантажити файл", exact: true })
-    .click();
-  await page
-    .getByRole("alert")
-    .filter({ hasText: "Вміст файлу не відповідає його типу" })
-    .waitFor();
+  await page.getByLabel("Файл для завантаження", { exact: true }).setInputFiles({
+    name: "fake.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("MZ-invalid-file"),
+  });
+  await page.getByRole("button", { name: "Завантажити файл", exact: true }).click();
+  await page.getByRole("alert").filter({ hasText: "Вміст файлу не відповідає його типу" }).waitFor();
   await upload("опис.txt", "Real client brief " + run);
   const downloadEvent = page.waitForEvent("download");
-  await page
-    .getByRole("button", { name: "Завантажити опис.txt", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Завантажити опис.txt", exact: true }).click();
   const downloaded = await downloadEvent;
-  assert(
-    downloaded.suggestedFilename() === "опис.txt",
-    "Download keeps file name",
-  );
+  assert(downloaded.suggestedFilename() === "опис.txt", "Download keeps file name");
   const stream = await downloaded.createReadStream();
   const chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
-  assert(
-    Buffer.concat(chunks).toString() === "Real client brief " + run,
-    "Download preserves actual content",
-  );
+  assert(Buffer.concat(chunks).toString() === "Real client brief " + run, "Download preserves actual content");
 
   await signIn(freelancer);
   await page.getByRole("link", { name: "Завдання", exact: true }).click();
   await page.getByLabel("Проєкт", { exact: true }).selectOption(projectId);
   await page.getByRole("link", { name: taskTitle, exact: true }).click();
-  assert(
-    (await page
-      .getByRole("link", { name: "Редагувати завдання", exact: true })
-      .count()) === 0,
-    "Freelancer cannot edit owner fields",
-  );
-  await page
-    .getByRole("button", { name: "Почати виконання", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: "Передати результат роботи", exact: true })
-    .waitFor();
+  assert((await page.getByRole("link", { name: "Редагувати завдання", exact: true }).count()) === 0, "Freelancer cannot edit owner fields");
+  await page.getByRole("button", { name: "Почати виконання", exact: true }).click();
+  await page.getByRole("heading", { name: "Передати результат роботи", exact: true }).waitFor();
   await upload("result.txt", "First work result " + run);
-  await page
-    .getByLabel("Опис результату", { exact: true })
-    .fill("Перший варіант результату.");
-  await page
-    .getByRole("button", { name: "Передати на перевірку", exact: true })
-    .click();
+  await page.getByLabel("Опис результату", { exact: true }).fill("Перший варіант результату.");
+  await page.getByRole("button", { name: "Передати на перевірку", exact: true }).click();
   await page.getByText("Очікує перевірки", { exact: true }).waitFor();
-  const firstSubmissions = await call(
-    "get",
-    `/tasks/${taskId}/submissions`,
-    undefined,
-    freelancer.token,
-  );
-  assert(
-    firstSubmissions[0].files.length === 1,
-    "Uploaded result file is attached to submission",
-  );
+  const firstSubmissions = await call("get", `/tasks/${taskId}/submissions`, undefined, freelancer.token);
+  assert(firstSubmissions[0].files.length === 1, "Uploaded result file is attached to submission");
   await call(
     "post",
     `/submissions/${firstSubmissions[0].id}/review`,
@@ -241,173 +138,72 @@ async function run(page) {
   );
   await page.goto(base + `/messages?project=${projectId}`);
   await page.getByText("Вітаю! Починаємо роботу.", { exact: true }).waitFor();
-  await page
-    .getByLabel("Нове повідомлення", { exact: true })
-    .fill("Результат передано на перевірку.");
-  await page
-    .getByRole("button", { name: "Надіслати повідомлення", exact: true })
-    .click();
-  await page
-    .getByText("Результат передано на перевірку.", { exact: true })
-    .waitFor();
+  await page.getByLabel("Нове повідомлення", { exact: true }).fill("Результат передано на перевірку.");
+  await page.getByRole("button", { name: "Надіслати повідомлення", exact: true }).click();
+  await page.getByText("Результат передано на перевірку.", { exact: true }).waitFor();
 
   await signIn(client);
   await openTask(taskId);
-  await page
-    .getByLabel("Рішення", { exact: true })
-    .selectOption("NEEDS_REVISION");
-  await page
-    .getByLabel("Відгук", { exact: true })
-    .fill("Додайте пояснення до результату.");
-  await page
-    .getByRole("button", { name: "Зберегти рішення", exact: true })
-    .click();
+  await page.getByLabel("Рішення", { exact: true }).selectOption("NEEDS_REVISION");
+  await page.getByLabel("Відгук", { exact: true }).fill("Додайте пояснення до результату.");
+  await page.getByRole("button", { name: "Зберегти рішення", exact: true }).click();
   await page.getByText("Повернуто на доопрацювання", { exact: true }).waitFor();
   await signIn(freelancer);
   await openTask(taskId);
-  await page
-    .getByText("Додайте пояснення до результату.", { exact: true })
-    .waitFor();
-  await page
-    .getByLabel("Опис результату", { exact: true })
-    .fill("Оновлений результат із поясненням.");
-  await page
-    .getByRole("button", { name: "Передати на перевірку", exact: true })
-    .click();
+  await page.getByText("Додайте пояснення до результату.", { exact: true }).waitFor();
+  await page.getByLabel("Опис результату", { exact: true }).fill("Оновлений результат із поясненням.");
+  await page.getByRole("button", { name: "Передати на перевірку", exact: true }).click();
   await page.getByText("Очікує перевірки", { exact: true }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
-  assert(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-    "Task details fit mobile",
-  );
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Task details fit mobile");
   await page.screenshot({ path: ".tmp/final-task-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
   await signIn(client);
   await openTask(taskId);
-  await page
-    .getByLabel("Відгук", { exact: true })
-    .fill("Роботу прийнято. Дякую!");
-  await page
-    .getByRole("button", { name: "Зберегти рішення", exact: true })
-    .click();
+  await page.getByLabel("Відгук", { exact: true }).fill("Роботу прийнято. Дякую!");
+  await page.getByRole("button", { name: "Зберегти рішення", exact: true }).click();
   await page.getByText("Прийнято", { exact: true }).waitFor();
-  assert(
-    (await call("get", `/tasks/${taskId}`, undefined, client.token)).status ===
-      "DONE",
-    "Approval completes task",
-  );
+  assert((await call("get", `/tasks/${taskId}`, undefined, client.token)).status === "DONE", "Approval completes task");
   await page.screenshot({
     path: ".tmp/final-task-desktop.png",
     fullPage: true,
   });
   await page.goto(base + `/projects/${projectId}`);
-  await page
-    .getByRole("link", { name: "Редагувати проєкт", exact: true })
-    .click();
+  await page.getByRole("link", { name: "Редагувати проєкт", exact: true }).click();
   await page.getByLabel("Статус", { exact: true }).selectOption("COMPLETED");
-  await page
-    .getByRole("button", { name: "Зберегти проєкт", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: projectTitle, exact: true })
-    .waitFor();
-  const completed = await call(
-    "get",
-    `/projects/${projectId}`,
-    undefined,
-    client.token,
-  );
-  assert(
-    completed.status === "COMPLETED" && completed.progress === 100,
-    "Project finishes with actual 100% progress",
-  );
+  await page.getByRole("button", { name: "Зберегти проєкт", exact: true }).click();
+  await page.getByRole("heading", { name: projectTitle, exact: true }).waitFor();
+  const completed = await call("get", `/projects/${projectId}`, undefined, client.token);
+  assert(completed.status === "COMPLETED" && completed.progress === 100, "Project finishes with actual 100% progress");
 
   await signIn(outsider);
   await page.goto(base + `/tasks/${taskId}`);
   await page.getByRole("alert").filter({ hasText: "Немає доступу" }).waitFor();
-  await call(
-    "get",
-    `/projects/${projectId}/messages`,
-    undefined,
-    outsider.token,
-    403,
-  );
-  await call(
-    "get",
-    `/projects/${projectId}/orders`,
-    undefined,
-    outsider.token,
-    403,
-  );
-  await call(
-    "get",
-    `/files/${firstSubmissions[0].files[0].id}/download`,
-    undefined,
-    outsider.token,
-    403,
-  );
+  await call("get", `/projects/${projectId}/messages`, undefined, outsider.token, 403);
+  await call("get", `/projects/${projectId}/orders`, undefined, outsider.token, 403);
+  await call("get", `/files/${firstSubmissions[0].files[0].id}/download`, undefined, outsider.token, 403);
   await page.goto(base + "/admin");
-  await page
-    .getByRole("heading", { name: "Доступ заборонено", exact: true })
-    .waitFor();
+  await page.getByRole("heading", { name: "Доступ заборонено", exact: true }).waitFor();
   await call("get", "/admin/users", undefined, outsider.token, 403);
 
   await signIn(admin);
-  await page
-    .getByRole("link", { name: "Адміністрування", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: "Адміністративна панель", exact: true })
-    .waitFor();
-  const outsiderCard = page
-    .locator(".user-card")
-    .filter({ hasText: outsider.email });
-  await outsiderCard
-    .getByLabel("Стан користувача", { exact: true })
-    .selectOption("BLOCKED");
-  await outsiderCard
-    .getByRole("button", { name: "Зберегти користувача", exact: true })
-    .click();
-  await outsiderCard
-    .locator(".project-status")
-    .filter({ hasText: "Заблокований" })
-    .waitFor();
+  await page.getByRole("link", { name: "Адміністрування", exact: true }).click();
+  await page.getByRole("heading", { name: "Адміністративна панель", exact: true }).waitFor();
+  const outsiderCard = page.locator(".user-card").filter({ hasText: outsider.email });
+  await outsiderCard.getByLabel("Стан користувача", { exact: true }).selectOption("BLOCKED");
+  await outsiderCard.getByRole("button", { name: "Зберегти користувача", exact: true }).click();
+  await outsiderCard.locator(".project-status").filter({ hasText: "Заблокований" }).waitFor();
   await call("get", "/auth/me", undefined, outsider.token, 403);
-  await outsiderCard
-    .getByLabel("Стан користувача", { exact: true })
-    .selectOption("ACTIVE");
-  await outsiderCard
-    .getByLabel("Роль користувача", { exact: true })
-    .selectOption("FREELANCER");
-  await outsiderCard
-    .getByRole("button", { name: "Зберегти користувача", exact: true })
-    .click();
-  await outsiderCard
-    .locator(".project-status")
-    .filter({ hasText: "Активний" })
-    .waitFor();
-  const freelancerCard = page
-    .locator(".user-card")
-    .filter({ hasText: freelancer.email });
-  await freelancerCard
-    .getByLabel("Роль користувача", { exact: true })
-    .selectOption("CLIENT");
-  await freelancerCard
-    .getByRole("button", { name: "Зберегти користувача", exact: true })
-    .click();
-  await freelancerCard
-    .getByRole("alert")
-    .filter({ hasText: "Не можна змінити роль" })
-    .waitFor();
+  await outsiderCard.getByLabel("Стан користувача", { exact: true }).selectOption("ACTIVE");
+  await outsiderCard.getByLabel("Роль користувача", { exact: true }).selectOption("FREELANCER");
+  await outsiderCard.getByRole("button", { name: "Зберегти користувача", exact: true }).click();
+  await outsiderCard.locator(".project-status").filter({ hasText: "Активний" }).waitFor();
+  const freelancerCard = page.locator(".user-card").filter({ hasText: freelancer.email });
+  await freelancerCard.getByLabel("Роль користувача", { exact: true }).selectOption("CLIENT");
+  await freelancerCard.getByRole("button", { name: "Зберегти користувача", exact: true }).click();
+  await freelancerCard.getByRole("alert").filter({ hasText: "Не можна змінити роль" }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
-  assert(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-    "Admin page fits mobile",
-  );
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Admin page fits mobile");
   await page.screenshot({
     path: ".tmp/final-admin-mobile.png",
     fullPage: false,
@@ -428,11 +224,7 @@ async function run(page) {
 }
 
 const modulePath =
-  process.env.PLAYWRIGHT_MODULE ||
-  join(
-    process.env.APPDATA || "",
-    "npm/node_modules/@playwright/cli/node_modules/playwright/index.mjs",
-  );
+  process.env.PLAYWRIGHT_MODULE || join(process.env.APPDATA || "", "npm/node_modules/@playwright/cli/node_modules/playwright/index.mjs");
 const { chromium } = await import(pathToFileURL(modulePath).href);
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({

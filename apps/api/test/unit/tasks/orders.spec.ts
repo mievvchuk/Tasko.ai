@@ -12,10 +12,13 @@ describe('orders', () => {
   }));
   const update = vi.fn(async (data: object) => ({ ...order, ...data }));
   const db = {
-    Order: { where: vi.fn(() => ({ first: async () => order,
+    Order: {
+      where: vi.fn(() => ({
+        first: async () => order,
         update,
         updateAll: async (data: object) => [await update(data)],
-      })) },
+      })),
+    },
     Task: { where: taskWhere },
   };
   const projects = {
@@ -42,16 +45,12 @@ describe('orders', () => {
       projectId: 'project-id',
       assigneeId: 'freelancer-id',
     });
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'COMPLETED' }),
-    );
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'COMPLETED' }));
   });
 
   it('refuses to complete while the freelancer has open tasks', async () => {
     taskRows = [{ status: 'REVIEW' }];
-    await expect(
-      tasks.updateOrder(client, 'order-id', 'COMPLETED'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(tasks.updateOrder(client, 'order-id', 'COMPLETED')).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('checks the whole project for old orders without a freelancer', async () => {
@@ -62,8 +61,6 @@ describe('orders', () => {
 
   it('does not reopen a finished deal', async () => {
     order.status = 'COMPLETED';
-    await expect(
-      tasks.updateOrder(client, 'order-id', 'IN_PROGRESS'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(tasks.updateOrder(client, 'order-id', 'IN_PROGRESS')).rejects.toBeInstanceOf(ConflictException);
   });
 });

@@ -19,12 +19,8 @@ export function TasksPage() {
   const page = parsePage(params.get("page"));
   const search = params.get("search") || "";
   const overdue = params.get("overdue") === "true";
-  const status = Object.hasOwn(taskStatusNames, params.get("status") || "")
-    ? params.get("status") || ""
-    : "";
-  const priority = Object.hasOwn(priorityNames, params.get("priority") || "")
-    ? params.get("priority") || ""
-    : "";
+  const status = Object.hasOwn(taskStatusNames, params.get("status") || "") ? params.get("status") || "" : "";
+  const priority = Object.hasOwn(priorityNames, params.get("priority") || "") ? params.get("priority") || "" : "";
   // shortcut: у списку фільтра до 50 проєктів (ліміт API); більше — потрібен пошук у полі
   const projects = useApi<Project[]>("/projects?limit=50");
   const project = projects.data?.find((item) => item.id === projectId);
@@ -42,35 +38,22 @@ export function TasksPage() {
     else next.delete(name);
     setParams(next);
   }
-  const canCreate =
-    project &&
-    !["COMPLETED", "CANCELLED"].includes(project.status) &&
-    project.clientId === user?.id;
+  const canCreate = project && !["COMPLETED", "CANCELLED"].includes(project.status) && project.clientId === user?.id;
   return (
     <>
       <div className="page-heading heading-with-action">
         <div>
           <h1>{tr("Завдання")}</h1>
-          <p>
-            {tr(
-              "Завдання з усіх ваших проєктів в одному списку. Щоб звузити, оберіть проєкт або статус.",
-            )}
-          </p>
+          <p>{tr("Завдання з усіх ваших проєктів в одному списку. Щоб звузити, оберіть проєкт або статус.")}</p>
         </div>
         {project && (
           <div className="heading-actions">
-            <Link
-              className="button secondary"
-              to={`/projects/${projectId}/board`}
-            >
+            <Link className="button secondary" to={`/projects/${projectId}/board`}>
               <i className="bi bi-kanban" aria-hidden="true"></i>
               {tr("Дошка")}
             </Link>
             {canCreate && (
-              <Link
-                className="button primary"
-                to={`/projects/${projectId}/tasks/new`}
-              >
+              <Link className="button primary" to={`/projects/${projectId}/tasks/new`}>
                 <i className="bi bi-plus-lg" aria-hidden="true"></i>
                 {tr("Створити завдання")}
               </Link>
@@ -82,11 +65,7 @@ export function TasksPage() {
         <div className="task-filters padded">
           <div className="filter-field">
             <label htmlFor="list-task-project">{tr("Проєкт")}</label>
-            <select
-              id="list-task-project"
-              value={projectId}
-              onChange={(event) => change("project", event.target.value)}
-            >
+            <select id="list-task-project" value={projectId} onChange={(event) => change("project", event.target.value)}>
               <option value="">{tr("Усі проєкти")}</option>
               {projects.data?.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -95,18 +74,10 @@ export function TasksPage() {
               ))}
             </select>
           </div>
-          <TaskSearchFilters
-            search={search}
-            overdue={overdue}
-            onChange={change}
-          />
+          <TaskSearchFilters search={search} overdue={overdue} onChange={change} />
           <div className="filter-field">
             <label htmlFor="list-task-status">{tr("Статус")}</label>
-            <select
-              id="list-task-status"
-              value={status}
-              onChange={(event) => change("status", event.target.value)}
-            >
+            <select id="list-task-status" value={status} onChange={(event) => change("status", event.target.value)}>
               <option value="">{tr("Усі статуси")}</option>
               {Object.entries(taskStatusNames).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -117,11 +88,7 @@ export function TasksPage() {
           </div>
           <div className="filter-field">
             <label htmlFor="list-task-priority">{tr("Пріоритет")}</label>
-            <select
-              id="list-task-priority"
-              value={priority}
-              onChange={(event) => change("priority", event.target.value)}
-            >
+            <select id="list-task-priority" value={priority} onChange={(event) => change("priority", event.target.value)}>
               <option value="">{tr("Усі пріоритети")}</option>
               {Object.entries(priorityNames).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -135,11 +102,7 @@ export function TasksPage() {
             {tr("Оновити")}
           </button>
         </div>
-        <ResourceState
-          loading={tasks.loading}
-          error={tasks.error}
-          onRetry={tasks.refresh}
-        />
+        <ResourceState loading={tasks.loading} error={tasks.error} onRetry={tasks.refresh} />
         {tasks.data && (
           <>
             <TasksTable tasks={tasks.data} showProject={!projectId} />

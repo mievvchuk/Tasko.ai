@@ -19,8 +19,6 @@ describe('parseApplicationRanking', () => {
     '[{"applicationId":"a","score":101,"reason":"x"},{"applicationId":"b","score":1,"reason":"x"}]',
     '[{"applicationId":"a","score":50,"reason":"x"},{"applicationId":"a","score":40,"reason":"x"}]',
   ])('rejects unsafe provider output', (value) => {
-    expect(() => parseApplicationRanking(value, ids)).toThrow(
-      BadGatewayException,
-    );
+    expect(() => parseApplicationRanking(value, ids)).toThrow(BadGatewayException);
   });
 });

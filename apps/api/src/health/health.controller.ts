@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Logger,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { Controller, Get, Inject, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Controller('health')
@@ -20,9 +14,7 @@ export class HealthController {
       return { status: 'ok', database: 'ok' };
     } catch {
       this.logger.error('Перевірка PostgreSQL не пройшла.');
-      throw new ServiceUnavailableException(
-        'База даних недоступна або міграції не застосовано.',
-      );
+      throw new ServiceUnavailableException('База даних недоступна або міграції не застосовано.');
     }
   }
 }

@@ -9,8 +9,6 @@ test("explicit theme wins and system mode follows the device", () => {
   assert.equal(resolveTheme("system", false), "light");
 });
 test("missing or corrupted preferences fall back to system", () => {
-  for (const value of [null, "", "broken", "SYSTEM"])
-    assert.equal(readThemePreference(value), "system");
-  for (const value of ["light", "dark", "system"])
-    assert.equal(readThemePreference(value), value);
+  for (const value of [null, "", "broken", "SYSTEM"]) assert.equal(readThemePreference(value), "system");
+  for (const value of ["light", "dark", "system"]) assert.equal(readThemePreference(value), value);
 });

@@ -36,11 +36,7 @@ export function ReviewItem({
       )}
       <div>
         <div className="review-item-head">
-          {author ? (
-            <Link to={`${profilePath}/${author.id}`}>{name}</Link>
-          ) : (
-            <span>{name}</span>
-          )}
+          {author ? <Link to={`${profilePath}/${author.id}`}>{name}</Link> : <span>{name}</span>}
           <strong className="stars" aria-label={`${rating} / 5`}>
             {ratingStars(rating)}
           </strong>

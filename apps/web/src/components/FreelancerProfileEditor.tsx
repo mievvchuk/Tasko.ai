@@ -38,8 +38,7 @@ export function FreelancerProfileEditor() {
       const data = await request<OwnFreelancerProfile>("/profile/freelancer");
       setProfile(data);
       fill(data);
-      if (!data.bio && !data.skills.length && data.hourlyRate === null)
-        setEditing(true);
+      if (!data.bio && !data.skills.length && data.hourlyRate === null) setEditing(true);
     } catch (e) {
       setError(errorMessage(e));
     }
@@ -122,8 +121,7 @@ export function FreelancerProfileEditor() {
         .filter(Boolean),
     ),
   ];
-  if (!profile && !error)
-    return <div className="page-loading">{tr("Завантажуємо профіль…")}</div>;
+  if (!profile && !error) return <div className="page-loading">{tr("Завантажуємо профіль…")}</div>;
   return (
     <section className="account-panel">
       <div className="section-heading">
@@ -149,34 +147,18 @@ export function FreelancerProfileEditor() {
       {message && <p className="notice success">{message}</p>}
       {error && <p className="form-error">{error}</p>}
       <form className="form-grid" onSubmit={(e) => void save(e)}>
-        <fieldset
-          className="form-grid full-width plain-fieldset"
-          disabled={!editing}
-        >
+        <fieldset className="form-grid full-width plain-fieldset" disabled={!editing}>
           <label className="full-width">
             {tr("Про себе")}
-            <textarea
-              maxLength={3000}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            />
+            <textarea maxLength={3000} value={bio} onChange={(e) => setBio(e.target.value)} />
           </label>
           <label>
             {tr("Ставка за годину, грн")}
-            <input
-              type="number"
-              min="0"
-              max="10000000"
-              value={rate}
-              onChange={(e) => setRate(e.target.value)}
-            />
+            <input type="number" min="0" max="10000000" value={rate} onChange={(e) => setRate(e.target.value)} />
           </label>
           <label>
             {tr("Доступність")}
-            <select
-              value={availability}
-              onChange={(e) => setAvailability(e.target.value)}
-            >
+            <select value={availability} onChange={(e) => setAvailability(e.target.value)}>
               <option value="AVAILABLE">{tr("Доступний")}</option>
               <option value="BUSY">{tr("Зайнятий")}</option>
               <option value="UNAVAILABLE">{tr("Недоступний")}</option>
@@ -184,11 +166,7 @@ export function FreelancerProfileEditor() {
           </label>
           <label className="full-width">
             {tr("Навички через кому")}
-            <input
-              value={skills}
-              onChange={(e) => setSkills(e.target.value)}
-              placeholder="TypeScript, React, NestJS"
-            />
+            <input value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="TypeScript, React, NestJS" />
           </label>
           {/* Чипи — як клієнт побачить навички (оновлюються під час введення) */}
           {skillList.length > 0 && (
@@ -220,21 +198,14 @@ export function FreelancerProfileEditor() {
       <div className="portfolio-heading">
         <h3>{tr("Портфоліо")}</h3>
         {!adding && (
-          <button
-            type="button"
-            className="button secondary"
-            onClick={() => setAdding(true)}
-          >
+          <button type="button" className="button secondary" onClick={() => setAdding(true)}>
             <i className="bi bi-plus-lg" aria-hidden="true"></i>
             {tr("Додати роботу")}
           </button>
         )}
       </div>
       {adding && (
-        <form
-          className="form-grid portfolio-form"
-          onSubmit={(e) => void addPortfolio(e)}
-        >
+        <form className="form-grid portfolio-form" onSubmit={(e) => void addPortfolio(e)}>
           <label>
             {tr("Назва роботи")}
             <input
@@ -248,12 +219,7 @@ export function FreelancerProfileEditor() {
           </label>
           <label>
             {tr("Технології через кому")}
-            <input
-              maxLength={300}
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="React, NestJS, PostgreSQL"
-            />
+            <input maxLength={300} value={tags} onChange={(e) => setTags(e.target.value)} placeholder="React, NestJS, PostgreSQL" />
           </label>
           <label className="full-width">
             {tr("Що зроблено")}
@@ -261,45 +227,23 @@ export function FreelancerProfileEditor() {
               maxLength={2000}
               value={workDescription}
               onChange={(e) => setWorkDescription(e.target.value)}
-              placeholder={tr(
-                "Задача клієнта, ваша роль і результат: що працює, які цифри",
-              )}
+              placeholder={tr("Задача клієнта, ваша роль і результат: що працює, які цифри")}
             />
           </label>
           <label>
             {tr("Посилання (необов'язково)")}
-            <input
-              type="url"
-              pattern="https://.*"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://"
-            />
+            <input type="url" pattern="https://.*" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" />
           </label>
           <label>
             {tr("Обкладинка: PNG, JPG або WEBP, до 2 МБ")}
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={(e) => pickCover(e.target.files?.[0] ?? null)}
-            />
+            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => pickCover(e.target.files?.[0] ?? null)} />
           </label>
-          {cover && (
-            <img
-              className="portfolio-preview full-width"
-              src={coverPreview}
-              alt={tr("Попередній перегляд обкладинки")}
-            />
-          )}
+          {cover && <img className="portfolio-preview full-width" src={coverPreview} alt={tr("Попередній перегляд обкладинки")} />}
           <div className="page-actions full-width">
             <button className="button primary" disabled={savingWork}>
               {savingWork ? tr("Зберігаємо…") : tr("Додати роботу")}
             </button>
-            <button
-              type="button"
-              className="button secondary"
-              onClick={() => setAdding(false)}
-            >
+            <button type="button" className="button secondary" onClick={() => setAdding(false)}>
               {tr("Скасувати")}
             </button>
           </div>
@@ -323,11 +267,7 @@ export function FreelancerProfileEditor() {
         </div>
       ) : (
         !adding && (
-          <p className="form-note">
-            {tr(
-              "Додайте 2–3 роботи з обкладинкою й описом — клієнти частіше обирають виконавців із портфоліо.",
-            )}
-          </p>
+          <p className="form-note">{tr("Додайте 2–3 роботи з обкладинкою й описом — клієнти частіше обирають виконавців із портфоліо.")}</p>
         )
       )}
     </section>
@@ -335,13 +275,7 @@ export function FreelancerProfileEditor() {
 }
 
 // Картка роботи: обкладинка, опис, технології й посилання (спільна для редактора й профілю)
-export function PortfolioCard({
-  item,
-  children,
-}: {
-  item: PortfolioItem;
-  children?: ReactNode;
-}) {
+export function PortfolioCard({ item, children }: { item: PortfolioItem; children?: ReactNode }) {
   const { tr } = useLanguage();
   const tags = (item.tags ?? "")
     .split(",")
@@ -350,11 +284,7 @@ export function PortfolioCard({
   return (
     <article className="portfolio-card">
       <div className="portfolio-cover">
-        {item.imageUrl ? (
-          <img src={apiUrl(item.imageUrl)} alt="" loading="lazy" />
-        ) : (
-          <i className="bi bi-image" aria-hidden="true"></i>
-        )}
+        {item.imageUrl ? <img src={apiUrl(item.imageUrl)} alt="" loading="lazy" /> : <i className="bi bi-image" aria-hidden="true"></i>}
         {children}
       </div>
       <div className="portfolio-body">
@@ -370,10 +300,7 @@ export function PortfolioCard({
         {item.url && (
           <a href={item.url} target="_blank" rel="noreferrer">
             {tr("Відкрити роботу")}
-            <i
-              className="bi bi-box-arrow-up-right"
-              aria-label={tr("відкриється в новій вкладці")}
-            ></i>
+            <i className="bi bi-box-arrow-up-right" aria-label={tr("відкриється в новій вкладці")}></i>
           </a>
         )}
       </div>

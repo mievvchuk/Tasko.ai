@@ -57,20 +57,12 @@ const roles = [
   {
     icon: "bi-briefcase",
     title: "Для клієнтів",
-    items: [
-      "Публікація проєктів і вибір виконавця",
-      "Канбан, етапи й умовна оплата",
-      "Перевірка результатів і відгуки",
-    ],
+    items: ["Публікація проєктів і вибір виконавця", "Канбан, етапи й умовна оплата", "Перевірка результатів і відгуки"],
   },
   {
     icon: "bi-laptop",
     title: "Для фрілансерів",
-    items: [
-      "Біржа відкритих проєктів і заявки",
-      "Профіль із навичками й портфоліо",
-      "Ада підкаже пріоритети на день",
-    ],
+    items: ["Біржа відкритих проєктів і заявки", "Профіль із навичками й портфоліо", "Ада підкаже пріоритети на день"],
   },
 ];
 
@@ -122,10 +114,7 @@ export function WelcomePage() {
   const [newsPaused, setNewsPaused] = useState(false);
   useEffect(() => {
     if (newsPaused) return;
-    const timer = setInterval(
-      () => setNewsIndex((index) => (index + 1) % news.length),
-      15000,
-    );
+    const timer = setInterval(() => setNewsIndex((index) => (index + 1) % news.length), 15000);
     return () => clearInterval(timer);
   }, [newsPaused]);
   const currentNews = news[newsIndex];
@@ -137,10 +126,7 @@ export function WelcomePage() {
             <BrandMark />
             <BrandWord />
           </Link>
-          <nav
-            className="welcome-nav"
-            aria-label={tr("Навігація вітальної сторінки")}
-          >
+          <nav className="welcome-nav" aria-label={tr("Навігація вітальної сторінки")}>
             <a href="#features">{tr("Можливості")}</a>
             <a href="#how">{tr("Як це працює")}</a>
             <a href="#roles">{tr("Для кого")}</a>
@@ -173,10 +159,7 @@ export function WelcomePage() {
           </span>
           <span className="welcome-news-dots" aria-hidden="true">
             {news.map((item, index) => (
-              <i
-                key={item.text}
-                className={index === newsIndex ? "active" : ""}
-              />
+              <i key={item.text} className={index === newsIndex ? "active" : ""} />
             ))}
           </span>
           <span className="welcome-news-link">
@@ -187,18 +170,9 @@ export function WelcomePage() {
 
         <section className="welcome-hero">
           <div className="welcome-hero-text">
-            <div
-              className="audience-switch"
-              role="group"
-              aria-label={tr("Хто ви")}
-            >
+            <div className="audience-switch" role="group" aria-label={tr("Хто ви")}>
               {(Object.keys(audiences) as Audience[]).map((key) => (
-                <button
-                  type="button"
-                  key={key}
-                  aria-pressed={audience === key}
-                  onClick={() => setAudience(key)}
-                >
+                <button type="button" key={key} aria-pressed={audience === key} onClick={() => setAudience(key)}>
                   {tr(audiences[key].tab)}
                 </button>
               ))}
@@ -207,10 +181,7 @@ export function WelcomePage() {
             <h1 key={`title-${audience}`}>{tr(current.title)}</h1>
             <p key={`text-${audience}`}>{tr(current.text)}</p>
             <div className="welcome-actions">
-              <Link
-                className="button hero-primary"
-                to={`/register?role=${audience}`}
-              >
+              <Link className="button hero-primary" to={`/register?role=${audience}`}>
                 {tr(current.action)}
                 <i className="bi bi-arrow-right" aria-hidden="true"></i>
               </Link>
@@ -262,12 +233,8 @@ export function WelcomePage() {
               <p>
                 <b>{tr("Ада")}</b>
                 {audience === "CLIENT"
-                  ? tr(
-                      "«Кошик і оплата» здається через 2 дні. Почніть з нього.",
-                    )
-                  : tr(
-                      "Інтернет-магазин збігається з вашими навичками на 90%.",
-                    )}
+                  ? tr("«Кошик і оплата» здається через 2 дні. Почніть з нього.")
+                  : tr("Інтернет-магазин збігається з вашими навичками на 90%.")}
               </p>
             </div>
           </div>
@@ -275,11 +242,7 @@ export function WelcomePage() {
 
         <section className="welcome-section" id="features">
           <h2>{tr("Усе для роботи над проєктом")}</h2>
-          <p className="welcome-lead">
-            {tr(
-              "Від публікації задачі до відгуку — без таблиць і чатів збоку.",
-            )}
-          </p>
+          <p className="welcome-lead">{tr("Від публікації задачі до відгуку — без таблиць і чатів збоку.")}</p>
           <div className="welcome-features">
             {features.map((feature) => (
               <article key={feature.title}>
@@ -324,11 +287,7 @@ export function WelcomePage() {
         {/* Фінал сторінки: не дублює «Реєстрацію» в шапці, а одразу веде з потрібною роллю */}
         <section className="welcome-cta">
           <h2>{tr("Перший проєкт — за 5 хвилин")}</h2>
-          <p>
-            {tr(
-              "Оберіть, як ви працюватимете, — роль уже буде вибрана при реєстрації.",
-            )}
-          </p>
+          <p>{tr("Оберіть, як ви працюватимете, — роль уже буде вибрана при реєстрації.")}</p>
           <div className="welcome-cta-roles">
             <Link className="cta-role" to="/register?role=CLIENT">
               <i className="bi bi-briefcase" aria-hidden="true"></i>

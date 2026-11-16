@@ -42,37 +42,27 @@ export class NotificationsService {
       .all();
     const items = all.slice((page - 1) * limit, page * limit);
     // Назви проєкту й завдання — щоб у списку було видно, про що подія
-    const ids = (key: 'projectId' | 'taskId') => [
-      ...new Set(items.flatMap((item) => (item[key] ? [item[key]] : []))),
-    ];
+    const ids = (key: 'projectId' | 'taskId') => [...new Set(items.flatMap((item) => (item[key] ? [item[key]] : [])))];
     const projectIds = ids('projectId');
     const taskIds = ids('taskId');
     const projects = projectIds.length
-      ? await this.prisma.client.orm.public.Project.where((project) =>
-          project.id.in(projectIds),
-        )
+      ? await this.prisma.client.orm.public.Project.where((project) => project.id.in(projectIds))
           .select('id', 'title')
           .all()
       : [];
     const tasks = taskIds.length
-      ? await this.prisma.client.orm.public.Task.where((task) =>
-          task.id.in(taskIds),
-        )
+      ? await this.prisma.client.orm.public.Task.where((task) => task.id.in(taskIds))
           .select('id', 'title')
           .all()
       : [];
     return {
       items: items.map((item) => ({
         ...item,
-        projectTitle:
-          projects.find((project) => project.id === item.projectId)?.title ??
-          null,
+        projectTitle: projects.find((project) => project.id === item.projectId)?.title ?? null,
         taskTitle: tasks.find((task) => task.id === item.taskId)?.title ?? null,
       })),
       unreadCount: all.filter((item) => !item.readAt).length,
-      unreadMessages: all.filter(
-        (item) => !item.readAt && messageTypes.includes(item.type),
-      ).length,
+      unreadMessages: all.filter((item) => !item.readAt && messageTypes.includes(item.type)).length,
     };
   }
 
@@ -80,8 +70,7 @@ export class NotificationsService {
     const item = await this.prisma.client.orm.public.Notification.where({
       id,
     }).first();
-    if (!item || item.userId !== userId)
-      throw new NotFoundException('Сповіщення не знайдено.');
+    if (!item || item.userId !== userId) throw new NotFoundException('Сповіщення не знайдено.');
     return this.prisma.client.orm.public.Notification.where({ id }).update({
       readAt: item.readAt ?? new Date(),
     });
@@ -89,37 +78,28 @@ export class NotificationsService {
 
   // Непрочитані повідомлення по розмовах: id проєкту / заявки → кількість (лічильники в списку чатів)
   async unreadChats(userId: string) {
-    const unread = (
-      await this.prisma.client.orm.public.Notification.where({ userId }).all()
-    ).filter((item) => !item.readAt && messageTypes.includes(item.type));
+    const unread = (await this.prisma.client.orm.public.Notification.where({ userId }).all()).filter(
+      (item) => !item.readAt && messageTypes.includes(item.type),
+    );
     const projects: Record<string, number> = {};
     const applications: Record<string, number> = {};
     for (const item of unread) {
       if (item.type === 'APPLICATION_MESSAGE' && item.applicationId)
-        applications[item.applicationId] =
-          (applications[item.applicationId] ?? 0) + 1;
-      else if (item.type === 'NEW_MESSAGE' && item.projectId)
-        projects[item.projectId] = (projects[item.projectId] ?? 0) + 1;
+        applications[item.applicationId] = (applications[item.applicationId] ?? 0) + 1;
+      else if (item.type === 'NEW_MESSAGE' && item.projectId) projects[item.projectId] = (projects[item.projectId] ?? 0) + 1;
     }
     return { projects, applications };
   }
 
   // Прочитано лише відкриту розмову; без розмови — усі повідомлення (як раніше)
-  async readChat(
-    userId: string,
-    chat: { projectId?: string; applicationId?: string },
-  ) {
-    const items = (
-      await this.prisma.client.orm.public.Notification.where({ userId }).all()
-    ).filter(
+  async readChat(userId: string, chat: { projectId?: string; applicationId?: string }) {
+    const items = (await this.prisma.client.orm.public.Notification.where({ userId }).all()).filter(
       (item) =>
         !item.readAt &&
         messageTypes.includes(item.type) &&
         (chat.applicationId
-          ? item.type === 'APPLICATION_MESSAGE' &&
-            item.applicationId === chat.applicationId
-          : !chat.projectId ||
-            (item.type === 'NEW_MESSAGE' && item.projectId === chat.projectId)),
+          ? item.type === 'APPLICATION_MESSAGE' && item.applicationId === chat.applicationId
+          : !chat.projectId || (item.type === 'NEW_MESSAGE' && item.projectId === chat.projectId)),
     );
     const readAt = new Date();
     for (const item of items)
@@ -150,8 +130,6 @@ export class NotificationsService {
     const project = await db.Project.where({ id: projectId }).first();
     if (!project) return false;
     if (project.clientId === user.id) return true;
-    return Boolean(
-      await db.ProjectMember.where({ projectId, userId: user.id }).first(),
-    );
+    return Boolean(await db.ProjectMember.where({ projectId, userId: user.id }).first());
   }
 }

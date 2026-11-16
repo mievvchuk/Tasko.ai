@@ -10,15 +10,8 @@ const clientId: string | undefined = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
 interface GoogleIdentity {
   accounts: {
     id: {
-      initialize(options: {
-        client_id: string;
-        callback: (response: { credential: string }) => void;
-        ux_mode?: "popup";
-      }): void;
-      renderButton(
-        element: HTMLElement,
-        options: Record<string, string | number>,
-      ): void;
+      initialize(options: { client_id: string; callback: (response: { credential: string }) => void; ux_mode?: "popup" }): void;
+      renderButton(element: HTMLElement, options: Record<string, string | number>): void;
     };
   };
 }
@@ -34,8 +27,7 @@ function loadGoogle() {
     const element = document.createElement("script");
     element.src = "https://accounts.google.com/gsi/client";
     element.async = true;
-    element.onload = () =>
-      window.google ? resolve(window.google) : reject(new Error("google"));
+    element.onload = () => (window.google ? resolve(window.google) : reject(new Error("google")));
     element.onerror = () => {
       script = null;
       reject(new Error("google"));
@@ -72,12 +64,7 @@ export function GoogleSignIn({
     setBusy(true);
     setError("");
     try {
-      const done = await loginWithGoogle(
-        token,
-        twoFactorCode,
-        remember.current,
-        chosenRole.current,
-      );
+      const done = await loginWithGoogle(token, twoFactorCode, remember.current, chosenRole.current);
       // 2FA увімкнено: просимо код і повторюємо запит з тим самим токеном
       if (!done) setCredential(token);
     } catch (error) {
@@ -100,10 +87,7 @@ export function GoogleSignIn({
         });
         google.accounts.id.renderButton(button.current, {
           type: "standard",
-          theme:
-            document.documentElement.dataset.theme === "dark"
-              ? "filled_black"
-              : "outline",
+          theme: document.documentElement.dataset.theme === "dark" ? "filled_black" : "outline",
           size: "large",
           shape: "rectangular",
           text: mode === "signup" ? "signup_with" : "signin_with",
@@ -141,9 +125,7 @@ export function GoogleSignIn({
               maxLength={6}
               pattern="[0-9]{6}"
               value={code}
-              onChange={(event) =>
-                setCode(event.target.value.replace(/\D/g, ""))
-              }
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
               placeholder="000000"
             />
           </div>

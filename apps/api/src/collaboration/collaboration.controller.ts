@@ -22,18 +22,9 @@ import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { CurrentUser } from '../users/users.service.js';
 import { PageDto } from '../projects/projects.dto.js';
-import {
-  MessageDto,
-  MoveTaskDto,
-  ReviewDto,
-  SubmissionDto,
-} from './collaboration.dto.js';
+import { MessageDto, MoveTaskDto, ReviewDto, SubmissionDto } from './collaboration.dto.js';
 import { CollaborationService } from './collaboration.service.js';
-import {
-  FilesService,
-  maxArchiveSize,
-  type UploadedFile as UploadedFileData,
-} from './files.service.js';
+import { FilesService, maxArchiveSize, type UploadedFile as UploadedFileData } from './files.service.js';
 
 @ApiTags('Collaboration')
 @ApiBearerAuth()
@@ -45,24 +36,13 @@ export class CollaborationController {
     private readonly collaboration: CollaborationService,
     @Inject(FilesService) private readonly files: FilesService,
   ) {}
-  @Get('projects/:id/messages') messages(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() page: PageDto,
-  ) {
+  @Get('projects/:id/messages') messages(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() page: PageDto) {
     return this.collaboration.messages(user, id, page);
   }
-  @Sse('projects/:id/messages/stream') messageStream(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Sse('projects/:id/messages/stream') messageStream(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.collaboration.messageStream(user, id);
   }
-  @Post('projects/:id/messages') message(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: MessageDto,
-  ) {
+  @Post('projects/:id/messages') message(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: MessageDto) {
     return this.collaboration.message(user, id, data);
   }
   @Delete('projects/:id/messages/:messageId') deleteMessage(
@@ -72,21 +52,13 @@ export class CollaborationController {
   ) {
     return this.collaboration.deleteMessage(user, id, messageId);
   }
-  @Post('projects/:id/typing') @HttpCode(204) typing(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Post('projects/:id/typing') @HttpCode(204) typing(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.collaboration.typing(user, id);
   }
-  @Get('applications/conversations') applicationConversations(
-    @Actor() user: CurrentUser,
-  ) {
+  @Get('applications/conversations') applicationConversations(@Actor() user: CurrentUser) {
     return this.collaboration.applicationConversations(user);
   }
-  @Get('applications/:id/chat') applicationChat(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Get('applications/:id/chat') applicationChat(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.collaboration.applicationChatInfo(user, id);
   }
   @Get('applications/:id/messages') applicationMessages(
@@ -96,10 +68,7 @@ export class CollaborationController {
   ) {
     return this.collaboration.applicationMessages(user, id, page);
   }
-  @Sse('applications/:id/messages/stream') applicationMessageStream(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Sse('applications/:id/messages/stream') applicationMessageStream(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.collaboration.applicationMessageStream(user, id);
   }
   @Post('applications/:id/messages') applicationMessage(
@@ -116,17 +85,10 @@ export class CollaborationController {
   ) {
     return this.collaboration.deleteApplicationMessage(user, id, messageId);
   }
-  @Post('applications/:id/typing') @HttpCode(204) applicationTyping(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Post('applications/:id/typing') @HttpCode(204) applicationTyping(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.collaboration.applicationTyping(user, id);
   }
-  @Get('projects/:id/files') listFiles(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() page: PageDto,
-  ) {
+  @Get('projects/:id/files') listFiles(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() page: PageDto) {
     return this.files.list(user, id, page);
   }
   @Post('projects/:id/files')
@@ -145,43 +107,24 @@ export class CollaborationController {
       limits: { fileSize: maxArchiveSize, files: 1, fields: 0 },
     }),
   )
-  upload(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @UploadedFile() file: UploadedFileData | undefined,
-  ) {
+  upload(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @UploadedFile() file: UploadedFileData | undefined) {
     return this.files.upload(user, id, file);
   }
-  @Delete('files/:id') deleteFile(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Delete('files/:id') deleteFile(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.files.remove(user, id);
   }
   @Get('files/:id/download')
-  async download(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Res() response: Response,
-  ) {
+  async download(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Res() response: Response) {
     const file = await this.files.download(user, id);
     response.setHeader('X-Content-Type-Options', 'nosniff');
     response.attachment(file.name);
     response.type(file.mime);
     response.send(file.content);
   }
-  @Get('tasks/:id/submissions') submissions(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() page: PageDto,
-  ) {
+  @Get('tasks/:id/submissions') submissions(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() page: PageDto) {
     return this.collaboration.submissions(user, id, page);
   }
-  @Post('tasks/:id/submissions') submit(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: SubmissionDto,
-  ) {
+  @Post('tasks/:id/submissions') submit(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: SubmissionDto) {
     return this.collaboration.submit(user, id, data);
   }
   @Post('tasks/:id/move') @HttpCode(200) move(
@@ -191,11 +134,7 @@ export class CollaborationController {
   ) {
     return this.collaboration.move(user, id, data);
   }
-  @Post('submissions/:id/review') review(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: ReviewDto,
-  ) {
+  @Post('submissions/:id/review') review(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: ReviewDto) {
     return this.collaboration.review(user, id, data);
   }
 }

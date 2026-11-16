@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Inject,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  Sse,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Query, Sse, UseGuards } from '@nestjs/common';
 import { concatMap, filter, interval, map, merge } from 'rxjs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Actor } from '../auth/current-user.decorator.js';
@@ -48,10 +35,7 @@ export class NotificationsController {
       // Подію проєкту отримують лише ті, хто має до нього доступ
       dataEvents.pipe(
         concatMap(async (projectId) =>
-          !projectId ||
-          (await this.notifications.canSeeProject(user, projectId))
-            ? { type: 'data', data: projectId ?? '' }
-            : null,
+          !projectId || (await this.notifications.canSeeProject(user, projectId)) ? { type: 'data', data: projectId ?? '' } : null,
         ),
         filter((event) => event !== null),
       ),
@@ -61,10 +45,7 @@ export class NotificationsController {
   @Get() list(@Actor() user: CurrentUser, @Query() page: PageDto) {
     return this.notifications.list(user.id, page.page, page.limit);
   }
-  @Patch(':id/read') read(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Patch(':id/read') read(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.notifications.read(user.id, id);
   }
   @Post('read-all') @HttpCode(200) readAll(@Actor() user: CurrentUser) {
@@ -75,10 +56,7 @@ export class NotificationsController {
     return this.notifications.unreadChats(user.id);
   }
   // Тіло { projectId } або { applicationId } — прочитано лише цю розмову
-  @Post('read-messages') @HttpCode(200) readMessages(
-    @Actor() user: CurrentUser,
-    @Body() chat: ReadChatDto,
-  ) {
+  @Post('read-messages') @HttpCode(200) readMessages(@Actor() user: CurrentUser, @Body() chat: ReadChatDto) {
     return this.notifications.readChat(user.id, chat ?? {});
   }
 }

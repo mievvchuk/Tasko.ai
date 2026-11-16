@@ -19,9 +19,7 @@ import { PageDto } from '../projects/projects.dto.js';
 
 export class CreateTaskDto {
   @ApiProperty({ minLength: 2, maxLength: 200 })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 200)
   title: string;
@@ -51,8 +49,7 @@ export class CreateTaskDto {
   @ApiPropertyOptional({
     format: 'uuid',
     nullable: true,
-    description:
-      'Етап проєкту, до якого належить завдання; null — поза етапами',
+    description: 'Етап проєкту, до якого належить завдання; null — поза етапами',
   })
   @IsOptional()
   @IsUUID()
@@ -64,8 +61,7 @@ export class UpdateTaskDto extends PartialType(CreateTaskDto, {
 export class TaskStatusDto {
   @ApiProperty({
     enum: ['TODO', 'IN_PROGRESS', 'REVISION', 'DONE'],
-    description:
-      'Новий етап картки. На перевірку (REVIEW) — через POST /tasks/:id/move з коментарем',
+    description: 'Новий етап картки. На перевірку (REVIEW) — через POST /tasks/:id/move з коментарем',
   })
   @IsIn(['TODO', 'IN_PROGRESS', 'REVISION', 'DONE'])
   status: 'TODO' | 'IN_PROGRESS' | 'REVISION' | 'DONE';
@@ -74,9 +70,7 @@ export class TaskStatusDto {
     description: 'Причина повернення на доопрацювання',
   })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(1, 2000)
   reason?: string;
@@ -90,9 +84,7 @@ export class TaskStatusDto {
 }
 export class BoardColumnDto {
   @ApiProperty({ minLength: 2, maxLength: 40, example: 'Тестування' })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 40)
   title: string;
@@ -110,9 +102,7 @@ export class TaskQueryDto extends PageDto {
     description: 'Пошук за назвою завдання',
   })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(0, 200)
   search?: string;
@@ -132,9 +122,7 @@ export class TaskQueryDto extends PageDto {
   priority?: string;
   @ApiPropertyOptional({ type: Boolean })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    value === 'true' ? true : value === 'false' ? false : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (value === 'true' ? true : value === 'false' ? false : value))
   @IsBoolean()
   overdue?: boolean;
   @ApiPropertyOptional({ format: 'uuid', description: 'Лише завдання етапу' })
@@ -159,8 +147,7 @@ export class OrderStatusDto {
 export class ColumnOrderDto {
   @ApiProperty({
     type: [String],
-    description:
-      "Порядок колонок до «На перевірці»: id власних колонок і 'TODO', 'IN_PROGRESS'",
+    description: "Порядок колонок до «На перевірці»: id власних колонок і 'TODO', 'IN_PROGRESS'",
   })
   @IsArray()
   @ArrayMaxSize(20)
@@ -170,9 +157,7 @@ export class ColumnOrderDto {
 
 export class RenameColumnDto {
   @ApiProperty({ minLength: 2, maxLength: 40, example: 'Frontend' })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 40)
   title: string;
@@ -181,8 +166,7 @@ export class RenameColumnDto {
 export class DeleteColumnQueryDto {
   @ApiPropertyOptional({
     format: 'uuid',
-    description:
-      'Власна колонка того самого етапу, куди перенести картки; без нього — у стандартну',
+    description: 'Власна колонка того самого етапу, куди перенести картки; без нього — у стандартну',
   })
   @IsOptional()
   @IsUUID()

@@ -1,29 +1,13 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
 import type { CurrentUser } from '../users/users.service.js';
-import type {
-  CreateComplaintDto,
-  DecideComplaintDto,
-} from './complaints.dto.js';
+import type { CreateComplaintDto, DecideComplaintDto } from './complaints.dto.js';
 
-export function validateComplaintTargets(
-  reporterId: string,
-  targetUserId?: string,
-  projectId?: string,
-) {
-  if (!targetUserId && !projectId)
-    throw new BadRequestException('Вкажіть користувача або проєкт.');
-  if (targetUserId === reporterId)
-    throw new BadRequestException('Не можна скаржитися на себе.');
+export function validateComplaintTargets(reporterId: string, targetUserId?: string, projectId?: string) {
+  if (!targetUserId && !projectId) throw new BadRequestException('Вкажіть користувача або проєкт.');
+  if (targetUserId === reporterId) throw new BadRequestException('Не можна скаржитися на себе.');
 }
 
 @Injectable()
@@ -33,8 +17,7 @@ export class ComplaintsService {
     @Inject(ProjectsService) private readonly projects: ProjectsService,
   ) {}
   private requireAdmin(user: CurrentUser) {
-    if (user.role !== 'ADMIN')
-      throw new ForbiddenException('Потрібні права адміністратора.');
+    if (user.role !== 'ADMIN') throw new ForbiddenException('Потрібні права адміністратора.');
   }
   async create(user: CurrentUser, data: CreateComplaintDto) {
     validateComplaintTargets(user.id, data.targetUserId, data.projectId);
@@ -67,23 +50,14 @@ export class ComplaintsService {
     const db = this.prisma.client.orm.public;
     const memberOf = await db.ProjectMember.where({ userId: user.id }).all();
     const ids = new Set(memberOf.map((member) => member.projectId));
-    for (const project of await db.Project.where({ clientId: user.id })
-      .select('id')
-      .all())
-      ids.add(project.id);
+    for (const project of await db.Project.where({ clientId: user.id }).select('id').all()) ids.add(project.id);
     if (!ids.size) return { projects: [], users: [] };
     const projectIds = [...ids];
-    const projects = await db.Project.where((project) =>
-      project.id.in(projectIds),
-    )
+    const projects = await db.Project.where((project) => project.id.in(projectIds))
       .select('id', 'title', 'clientId')
       .all();
-    const members = await db.ProjectMember.where((member) =>
-      member.projectId.in(projectIds),
-    ).all();
-    const titles = new Map(
-      projects.map((project) => [project.id, project.title]),
-    );
+    const members = await db.ProjectMember.where((member) => member.projectId.in(projectIds)).all();
+    const titles = new Map(projects.map((project) => [project.id, project.title]));
     const userProjects = new Map<string, Set<string>>();
     const link = (userId: string, projectId: string) => {
       if (userId === user.id) return;
@@ -99,9 +73,7 @@ export class ComplaintsService {
           .all()
       : [];
     return {
-      projects: projects
-        .map(({ id, title }) => ({ id, title }))
-        .sort((a, b) => a.title.localeCompare(b.title)),
+      projects: projects.map(({ id, title }) => ({ id, title })).sort((a, b) => a.title.localeCompare(b.title)),
       users: users
         .map((row) => {
           const ids = [...userProjects.get(row.id)!];
@@ -149,9 +121,7 @@ export class ComplaintsService {
               .first()
           : null,
         // Попередні підтверджені скарги на цю ж людину — від них залежить суворість санкції
-        targetHistory: item.targetUserId
-          ? await this.history(item.targetUserId, item.id)
-          : null,
+        targetHistory: item.targetUserId ? await this.history(item.targetUserId, item.id) : null,
         project: item.projectId
           ? await this.prisma.client.orm.public.Project.where({
               id: item.projectId,
@@ -182,20 +152,12 @@ export class ComplaintsService {
     const db = this.prisma.client.orm.public;
     const item = await db.Complaint.where({ id }).first();
     if (!item) throw new NotFoundException('Скаргу не знайдено.');
-    if (item.status !== 'OPEN')
-      throw new ConflictException('Скаргу вже розглянуто.');
-    const action =
-      data.status === 'RESOLVED' ? (data.action ?? 'NONE') : 'NONE';
+    if (item.status !== 'OPEN') throw new ConflictException('Скаргу вже розглянуто.');
+    const action = data.status === 'RESOLVED' ? (data.action ?? 'NONE') : 'NONE';
     const note = data.adminNote.trim();
-    const target = item.targetUserId
-      ? await db.User.where({ id: item.targetUserId }).first()
-      : null;
-    if (action !== 'NONE' && !target)
-      throw new BadRequestException(
-        'Санкцію можна застосувати лише до користувача, на якого скаржаться.',
-      );
-    if (action !== 'NONE' && target?.role === 'ADMIN')
-      throw new ForbiddenException('Адміністратора обмежити не можна.');
+    const target = item.targetUserId ? await db.User.where({ id: item.targetUserId }).first() : null;
+    if (action !== 'NONE' && !target) throw new BadRequestException('Санкцію можна застосувати лише до користувача, на якого скаржаться.');
+    if (action !== 'NONE' && target?.role === 'ADMIN') throw new ForbiddenException('Адміністратора обмежити не можна.');
     const now = new Date();
     const updated = await this.prisma.client.transaction(async (tx) => {
       // Спершу закриваємо скаргу: друге одночасне рішення не застосує санкцію ще раз
@@ -213,9 +175,7 @@ export class ComplaintsService {
       const users = tx.orm.public.User;
       if (target && action === 'RESTRICT')
         await users.where({ id: target.id }).update({
-          restrictedUntil: new Date(
-            now.getTime() + data.restrictDays! * 86400000,
-          ),
+          restrictedUntil: new Date(now.getTime() + data.restrictDays! * 86400000),
           restrictionReason: note,
           updatedAt: now,
         });
@@ -242,13 +202,7 @@ export class ComplaintsService {
       RESTRICT: `Акаунт обмежено на ${data.restrictDays} дн.: не можна публікувати проєкти, подавати заявки й писати повідомлення. Причина: ${note}`,
     };
     if (target && sanctions[action])
-      await this.projects.notify(
-        target.id,
-        user.id,
-        `COMPLAINT_${action}`,
-        sanctions[action],
-        item.projectId ?? undefined,
-      );
+      await this.projects.notify(target.id, user.id, `COMPLAINT_${action}`, sanctions[action], item.projectId ?? undefined);
     return updated;
   }
 }

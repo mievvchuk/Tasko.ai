@@ -42,16 +42,8 @@ export const roleNames: Record<UserRole, string> = {
   ADMIN: "Адміністратор",
 };
 
-export type ProjectStatus =
-  | "MODERATION"
-  | "REJECTED"
-  | "PLANNING"
-  | "ACTIVE"
-  | "PAUSED"
-  | "COMPLETED"
-  | "CANCELLED";
-export type TaskStatus =
-  "TODO" | "IN_PROGRESS" | "REVIEW" | "REVISION" | "DONE";
+export type ProjectStatus = "MODERATION" | "REJECTED" | "PLANNING" | "ACTIVE" | "PAUSED" | "COMPLETED" | "CANCELLED";
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "REVISION" | "DONE";
 
 export const projectStatusNames: Record<ProjectStatus, string> = {
   MODERATION: "На модерації",
@@ -94,8 +86,7 @@ export interface Project {
 }
 
 // Статуси, які встановлює модератор, а не клієнт
-export const inModeration = (status: ProjectStatus) =>
-  status === "MODERATION" || status === "REJECTED";
+export const inModeration = (status: ProjectStatus) => status === "MODERATION" || status === "REJECTED";
 
 export interface ModerationProject extends Project {
   client: {
@@ -107,8 +98,7 @@ export interface ModerationProject extends Project {
   previousRejection: string | null;
 }
 
-export type ApplicationStatus =
-  "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
+export type ApplicationStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
 
 export interface MarketplaceProject {
   id: string;
@@ -218,17 +208,13 @@ export interface ProjectMilestone {
   taskCount: number;
   doneTaskCount: number;
 }
-export const milestoneStatusNames: Record<ProjectMilestone["status"], string> =
-  {
-    PLANNED: "Заплановано",
-    IN_PROGRESS: "У роботі",
-    REVIEW: "Чекає приймання",
-    COMPLETED: "Прийнято",
-  };
-export const milestonePaymentNames: Record<
-  ProjectMilestone["paymentStatus"],
-  string
-> = {
+export const milestoneStatusNames: Record<ProjectMilestone["status"], string> = {
+  PLANNED: "Заплановано",
+  IN_PROGRESS: "У роботі",
+  REVIEW: "Чекає приймання",
+  COMPLETED: "Прийнято",
+};
+export const milestonePaymentNames: Record<ProjectMilestone["paymentStatus"], string> = {
   UNPAID: "Не зарезервовано",
   RESERVED: "Умовно зарезервовано",
   PAID: "Оплачено",
@@ -302,8 +288,7 @@ export interface Task {
   assigneeName?: string | null;
 }
 // Рейтинг завдання 1–5 зірками: «★★★☆☆»
-export const ratingStars = (rating: number) =>
-  "★".repeat(rating) + "☆".repeat(5 - rating);
+export const ratingStars = (rating: number) => "★".repeat(rating) + "☆".repeat(5 - rating);
 
 // Власна колонка канбану проєкту (етап усередині «У процесі»)
 export interface BoardColumn {

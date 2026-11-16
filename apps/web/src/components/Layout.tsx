@@ -21,8 +21,7 @@ const adminPages =
   /^\/(projects\/(?!new$)[^/]+(\/(board|milestones|activity))?|tasks(\/[^/]+)?|freelancers\/[^/]+|clients\/[^/]+|profile|notifications|help(\/.*)?)\/?$/;
 
 // Ці пункти на телефоні вже є в нижній панелі, тож у меню «Ще» їх не дублюємо
-const inBottomNav = ({ isActive }: { isActive: boolean }) =>
-  isActive ? "active in-bottom-nav" : "in-bottom-nav";
+const inBottomNav = ({ isActive }: { isActive: boolean }) => (isActive ? "active in-bottom-nav" : "in-bottom-nav");
 
 export function Layout() {
   const { user } = useAuth();
@@ -37,12 +36,7 @@ function AdminSiteLayout() {
   if (adminPages.test(pathname)) return <AdminLayout />;
   // Посилання на Аду (напр. «Аналіз AI» проєкту) ведуть на її сторінку в адмінці,
   // список проєктів сайту — на список проєктів в адмінці, решта — на огляд
-  const target =
-    pathname === "/ai"
-      ? `/admin/ai${search}`
-      : pathname === "/projects"
-        ? "/admin/projects"
-        : "/admin";
+  const target = pathname === "/ai" ? `/admin/ai${search}` : pathname === "/projects" ? "/admin/projects" : "/admin";
   return <Navigate to={target} replace />;
 }
 
@@ -56,8 +50,7 @@ function UserLayout() {
   const close = () => setMenuOpen(false);
   const unreadMessages = counts.unreadMessages;
   const unread = counts.unreadCount - unreadMessages;
-  const projectsLabel =
-    user.role === "FREELANCER" ? t("workProjects") : t("myProjects");
+  const projectsLabel = user.role === "FREELANCER" ? t("workProjects") : t("myProjects");
 
   return (
     <div className="app-shell">
@@ -80,11 +73,7 @@ function UserLayout() {
           >
             ☰
           </button>
-          <nav
-            id="main-navigation"
-            aria-label={t("navigation")}
-            className={menuOpen ? "topbar-nav open" : "topbar-nav"}
-          >
+          <nav id="main-navigation" aria-label={t("navigation")} className={menuOpen ? "topbar-nav open" : "topbar-nav"}>
             <NavLink to="/" end onClick={close} className={inBottomNav}>
               <i className="bi bi-grid" aria-hidden="true"></i>
               <span className="nav-label">{t("main")}</span>
@@ -105,18 +94,12 @@ function UserLayout() {
             </NavLink>
             <NavLink to="/workload" onClick={close}>
               <i className="bi bi-bar-chart" aria-hidden="true"></i>
-              <span className="nav-label">
-                {user.role === "FREELANCER"
-                  ? tr("Графік роботи")
-                  : t("workload")}
-              </span>
+              <span className="nav-label">{user.role === "FREELANCER" ? tr("Графік роботи") : t("workload")}</span>
             </NavLink>
             <NavLink to="/messages" onClick={close} className={inBottomNav}>
               <i className="bi bi-chat-dots" aria-hidden="true"></i>
               <span className="nav-label">{t("messages")}</span>
-              {unreadMessages > 0 && (
-                <span className="badge-count">{unreadMessages}</span>
-              )}
+              {unreadMessages > 0 && <span className="badge-count">{unreadMessages}</span>}
             </NavLink>
             <NavLink to="/notifications" onClick={close}>
               <i className="bi bi-bell" aria-hidden="true"></i>
@@ -143,12 +126,7 @@ function UserLayout() {
               <i className="bi bi-lightbulb" aria-hidden="true"></i>
               <span className="nav-label">{tr("Підказки до сторінки")}</span>
             </button>
-            <a
-              href={docsUrl(language)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={close}
-            >
+            <a href={docsUrl(language)} target="_blank" rel="noopener noreferrer" onClick={close}>
               <i className="bi bi-question-circle" aria-hidden="true"></i>
               <span className="nav-label">{tr("Довідка")}</span>
             </a>
@@ -167,17 +145,9 @@ function UserLayout() {
             <p className="notice error restriction-notice" role="status">
               <i className="bi bi-slash-circle" aria-hidden="true"></i>
               <span>
-                <strong>
-                  {tr(
-                    "Акаунт обмежено до {0}.",
-                    new Date(user.restrictedUntil).toLocaleDateString(),
-                  )}
-                </strong>{" "}
-                {tr(
-                  "До кінця строку не можна публікувати проєкти, подавати заявки й писати повідомлення.",
-                )}
-                {user.restrictionReason &&
-                  ` ${tr("Причина: {0}", user.restrictionReason)}`}
+                <strong>{tr("Акаунт обмежено до {0}.", new Date(user.restrictedUntil).toLocaleDateString())}</strong>{" "}
+                {tr("До кінця строку не можна публікувати проєкти, подавати заявки й писати повідомлення.")}
+                {user.restrictionReason && ` ${tr("Причина: {0}", user.restrictionReason)}`}
               </span>
             </p>
           )}
@@ -216,14 +186,10 @@ function UserLayout() {
           <i className="bi bi-three-dots" aria-hidden="true"></i>
           {tr("Ще")}
           {/* Нові сповіщення лежать у «Ще» — крапка підказує туди заглянути */}
-          {unread > 0 && !menuOpen && (
-            <span className="badge-dot" aria-hidden="true" />
-          )}
+          {unread > 0 && !menuOpen && <span className="badge-dot" aria-hidden="true" />}
         </button>
       </nav>
-      {menuOpen && (
-        <div className="more-backdrop" aria-hidden="true" onClick={close} />
-      )}
+      {menuOpen && <div className="more-backdrop" aria-hidden="true" onClick={close} />}
     </div>
   );
 }

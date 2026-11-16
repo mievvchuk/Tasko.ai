@@ -1,8 +1,5 @@
 import { useState, type FormEvent } from "react";
-import {
-  complaintActionNames,
-  complaintCategoryNames,
-} from "../complaintRules";
+import { complaintActionNames, complaintCategoryNames } from "../complaintRules";
 import type { ComplaintCategory } from "../complaintRules";
 import { errorMessage, request } from "../api";
 import { ResourceState } from "../components/ResourceState";
@@ -28,10 +25,7 @@ const searchFrom = 5;
 
 export function ComplaintsPage() {
   const { tr } = useLanguage();
-  const { data, error, loading, refresh } = useApi<Complaint[]>(
-    "/complaints?limit=50",
-    { live: true },
-  );
+  const { data, error, loading, refresh } = useApi<Complaint[]>("/complaints?limit=50", { live: true });
   const targets = useApi<Targets>("/complaints/targets");
   const [query, setQuery] = useState("");
   const [targetUserId, setTargetUserId] = useState("");
@@ -40,9 +34,7 @@ export function ComplaintsPage() {
   const [category, setCategory] = useState<ComplaintCategory | "">("");
   const [description, setDescription] = useState("");
   const [formError, setFormError] = useState("");
-  const selectedPerson = targets.data?.users.find(
-    (person) => person.id === targetUserId,
-  );
+  const selectedPerson = targets.data?.users.find((person) => person.id === targetUserId);
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFormError("");
@@ -71,23 +63,12 @@ export function ComplaintsPage() {
     <>
       <div className="page-heading">
         <h1>{tr("Скарги")}</h1>
-        <p>
-          {tr(
-            "Оберіть людину або проєкт і опишіть проблему для адміністратора.",
-          )}
-        </p>
+        <p>{tr("Оберіть людину або проєкт і опишіть проблему для адміністратора.")}</p>
       </div>
-      <form
-        className="data-panel form-grid complaint-form"
-        onSubmit={(e) => void submit(e)}
-      >
+      <form className="data-panel form-grid complaint-form" onSubmit={(e) => void submit(e)}>
         <fieldset className="full-width complaint-targets">
           <legend>{tr("На кого скарга")}</legend>
-          <ResourceState
-            loading={targets.loading}
-            error={targets.error}
-            onRetry={targets.refresh}
-          />
+          <ResourceState loading={targets.loading} error={targets.error} onRetry={targets.refresh} />
           {targets.data && (
             <>
               {/* Кількох людей видно й так; пошук потрібен, лише коли список довгий */}
@@ -102,22 +83,14 @@ export function ComplaintsPage() {
               )}
               <div className="target-list" role="radiogroup">
                 {targets.data.users
-                  .filter((person) =>
-                    person.name
-                      .toLowerCase()
-                      .includes(query.trim().toLowerCase()),
-                  )
+                  .filter((person) => person.name.toLowerCase().includes(query.trim().toLowerCase()))
                   .map((person) => (
                     <button
                       type="button"
                       role="radio"
                       aria-checked={targetUserId === person.id}
                       key={person.id}
-                      className={
-                        targetUserId === person.id
-                          ? "target-card active"
-                          : "target-card"
-                      }
+                      className={targetUserId === person.id ? "target-card active" : "target-card"}
                       onClick={() => {
                         const picked = targetUserId !== person.id;
                         setTargetUserId(picked ? person.id : "");
@@ -129,39 +102,23 @@ export function ComplaintsPage() {
                       <span>
                         <strong>{person.name}</strong>
                         <small>
-                          {tr(roleNames[person.role])} ·{" "}
-                          {person.projects.join(", ")}
+                          {tr(roleNames[person.role])} · {person.projects.join(", ")}
                         </small>
                       </span>
-                      <i
-                        className={`bi ${targetUserId === person.id ? "bi-check-circle-fill" : "bi-circle"}`}
-                        aria-hidden="true"
-                      ></i>
+                      <i className={`bi ${targetUserId === person.id ? "bi-check-circle-fill" : "bi-circle"}`} aria-hidden="true"></i>
                     </button>
                   ))}
-                {!targets.data.users.length && (
-                  <p className="form-note">
-                    {tr("Поки немає людей, з якими ви працюєте в проєктах.")}
-                  </p>
-                )}
+                {!targets.data.users.length && <p className="form-note">{tr("Поки немає людей, з якими ви працюєте в проєктах.")}</p>}
               </div>
             </>
           )}
         </fieldset>
         <label>
           {tr("Проєкт")}
-          <select
-            value={projectId}
-            disabled={!targets.data}
-            onChange={(e) => setProjectId(e.target.value)}
-          >
+          <select value={projectId} disabled={!targets.data} onChange={(e) => setProjectId(e.target.value)}>
             <option value="">{tr("Без проєкту")}</option>
             {targets.data?.projects
-              .filter(
-                (project) =>
-                  !selectedPerson ||
-                  selectedPerson.projectIds.includes(project.id),
-              )
+              .filter((project) => !selectedPerson || selectedPerson.projectIds.includes(project.id))
               .map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.title}
@@ -171,45 +128,25 @@ export function ComplaintsPage() {
         </label>
         <label>
           {tr("Що сталося")}
-          <select
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value as ComplaintCategory)}
-          >
+          <select required value={category} onChange={(e) => setCategory(e.target.value as ComplaintCategory)}>
             <option value="">{tr("Оберіть тип порушення")}</option>
-            {(Object.keys(complaintCategoryNames) as ComplaintCategory[]).map(
-              (key) => (
-                <option key={key} value={key}>
-                  {tr(complaintCategoryNames[key])}
-                </option>
-              ),
-            )}
+            {(Object.keys(complaintCategoryNames) as ComplaintCategory[]).map((key) => (
+              <option key={key} value={key}>
+                {tr(complaintCategoryNames[key])}
+              </option>
+            ))}
           </select>
         </label>
         <label>
           {tr("Причина")}
-          <input
-            required
-            minLength={3}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
+          <input required minLength={3} value={reason} onChange={(e) => setReason(e.target.value)} />
         </label>
         <label className="full-width">
           {tr("Опис")}
-          <textarea
-            required
-            rows={3}
-            minLength={10}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+          <textarea required rows={3} minLength={10} value={description} onChange={(e) => setDescription(e.target.value)} />
         </label>
         {formError && <p className="form-error full-width">{formError}</p>}
-        <button
-          className="button primary"
-          disabled={!targetUserId && !projectId}
-        >
+        <button className="button primary" disabled={!targetUserId && !projectId}>
           <i className="bi bi-send" aria-hidden="true"></i>
 
           {tr("Надіслати скаргу")}
@@ -227,34 +164,23 @@ export function ComplaintsPage() {
         {data && !data.length && (
           <div className="empty-state">
             <h3>{tr("Скарг ще немає")}</h3>
-            <p>
-              {tr(
-                "Надіслані скарги з'являться тут разом зі статусом розгляду.",
-              )}
-            </p>
+            <p>{tr("Надіслані скарги з'являться тут разом зі статусом розгляду.")}</p>
           </div>
         )}
         {!!data?.length && (
           <ul className="record-list padded">
             {data.map((item) => {
-              const person = targets.data?.users.find(
-                (row) => row.id === item.targetUserId,
-              );
-              const project = targets.data?.projects.find(
-                (row) => row.id === item.projectId,
-              );
+              const person = targets.data?.users.find((row) => row.id === item.targetUserId);
+              const project = targets.data?.projects.find((row) => row.id === item.projectId);
               return (
                 <li key={item.id} className="complaint-item">
                   <div className="complaint-item-head">
                     <strong>{item.reason}</strong>
-                    <span className={`project-status status-${item.status}`}>
-                      {tr(statusNames[item.status])}
-                    </span>
+                    <span className={`project-status status-${item.status}`}>{tr(statusNames[item.status])}</span>
                   </div>
                   <small>
                     {[
-                      item.category &&
-                        tr(complaintCategoryNames[item.category]),
+                      item.category && tr(complaintCategoryNames[item.category]),
                       person?.name,
                       project?.title,
                       formatDate(item.createdAt, true),
@@ -269,9 +195,7 @@ export function ComplaintsPage() {
                       {item.action && item.action !== "NONE" && (
                         <b>
                           {tr(complaintActionNames[item.action])}
-                          {item.restrictDays
-                            ? ` · ${tr("{0} дн.", item.restrictDays)}`
-                            : ""}
+                          {item.restrictDays ? ` · ${tr("{0} дн.", item.restrictDays)}` : ""}
                           {". "}
                         </b>
                       )}

@@ -29,12 +29,7 @@ export function LoginPage() {
     setError("");
     setSubmitting(true);
     try {
-      const authenticated = await login(
-        email.trim(),
-        password,
-        requiresTwoFactor ? twoFactorCode : undefined,
-        rememberMe,
-      );
+      const authenticated = await login(email.trim(), password, requiresTwoFactor ? twoFactorCode : undefined, rememberMe);
       if (!authenticated) setRequiresTwoFactor(true);
     } catch (error) {
       setError(errorMessage(error));
@@ -73,13 +68,7 @@ export function LoginPage() {
               placeholder="you@example.com"
             />
           </div>
-          <PasswordInput
-            id="password"
-            label={t("password")}
-            value={password}
-            onChange={setPassword}
-            autoComplete="current-password"
-          />
+          <PasswordInput id="password" label={t("password")} value={password} onChange={setPassword} autoComplete="current-password" />
           {requiresTwoFactor && (
             <div className="field">
               <label htmlFor="two-factor-code">{t("twoFactorCode")}</label>
@@ -93,19 +82,13 @@ export function LoginPage() {
                 maxLength={6}
                 pattern="[0-9]{6}"
                 value={twoFactorCode}
-                onChange={(event) =>
-                  setTwoFactorCode(event.target.value.replace(/\D/g, ""))
-                }
+                onChange={(event) => setTwoFactorCode(event.target.value.replace(/\D/g, ""))}
                 placeholder="000000"
               />
             </div>
           )}
           <label className="checkbox-field">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(event) => setRememberMe(event.target.checked)}
-            />
+            <input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />
             {t("rememberMe")}
           </label>
           {error && (

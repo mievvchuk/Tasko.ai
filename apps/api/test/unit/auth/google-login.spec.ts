@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  ServiceUnavailableException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { randomUUID } from 'node:crypto';
@@ -86,9 +82,7 @@ describe('sign-in with Google', () => {
       credential: 'x'.repeat(40),
       role: 'FREELANCER',
     });
-    expect(users.create).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'FREELANCER' }),
-    );
+    expect(users.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'FREELANCER' }));
   });
 
   it('links Google to an existing account with the same email', async () => {
@@ -101,9 +95,7 @@ describe('sign-in with Google', () => {
       googleId: profile.googleId,
     });
     const result = await auth.loginWithGoogle({ credential: 'x'.repeat(40) });
-    expect(userQuery.update).toHaveBeenCalledWith(
-      expect.objectContaining({ googleId: profile.googleId }),
-    );
+    expect(userQuery.update).toHaveBeenCalledWith(expect.objectContaining({ googleId: profile.googleId }));
     expect(users.create).not.toHaveBeenCalled();
     expect(result).toMatchObject({ created: false });
     expect(result.user).toMatchObject({ hasPassword: true });
@@ -111,9 +103,7 @@ describe('sign-in with Google', () => {
 
   it('refuses an email already linked to another Google account', async () => {
     users.findByEmail.mockResolvedValue(account({ googleId: 'google-other' }));
-    await expect(
-      auth.loginWithGoogle({ credential: 'x'.repeat(40) }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(auth.loginWithGoogle({ credential: 'x'.repeat(40) })).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('still asks for the 2FA code', async () => {
@@ -131,9 +121,7 @@ describe('sign-in with Google', () => {
 
   it('rejects password sign-in for an account without a password', async () => {
     users.findByEmail.mockResolvedValue(account());
-    await expect(
-      auth.login({ email: profile.email, password: 'Anything-123' }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(auth.login({ email: profile.email, password: 'Anything-123' })).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('lets a Google account set a password without the current one', async () => {
@@ -141,13 +129,8 @@ describe('sign-in with Google', () => {
     const sessions = { all: vi.fn().mockResolvedValue([]) };
     db.User.where.mockReturnValueOnce(userQuery);
     (db.AuthSession as Record<string, unknown>).where = vi.fn(() => sessions);
-    await auth.changePassword(
-      { ...account(), role: 'CLIENT', sessionId: randomUUID() },
-      { newPassword: 'New-password-123' },
-    );
-    expect(userQuery.update).toHaveBeenCalledWith(
-      expect.objectContaining({ passwordHash: expect.any(String) }),
-    );
+    await auth.changePassword({ ...account(), role: 'CLIENT', sessionId: randomUUID() }, { newPassword: 'New-password-123' });
+    expect(userQuery.update).toHaveBeenCalledWith(expect.objectContaining({ passwordHash: expect.any(String) }));
   });
 
   it('builds a valid name from the Google profile', () => {
@@ -165,25 +148,19 @@ describe('Google ID token check', () => {
       ...config,
       googleClientId: undefined,
     });
-    await expect(verifier.verify('token')).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
+    await expect(verifier.verify('token')).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
 
   it('checks the audience and requires a verified email', async () => {
-    const spy = vi
-      .spyOn(OAuth2Client.prototype, 'verifyIdToken')
-      .mockResolvedValue({
-        getPayload: () => ({
-          sub: 'google-1',
-          email: 'Olena@Example.com',
-          email_verified: false,
-        }),
-      } as never);
+    const spy = vi.spyOn(OAuth2Client.prototype, 'verifyIdToken').mockResolvedValue({
+      getPayload: () => ({
+        sub: 'google-1',
+        email: 'Olena@Example.com',
+        email_verified: false,
+      }),
+    } as never);
     const verifier = new GoogleVerifier(config);
-    await expect(verifier.verify('token')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(verifier.verify('token')).rejects.toBeInstanceOf(UnauthorizedException);
     expect(spy).toHaveBeenCalledWith({
       idToken: 'token',
       audience: config.googleClientId,
@@ -207,11 +184,7 @@ describe('Google ID token check', () => {
   });
 
   it('turns an invalid token into 401', async () => {
-    vi.spyOn(OAuth2Client.prototype, 'verifyIdToken').mockRejectedValue(
-      new Error('Wrong recipient'),
-    );
-    await expect(
-      new GoogleVerifier(config).verify('token'),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+    vi.spyOn(OAuth2Client.prototype, 'verifyIdToken').mockRejectedValue(new Error('Wrong recipient'));
+    await expect(new GoogleVerifier(config).verify('token')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

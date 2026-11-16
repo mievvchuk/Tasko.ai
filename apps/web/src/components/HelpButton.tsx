@@ -29,12 +29,8 @@ export function HelpButton() {
 
   const close = () => setOpen(false);
   const onPage = articlesForPage(pathname, user.role);
-  const found = query.trim()
-    ? searchArticles(query, user.role, language)
-    : null;
-  const popular = articlesFor(user.role).filter(
-    (a) => a.section === "kb" || a.id === "getting-started",
-  );
+  const found = query.trim() ? searchArticles(query, user.role, language) : null;
+  const popular = articlesFor(user.role).filter((a) => a.section === "kb" || a.id === "getting-started");
 
   return (
     <>
@@ -53,11 +49,7 @@ export function HelpButton() {
       )}
       {open && (
         <>
-          <div
-            className="ai-drawer-backdrop"
-            aria-hidden="true"
-            onClick={close}
-          />
+          <div className="ai-drawer-backdrop" aria-hidden="true" onClick={close} />
           <aside
             id="help-drawer"
             className="ai-drawer"
@@ -85,12 +77,7 @@ export function HelpButton() {
               >
                 <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
               </a>
-              <button
-                type="button"
-                className="ai-drawer-action"
-                aria-label={tr("Закрити довідку")}
-                onClick={close}
-              >
+              <button type="button" className="ai-drawer-action" aria-label={tr("Закрити довідку")} onClick={close}>
                 <i className="bi bi-x-lg" aria-hidden="true"></i>
               </button>
             </header>
@@ -108,39 +95,23 @@ export function HelpButton() {
                   found.length > 0 ? (
                     <HelpArticleList articles={found} />
                   ) : (
-                    <p className="help-empty">
-                      {tr(
-                        "Нічого не знайдено. Спробуйте інші слова або запитайте Аду.",
-                      )}
-                    </p>
+                    <p className="help-empty">{tr("Нічого не знайдено. Спробуйте інші слова або запитайте Аду.")}</p>
                   )
                 ) : (
                   <>
                     {onPage.length > 0 && (
                       <section>
-                        <h3 className="help-heading">
-                          {tr("На цій сторінці")}
-                        </h3>
+                        <h3 className="help-heading">{tr("На цій сторінці")}</h3>
                         <HelpArticleList articles={onPage} />
                       </section>
                     )}
                     <section>
                       <h3 className="help-heading">{tr("Корисне")}</h3>
-                      <HelpArticleList
-                        articles={popular.filter((a) => !onPage.includes(a))}
-                      />
+                      <HelpArticleList articles={popular.filter((a) => !onPage.includes(a))} />
                     </section>
-                    <a
-                      className="help-all"
-                      href={docsUrl(language)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a className="help-all" href={docsUrl(language)} target="_blank" rel="noopener noreferrer">
                       {tr("Уся довідка та база знань")}
-                      <i
-                        className="bi bi-box-arrow-up-right"
-                        aria-hidden="true"
-                      ></i>
+                      <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i>
                     </a>
                   </>
                 )}

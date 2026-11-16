@@ -23,24 +23,11 @@ const field = {
 };
 
 test("field errors explain what is wrong in the interface language", () => {
+  assert.equal(fieldMessage({ ...none, valueMissing: true }, field, "uk"), "Заповніть це поле.");
+  assert.equal(fieldMessage({ ...none, rangeOverflow: true }, field, "uk"), "Не більше 5000.");
+  assert.equal(fieldMessage({ ...none, tooShort: true }, field, "en"), "At least 10 characters (now 3).");
   assert.equal(
-    fieldMessage({ ...none, valueMissing: true }, field, "uk"),
-    "Заповніть це поле.",
-  );
-  assert.equal(
-    fieldMessage({ ...none, rangeOverflow: true }, field, "uk"),
-    "Не більше 5000.",
-  );
-  assert.equal(
-    fieldMessage({ ...none, tooShort: true }, field, "en"),
-    "At least 10 characters (now 3).",
-  );
-  assert.equal(
-    fieldMessage(
-      { ...none, typeMismatch: true },
-      { ...field, type: "email" },
-      "uk",
-    ),
+    fieldMessage({ ...none, typeMismatch: true }, { ...field, type: "email" }, "uk"),
     "Введіть правильну адресу пошти, напр. name@example.com.",
   );
   assert.equal(fieldMessage(none, field, "uk"), "browser");

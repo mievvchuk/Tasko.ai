@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsIn, IsOptional } from 'class-validator';
 import { Actor } from '../auth/current-user.decorator.js';
@@ -28,25 +17,17 @@ class ComplaintQueryDto extends PageDto {
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class ComplaintsController {
-  constructor(
-    @Inject(ComplaintsService) private readonly complaints: ComplaintsService,
-  ) {}
+  constructor(@Inject(ComplaintsService) private readonly complaints: ComplaintsService) {}
   @Get('complaints') own(@Actor() user: CurrentUser, @Query() page: PageDto) {
     return this.complaints.own(user, page.page, page.limit);
   }
   @Get('complaints/targets') targets(@Actor() user: CurrentUser) {
     return this.complaints.targets(user);
   }
-  @Post('complaints') create(
-    @Actor() user: CurrentUser,
-    @Body() data: CreateComplaintDto,
-  ) {
+  @Post('complaints') create(@Actor() user: CurrentUser, @Body() data: CreateComplaintDto) {
     return this.complaints.create(user, data);
   }
-  @Get('admin/complaints') all(
-    @Actor() user: CurrentUser,
-    @Query() query: ComplaintQueryDto,
-  ) {
+  @Get('admin/complaints') all(@Actor() user: CurrentUser, @Query() query: ComplaintQueryDto) {
     return this.complaints.all(user, query.page, query.limit, query.status);
   }
   @Patch('admin/complaints/:id') decide(

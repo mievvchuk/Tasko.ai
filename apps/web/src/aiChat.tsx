@@ -39,11 +39,7 @@ interface AiChatState {
   pending: Pick<AiExchange, "question" | "files"> | null;
   busy: boolean;
   error: string;
-  send: (
-    question: string,
-    context?: string,
-    attachments?: AiAttachment[],
-  ) => Promise<boolean>;
+  send: (question: string, context?: string, attachments?: AiAttachment[]) => Promise<boolean>;
   cancel: () => void;
   clear: () => void;
 }
@@ -82,11 +78,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), []);
 
-  async function send(
-    question: string,
-    context?: string,
-    attachments: AiAttachment[] = [],
-  ) {
+  async function send(question: string, context?: string, attachments: AiAttachment[] = []) {
     if (busy) return false;
     setError("");
     // Відмови «не по темі» в пам'ять не беремо — вони лише заважають контексту
@@ -102,19 +94,16 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
     const current = new AbortController();
     controller.current = current;
     try {
-      const result = await request<Omit<AiExchange, "question">>(
-        "/agent/chat",
-        {
-          method: "POST",
-          body: {
-            message: context ? `${context} ${question}` : question,
-            history,
-            attachments: attachments.map(({ name, text }) => ({ name, text })),
-          },
-          signal: current.signal,
-          timeoutMs: 130000,
+      const result = await request<Omit<AiExchange, "question">>("/agent/chat", {
+        method: "POST",
+        body: {
+          message: context ? `${context} ${question}` : question,
+          history,
+          attachments: attachments.map(({ name, text }) => ({ name, text })),
         },
-      );
+        signal: current.signal,
+        timeoutMs: 130000,
+      });
       setExchanges((previous) => [
         ...previous,
         {
@@ -126,9 +115,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
       ]);
       return true;
     } catch (error) {
-      setError(
-        current.signal.aborted ? tr("Запит скасовано.") : errorMessage(error),
-      );
+      setError(current.signal.aborted ? tr("Запит скасовано.") : errorMessage(error));
       return false;
     } finally {
       setBusy(false);

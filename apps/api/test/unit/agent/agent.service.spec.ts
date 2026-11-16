@@ -1,11 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import {
-  AgentService,
-  compactSchema,
-  offTopicAnswer,
-  roleRules,
-} from '../../../src/agent/agent.service.js';
+import { AgentService, compactSchema, offTopicAnswer, roleRules } from '../../../src/agent/agent.service.js';
 
 describe('Ada per role', () => {
   it('describes only the abilities of the current role', () => {
@@ -29,9 +24,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 
 function planResponse(content: string) {
-  return new Response(
-    JSON.stringify({ choices: [{ message: { role: 'assistant', content } }] }),
-  );
+  return new Response(JSON.stringify({ choices: [{ message: { role: 'assistant', content } }] }));
 }
 
 // Відповідь фільтра тем, який чат викликає перед основним запитом
@@ -49,9 +42,7 @@ describe('AI through MCP', () => {
     twoFactorEnabled: false,
   };
   const projects = {
-    list: vi
-      .fn()
-      .mockResolvedValue([{ id: randomUUID(), title: 'Own project' }]),
+    list: vi.fn().mockResolvedValue([{ id: randomUUID(), title: 'Own project' }]),
     requireAccess: vi.fn(),
   };
   const analytics = {
@@ -131,25 +122,18 @@ describe('AI through MCP', () => {
         ),
       );
     vi.stubGlobal('fetch', fetchMock);
-    const result = await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).chat(user, 'Покажи мої проєкти');
+    const result = await new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'Покажи мої проєкти');
     expect(result.toolsUsed).toEqual(['list_projects']);
     expect(result.offTopic).toBe(false);
     expect(projects.list).toHaveBeenCalledWith(user, { page: 1, limit: 20 });
     const lastBody = JSON.parse(fetchMock.mock.calls[2][1].body);
     expect(
       lastBody.messages.some(
-        (message: { role: string; content: string }) =>
-          message.role === 'tool' && message.content.includes('Own project'),
+        (message: { role: string; content: string }) => message.role === 'tool' && message.content.includes('Own project'),
       ),
     ).toBe(true);
     // Результат інструмента — сам JSON даних, без обгортки MCP і екранованих лапок
-    const toolMessage = lastBody.messages.find(
-      (message: { role: string }) => message.role === 'tool',
-    );
+    const toolMessage = lastBody.messages.find((message: { role: string }) => message.role === 'tool');
     expect(toolMessage.content).not.toContain('\\"');
     expect(() => JSON.parse(toolMessage.content)).not.toThrow();
     // Схеми інструментів без $schema і регулярних виразів UUID
@@ -237,14 +221,8 @@ describe('AI through MCP', () => {
         .mockResolvedValueOnce(toolCall(draft))
         .mockResolvedValueOnce(planResponse('Перевірте чернетку.')),
     );
-    const agent = new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    );
-    expect((await agent.chat(user, 'Створи проєкт')).projectDraft).toEqual(
-      draft,
-    );
+    const agent = new AgentService(config, mcp, projects as unknown as ProjectsService);
+    expect((await agent.chat(user, 'Створи проєкт')).projectDraft).toEqual(draft);
 
     // Бюджет «до» менший за «від» — інструмент повертає помилку, чернетки немає
     vi.stubGlobal(
@@ -260,8 +238,7 @@ describe('AI through MCP', () => {
   it('hides draft_project from non-clients', async () => {
     const server = mcp.createServer({ ...user, role: 'FREELANCER' });
     const client = new Client({ name: 'test', version: '1.0.0' });
-    const [clientTransport, serverTransport] =
-      InMemoryTransport.createLinkedPair();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     await server.connect(serverTransport);
     await client.connect(clientTransport);
     const { tools } = await client.listTools();
@@ -278,22 +255,14 @@ describe('AI through MCP', () => {
     async function connect(role: 'ADMIN' | 'CLIENT') {
       const server = mcp.createServer({ ...user, role });
       const client = new Client({ name: 'test', version: '1.0.0' });
-      const [clientTransport, serverTransport] =
-        InMemoryTransport.createLinkedPair();
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
       await server.connect(serverTransport);
       await client.connect(clientTransport);
       return { server, client };
     }
     const asAdmin = await connect('ADMIN');
     const names = (await asAdmin.client.listTools()).tools.map((t) => t.name);
-    expect(names.sort()).toEqual(
-      [
-        'get_freelancer_profile',
-        'list_notifications',
-        'platform_report',
-        'search_users',
-      ].sort(),
-    );
+    expect(names.sort()).toEqual(['get_freelancer_profile', 'list_notifications', 'platform_report', 'search_users'].sort());
     const found = await asAdmin.client.callTool({
       name: 'search_users',
       arguments: { search: 'Олена', role: 'CLIENT' },
@@ -309,9 +278,7 @@ describe('AI through MCP', () => {
     await asAdmin.server.close();
 
     const asClient = await connect('CLIENT');
-    const clientNames = (await asClient.client.listTools()).tools.map(
-      (t) => t.name,
-    );
+    const clientNames = (await asClient.client.listTools()).tools.map((t) => t.name);
     expect(clientNames).not.toContain('search_users');
     expect(clientNames).not.toContain('platform_report');
     await asClient.client.close();
@@ -320,11 +287,7 @@ describe('AI through MCP', () => {
   it('refuses off-topic questions without calling tools', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(topicResponse(false));
     vi.stubGlobal('fetch', fetchMock);
-    const result = await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).chat(user, 'Напиши рецепт борщу');
+    const result = await new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'Напиши рецепт борщу');
     expect(result).toEqual({
       answer: offTopicAnswer(user.role),
       toolsUsed: [],
@@ -342,77 +305,43 @@ describe('AI through MCP', () => {
       .mockResolvedValueOnce(new Response('{}', { status: 400 }))
       .mockResolvedValueOnce(planResponse('Ваші проєкти: Own project.'));
     vi.stubGlobal('fetch', fetchMock);
-    const result = await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).chat(user, 'Мої проєкти');
+    const result = await new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'Мої проєкти');
     expect(result.answer).toBe('Ваші проєкти: Own project.');
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
   it('sends previous turns so follow-up questions keep context', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(topicResponse(true))
-      .mockResolvedValueOnce(planResponse('У проєкті CRM 2 завдання.'));
+    const fetchMock = vi.fn().mockResolvedValueOnce(topicResponse(true)).mockResolvedValueOnce(planResponse('У проєкті CRM 2 завдання.'));
     vi.stubGlobal('fetch', fetchMock);
     const history = [
       { role: 'user' as const, content: 'Які в мене проєкти?' },
       { role: 'assistant' as const, content: 'Сайт і CRM.' },
     ];
-    await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).chat(user, 'А скільки завдань у другому?', history);
+    await new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'А скільки завдань у другому?', history);
     const topicBody = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(topicBody.messages[1].content).toContain('Сайт і CRM.');
     const chatBody = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(chatBody.messages.map((m: { role: string }) => m.role)).toEqual([
-      'system',
-      'user',
-      'assistant',
-      'user',
-    ]);
+    expect(chatBody.messages.map((m: { role: string }) => m.role)).toEqual(['system', 'user', 'assistant', 'user']);
   });
   it('tells the model that an admin does not create projects', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(topicResponse(true))
-      .mockResolvedValueOnce(
-        planResponse(
-          'Проєкти створюють клієнти, а адміністратор керує платформою.',
-        ),
-      );
+      .mockResolvedValueOnce(planResponse('Проєкти створюють клієнти, а адміністратор керує платформою.'));
     vi.stubGlobal('fetch', fetchMock);
-    await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).chat({ ...user, role: 'ADMIN' }, 'Хочу створити месенджер KOLO');
-    const chatBody = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(chatBody.messages[0].content).toContain(
-      'Користувач — адміністратор',
+    await new AgentService(config, mcp, projects as unknown as ProjectsService).chat(
+      { ...user, role: 'ADMIN' },
+      'Хочу створити месенджер KOLO',
     );
+    const chatBody = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(chatBody.messages[0].content).toContain('Користувач — адміністратор');
     // Інструмента чернетки проєкту в адміністратора немає
-    expect(
-      chatBody.tools.map(
-        (tool: { function: { name: string } }) => tool.function.name,
-      ),
-    ).not.toContain('draft_project');
+    expect(chatBody.tools.map((tool: { function: { name: string } }) => tool.function.name)).not.toContain('draft_project');
   });
   it('preserves upstream throttling as 429', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response('{}', { status: 429 })),
-    );
-    await expect(
-      new AgentService(
-        config,
-        mcp,
-        projects as unknown as ProjectsService,
-      ).chat(user, 'Стан проєктів'),
-    ).rejects.toMatchObject({ status: 429 });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 429 })));
+    await expect(new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'Стан проєктів')).rejects.toMatchObject({
+      status: 429,
+    });
   });
   it('rejects malformed provider responses and tool names', async () => {
     const fetchMock = vi
@@ -441,20 +370,12 @@ describe('AI through MCP', () => {
         ),
       );
     vi.stubGlobal('fetch', fetchMock);
-    await expect(
-      new AgentService(
-        config,
-        mcp,
-        projects as unknown as ProjectsService,
-      ).chat(user, 'Стан'),
-    ).rejects.toMatchObject({ status: 502 });
-    await expect(
-      new AgentService(
-        config,
-        mcp,
-        projects as unknown as ProjectsService,
-      ).chat(user, 'Стан'),
-    ).rejects.toMatchObject({ status: 502 });
+    await expect(new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'Стан')).rejects.toMatchObject({
+      status: 502,
+    });
+    await expect(new AgentService(config, mcp, projects as unknown as ProjectsService).chat(user, 'Стан')).rejects.toMatchObject({
+      status: 502,
+    });
   });
   it('generates a validated project plan without requesting MCP tools', async () => {
     const draft = {
@@ -495,11 +416,7 @@ describe('AI through MCP', () => {
       deadline: null,
       instructions: 'MVP',
     };
-    const result = await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).generateProjectPlan(brief);
+    const result = await new AgentService(config, mcp, projects as unknown as ProjectsService).generateProjectPlan(brief);
     expect(result).toEqual(draft);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.tools).toBeUndefined();
@@ -538,11 +455,7 @@ describe('AI through MCP', () => {
       .mockResolvedValueOnce(planResponse(brokenJson))
       .mockResolvedValueOnce(planResponse(JSON.stringify(draft)));
     vi.stubGlobal('fetch', fetchMock);
-    const result = await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).generateProjectPlan({
+    const result = await new AgentService(config, mcp, projects as unknown as ProjectsService).generateProjectPlan({
       title: 'Сайт',
       description: null,
       deadline: null,
@@ -553,16 +466,10 @@ describe('AI through MCP', () => {
   });
 
   it('rejects malformed AI plans rather than returning an unusable draft', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockImplementation(async () => planResponse('{"milestones":[]}'));
+    const fetchMock = vi.fn().mockImplementation(async () => planResponse('{"milestones":[]}'));
     vi.stubGlobal('fetch', fetchMock);
     await expect(
-      new AgentService(
-        config,
-        mcp,
-        projects as unknown as ProjectsService,
-      ).generateProjectPlan({
+      new AgentService(config, mcp, projects as unknown as ProjectsService).generateProjectPlan({
         title: 'Сайт',
         description: null,
         deadline: null,
@@ -595,19 +502,10 @@ describe('AI through MCP', () => {
     };
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ error: { code: 'json_validate_failed' } }),
-          { status: 400 },
-        ),
-      )
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 'json_validate_failed' } }), { status: 400 }))
       .mockResolvedValueOnce(planResponse(JSON.stringify(draft)));
     vi.stubGlobal('fetch', fetchMock);
-    const result = await new AgentService(
-      config,
-      mcp,
-      projects as unknown as ProjectsService,
-    ).generateProjectPlan({
+    const result = await new AgentService(config, mcp, projects as unknown as ProjectsService).generateProjectPlan({
       title: 'Сайт',
       description: null,
       deadline: null,
@@ -626,11 +524,7 @@ describe('AI through MCP', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
     await expect(
-      new AgentService(
-        config,
-        mcp,
-        projects as unknown as ProjectsService,
-      ).generateProjectPlan({
+      new AgentService(config, mcp, projects as unknown as ProjectsService).generateProjectPlan({
         title: 'Сайт',
         description: null,
         deadline: null,
@@ -641,16 +535,10 @@ describe('AI through MCP', () => {
   });
 
   it('does not retry the plan when the provider is throttled', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockImplementation(async () => new Response('{}', { status: 429 }));
+    const fetchMock = vi.fn().mockImplementation(async () => new Response('{}', { status: 429 }));
     vi.stubGlobal('fetch', fetchMock);
     await expect(
-      new AgentService(
-        config,
-        mcp,
-        projects as unknown as ProjectsService,
-      ).generateProjectPlan({
+      new AgentService(config, mcp, projects as unknown as ProjectsService).generateProjectPlan({
         title: 'Сайт',
         description: null,
         deadline: null,
@@ -661,13 +549,10 @@ describe('AI through MCP', () => {
   });
 
   it('keeps project access checks inside MCP tools', async () => {
-    analytics.summary.mockRejectedValueOnce(
-      new ForbiddenException('Немає доступу.'),
-    );
+    analytics.summary.mockRejectedValueOnce(new ForbiddenException('Немає доступу.'));
     const server = mcp.createServer(user);
     const client = new Client({ name: 'test', version: '1.0.0' });
-    const [clientTransport, serverTransport] =
-      InMemoryTransport.createLinkedPair();
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     try {
       await server.connect(serverTransport);
       await client.connect(clientTransport);
@@ -677,9 +562,7 @@ describe('AI through MCP', () => {
       });
       expect(result.isError).toBe(true);
       const tools = await client.listTools();
-      expect(tools.tools.every((tool) => tool.annotations?.readOnlyHint)).toBe(
-        true,
-      );
+      expect(tools.tools.every((tool) => tool.annotations?.readOnlyHint)).toBe(true);
       expect(tools.tools.map((tool) => tool.name)).toEqual(
         expect.arrayContaining([
           'get_task_details',

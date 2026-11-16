@@ -19,10 +19,7 @@ export function OrdersPage() {
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
   const project = useApi<Project>(`/projects/${id}`, { live: true });
-  const orders = useApi<Order[]>(
-    project.data ? `/projects/${id}/orders?page=${page}&limit=20` : null,
-    { live: true },
-  );
+  const orders = useApi<Order[]>(project.data ? `/projects/${id}/orders?page=${page}&limit=20` : null, { live: true });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function save(orderId: string, status: OrderStatus) {
@@ -41,17 +38,8 @@ export function OrdersPage() {
       setBusy(false);
     }
   }
-  if (!project.data)
-    return (
-      <ResourceState
-        loading={project.loading}
-        error={project.error}
-        onRetry={project.refresh}
-      />
-    );
-  const canManage =
-    !["COMPLETED", "CANCELLED"].includes(project.data.status) &&
-    project.data.clientId === user?.id;
+  if (!project.data) return <ResourceState loading={project.loading} error={project.error} onRetry={project.refresh} />;
+  const canManage = !["COMPLETED", "CANCELLED"].includes(project.data.status) && project.data.clientId === user?.id;
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
@@ -74,34 +62,19 @@ export function OrdersPage() {
             {error}
           </p>
         )}
-        <ResourceState
-          loading={orders.loading}
-          error={orders.error}
-          onRetry={orders.refresh}
-        />
+        <ResourceState loading={orders.loading} error={orders.error} onRetry={orders.refresh} />
         {orders.data && (
           <>
             <ul className="record-list padded">
               {!orders.data.length && (
-                <li className="form-note">
-                  {tr(
-                    "Замовлень ще немає. Замовлення створюється, коли ви приймаєте заявку фрілансера.",
-                  )}
-                </li>
+                <li className="form-note">{tr("Замовлень ще немає. Замовлення створюється, коли ви приймаєте заявку фрілансера.")}</li>
               )}
               {orders.data.map((order) => (
                 <li key={order.id}>
                   <div className="record-heading">
                     {order.freelancer ? (
-                      <Link
-                        className="admin-user-cell"
-                        to={`/freelancers/${order.freelancer.id}`}
-                      >
-                        <UserAvatar
-                          name={order.freelancer.name}
-                          avatarUrl={order.freelancer.avatarUrl}
-                          size="small"
-                        />
+                      <Link className="admin-user-cell" to={`/freelancers/${order.freelancer.id}`}>
+                        <UserAvatar name={order.freelancer.name} avatarUrl={order.freelancer.avatarUrl} size="small" />
                         <strong>{order.freelancer.name}</strong>
                       </Link>
                     ) : (
@@ -109,15 +82,12 @@ export function OrdersPage() {
                         {tr("Замовлення")} {order.id.slice(0, 8)}
                       </strong>
                     )}
-                    <span className="project-status">
-                      {tr(orderStatusNames[order.status])}
-                    </span>
+                    <span className="project-status">{tr(orderStatusNames[order.status])}</span>
                   </div>
                   <p className="form-note">
                     {order.amount !== null && (
                       <>
-                        {tr("Сума:")} {order.amount.toLocaleString(uiLocale())}{" "}
-                        {tr("грн")}
+                        {tr("Сума:")} {order.amount.toLocaleString(uiLocale())} {tr("грн")}
                         {" · "}
                       </>
                     )}
@@ -129,51 +99,33 @@ export function OrdersPage() {
                     )}
                     {tr("Створено:")} {formatDate(order.createdAt, true)}
                   </p>
-                  {canManage &&
-                    ["PENDING", "IN_PROGRESS"].includes(order.status) && (
-                      <div className="page-actions">
-                        <button
-                          className="button secondary"
-                          disabled={busy}
-                          onClick={() => {
-                            void save(
-                              order.id,
-                              order.status === "PENDING"
-                                ? "IN_PROGRESS"
-                                : "COMPLETED",
-                            );
-                          }}
-                        >
-                          {order.status === "PENDING"
-                            ? tr("Розпочати замовлення")
-                            : tr("Завершити замовлення")}
-                        </button>
-                        <button
-                          className="button secondary"
-                          disabled={busy}
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                tr(
-                                  "Скасувати це замовлення? Повернути його в роботу буде неможливо.",
-                                ),
-                              )
-                            )
-                              void save(order.id, "CANCELLED");
-                          }}
-                        >
-                          {tr("Скасувати замовлення")}
-                        </button>
-                      </div>
-                    )}
+                  {canManage && ["PENDING", "IN_PROGRESS"].includes(order.status) && (
+                    <div className="page-actions">
+                      <button
+                        className="button secondary"
+                        disabled={busy}
+                        onClick={() => {
+                          void save(order.id, order.status === "PENDING" ? "IN_PROGRESS" : "COMPLETED");
+                        }}
+                      >
+                        {order.status === "PENDING" ? tr("Розпочати замовлення") : tr("Завершити замовлення")}
+                      </button>
+                      <button
+                        className="button secondary"
+                        disabled={busy}
+                        onClick={() => {
+                          if (window.confirm(tr("Скасувати це замовлення? Повернути його в роботу буде неможливо.")))
+                            void save(order.id, "CANCELLED");
+                        }}
+                      >
+                        {tr("Скасувати замовлення")}
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
-            <Pagination
-              page={page}
-              count={orders.data.length}
-              onChange={(value) => setParams({ page: String(value) })}
-            />
+            <Pagination page={page} count={orders.data.length} onChange={(value) => setParams({ page: String(value) })} />
           </>
         )}
       </section>

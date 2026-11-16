@@ -22,10 +22,9 @@ const availabilityNames = {
 export function FreelancerProfilePage() {
   const { tr } = useLanguage();
   const { id } = useParams();
-  const { data, error, loading, refresh } = useApi<FreelancerProfile>(
-    id ? `/freelancers/${id}/profile` : null,
-    { live: true },
-  );
+  const { data, error, loading, refresh } = useApi<FreelancerProfile>(id ? `/freelancers/${id}/profile` : null, {
+    live: true,
+  });
   return (
     <>
       <button className="link-button breadcrumb" onClick={() => history.back()}>
@@ -39,24 +38,18 @@ export function FreelancerProfilePage() {
             <div className="freelancer-hero-text">
               <h1>{data.name}</h1>
               <p className="freelancer-meta">
-                <span
-                  className={`availability availability-${data.profile.availability}`}
-                >
+                <span className={`availability availability-${data.profile.availability}`}>
                   <i aria-hidden="true"></i>
                   {tr(availabilityNames[data.profile.availability])}
                 </span>
                 {data.averageRating !== null && (
                   <span title={tr("Середній рейтинг із 5")}>
-                    <b className="stars">
-                      {ratingStars(Math.round(data.averageRating))}
-                    </b>{" "}
-                    {data.averageRating} ·{" "}
+                    <b className="stars">{ratingStars(Math.round(data.averageRating))}</b> {data.averageRating} ·{" "}
                     {tr("{0} відгуків", data.reviewCount)}
                   </span>
                 )}
                 <span>
-                  <i className="bi bi-calendar3" aria-hidden="true"></i>{" "}
-                  {tr("На платформі з {0}", formatDate(data.createdAt))}
+                  <i className="bi bi-calendar3" aria-hidden="true"></i> {tr("На платформі з {0}", formatDate(data.createdAt))}
                 </span>
               </p>
               {data.skills.length > 0 && (
@@ -70,11 +63,7 @@ export function FreelancerProfilePage() {
               )}
             </div>
             <div className="freelancer-rate">
-              <strong>
-                {data.profile.hourlyRate
-                  ? tr("{0} грн", data.profile.hourlyRate)
-                  : "—"}
-              </strong>
+              <strong>{data.profile.hourlyRate ? tr("{0} грн", data.profile.hourlyRate) : "—"}</strong>
               <span>{tr("Ставка за годину")}</span>
             </div>
           </section>
@@ -97,10 +86,7 @@ export function FreelancerProfilePage() {
                 },
                 {
                   label: tr("Виконано вчасно"),
-                  value:
-                    data.onTimePercentage !== null
-                      ? `${data.onTimePercentage}%`
-                      : "—",
+                  value: data.onTimePercentage !== null ? `${data.onTimePercentage}%` : "—",
                   icon: "bi-alarm",
                   tone: "primary",
                   hint: tr("Частка завдань, зданих до дедлайну."),
@@ -152,15 +138,8 @@ export function FreelancerProfilePage() {
                   title={tr("Розподіл оцінок")}
                   items={[5, 4, 3, 2, 1].map((stars) => ({
                     label: "★".repeat(stars),
-                    value: data.reviews.filter(
-                      (review) => review.rating === stars,
-                    ).length,
-                    tone:
-                      stars >= 4
-                        ? "success"
-                        : stars === 3
-                          ? "accent"
-                          : "danger",
+                    value: data.reviews.filter((review) => review.rating === stars).length,
+                    tone: stars >= 4 ? "success" : stars === 3 ? "accent" : "danger",
                   }))}
                 />
                 <ul className="review-list">
@@ -173,9 +152,7 @@ export function FreelancerProfilePage() {
                       rating={review.rating}
                       comment={review.comment}
                       emptyComment={tr("Клієнт не додав коментар.")}
-                      projectTitle={
-                        review.project?.title || tr("Завершений проєкт")
-                      }
+                      projectTitle={review.project?.title || tr("Завершений проєкт")}
                       createdAt={review.createdAt}
                     />
                   ))}

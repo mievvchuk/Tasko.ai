@@ -1,10 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  UnauthorizedException,
-  type CanActivate,
-  type ExecutionContext,
-} from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { AuthService } from './auth.service.js';
@@ -26,12 +20,9 @@ export class JwtAuthGuard implements CanActivate {
     if (!match) throw new UnauthorizedException('Потрібен JWT Bearer токен.');
     let payload: { sub?: unknown; sid?: unknown };
     try {
-      payload = await this.jwt.verifyAsync<{ sub?: unknown; sid?: unknown }>(
-        match[1],
-        {
-          algorithms: ['HS256'],
-        },
-      );
+      payload = await this.jwt.verifyAsync<{ sub?: unknown; sid?: unknown }>(match[1], {
+        algorithms: ['HS256'],
+      });
     } catch {
       throw new UnauthorizedException('Токен некоректний або прострочений.');
     }

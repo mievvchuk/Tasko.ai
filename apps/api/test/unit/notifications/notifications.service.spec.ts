@@ -10,12 +10,8 @@ describe('NotificationsService', () => {
         orm: { public: { Notification: { where: vi.fn(() => query) } } },
       },
     };
-    const service = new NotificationsService(
-      prisma as unknown as PrismaService,
-    );
-    await expect(service.read('user', 'n1')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    const service = new NotificationsService(prisma as unknown as PrismaService);
+    await expect(service.read('user', 'n1')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('counts and marks message notifications separately', async () => {
@@ -49,15 +45,11 @@ describe('NotificationsService', () => {
       update: (data: unknown) => update(filter.id, data),
     }));
     const prisma = { client: { orm: { public: { Notification: { where } } } } };
-    const service = new NotificationsService(
-      prisma as unknown as PrismaService,
-    );
+    const service = new NotificationsService(prisma as unknown as PrismaService);
     const list = await service.list('u', 1, 1);
     expect(list.unreadCount).toBe(3);
     expect(list.unreadMessages).toBe(2);
-    await expect(
-      service.readAll('u', ['NEW_MESSAGE', 'APPLICATION_MESSAGE']),
-    ).resolves.toEqual({ updated: 2 });
+    await expect(service.readAll('u', ['NEW_MESSAGE', 'APPLICATION_MESSAGE'])).resolves.toEqual({ updated: 2 });
     expect(update.mock.calls.map(([id]) => id)).toEqual(['m1', 'm2']);
   });
 });

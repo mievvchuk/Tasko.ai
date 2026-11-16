@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Inject,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, ParseUUIDPipe, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -36,53 +23,28 @@ import { TasksService } from './tasks.service.js';
 @Controller()
 export class TasksController {
   constructor(@Inject(TasksService) private readonly tasks: TasksService) {}
-  @Get('projects/:id/tasks') list(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() filters: TaskQueryDto,
-  ) {
+  @Get('projects/:id/tasks') list(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() filters: TaskQueryDto) {
     return this.tasks.list(user, id, filters);
   }
-  @Post('projects/:id/tasks') create(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: CreateTaskDto,
-  ) {
+  @Post('projects/:id/tasks') create(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: CreateTaskDto) {
     return this.tasks.create(user, id, data);
   }
-  @Post('projects/:id/tasks/next') takeNext(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Post('projects/:id/tasks/next') takeNext(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.tasks.takeNext(user, id);
   }
-  @Get('tasks/:id') detail(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Get('tasks/:id') detail(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.tasks.find(user, id);
   }
-  @Patch('tasks/:id') update(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: UpdateTaskDto,
-  ) {
+  @Patch('tasks/:id') update(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateTaskDto) {
     return this.tasks.update(user, id, data);
   }
-  @Patch('tasks/:id/status') status(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: TaskStatusDto,
-  ) {
+  @Patch('tasks/:id/status') status(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: TaskStatusDto) {
     return this.tasks.transition(user, id, data.status, {
       columnId: data.columnId,
       reason: data.reason,
     });
   }
-  @Get('projects/:id/columns') columns(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Get('projects/:id/columns') columns(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.tasks.columns(user, id);
   }
   @Post('projects/:id/columns') addColumn(
@@ -99,11 +61,7 @@ export class TasksController {
   ) {
     return this.tasks.reorderColumns(user, id, data.order);
   }
-  @Patch('columns/:id') renameColumn(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: RenameColumnDto,
-  ) {
+  @Patch('columns/:id') renameColumn(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: RenameColumnDto) {
     return this.tasks.renameColumn(user, id, data.title);
   }
   @Delete('columns/:id') deleteColumn(
@@ -113,18 +71,10 @@ export class TasksController {
   ) {
     return this.tasks.deleteColumn(user, id, query.moveTo);
   }
-  @Get('projects/:id/orders') orders(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() page: PageDto,
-  ) {
+  @Get('projects/:id/orders') orders(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() page: PageDto) {
     return this.tasks.orders(user, id, page);
   }
-  @Patch('orders/:id') updateOrder(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: OrderStatusDto,
-  ) {
+  @Patch('orders/:id') updateOrder(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: OrderStatusDto) {
     return this.tasks.updateOrder(user, id, data.status);
   }
 }

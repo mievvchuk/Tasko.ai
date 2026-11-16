@@ -5,25 +5,8 @@ import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
 import { ResourceState } from "../components/ResourceState";
 import { formatDate } from "../format";
-import {
-  boardLanes,
-  isOverdue,
-  laneOrder,
-  laneRule,
-  movedTask,
-  stageAt,
-  tasksInLane,
-  type Lane,
-  type MoveActor,
-} from "../kanban";
-import {
-  priorityNames,
-  taskStatusNames,
-  type BoardColumn,
-  type Project,
-  type ProjectMember,
-  type Task,
-} from "../types";
+import { boardLanes, isOverdue, laneOrder, laneRule, movedTask, stageAt, tasksInLane, type Lane, type MoveActor } from "../kanban";
+import { priorityNames, taskStatusNames, type BoardColumn, type Project, type ProjectMember, type Task } from "../types";
 import { useApi } from "../useApi";
 import { AdminDialog } from "./AdminSections";
 
@@ -61,20 +44,11 @@ export function ProjectBoardPage() {
   const [columnDrag, setColumnDrag] = useState<string | null>(null);
   // Поки картку чи колонку тягнуть, дошку не перемальовуємо: після відпускання вона й так оновиться
   const live = { live: !dragId && !columnDrag };
-  const { data, error, loading, refresh } = useApi<Task[]>(
-    id ? `/projects/${id}/tasks?limit=50` : null,
-    live,
-  );
+  const { data, error, loading, refresh } = useApi<Task[]>(id ? `/projects/${id}/tasks?limit=50` : null, live);
   const project = useApi<Project>(id ? `/projects/${id}` : null, live);
-  const columns = useApi<BoardColumn[]>(
-    id ? `/projects/${id}/columns` : null,
-    live,
-  );
+  const columns = useApi<BoardColumn[]>(id ? `/projects/${id}/columns` : null, live);
   // Учасники — щоб знати, чи може фрілансер узяти вільне завдання
-  const members = useApi<ProjectMember[]>(
-    id ? `/projects/${id}/members` : null,
-    live,
-  );
+  const members = useApi<ProjectMember[]>(id ? `/projects/${id}/members` : null, live);
   const [actionError, setActionError] = useState("");
   // Картки, переміщені до відповіді сервера: показуємо одразу, при помилці повертаємо назад
   const [moved, setMoved] = useState<Record<string, Task>>({});
@@ -97,19 +71,15 @@ export function ProjectBoardPage() {
   const tasks = (data ?? []).map((task) => moved[task.id] ?? task);
   // Структуру дошки (колонки) змінює лише замовник; переміщення — за правилами процесу
   const isOwner = project.data?.clientId === user?.id;
-  const isMember =
-    user?.role === "FREELANCER" &&
-    Boolean(members.data?.some((member) => member.userId === user.id));
+  const isMember = user?.role === "FREELANCER" && Boolean(members.data?.some((member) => member.userId === user.id));
   const active = project.data?.status === "ACTIVE";
   const actorFor = (task: Task): MoveActor => ({
     isOwner,
     isAssignee: Boolean(task.assigneeId) && task.assigneeId === user?.id,
     isMember,
   });
-  const ruleFor = (task: Task, lane: Lane) =>
-    laneRule(task, lane, actorFor(task));
-  const targetsFor = (task: Task) =>
-    active ? lanes.filter((lane) => ruleFor(task, lane).allowed) : [];
+  const ruleFor = (task: Task, lane: Lane) => laneRule(task, lane, actorFor(task));
+  const targetsFor = (task: Task) => (active ? lanes.filter((lane) => ruleFor(task, lane).allowed) : []);
   const canMove = (task: Task) => targetsFor(task).length > 0;
 
   async function run(action: () => Promise<unknown>) {
@@ -123,11 +93,7 @@ export function ProjectBoardPage() {
 
   // Переміщення картки: перевіряємо правило, за потреби питаємо коментар чи причину,
   // показуємо картку на новому місці одразу, а при помилці сервера повертаємо назад
-  async function move(
-    task: Task,
-    lane: Lane,
-    extra?: { comment?: string; reason?: string },
-  ) {
+  async function move(task: Task, lane: Lane, extra?: { comment?: string; reason?: string }) {
     const rule = ruleFor(task, lane);
     if (!rule.allowed) {
       setActionError(tr(rule.reason));
@@ -164,8 +130,7 @@ export function ProjectBoardPage() {
       refresh();
     }
   }
-  const laneFor = (status: Task["status"]) =>
-    lanes.find((lane) => lane.status === status && !lane.columnId)!;
+  const laneFor = (status: Task["status"]) => lanes.find((lane) => lane.status === status && !lane.columnId)!;
 
   // Колонки до «На перевірці» можна ставити будь-де; етап визначає місце
   const order = laneOrder(lanes);
@@ -259,8 +224,7 @@ export function ProjectBoardPage() {
     let moved = false;
     if (board) {
       const { left, right } = board.getBoundingClientRect();
-      const step =
-        drag.lastX < left + edge ? -14 : drag.lastX > right - edge ? 14 : 0;
+      const step = drag.lastX < left + edge ? -14 : drag.lastX > right - edge ? 14 : 0;
       if (step) {
         board.scrollLeft += step;
         moved = true;
@@ -276,10 +240,8 @@ export function ProjectBoardPage() {
   }
   function startDrag(event: PointerEvent<HTMLElement>, task: Task) {
     const target = event.target as HTMLElement;
-    if (!canMove(task) || event.button !== 0 || target.closest("select"))
-      return;
-    if (event.pointerType !== "mouse" && !target.closest(".kanban-grip"))
-      return;
+    if (!canMove(task) || event.button !== 0 || target.closest("select")) return;
+    if (event.pointerType !== "mouse" && !target.closest(".kanban-grip")) return;
     // Вказівник захоплюємо лише з початком перетягування (moveDrag): інакше
     // click дістається картці, а не посиланню, і завдання не відкривається
     dragRef.current = {
@@ -322,14 +284,10 @@ export function ProjectBoardPage() {
         click.stopPropagation();
       };
       window.addEventListener("click", swallow, { capture: true, once: true });
-      setTimeout(
-        () => window.removeEventListener("click", swallow, { capture: true }),
-        0,
-      );
+      setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
       const lane = cancelled ? undefined : laneAt(event.clientX, event.clientY);
       // Кинули в ту саму колонку — нічого не робимо; в недоступну — пояснюємо чому
-      if (lane && !tasksInLane([drag.task], lane).length)
-        void move(drag.task, lane);
+      if (lane && !tasksInLane([drag.task], lane).length) void move(drag.task, lane);
     }
     setDragId(null);
     setOverLane(null);
@@ -349,13 +307,9 @@ export function ProjectBoardPage() {
     return className;
   }
   const overTarget = lanes.find((lane) => lane.key === overLane);
-  const dragHint =
-    dragged && overTarget && !tasksInLane([dragged], overTarget).length
-      ? ruleFor(dragged, overTarget)
-      : null;
+  const dragHint = dragged && overTarget && !tasksInLane([dragged], overTarget).length ? ruleFor(dragged, overTarget) : null;
 
-  const laneTitle = (lane: Lane) =>
-    lane.title ?? tr(taskStatusNames[lane.status]);
+  const laneTitle = (lane: Lane) => lane.title ?? tr(taskStatusNames[lane.status]);
   const anyMovable = tasks.some(canMove);
   return (
     <>
@@ -366,17 +320,9 @@ export function ProjectBoardPage() {
         <h1>{tr("Дошка завдань")}</h1>
         <p>
           {anyMovable
-            ? tr(
-                "Перетягніть картку за ручку або виберіть «Змінити етап» на картці. Доступні колонки підсвічуються.",
-              )
-            : tr(
-                "Картку рухає її виконавець, а перевіряє й приймає роботу замовник.",
-              )}
-          {isOwner &&
-            " " +
-              tr(
-                "Наведіть між колонками й натисніть «+», щоб додати колонку. Власні колонки перетягуйте за заголовок.",
-              )}
+            ? tr("Перетягніть картку за ручку або виберіть «Змінити етап» на картці. Доступні колонки підсвічуються.")
+            : tr("Картку рухає її виконавець, а перевіряє й приймає роботу замовник.")}
+          {isOwner && " " + tr("Наведіть між колонками й натисніть «+», щоб додати колонку. Власні колонки перетягуйте за заголовок.")}
         </p>
       </div>
       {actionError && (
@@ -386,31 +332,14 @@ export function ProjectBoardPage() {
       )}
       {/* Під час перетягування: куди можна кинути картку, а куди ні й чому */}
       {dragHint && (
-        <p
-          className={
-            dragHint.allowed ? "kanban-drag-hint" : "kanban-drag-hint denied"
-          }
-          role="status"
-        >
-          <i
-            className={
-              dragHint.allowed
-                ? "bi bi-arrow-down-circle"
-                : "bi bi-slash-circle"
-            }
-            aria-hidden="true"
-          ></i>
-          {dragHint.allowed
-            ? tr("Відпустіть, щоб перемістити в «{0}»", laneTitle(overTarget!))
-            : tr(dragHint.reason)}
+        <p className={dragHint.allowed ? "kanban-drag-hint" : "kanban-drag-hint denied"} role="status">
+          <i className={dragHint.allowed ? "bi bi-arrow-down-circle" : "bi bi-slash-circle"} aria-hidden="true"></i>
+          {dragHint.allowed ? tr("Відпустіть, щоб перемістити в «{0}»", laneTitle(overTarget!)) : tr(dragHint.reason)}
         </p>
       )}
       <ResourceState loading={loading} error={error} onRetry={refresh} />
       {!loading && !error && (
-        <div
-          ref={boardRef}
-          className={dragId ? "kanban-board is-dragging" : "kanban-board"}
-        >
+        <div ref={boardRef} className={dragId ? "kanban-board is-dragging" : "kanban-board"}>
           {lanes.map((lane, index) => {
             const laneTasks = tasksInLane(tasks, lane);
             const draggable = isOwner && Boolean(lane.columnId);
@@ -430,10 +359,7 @@ export function ProjectBoardPage() {
                   />
                 )}
                 {insertAt === index && (
-                  <form
-                    className="kanban-column kanban-new"
-                    onSubmit={addColumn}
-                  >
+                  <form className="kanban-column kanban-new" onSubmit={addColumn}>
                     <input
                       autoFocus
                       required
@@ -449,20 +375,12 @@ export function ProjectBoardPage() {
                     />
                     <p className="form-note">
                       {stageAt(order, index) === "TODO"
-                        ? tr(
-                            "Етап «До виконання». Enter — додати, Esc — скасувати.",
-                          )
-                        : tr(
-                            "Етап «У процесі». Enter — додати, Esc — скасувати.",
-                          )}
+                        ? tr("Етап «До виконання». Enter — додати, Esc — скасувати.")
+                        : tr("Етап «У процесі». Enter — додати, Esc — скасувати.")}
                     </p>
                     <div className="page-actions">
                       <button className="button primary">{tr("Додати")}</button>
-                      <button
-                        type="button"
-                        className="button ghost"
-                        onClick={() => setInsertAt(null)}
-                      >
+                      <button type="button" className="button ghost" onClick={() => setInsertAt(null)}>
                         {tr("Скасувати")}
                       </button>
                     </div>
@@ -470,27 +388,15 @@ export function ProjectBoardPage() {
                 )}
                 <section
                   data-lane={lane.key}
-                  className={
-                    laneClass(lane) +
-                    (columnDrag && columnDrag === lane.columnId
-                      ? " column-dragging"
-                      : "")
-                  }
+                  className={laneClass(lane) + (columnDrag && columnDrag === lane.columnId ? " column-dragging" : "")}
                 >
                   <h2
                     draggable={draggable}
                     tabIndex={draggable ? 0 : undefined}
-                    title={
-                      draggable
-                        ? tr("Перетягніть, щоб змінити місце колонки")
-                        : undefined
-                    }
+                    title={draggable ? tr("Перетягніть, щоб змінити місце колонки") : undefined}
                     onDragStart={(event) => {
                       if (!draggable || !lane.columnId) return;
-                      event.dataTransfer.setData(
-                        "text/x-column",
-                        lane.columnId,
-                      );
+                      event.dataTransfer.setData("text/x-column", lane.columnId);
                       event.dataTransfer.effectAllowed = "move";
                       setColumnDrag(lane.columnId);
                     }}
@@ -502,18 +408,11 @@ export function ProjectBoardPage() {
                     onKeyDown={(event) => {
                       if (!draggable || !lane.columnId) return;
                       const from = order.indexOf(lane.columnId);
-                      if (event.key === "ArrowLeft" && from > 0)
-                        void moveColumn(lane.columnId, from - 1);
-                      if (event.key === "ArrowRight" && from < order.length - 1)
-                        void moveColumn(lane.columnId, from + 2);
+                      if (event.key === "ArrowLeft" && from > 0) void moveColumn(lane.columnId, from - 1);
+                      if (event.key === "ArrowRight" && from < order.length - 1) void moveColumn(lane.columnId, from + 2);
                     }}
                   >
-                    {draggable && (
-                      <i
-                        className="bi bi-grip-vertical column-grip"
-                        aria-hidden="true"
-                      ></i>
-                    )}
+                    {draggable && <i className="bi bi-grip-vertical column-grip" aria-hidden="true"></i>}
                     {renaming?.id === lane.columnId ? (
                       <form className="kanban-rename" onSubmit={renameColumn}>
                         <input
@@ -543,10 +442,7 @@ export function ProjectBoardPage() {
                         <button
                           type="button"
                           className="kanban-remove"
-                          aria-label={tr(
-                            "Перейменувати колонку {0}",
-                            laneTitle(lane),
-                          )}
+                          aria-label={tr("Перейменувати колонку {0}", laneTitle(lane))}
                           title={tr("Перейменувати колонку")}
                           onClick={() =>
                             setRenaming({
@@ -555,48 +451,30 @@ export function ProjectBoardPage() {
                             })
                           }
                         >
-                          <span
-                            className="bi bi-pencil"
-                            aria-hidden="true"
-                          ></span>
+                          <span className="bi bi-pencil" aria-hidden="true"></span>
                         </button>
                         <button
                           type="button"
                           className="kanban-remove"
-                          aria-label={tr(
-                            "Видалити колонку {0}",
-                            laneTitle(lane),
-                          )}
+                          aria-label={tr("Видалити колонку {0}", laneTitle(lane))}
                           title={tr("Видалити колонку")}
                           onClick={() => setDeleting(lane)}
                         >
-                          <span
-                            className="bi bi-x-lg"
-                            aria-hidden="true"
-                          ></span>
+                          <span className="bi bi-x-lg" aria-hidden="true"></span>
                         </button>
                       </>
                     )}
                   </h2>
-                  {!laneTasks.length && (
-                    <p className="kanban-empty">{tr("Порожньо")}</p>
-                  )}
+                  {!laneTasks.length && <p className="kanban-empty">{tr("Порожньо")}</p>}
                   {laneTasks.map((task) => {
                     const targets = targetsFor(task);
                     const movable = targets.length > 0;
                     // Перевірка роботи — дві основні дії замовника прямо на картці
-                    const reviewing =
-                      isOwner && active && task.status === "REVIEW";
+                    const reviewing = isOwner && active && task.status === "REVIEW";
                     return (
                       <article
                         key={task.id}
-                        className={
-                          dragId === task.id
-                            ? "kanban-card dragging"
-                            : movable
-                              ? "kanban-card movable"
-                              : "kanban-card"
-                        }
+                        className={dragId === task.id ? "kanban-card dragging" : movable ? "kanban-card movable" : "kanban-card"}
                         onPointerDown={(event) => startDrag(event, task)}
                         onPointerMove={moveDrag}
                         onPointerUp={(event) => endDrag(event)}
@@ -607,38 +485,17 @@ export function ProjectBoardPage() {
                         <div className="kanban-card-title">
                           <Link to={`/tasks/${task.id}`}>{task.title}</Link>
                           {movable && (
-                            <span
-                              className="kanban-grip"
-                              title={tr("Перетягніть картку")}
-                              aria-hidden="true"
-                            >
+                            <span className="kanban-grip" title={tr("Перетягніть картку")} aria-hidden="true">
                               <i className="bi bi-grip-vertical"></i>
                             </span>
                           )}
                         </div>
                         {task.description && <small>{task.description}</small>}
                         <div className="kanban-meta">
-                          <span
-                            className={`priority priority-${task.priority}`}
-                          >
-                            {tr(priorityNames[task.priority])}
-                          </span>
+                          <span className={`priority priority-${task.priority}`}>{tr(priorityNames[task.priority])}</span>
                           {task.deadline && (
-                            <span
-                              className={
-                                isOverdue(task)
-                                  ? "kanban-deadline overdue"
-                                  : "kanban-deadline"
-                              }
-                            >
-                              <i
-                                className={
-                                  isOverdue(task)
-                                    ? "bi bi-clock-history"
-                                    : "bi bi-calendar3"
-                                }
-                                aria-hidden="true"
-                              ></i>
+                            <span className={isOverdue(task) ? "kanban-deadline overdue" : "kanban-deadline"}>
+                              <i className={isOverdue(task) ? "bi bi-clock-history" : "bi bi-calendar3"} aria-hidden="true"></i>
                               {formatDate(task.deadline)}
                             </span>
                           )}
@@ -646,35 +503,16 @@ export function ProjectBoardPage() {
                         {reviewing ? (
                           <div className="kanban-review">
                             {/* Спершу подивитися здану роботу, а тоді вирішувати */}
-                            <Link
-                              className="button ghost"
-                              to={`/tasks/${task.id}`}
-                            >
+                            <Link className="button ghost" to={`/tasks/${task.id}`}>
                               <i className="bi bi-eye" aria-hidden="true"></i>
                               {tr("Переглянути роботу")}
                             </Link>
-                            <button
-                              type="button"
-                              className="button primary"
-                              onClick={() => void move(task, laneFor("DONE"))}
-                            >
-                              <i
-                                className="bi bi-check2-circle"
-                                aria-hidden="true"
-                              ></i>
+                            <button type="button" className="button primary" onClick={() => void move(task, laneFor("DONE"))}>
+                              <i className="bi bi-check2-circle" aria-hidden="true"></i>
                               {tr("Прийняти")}
                             </button>
-                            <button
-                              type="button"
-                              className="button secondary"
-                              onClick={() =>
-                                void move(task, laneFor("REVISION"))
-                              }
-                            >
-                              <i
-                                className="bi bi-arrow-counterclockwise"
-                                aria-hidden="true"
-                              ></i>
+                            <button type="button" className="button secondary" onClick={() => void move(task, laneFor("REVISION"))}>
+                              <i className="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                               {tr("На доопрацювання")}
                             </button>
                           </div>
@@ -682,15 +520,10 @@ export function ProjectBoardPage() {
                           // Альтернатива перетягуванню: лише доступні етапи
                           movable && (
                             <select
-                              aria-label={tr(
-                                "Змінити етап завдання {0}",
-                                task.title,
-                              )}
+                              aria-label={tr("Змінити етап завдання {0}", task.title)}
                               value=""
                               onChange={(event) => {
-                                const target = targets.find(
-                                  (item) => item.key === event.target.value,
-                                );
+                                const target = targets.find((item) => item.key === event.target.value);
                                 if (target) void move(task, target);
                               }}
                             >
@@ -717,13 +550,7 @@ export function ProjectBoardPage() {
           pending={pending}
           onClose={() => setPending(null)}
           onSubmit={async (text) => {
-            const done = await move(
-              pending.task,
-              pending.lane,
-              pending.needs === "comment"
-                ? { comment: text }
-                : { reason: text },
-            );
+            const done = await move(pending.task, pending.lane, pending.needs === "comment" ? { comment: text } : { reason: text });
             if (done) setPending(null);
             return done;
           }}
@@ -759,9 +586,7 @@ function MoveDialog({
   const review = pending.needs === "comment";
   return (
     <AdminDialog
-      title={
-        review ? tr("Передати на перевірку") : tr("Повернути на доопрацювання")
-      }
+      title={review ? tr("Передати на перевірку") : tr("Повернути на доопрацювання")}
       description={pending.task.title}
       onClose={onClose}
     >
@@ -784,9 +609,7 @@ function MoveDialog({
             value={text}
             placeholder={
               review
-                ? tr(
-                    "Коротко опишіть результат і додайте посилання: репозиторій, макет, документ.",
-                  )
+                ? tr("Коротко опишіть результат і додайте посилання: репозиторій, макет, документ.")
                 : tr("Поясніть, що саме не так, щоб виконавець міг виправити.")
             }
             onChange={(event) => setText(event.target.value)}
@@ -828,16 +651,11 @@ function DeleteColumnDialog({
 }) {
   const { tr } = useLanguage();
   // Сумісні колонки — того самого етапу; стандартна йде першою
-  const options = lanes.filter(
-    (item) => item.status === lane.status && item.key !== lane.key,
-  );
+  const options = lanes.filter((item) => item.status === lane.status && item.key !== lane.key);
   const [target, setTarget] = useState(options[0]?.columnId ?? "");
   const [busy, setBusy] = useState(false);
   return (
-    <AdminDialog
-      title={tr("Видалити колонку «{0}»?", laneTitle(lane))}
-      onClose={onClose}
-    >
+    <AdminDialog title={tr("Видалити колонку «{0}»?", laneTitle(lane))} onClose={onClose}>
       <form
         className="admin-dialog-form"
         onSubmit={async (event) => {
@@ -850,10 +668,7 @@ function DeleteColumnDialog({
         {count > 0 ? (
           <label>
             {tr("Куди перенести картки ({0})", count)}
-            <select
-              value={target}
-              onChange={(event) => setTarget(event.target.value)}
-            >
+            <select value={target} onChange={(event) => setTarget(event.target.value)}>
               {options.map((item) => (
                 <option key={item.key} value={item.columnId ?? ""}>
                   {laneTitle(item)}
@@ -896,9 +711,7 @@ function ColumnGap({
   const { tr } = useLanguage();
   return (
     <div
-      className={
-        "column-gap" + (dragging ? " droppable" : "") + (active ? " over" : "")
-      }
+      className={"column-gap" + (dragging ? " droppable" : "") + (active ? " over" : "")}
       onDragOver={(event) => {
         if (!dragging) return;
         event.preventDefault();

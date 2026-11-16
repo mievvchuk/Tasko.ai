@@ -24,8 +24,7 @@ export function useNotificationCounts(userId: string | undefined) {
     void subscribe(
       "/notifications/stream",
       (type) => {
-        if (type === "changed")
-          window.dispatchEvent(new Event(notificationsChangedEvent));
+        if (type === "changed") window.dispatchEvent(new Event(notificationsChangedEvent));
         // Той самий потік несе й «дані змінились» для живого оновлення сторінок
         if (type === "data") window.dispatchEvent(new Event(dataChangedEvent));
       },
@@ -44,11 +43,8 @@ export function useNotificationCounts(userId: string | undefined) {
     const latest = notifications.data.items[0];
     const known = latestSeen.current;
     latestSeen.current = latest?.id ?? null;
-    if (known === undefined || !latest || latest.id === known || latest.readAt)
-      return;
-    window.dispatchEvent(
-      new CustomEvent(notificationToastEvent, { detail: latest }),
-    );
+    if (known === undefined || !latest || latest.id === known || latest.readAt) return;
+    window.dispatchEvent(new CustomEvent(notificationToastEvent, { detail: latest }));
   }, [notifications.data]);
   // Під час оновлення показуємо попередні числа, щоб значок не блимав
   const counts = useRef({ unreadCount: 0, unreadMessages: 0 });

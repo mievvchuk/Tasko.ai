@@ -8,10 +8,9 @@ import { useLanguage } from "../i18n";
 export function ProjectActivityPage() {
   const { tr } = useLanguage();
   const { id } = useParams();
-  const { data, error, loading, refresh } = useApi<ActivityLog[]>(
-    id ? `/projects/${id}/activity?limit=50` : null,
-    { live: true },
-  );
+  const { data, error, loading, refresh } = useApi<ActivityLog[]>(id ? `/projects/${id}/activity?limit=50` : null, {
+    live: true,
+  });
   return (
     <>
       <Link className="breadcrumb" to={`/projects/${id}`}>
@@ -28,8 +27,7 @@ export function ProjectActivityPage() {
               <div>
                 <strong>{item.message}</strong>
                 <small>
-                  {item.actor?.name || tr("Система")} ·{" "}
-                  {formatDate(item.createdAt, true)}
+                  {item.actor?.name || tr("Система")} · {formatDate(item.createdAt, true)}
                 </small>
               </div>
             </article>

@@ -1,10 +1,4 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,12 +47,8 @@ export function toPublicUser(user: {
   restrictedUntil?: Date | null;
   restrictionReason?: string | null;
 }): PublicUser {
-  const restricted =
-    user.restrictedUntil && user.restrictedUntil > new Date()
-      ? user.restrictedUntil
-      : null;
-  if (!['CLIENT', 'FREELANCER', 'ADMIN'].includes(user.role))
-    throw new ForbiddenException('Роль користувача некоректна.');
+  const restricted = user.restrictedUntil && user.restrictedUntil > new Date() ? user.restrictedUntil : null;
+  if (!['CLIENT', 'FREELANCER', 'ADMIN'].includes(user.role)) throw new ForbiddenException('Роль користувача некоректна.');
   return {
     id: user.id,
     name: user.name,
@@ -76,9 +66,7 @@ export function toPublicUser(user: {
 @Injectable()
 export class UsersService {
   // Фото профілів лежать окремо від файлів проєктів: storage/avatars
-  private readonly avatarDirectory = fileURLToPath(
-    new URL('../../storage/avatars/', import.meta.url),
-  );
+  private readonly avatarDirectory = fileURLToPath(new URL('../../storage/avatars/', import.meta.url));
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   private async requireUser(id: string) {
@@ -98,20 +86,15 @@ export class UsersService {
   // Роль обирають на вітальній сторінці; міняти можна, лише поки немає проєктів і заявок,
   // бо від ролі залежать права в уже наявних проєктах
   async updateRole(user: CurrentUser, data: UpdateRoleDto) {
-    if (user.role === 'ADMIN')
-      throw new ForbiddenException('Роль адміністратора не змінюється тут.');
-    if (user.role === data.role)
-      return toPublicUser(await this.requireUser(user.id));
+    if (user.role === 'ADMIN') throw new ForbiddenException('Роль адміністратора не змінюється тут.');
+    if (user.role === data.role) return toPublicUser(await this.requireUser(user.id));
     const db = this.prisma.client.orm.public;
     const [project, application, membership] = await Promise.all([
       db.Project.where({ clientId: user.id }).first(),
       db.ProjectApplication.where({ freelancerId: user.id }).first(),
       db.ProjectMember.where({ userId: user.id }).first(),
     ]);
-    if (project || application || membership)
-      throw new ConflictException(
-        'Роль можна змінити, лише поки у вас немає проєктів і заявок.',
-      );
+    if (project || application || membership) throw new ConflictException('Роль можна змінити, лише поки у вас немає проєктів і заявок.');
     const updated = await db.User.where({ id: user.id }).update({
       role: data.role,
       updatedAt: new Date(),
@@ -151,13 +134,8 @@ export class UsersService {
   // Шлях до файлу фото для публічної віддачі; ім'я перевіряємо, щоб не вийти за межі папки
   async avatarFile(fileName: string) {
     const mime = avatarMime(fileName);
-    if (!avatarFilePattern.test(fileName) || !mime)
-      throw new NotFoundException('Фото не знайдено.');
-    const content = await readStoredFile(
-      this.prisma.client.orm.public,
-      `avatars/${fileName}`,
-      join(this.avatarDirectory, fileName),
-    );
+    if (!avatarFilePattern.test(fileName) || !mime) throw new NotFoundException('Фото не знайдено.');
+    const content = await readStoredFile(this.prisma.client.orm.public, `avatars/${fileName}`, join(this.avatarDirectory, fileName));
     if (!content) throw new NotFoundException('Фото не знайдено.');
     return { content, mime };
   }
@@ -178,13 +156,7 @@ export class UsersService {
     return this.prisma.client.orm.public.User.where({ id }).first();
   }
 
-  create(data: {
-    name: string;
-    email: string;
-    passwordHash: string | null;
-    googleId?: string;
-    role: 'CLIENT' | 'FREELANCER';
-  }) {
+  create(data: { name: string; email: string; passwordHash: string | null; googleId?: string; role: 'CLIENT' | 'FREELANCER' }) {
     const now = new Date();
     return this.prisma.client.orm.public.User.create({
       ...data,
@@ -197,16 +169,11 @@ export class UsersService {
   }
 
   private requireFreelancer(user: CurrentUser) {
-    if (user.role !== 'FREELANCER')
-      throw new ForbiddenException('Профіль виконавця доступний фрілансеру.');
+    if (user.role !== 'FREELANCER') throw new ForbiddenException('Профіль виконавця доступний фрілансеру.');
   }
 
   private normalizeSkills(values: string[]) {
-    return [
-      ...new Set(
-        values.map((value) => value.trim().toLowerCase()).filter(Boolean),
-      ),
-    ];
+    return [...new Set(values.map((value) => value.trim().toLowerCase()).filter(Boolean))];
   }
 
   async getFreelancerProfile(user: CurrentUser) {
@@ -223,9 +190,7 @@ export class UsersService {
         .all(),
     ]);
     const skills = links.length
-      ? await this.prisma.client.orm.public.Skill.where((skill) =>
-          skill.id.in(links.map((link) => link.skillId)),
-        )
+      ? await this.prisma.client.orm.public.Skill.where((skill) => skill.id.in(links.map((link) => link.skillId)))
           .orderBy((skill) => skill.name.asc())
           .all()
       : [];
@@ -238,10 +203,7 @@ export class UsersService {
     };
   }
 
-  async updateFreelancerProfile(
-    user: CurrentUser,
-    data: UpdateFreelancerProfileDto,
-  ) {
+  async updateFreelancerProfile(user: CurrentUser, data: UpdateFreelancerProfileDto) {
     this.requireFreelancer(user);
     const names = this.normalizeSkills(data.skills);
     await this.prisma.client.transaction(async (tx) => {
@@ -254,10 +216,7 @@ export class UsersService {
         availability: data.availability,
         updatedAt: new Date(),
       };
-      if (current)
-        await tx.orm.public.FreelancerProfile.where({ userId: user.id }).update(
-          profile,
-        );
+      if (current) await tx.orm.public.FreelancerProfile.where({ userId: user.id }).update(profile);
       else
         await tx.orm.public.FreelancerProfile.create({
           userId: user.id,
@@ -275,8 +234,7 @@ export class UsersService {
       }
       for (const name of names) {
         let skill = await tx.orm.public.Skill.where({ name }).first();
-        if (!skill)
-          skill = await tx.orm.public.Skill.create({ id: randomUUID(), name });
+        if (!skill) skill = await tx.orm.public.Skill.create({ id: randomUUID(), name });
         await tx.orm.public.FreelancerSkill.create({
           userId: user.id,
           skillId: skill.id,
@@ -311,22 +269,15 @@ export class UsersService {
     });
   }
 
-  async updatePortfolioItem(
-    user: CurrentUser,
-    id: string,
-    data: UpdatePortfolioItemDto,
-  ) {
+  async updatePortfolioItem(user: CurrentUser, id: string, data: UpdatePortfolioItemDto) {
     this.requireFreelancer(user);
     const item = await this.prisma.client.orm.public.PortfolioItem.where({
       id,
     }).first();
-    if (!item || item.userId !== user.id)
-      throw new NotFoundException('Роботу портфоліо не знайдено.');
+    if (!item || item.userId !== user.id) throw new NotFoundException('Роботу портфоліо не знайдено.');
     return this.prisma.client.orm.public.PortfolioItem.where({ id }).update({
       ...(data.title !== undefined ? { title: data.title.trim() } : {}),
-      ...(data.description !== undefined
-        ? { description: data.description.trim() || null }
-        : {}),
+      ...(data.description !== undefined ? { description: data.description.trim() || null } : {}),
       ...(data.url !== undefined ? { url: data.url || null } : {}),
       ...(data.tags !== undefined ? { tags: data.tags.trim() || null } : {}),
       updatedAt: new Date(),
@@ -334,17 +285,12 @@ export class UsersService {
   }
 
   // Обкладинка роботи: та сама перевірка й сховище, що й у фото профілю
-  async setPortfolioImage(
-    user: CurrentUser,
-    id: string,
-    file: UploadedFile | undefined,
-  ) {
+  async setPortfolioImage(user: CurrentUser, id: string, file: UploadedFile | undefined) {
     this.requireFreelancer(user);
     const item = await this.prisma.client.orm.public.PortfolioItem.where({
       id,
     }).first();
-    if (!item || item.userId !== user.id)
-      throw new NotFoundException('Роботу портфоліо не знайдено.');
+    if (!item || item.userId !== user.id) throw new NotFoundException('Роботу портфоліо не знайдено.');
     const format = validateAvatar(file);
     const fileName = `${randomUUID()}.${format.extension}`;
     const updated = await this.prisma.client.transaction(async (tx) => {
@@ -367,22 +313,17 @@ export class UsersService {
     const item = await this.prisma.client.orm.public.PortfolioItem.where({
       id,
     }).first();
-    if (!item || item.userId !== user.id)
-      throw new NotFoundException('Роботу портфоліо не знайдено.');
+    if (!item || item.userId !== user.id) throw new NotFoundException('Роботу портфоліо не знайдено.');
     await this.prisma.client.orm.public.PortfolioItem.where({ id }).delete();
     await this.removeAvatarFile(item.imageUrl);
     return { deleted: true };
   }
 
   listSkills() {
-    return this.prisma.client.orm.public.Skill.orderBy((skill) =>
-      skill.name.asc(),
-    ).all();
+    return this.prisma.client.orm.public.Skill.orderBy((skill) => skill.name.asc()).all();
   }
 
   listCategories() {
-    return this.prisma.client.orm.public.ProjectCategory.orderBy((category) =>
-      category.name.asc(),
-    ).all();
+    return this.prisma.client.orm.public.ProjectCategory.orderBy((category) => category.name.asc()).all();
   }
 }

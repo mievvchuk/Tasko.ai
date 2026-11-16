@@ -8,8 +8,7 @@ export const fileAccept = ".pdf,.png,.jpg,.jpeg,.docx,.zip,.txt";
 
 const megabyte = 1024 * 1024;
 // ZIP — архів проєкту, тому йому більший ліміт (так само перевіряє сервер)
-const limitFor = (name: string) =>
-  extension(name) === "zip" ? 50 * megabyte : 10 * megabyte;
+const limitFor = (name: string) => (extension(name) === "zip" ? 50 * megabyte : 10 * megabyte);
 
 // Файли завантажуються одразу після вибору чи перетягування — без окремої кнопки.
 // Кілька файлів ідуть по черзі; помилка одного не зупиняє решту.
@@ -41,29 +40,22 @@ export function FileUpload({
     if (!list?.length || busy || disabled) return;
     const files = [...list].slice(0, maxFiles ?? list.length);
     const problems: string[] = [];
-    if (maxFiles !== undefined && list.length > maxFiles)
-      problems.push(
-        tr("Можна додати ще {0} файл(ів) — решту пропущено.", maxFiles),
-      );
+    if (maxFiles !== undefined && list.length > maxFiles) problems.push(tr("Можна додати ще {0} файл(ів) — решту пропущено.", maxFiles));
     setErrors([]);
     setProgress({ done: 0, total: files.length });
     onBusyChange?.(true);
     for (const [index, file] of files.entries()) {
       if (!file.size || file.size > limitFor(file.name)) {
-        problems.push(
-          tr(
-            "{0}: файл порожній або завеликий (ZIP до 50 МБ, інші до 10 МБ).",
-            file.name,
-          ),
-        );
+        problems.push(tr("{0}: файл порожній або завеликий (ZIP до 50 МБ, інші до 10 МБ).", file.name));
       } else {
         try {
           const body = new FormData();
           body.append("file", file);
-          const saved = await request<FileAttachment>(
-            `/projects/${projectId}/files`,
-            { method: "POST", body, timeoutMs: 120000 },
-          );
+          const saved = await request<FileAttachment>(`/projects/${projectId}/files`, {
+            method: "POST",
+            body,
+            timeoutMs: 120000,
+          });
           onUploaded(saved);
         } catch (error) {
           problems.push(`${file.name}: ${errorMessage(error)}`);
@@ -80,11 +72,7 @@ export function FileUpload({
   return (
     <div className="file-upload-block">
       <label
-        className={
-          "file-dropzone" +
-          (dragging ? " dragging" : "") +
-          (busy || disabled ? " disabled" : "")
-        }
+        className={"file-dropzone" + (dragging ? " dragging" : "") + (busy || disabled ? " disabled" : "")}
         onDragOver={(event) => {
           event.preventDefault();
           if (!busy && !disabled) setDragging(true);
@@ -104,20 +92,11 @@ export function FileUpload({
           disabled={busy || disabled}
           onChange={(event) => void uploadAll(event.target.files)}
         />
-        <i
-          className={`bi ${busy ? "bi-arrow-repeat spin" : "bi-cloud-arrow-up"}`}
-          aria-hidden="true"
-        ></i>
+        <i className={`bi ${busy ? "bi-arrow-repeat spin" : "bi-cloud-arrow-up"}`} aria-hidden="true"></i>
         <strong>
-          {busy
-            ? tr("Завантажуємо {0} з {1}…", progress.done + 1, progress.total)
-            : tr("Перетягніть файли сюди або оберіть на комп'ютері")}
+          {busy ? tr("Завантажуємо {0} з {1}…", progress.done + 1, progress.total) : tr("Перетягніть файли сюди або оберіть на комп'ютері")}
         </strong>
-        <small>
-          {tr(
-            "PDF, PNG, JPG, DOCX, TXT — до 10 МБ, ZIP — до 50 МБ. Можна кілька одразу.",
-          )}
-        </small>
+        <small>{tr("PDF, PNG, JPG, DOCX, TXT — до 10 МБ, ZIP — до 50 МБ. Можна кілька одразу.")}</small>
       </label>
       {errors.length > 0 && (
         <ul className="notice error file-errors" role="alert">
@@ -149,8 +128,7 @@ function extension(name: string) {
   return name.split(".").pop()?.toLowerCase() ?? "";
 }
 
-type Preview =
-  { kind: "pdf" | "image"; url: string } | { kind: "text"; text: string };
+type Preview = { kind: "pdf" | "image"; url: string } | { kind: "text"; text: string };
 
 // Тип файлу → значок і колір плитки
 function fileKind(ext: string) {
@@ -212,9 +190,7 @@ export function FileDownload({
     setPreview(null);
   }
   const size =
-    file.size >= megabyte
-      ? tr("{0} МБ", (file.size / megabyte).toFixed(1))
-      : tr("{0} КБ", Math.max(1, Math.ceil(file.size / 1024)));
+    file.size >= megabyte ? tr("{0} МБ", (file.size / megabyte).toFixed(1)) : tr("{0} КБ", Math.max(1, Math.ceil(file.size / 1024)));
   return (
     <div className="file-item">
       <span className={`file-type type-${fileKind(ext)}`} aria-hidden="true">
@@ -226,11 +202,7 @@ export function FileDownload({
           type="button"
           disabled={busy}
           title={file.fileName}
-          onClick={() =>
-            void (kind
-              ? open()
-              : run(() => downloadFile(file.id, file.fileName)))
-          }
+          onClick={() => void (kind ? open() : run(() => downloadFile(file.id, file.fileName)))}
         >
           {busy ? tr("Отримуємо файл…") : file.fileName}
         </button>
@@ -282,20 +254,12 @@ export function FileDownload({
       {preview && (
         <AdminDialog title={file.fileName} onClose={close}>
           <div className="file-preview">
-            {preview.kind === "pdf" && (
-              <iframe src={preview.url} title={file.fileName}></iframe>
-            )}
-            {preview.kind === "image" && (
-              <img src={preview.url} alt={file.fileName} />
-            )}
+            {preview.kind === "pdf" && <iframe src={preview.url} title={file.fileName}></iframe>}
+            {preview.kind === "image" && <img src={preview.url} alt={file.fileName} />}
             {preview.kind === "text" && <pre>{preview.text}</pre>}
           </div>
           <div className="admin-dialog-actions">
-            <button
-              className="button secondary"
-              type="button"
-              onClick={() => void downloadFile(file.id, file.fileName)}
-            >
+            <button className="button secondary" type="button" onClick={() => void downloadFile(file.id, file.fileName)}>
               <i className="bi bi-download" aria-hidden="true"></i>
               {tr("Завантажити")}
             </button>

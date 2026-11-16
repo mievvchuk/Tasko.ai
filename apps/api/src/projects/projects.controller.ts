@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Inject,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Actor } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -33,51 +21,26 @@ import { ProjectsService } from './projects.service.js';
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class ProjectsController {
-  constructor(
-    @Inject(ProjectsService) private readonly projects: ProjectsService,
-  ) {}
-  @Get('directory/freelancers') directory(
-    @Actor() user: CurrentUser,
-    @Query() page: PageDto,
-  ) {
+  constructor(@Inject(ProjectsService) private readonly projects: ProjectsService) {}
+  @Get('directory/freelancers') directory(@Actor() user: CurrentUser, @Query() page: PageDto) {
     return this.projects.directory(user, page);
   }
-  @Get('projects') list(
-    @Actor() user: CurrentUser,
-    @Query() page: ProjectQueryDto,
-  ) {
+  @Get('projects') list(@Actor() user: CurrentUser, @Query() page: ProjectQueryDto) {
     return this.projects.list(user, page);
   }
-  @Post('projects') create(
-    @Actor() user: CurrentUser,
-    @Body() data: CreateProjectDto,
-  ) {
+  @Post('projects') create(@Actor() user: CurrentUser, @Body() data: CreateProjectDto) {
     return this.projects.create(user, data);
   }
-  @Get('projects/:id') detail(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Get('projects/:id') detail(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.detail(user, id);
   }
-  @Patch('projects/:id') update(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: UpdateProjectDto,
-  ) {
+  @Patch('projects/:id') update(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateProjectDto) {
     return this.projects.update(user, id, data);
   }
-  @Get('projects/:id/members') members(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  @Get('projects/:id/members') members(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.members(user, id);
   }
-  @Post('projects/:id/members') addMember(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: AddMemberDto,
-  ) {
+  @Post('projects/:id/members') addMember(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: AddMemberDto) {
     return this.projects.addMember(user, id, data.userId);
   }
 
@@ -87,10 +50,7 @@ export class ProjectsController {
   }
 
   @Get('marketplace/projects/:id')
-  marketplaceProject(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  marketplaceProject(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.marketplaceProject(user, id);
   }
 
@@ -100,103 +60,62 @@ export class ProjectsController {
   }
 
   @Delete('projects/:id/favorite')
-  unfavorite(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  unfavorite(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.unfavorite(user, id);
   }
 
   @Post('projects/:id/applications')
-  apply(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: CreateApplicationDto,
-  ) {
+  apply(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: CreateApplicationDto) {
     return this.projects.apply(user, id, data);
   }
 
   @Get('projects/:id/applications')
-  applications(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() page: PageDto,
-  ) {
+  applications(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() page: PageDto) {
     return this.projects.applications(user, id, page);
   }
 
   @Post('applications/:id/accept')
-  acceptApplication(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  acceptApplication(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.acceptApplication(user, id);
   }
 
   @Post('applications/:id/reject')
-  rejectApplication(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  rejectApplication(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.rejectApplication(user, id);
   }
 
   @Post('projects/:id/close-hiring')
-  closeHiring(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  closeHiring(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.closeHiring(user, id);
   }
 
   @Get('freelancers/:id/profile')
-  freelancerProfile(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  freelancerProfile(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.freelancerProfile(user, id);
   }
 
   @Post('applications/:id/withdraw')
-  withdrawApplication(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  withdrawApplication(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.withdrawApplication(user, id);
   }
 
   @Post('projects/:id/client-review')
-  createClientReview(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: CreateClientReviewDto,
-  ) {
+  createClientReview(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: CreateClientReviewDto) {
     return this.projects.createClientReview(user, id, data);
   }
 
   @Get('clients/:id/profile')
-  clientProfile(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  clientProfile(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.projects.clientProfile(user, id);
   }
 
   @Post('projects/:id/reviews')
-  createReview(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() data: CreateFreelancerReviewDto,
-  ) {
+  createReview(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Body() data: CreateFreelancerReviewDto) {
     return this.projects.createReview(user, id, data);
   }
 
   @Get('projects/:id/activity')
-  activity(
-    @Actor() user: CurrentUser,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query() page: PageDto,
-  ) {
+  activity(@Actor() user: CurrentUser, @Param('id', ParseUUIDPipe) id: string, @Query() page: PageDto) {
     return this.projects.activity(user, id, page);
   }
 }

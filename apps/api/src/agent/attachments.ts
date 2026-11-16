@@ -34,9 +34,7 @@ function decodeXml(text: string) {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, code: string) =>
-      String.fromCodePoint(Number(code)),
-    )
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
     .replace(/&amp;/g, '&');
 }
 
@@ -85,40 +83,22 @@ function utf8Text(buffer: Buffer) {
 }
 
 // Тип визначаємо за розширенням І вмістом: PDF починається з %PDF, DOCX — з PK
-export async function extractAttachment(
-  file: UploadedFile,
-): Promise<AttachmentText> {
+export async function extractAttachment(file: UploadedFile): Promise<AttachmentText> {
   const name = cleanName(file.originalname);
   const extension = name.toLowerCase().split('.').pop();
-  if (file.size === 0 || file.size > maxAttachmentSize)
-    throw new BadRequestException(`Файл «${name}» має бути до 5 МБ.`);
+  if (file.size === 0 || file.size > maxAttachmentSize) throw new BadRequestException(`Файл «${name}» має бути до 5 МБ.`);
   let raw: string;
   if (extension === 'txt' || extension === 'md') raw = utf8Text(file.buffer);
-  else if (
-    extension === 'pdf' &&
-    file.buffer.subarray(0, 4).toString('latin1') === '%PDF'
-  )
-    raw = await pdfText(file.buffer);
-  else if (
-    extension === 'docx' &&
-    file.buffer[0] === 0x50 &&
-    file.buffer[1] === 0x4b
-  )
-    raw = docxText(file.buffer);
-  else
-    throw new BadRequestException(
-      `Файл «${name}»: дозволено лише TXT, PDF або DOCX.`,
-    );
+  else if (extension === 'pdf' && file.buffer.subarray(0, 4).toString('latin1') === '%PDF') raw = await pdfText(file.buffer);
+  else if (extension === 'docx' && file.buffer[0] === 0x50 && file.buffer[1] === 0x4b) raw = docxText(file.buffer);
+  else throw new BadRequestException(`Файл «${name}»: дозволено лише TXT, PDF або DOCX.`);
   // Прибираємо зайві пробіли й порожні рядки, щоб не витрачати ліміт моделі
   const text = raw
     .replace(/\r/g, '')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
-  if (!text)
-    throw new BadRequestException(
-      `У файлі «${name}» немає тексту (можливо, це скан).`,
-    );
+  if (!text) throw new BadRequestException(`У файлі «${name}» немає тексту (можливо, це скан).`);
   return {
     name,
     text: text.slice(0, maxAttachmentChars),
@@ -127,10 +107,8 @@ export async function extractAttachment(
 }
 
 export async function extractAttachments(files: UploadedFile[] | undefined) {
-  if (!files?.length)
-    throw new BadRequestException('Додайте файл у поле files.');
-  if (files.length > maxAttachmentFiles)
-    throw new BadRequestException('Можна прикріпити до 3 файлів.');
+  if (!files?.length) throw new BadRequestException('Додайте файл у поле files.');
+  if (files.length > maxAttachmentFiles) throw new BadRequestException('Можна прикріпити до 3 файлів.');
   const result: AttachmentText[] = [];
   for (const file of files) result.push(await extractAttachment(file));
   return result;

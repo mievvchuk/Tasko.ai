@@ -15,8 +15,7 @@ export class HitCounter {
   // Відхилений запит нічого не зараховує.
   hit(keys: [key: string, limit: number][], response: Response) {
     const now = Date.now();
-    for (const [key, entry] of this.hits)
-      if (entry.until <= now) this.hits.delete(key);
+    for (const [key, entry] of this.hits) if (entry.until <= now) this.hits.delete(key);
     for (const [key, limit] of keys) {
       const entry = this.hits.get(key);
       if (entry && entry.count >= limit) {
@@ -31,8 +30,7 @@ export class HitCounter {
         continue;
       }
       // Переповнена таблиця витісняє найстаріший запис, а не блокує всіх нових відвідувачів
-      if (this.hits.size >= this.maxKeys)
-        this.hits.delete(this.hits.keys().next().value!);
+      if (this.hits.size >= this.maxKeys) this.hits.delete(this.hits.keys().next().value!);
       this.hits.set(key, { count: 1, until: now + this.windowMs });
     }
   }

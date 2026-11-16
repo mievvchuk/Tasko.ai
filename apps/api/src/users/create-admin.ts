@@ -12,16 +12,11 @@ const input = Object.assign(new RegisterDto(), {
   password: process.env.ADMIN_PASSWORD,
   role: 'CLIENT',
 });
-if ((await validate(input)).length)
-  throw new Error(
-    'Вкажіть коректні ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD у локальному .env.',
-  );
+if ((await validate(input)).length) throw new Error('Вкажіть коректні ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD у локальному .env.');
 const db = createDb(config.databaseUrl);
 try {
   if (await db.orm.public.User.where({ email: input.email }).first())
-    throw new Error(
-      'Користувач із цією поштою вже існує. Роль автоматично не змінюється.',
-    );
+    throw new Error('Користувач із цією поштою вже існує. Роль автоматично не змінюється.');
   const now = new Date();
   await db.orm.public.User.create({
     id: randomUUID(),

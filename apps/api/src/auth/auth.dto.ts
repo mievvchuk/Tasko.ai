@@ -1,26 +1,14 @@
 import { Transform } from 'class-transformer';
-import {
-  IsBoolean,
-  IsEmail,
-  IsIn,
-  IsOptional,
-  IsString,
-  Length,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsOptional, IsString, Length, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 // Ім'я без емодзі: піктограми, прапорці (regional indicators) і їхні «склеювачі»
-export const nameWithoutEmoji =
-  /^[^\p{Extended_Pictographic}\p{Regional_Indicator}‍️⃣]*$/u;
+export const nameWithoutEmoji = /^[^\p{Extended_Pictographic}\p{Regional_Indicator}‍️⃣]*$/u;
 export const nameWithoutEmojiMessage = 'Ім’я не може містити емодзі.';
 
 export class LoginDto {
   @ApiProperty({ example: 'client@example.com' })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   @MaxLength(254)
   email: string;
@@ -114,9 +102,7 @@ export class DisableTwoFactorDto extends TwoFactorCodeDto {
 
 export class RegisterDto extends LoginDto {
   @ApiProperty({ example: 'Іван', minLength: 2, maxLength: 100 })
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Length(2, 100)
   @Matches(/\S/)

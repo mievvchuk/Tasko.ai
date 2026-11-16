@@ -7,20 +7,12 @@ import { hashPassword } from '../dist/auth/password.js';
 
 const config = loadConfig();
 // Віддалену БД (демо-сайт на Render) дозволяємо лише явним SEED_REMOTE_DB=yes
-if (
-  process.env.SEED_REMOTE_DB !== 'yes' &&
-  !['localhost', '127.0.0.1', '[::1]'].includes(
-    new URL(config.databaseUrl).hostname,
-  )
-) {
-  throw new Error(
-    'Демонстраційні дані можна додавати лише до локальної БД (або з SEED_REMOTE_DB=yes).',
-  );
+if (process.env.SEED_REMOTE_DB !== 'yes' && !['localhost', '127.0.0.1', '[::1]'].includes(new URL(config.databaseUrl).hostname)) {
+  throw new Error('Демонстраційні дані можна додавати лише до локальної БД (або з SEED_REMOTE_DB=yes).');
 }
 
 // Постійні UUID дозволяють повторювати запуск без дублювання записів.
-const id = (number) =>
-  `d3e00000-0000-4000-8000-${String(number).padStart(12, '0')}`;
+const id = (number) => `d3e00000-0000-4000-8000-${String(number).padStart(12, '0')}`;
 const users = [
   {
     id: id(1),
@@ -134,16 +126,13 @@ try {
     if (error.code !== 'ENOENT') throw error;
     for (const user of users) {
       if (await db.orm.public.User.where({ id: user.id }).first()) {
-        throw new Error(
-          'Демооблікові записи вже існують, але файл доступу відсутній. Паролі не змінено.',
-        );
+        throw new Error('Демооблікові записи вже існують, але файл доступу відсутній. Паролі не змінено.');
       }
     }
     credentials = {
       version: 1,
       createdAt: new Date().toISOString(),
-      password:
-        process.env.DEMO_PASSWORD || randomBytes(18).toString('base64url'),
+      password: process.env.DEMO_PASSWORD || randomBytes(18).toString('base64url'),
       accounts: users,
     };
     if (credentials.password.length < 8 || credentials.password.length > 128) {
@@ -155,11 +144,7 @@ try {
       mode: 0o600,
     });
   }
-  if (
-    credentials.version !== 1 ||
-    typeof credentials.password !== 'string' ||
-    !Number.isFinite(Date.parse(credentials.createdAt))
-  ) {
+  if (credentials.version !== 1 || typeof credentials.password !== 'string' || !Number.isFinite(Date.parse(credentials.createdAt))) {
     throw new Error('Некоректний файл демонстраційних облікових записів.');
   }
   // Файл доступу показує актуальні пошти акаунтів (пароль не змінюється).
@@ -200,21 +185,13 @@ try {
     }
     for (const user of users) {
       const existing = await models.User.where({ email: user.email }).first();
-      if (
-        existing &&
-        (existing.id !== user.id || existing.role !== user.role)
-      ) {
-        throw new Error(
-          `Пошта ${user.email} вже використовується. Наявний обліковий запис не змінено.`,
-        );
+      if (existing && (existing.id !== user.id || existing.role !== user.role)) {
+        throw new Error(`Пошта ${user.email} вже використовується. Наявний обліковий запис не змінено.`);
       }
       // Якщо демо-акаунт уже є, але зі старою поштою чи іменем, — оновлюємо пошту й ім’я.
       // Дані акаунта (проєкти, завдання, повідомлення) залишаються за ним.
       const sameAccount = await models.User.where({ id: user.id }).first();
-      if (
-        sameAccount &&
-        (sameAccount.email !== user.email || sameAccount.name !== user.name)
-      ) {
+      if (sameAccount && (sameAccount.email !== user.email || sameAccount.name !== user.name)) {
         await models.User.where({ id: user.id }).update({
           email: user.email,
           name: user.name,
@@ -238,8 +215,7 @@ try {
         id: id(101),
         clientId: client1.id,
         title: 'Лендінг для кав’ярні',
-        description:
-          'Потрібен адаптивний сайт із меню, фотографіями та формою бронювання. Проєкт відкритий для заявок.',
+        description: 'Потрібен адаптивний сайт із меню, фотографіями та формою бронювання. Проєкт відкритий для заявок.',
         status: 'PLANNING',
         deadline: date(21),
         createdAt: date(-2),
@@ -249,8 +225,7 @@ try {
         id: id(102),
         clientId: client1.id,
         title: 'Інтернет-магазин крафтових виробів',
-        description:
-          'Каталог товарів, кошик і оформлення замовлень. Два виконавці працюють над розробкою й дизайном.',
+        description: 'Каталог товарів, кошик і оформлення замовлень. Два виконавці працюють над розробкою й дизайном.',
         status: 'ACTIVE',
         deadline: date(20),
         createdAt: date(-10),
@@ -260,8 +235,7 @@ try {
         id: id(103),
         clientId: client2.id,
         title: 'Макет мобільного застосунку',
-        description:
-          'Дизайн застосунку для запису на послуги. Є прострочене завдання для перевірки аналітики ризиків.',
+        description: 'Дизайн застосунку для запису на послуги. Є прострочене завдання для перевірки аналітики ризиків.',
         status: 'ACTIVE',
         deadline: date(14),
         createdAt: date(-7),
@@ -271,8 +245,7 @@ try {
         id: id(104),
         clientId: client1.id,
         title: 'Фірмовий стиль пекарні',
-        description:
-          'Завершений проєкт: логотип, палітра та оформлення пакування. Клієнт залишив відгук.',
+        description: 'Завершений проєкт: логотип, палітра та оформлення пакування. Клієнт залишив відгук.',
         status: 'COMPLETED',
         deadline: date(3),
         createdAt: date(-25),
@@ -282,8 +255,7 @@ try {
         id: id(105),
         clientId: client2.id,
         title: 'Каталог послуг майстерні',
-        description:
-          'Завершений вебкаталог із пошуком послуг і контактною формою.',
+        description: 'Завершений вебкаталог із пошуком послуг і контактною формою.',
         status: 'COMPLETED',
         deadline: date(5),
         createdAt: date(-18),
@@ -316,8 +288,7 @@ try {
         status: 'PENDING',
         budget: 9000,
         days: 10,
-        message:
-          'Розроблю адаптивний лендінг і підключу форму бронювання за десять днів.',
+        message: 'Розроблю адаптивний лендінг і підключу форму бронювання за десять днів.',
       },
       {
         project: open,
@@ -325,8 +296,7 @@ try {
         status: 'PENDING',
         budget: 7500,
         days: 14,
-        message:
-          'Підготую дизайн, верстку та зручне мобільне меню для кав’ярні.',
+        message: 'Підготую дизайн, верстку та зручне мобільне меню для кав’ярні.',
       },
       {
         project: shop,
@@ -475,8 +445,7 @@ try {
     ];
     for (const [index, task] of tasks.entries()) {
       let updatedAt = task.project.updatedAt;
-      if (task.status === 'DONE' && task.project.status !== 'COMPLETED')
-        updatedAt = date(-2);
+      if (task.status === 'DONE' && task.project.status !== 'COMPLETED') updatedAt = date(-2);
       const taskId = id(301 + index);
       await add('Task', {
         id: taskId,
@@ -501,9 +470,7 @@ try {
           submittedAt: new Date(updatedAt.getTime() - 3600000),
           reviewedAt: approved ? updatedAt : null,
           reviewerId: approved ? task.project.clientId : null,
-          feedback: approved
-            ? 'Результат перевірено й прийнято. Дякую за роботу!'
-            : null,
+          feedback: approved ? 'Результат перевірено й прийнято. Дякую за роботу!' : null,
         });
       }
     }
@@ -522,8 +489,7 @@ try {
       {
         project: shop,
         sender: client1,
-        content:
-          'Вітаю! Основний пріоритет — каталог і кошик. Дизайн погоджуємо окремо.',
+        content: 'Вітаю! Основний пріоритет — каталог і кошик. Дизайн погоджуємо окремо.',
       },
       {
         project: shop,
@@ -543,8 +509,7 @@ try {
       {
         project: design,
         sender: freelancer3,
-        content:
-          'Підготую оновлений прототип. Завдання з високим пріоритетом уже в роботі.',
+        content: 'Підготую оновлений прототип. Завдання з високим пріоритетом уже в роботі.',
       },
       {
         project: brand,
@@ -558,9 +523,7 @@ try {
         projectId: message.project.id,
         senderId: message.sender.id,
         content: message.content,
-        createdAt: new Date(
-          message.project.updatedAt.getTime() - (6 - index) * 60000,
-        ),
+        createdAt: new Date(message.project.updatedAt.getTime() - (6 - index) * 60000),
       });
     }
     await add('FreelancerReview', {
@@ -569,8 +532,7 @@ try {
       clientId: client1.id,
       freelancerId: freelancer2.id,
       rating: 5,
-      comment:
-        'Якісний дизайн і уважне ставлення до правок. Результат прийнято з першого разу.',
+      comment: 'Якісний дизайн і уважне ставлення до правок. Результат прийнято з першого разу.',
       createdAt: brand.updatedAt,
     });
     await add('FreelancerReview', {
@@ -579,8 +541,7 @@ try {
       clientId: client2.id,
       freelancerId: freelancer1.id,
       rating: 4,
-      comment:
-        'Каталог працює, пошук і контактна форма перевірені. Виконавець регулярно повідомляв про прогрес.',
+      comment: 'Каталог працює, пошук і контактна форма перевірені. Виконавець регулярно повідомляв про прогрес.',
       createdAt: catalog.updatedAt,
     });
 
@@ -597,11 +558,7 @@ try {
     ];
     for (const category of categories) await add('ProjectCategory', category);
     for (const skill of skills) await add('Skill', skill);
-    for (const [index, freelancer] of [
-      freelancer1,
-      freelancer2,
-      freelancer3,
-    ].entries()) {
+    for (const [index, freelancer] of [freelancer1, freelancer2, freelancer3].entries()) {
       await addBy(
         'FreelancerProfile',
         { userId: freelancer.id },
@@ -620,9 +577,7 @@ try {
       await add('PortfolioItem', {
         id: id(921 + index),
         userId: freelancer.id,
-        title: ['Інтернет-магазин', 'Мобільний дизайн', 'Аналітичний звіт'][
-          index
-        ],
+        title: ['Інтернет-магазин', 'Мобільний дизайн', 'Аналітичний звіт'][index],
         description: 'Робота з портфоліо виконавця.',
         url: `https://example.com/portfolio/${index + 1}`,
         createdAt: date(-20 + index),
@@ -650,9 +605,7 @@ try {
       [skills[0], skills[1], skills[2]],
       [skills[1], skills[3]],
     ];
-    for (const [index, person] of extraPeople
-      .filter((person) => person.role === 'FREELANCER')
-      .entries()) {
+    for (const [index, person] of extraPeople.filter((person) => person.role === 'FREELANCER').entries()) {
       await addBy(
         'FreelancerProfile',
         { userId: person.id },
@@ -665,11 +618,7 @@ try {
         },
       );
       for (const skill of skillSets[index % skillSets.length])
-        await addBy(
-          'FreelancerSkill',
-          { userId: person.id, skillId: skill.id },
-          { userId: person.id, skillId: skill.id },
-        );
+        await addBy('FreelancerSkill', { userId: person.id, skillId: skill.id }, { userId: person.id, skillId: skill.id });
     }
     await addBy(
       'FavoriteProject',
@@ -747,8 +696,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       id: id(1101),
       clientId: client2.id,
       title: 'CRM для студії йоги',
-      description:
-        'Облік клієнтів, розклад занять, абонементи й онлайн-оплата. Над проєктом працюють розробник і дизайнер.',
+      description: 'Облік клієнтів, розклад занять, абонементи й онлайн-оплата. Над проєктом працюють розробник і дизайнер.',
       status: 'ACTIVE',
       deadline: date(30),
       budgetMin: 30000,
@@ -763,8 +711,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       id: id(1102),
       clientId: client1.id,
       title: 'Телеграм-бот для служби доставки',
-      description:
-        'Бот приймає замовлення, показує статус доставки й надсилає сповіщення клієнтам.',
+      description: 'Бот приймає замовлення, показує статус доставки й надсилає сповіщення клієнтам.',
       status: 'ACTIVE',
       deadline: date(16),
       budgetMin: 12000,
@@ -779,8 +726,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       id: id(1103),
       clientId: client1.id,
       title: 'Мобільний застосунок для фітнес-клубу',
-      description:
-        'Запис на тренування, абонементи та push-нагадування. Шукаємо виконавця з досвідом мобільного дизайну.',
+      description: 'Запис на тренування, абонементи та push-нагадування. Шукаємо виконавця з досвідом мобільного дизайну.',
       status: 'PLANNING',
       deadline: date(45),
       budgetMin: 25000,
@@ -795,8 +741,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       id: id(1104),
       clientId: client2.id,
       title: 'SEO-аудит сайту стоматології',
-      description:
-        'Потрібно перевірити технічний стан сайту, швидкість і структуру сторінок та скласти план покращень.',
+      description: 'Потрібно перевірити технічний стан сайту, швидкість і структуру сторінок та скласти план покращень.',
       status: 'PLANNING',
       deadline: date(25),
       budgetMin: 5000,
@@ -811,8 +756,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       id: id(1105),
       clientId: client2.id,
       title: 'Редизайн корпоративного блогу',
-      description:
-        'Нова сітка статей і типографіка. Проєкт тимчасово призупинено до погодження контенту.',
+      description: 'Нова сітка статей і типографіка. Проєкт тимчасово призупинено до погодження контенту.',
       status: 'PAUSED',
       deadline: date(35),
       budgetMin: 10000,
@@ -827,8 +771,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       id: id(1106),
       clientId: client1.id,
       title: 'Лендінг онлайн-курсу з фотографії',
-      description:
-        'Завершений проєкт: лендінг із програмою курсу, відгуками та формою оплати.',
+      description: 'Завершений проєкт: лендінг із програмою курсу, відгуками та формою оплати.',
       status: 'COMPLETED',
       deadline: date(0),
       budgetMin: 9000,
@@ -844,11 +787,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     const { skills: projectSkills, members, ...data } = project;
     await add('Project', data);
     for (const skill of projectSkills)
-      await addBy(
-        'ProjectSkill',
-        { projectId: project.id, skillId: skill.id },
-        { projectId: project.id, skillId: skill.id },
-      );
+      await addBy('ProjectSkill', { projectId: project.id, skillId: skill.id }, { projectId: project.id, skillId: skill.id });
     for (const [index, member] of members.entries()) {
       await addBy(
         'ProjectMember',
@@ -867,83 +806,17 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
 
   // Заявки: прийняті — для активних проєктів, очікують — для відкритих на біржі.
   const applications = [
-    [
-      crm,
-      freelancer1,
-      'ACCEPTED',
-      38000,
-      25,
-      'Маю досвід CRM на NestJS і React, почну з бази клієнтів.',
-    ],
-    [
-      crm,
-      freelancer3,
-      'ACCEPTED',
-      9000,
-      14,
-      'Візьму на себе дизайн особистого кабінету та сповіщення.',
-    ],
-    [
-      bot,
-      freelancer3,
-      'ACCEPTED',
-      15000,
-      14,
-      'Зроблю бота з відстеженням замовлень і тестами.',
-    ],
-    [
-      fitness,
-      freelancer2,
-      'PENDING',
-      32000,
-      30,
-      'Спроєктую застосунок у Figma й підготую дизайн-систему.',
-    ],
-    [
-      fitness,
-      freelancer3,
-      'PENDING',
-      27000,
-      35,
-      'Пропоную прототип за два тижні, далі — повний дизайн.',
-    ],
-    [
-      fitness,
-      freelancer1,
-      'PENDING',
-      39000,
-      40,
-      'Можу виконати і дизайн, і розробку на React Native.',
-    ],
-    [
-      seoAudit,
-      freelancer3,
-      'PENDING',
-      6000,
-      7,
-      'Проведу технічний аудит і підготую план покращень.',
-    ],
-    [
-      blog,
-      freelancer2,
-      'ACCEPTED',
-      12000,
-      20,
-      'Оновлю сітку статей і типографіку блогу.',
-    ],
-    [
-      course,
-      freelancer2,
-      'ACCEPTED',
-      10500,
-      14,
-      'Зроблю лендінг із програмою курсу й формою оплати.',
-    ],
+    [crm, freelancer1, 'ACCEPTED', 38000, 25, 'Маю досвід CRM на NestJS і React, почну з бази клієнтів.'],
+    [crm, freelancer3, 'ACCEPTED', 9000, 14, 'Візьму на себе дизайн особистого кабінету та сповіщення.'],
+    [bot, freelancer3, 'ACCEPTED', 15000, 14, 'Зроблю бота з відстеженням замовлень і тестами.'],
+    [fitness, freelancer2, 'PENDING', 32000, 30, 'Спроєктую застосунок у Figma й підготую дизайн-систему.'],
+    [fitness, freelancer3, 'PENDING', 27000, 35, 'Пропоную прототип за два тижні, далі — повний дизайн.'],
+    [fitness, freelancer1, 'PENDING', 39000, 40, 'Можу виконати і дизайн, і розробку на React Native.'],
+    [seoAudit, freelancer3, 'PENDING', 6000, 7, 'Проведу технічний аудит і підготую план покращень.'],
+    [blog, freelancer2, 'ACCEPTED', 12000, 20, 'Оновлю сітку статей і типографіку блогу.'],
+    [course, freelancer2, 'ACCEPTED', 10500, 14, 'Зроблю лендінг із програмою курсу й формою оплати.'],
   ];
-  for (const [
-    index,
-    [project, user, status, budget, days, message],
-  ] of applications.entries()) {
+  for (const [index, [project, user, status, budget, days, message]] of applications.entries()) {
     await addBy(
       'ProjectApplication',
       { projectId: project.id, freelancerId: user.id },
@@ -969,14 +842,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
   // Завдання: [проєкт, виконавець, назва, статус, пріоритет, дедлайн у днях]
   const tasks = [
     [crm, freelancer1, 'Спроєктувати базу клієнтів', 'DONE', 'HIGH', -3],
-    [
-      crm,
-      freelancer1,
-      'Календар занять із фільтрами',
-      'IN_PROGRESS',
-      'HIGH',
-      10,
-    ],
+    [crm, freelancer1, 'Календар занять із фільтрами', 'IN_PROGRESS', 'HIGH', 10],
     [crm, freelancer1, 'Онлайн-оплата абонементів', 'TODO', 'HIGH', 18],
     [crm, freelancer3, 'Дизайн особистого кабінету', 'REVIEW', 'MEDIUM', 8],
     [crm, freelancer3, 'Сповіщення про заняття', 'TODO', 'LOW', 22],
@@ -984,14 +850,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     [bot, freelancer3, 'Описати сценарії діалогів', 'DONE', 'MEDIUM', 1],
     [bot, freelancer3, 'Підключити API замовлень', 'IN_PROGRESS', 'HIGH', 9],
     [bot, freelancer3, 'Відстеження кур’єра на карті', 'TODO', 'MEDIUM', 13],
-    [
-      bot,
-      freelancer3,
-      'Тестування на реальних замовленнях',
-      'TODO',
-      'HIGH',
-      15,
-    ],
+    [bot, freelancer3, 'Тестування на реальних замовленнях', 'TODO', 'HIGH', 15],
     [blog, freelancer2, 'Аудит наявного блогу', 'DONE', 'MEDIUM', -4],
     [blog, freelancer2, 'Нова сітка статей', 'IN_PROGRESS', 'MEDIUM', 14],
     [course, freelancer2, 'Структура лендінгу', 'DONE', 'MEDIUM', -20],
@@ -999,10 +858,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     [course, freelancer2, 'Підключити форму оплати', 'DONE', 'HIGH', -3],
   ];
   const submissionIds = {};
-  for (const [
-    index,
-    [project, user, title, status, priority, days],
-  ] of tasks.entries()) {
+  for (const [index, [project, user, title, status, priority, days]] of tasks.entries()) {
     const taskId = id(1301 + index);
     // Завершене завдання закрито не пізніше дедлайну, решта оновлювались нещодавно.
     const updatedAt = status === 'DONE' ? date(Math.min(days, 4)) : date(5);
@@ -1037,35 +893,11 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
 
   // Етапи з умовною оплатою для CRM
   const milestones = [
-    [
-      'MVP: клієнти й розклад',
-      'База клієнтів і розклад занять.',
-      15000,
-      'COMPLETED',
-      'PAID',
-      -3,
-    ],
-    [
-      'Оплата й особистий кабінет',
-      'Абонементи, онлайн-оплата та кабінет клієнта.',
-      18000,
-      'IN_PROGRESS',
-      'RESERVED',
-      18,
-    ],
-    [
-      'Звіти та сповіщення',
-      'Звіт відвідуваності й нагадування про заняття.',
-      9000,
-      'PLANNED',
-      'UNPAID',
-      28,
-    ],
+    ['MVP: клієнти й розклад', 'База клієнтів і розклад занять.', 15000, 'COMPLETED', 'PAID', -3],
+    ['Оплата й особистий кабінет', 'Абонементи, онлайн-оплата та кабінет клієнта.', 18000, 'IN_PROGRESS', 'RESERVED', 18],
+    ['Звіти та сповіщення', 'Звіт відвідуваності й нагадування про заняття.', 9000, 'PLANNED', 'UNPAID', 28],
   ];
-  for (const [
-    index,
-    [title, description, amount, status, paymentStatus, days],
-  ] of milestones.entries()) {
+  for (const [index, [title, description, amount, status, paymentStatus, days]] of milestones.entries()) {
     await add('ProjectMilestone', {
       id: id(1931 + index),
       projectId: crm.id,
@@ -1099,66 +931,18 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
 
   // Повідомлення: [проєкт, автор, текст, скільки годин тому від оновлення проєкту]
   const messages = [
-    [
-      crm,
-      client2,
-      'Доброго дня! Головне для нас — зручний розклад і оплата абонементів онлайн.',
-      30,
-    ],
-    [
-      crm,
-      freelancer1,
-      'Базу клієнтів готово, зараз працюю над календарем занять. Фільтри за тренером уже є.',
-      20,
-    ],
-    [
-      crm,
-      freelancer3,
-      'Дизайн особистого кабінету передав на перевірку. Буду радий коментарям.',
-      6,
-    ],
-    [
-      crm,
-      client2,
-      'Дякую! Подивлюся кабінет сьогодні ввечері й залишу відгук.',
-      3,
-    ],
+    [crm, client2, 'Доброго дня! Головне для нас — зручний розклад і оплата абонементів онлайн.', 30],
+    [crm, freelancer1, 'Базу клієнтів готово, зараз працюю над календарем занять. Фільтри за тренером уже є.', 20],
+    [crm, freelancer3, 'Дизайн особистого кабінету передав на перевірку. Буду радий коментарям.', 6],
+    [crm, client2, 'Дякую! Подивлюся кабінет сьогодні ввечері й залишу відгук.', 3],
     [bot, client1, 'Чи зможе бот показувати, де зараз кур’єр?', 26],
-    [
-      bot,
-      freelancer3,
-      'Так, це наступне завдання після підключення API замовлень.',
-      24,
-    ],
-    [
-      bot,
-      client1,
-      'Чудово, тоді тестуємо на реальних замовленнях наприкінці тижня.',
-      2,
-    ],
-    [
-      blog,
-      client2,
-      'Ставимо проєкт на паузу: чекаємо нові тексти від редакції.',
-      48,
-    ],
-    [
-      blog,
-      freelancer2,
-      'Зрозуміло. Аудит готовий, повернуся до сітки після вашого сигналу.',
-      46,
-    ],
-    [
-      course,
-      client1,
-      'Лендінг запустили, перші оплати вже пройшли. Дякую за роботу!',
-      30,
-    ],
+    [bot, freelancer3, 'Так, це наступне завдання після підключення API замовлень.', 24],
+    [bot, client1, 'Чудово, тоді тестуємо на реальних замовленнях наприкінці тижня.', 2],
+    [blog, client2, 'Ставимо проєкт на паузу: чекаємо нові тексти від редакції.', 48],
+    [blog, freelancer2, 'Зрозуміло. Аудит готовий, повернуся до сітки після вашого сигналу.', 46],
+    [course, client1, 'Лендінг запустили, перші оплати вже пройшли. Дякую за роботу!', 30],
   ];
-  for (const [
-    index,
-    [project, sender, content, hoursAgo],
-  ] of messages.entries()) {
+  for (const [index, [project, sender, content, hoursAgo]] of messages.entries()) {
     await add('Message', {
       id: id(1801 + index),
       projectId: project.id,
@@ -1180,20 +964,8 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
 
   // Файли: текстові документи, які реально лежать у сховищі й скачуються
   const files = [
-    [
-      crm,
-      client2,
-      'Технічне-завдання-CRM.txt',
-      'Технічне завдання: облік клієнтів, розклад, абонементи, онлайн-оплата, звіти.',
-      null,
-    ],
-    [
-      crm,
-      freelancer1,
-      'Схема-бази-даних.txt',
-      'Таблиці: clients, trainers, classes, subscriptions, payments, visits.',
-      null,
-    ],
+    [crm, client2, 'Технічне-завдання-CRM.txt', 'Технічне завдання: облік клієнтів, розклад, абонементи, онлайн-оплата, звіти.', null],
+    [crm, freelancer1, 'Схема-бази-даних.txt', 'Таблиці: clients, trainers, classes, subscriptions, payments, visits.', null],
     [
       crm,
       freelancer3,
@@ -1201,25 +973,10 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
       'Екрани: профіль, мої заняття, абонемент, історія оплат.',
       'Дизайн особистого кабінету',
     ],
-    [
-      bot,
-      client1,
-      'Сценарії-бота.txt',
-      'Сценарії: нове замовлення, статус, скасування, звернення в підтримку.',
-      null,
-    ],
-    [
-      course,
-      freelancer2,
-      'Звіт-про-запуск.txt',
-      'Лендінг опубліковано, форма оплати перевірена, швидкість 92/100.',
-      null,
-    ],
+    [bot, client1, 'Сценарії-бота.txt', 'Сценарії: нове замовлення, статус, скасування, звернення в підтримку.', null],
+    [course, freelancer2, 'Звіт-про-запуск.txt', 'Лендінг опубліковано, форма оплати перевірена, швидкість 92/100.', null],
   ];
-  for (const [
-    index,
-    [project, uploader, fileName, text, submissionTask],
-  ] of files.entries()) {
+  for (const [index, [project, uploader, fileName, text, submissionTask]] of files.entries()) {
     const fileId = id(1971 + index);
     const storagePath = `${fileId}.txt`;
     const content = Buffer.from(`${text}\n`, 'utf8');
@@ -1244,48 +1001,15 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
 
   // Непрочитані сповіщення для кожного демо-акаунта
   const notifications = [
-    [
-      client1,
-      'NEW_APPLICATION',
-      'На проєкт «Мобільний застосунок для фітнес-клубу» надійшло 3 заявки.',
-      fitness,
-    ],
-    [
-      client1,
-      'NEW_MESSAGE',
-      'Нове повідомлення в проєкті «Телеграм-бот для служби доставки».',
-      bot,
-    ],
-    [
-      client2,
-      'SUBMISSION_CREATED',
-      'Дизайн особистого кабінету передано на перевірку.',
-      crm,
-    ],
-    [
-      freelancer1,
-      'TASK_ASSIGNED',
-      'Вам призначено завдання «Онлайн-оплата абонементів».',
-      crm,
-    ],
-    [
-      freelancer2,
-      'PROJECT_PAUSED',
-      'Проєкт «Редизайн корпоративного блогу» призупинено.',
-      blog,
-    ],
-    [
-      freelancer3,
-      'APPLICATION_ACCEPTED',
-      'Вашу заявку на «Телеграм-бот для служби доставки» прийнято.',
-      bot,
-    ],
+    [client1, 'NEW_APPLICATION', 'На проєкт «Мобільний застосунок для фітнес-клубу» надійшло 3 заявки.', fitness],
+    [client1, 'NEW_MESSAGE', 'Нове повідомлення в проєкті «Телеграм-бот для служби доставки».', bot],
+    [client2, 'SUBMISSION_CREATED', 'Дизайн особистого кабінету передано на перевірку.', crm],
+    [freelancer1, 'TASK_ASSIGNED', 'Вам призначено завдання «Онлайн-оплата абонементів».', crm],
+    [freelancer2, 'PROJECT_PAUSED', 'Проєкт «Редизайн корпоративного блогу» призупинено.', blog],
+    [freelancer3, 'APPLICATION_ACCEPTED', 'Вашу заявку на «Телеграм-бот для служби доставки» прийнято.', bot],
     [admin, 'NEW_COMPLAINT', 'Надійшла нова скарга щодо проєкту.', null],
   ];
-  for (const [
-    index,
-    [user, type, message, project],
-  ] of notifications.entries()) {
+  for (const [index, [user, type, message, project]] of notifications.entries()) {
     await add('Notification', {
       id: id(1941 + index),
       userId: user.id,
@@ -1302,18 +1026,8 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
   const activity = [
     [client2, 'PROJECT_CREATED', 'Клієнт створив проєкт.', -12],
     [client2, 'APPLICATION_ACCEPTED', 'Клієнт обрав виконавців.', -11],
-    [
-      freelancer1,
-      'SUBMISSION_APPROVED',
-      'Прийнято результат «Спроєктувати базу клієнтів».',
-      -3,
-    ],
-    [
-      freelancer3,
-      'SUBMISSION_CREATED',
-      'Передано на перевірку «Дизайн особистого кабінету».',
-      4,
-    ],
+    [freelancer1, 'SUBMISSION_APPROVED', 'Прийнято результат «Спроєктувати базу клієнтів».', -3],
+    [freelancer3, 'SUBMISSION_CREATED', 'Передано на перевірку «Дизайн особистого кабінету».', 4],
   ];
   for (const [index, [actor, type, message, days]] of activity.entries()) {
     await add('ActivityLog', {
@@ -1333,8 +1047,7 @@ async function addShowcaseData({ add, addBy, date, categories, skills }) {
     targetUserId: null,
     projectId: blog.id,
     reason: 'Довго немає відповіді',
-    description:
-      'Виконавець не відповідав два дні після постановки проєкту на паузу.',
+    description: 'Виконавець не відповідав два дні після постановки проєкту на паузу.',
     status: 'RESOLVED',
     adminNote: 'Зв’язалися з виконавцем, комунікацію відновлено.',
     createdAt: date(1),

@@ -35,20 +35,13 @@ export function apiUrl(path: string) {
 
 // Без «Запам'ятати мене» токен у sessionStorage (живе до закриття вкладки), з ним — у localStorage
 export function getToken() {
-  return (
-    sessionStorage.getItem(tokenKey) ??
-    globalThis.localStorage?.getItem(tokenKey) ??
-    null
-  );
+  return sessionStorage.getItem(tokenKey) ?? globalThis.localStorage?.getItem(tokenKey) ?? null;
 }
 
 // sessionStorage у кожної вкладки свій, тож нова вкладка без «Запам'ятати мене» опинялась на вході.
 // Вона питає відкриті вкладки цього ж сайту через BroadcastChannel і бере їхній токен.
 // Закрили всі вкладки — sessionStorage зник, і сеанс у браузері закінчився, як і раніше.
-const tabs =
-  globalThis.window && typeof BroadcastChannel !== "undefined"
-    ? new BroadcastChannel("tasko.auth")
-    : null;
+const tabs = globalThis.window && typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("tasko.auth") : null;
 tabs?.addEventListener("message", (event: MessageEvent) => {
   if (event.data !== "ask") return;
   try {
@@ -88,10 +81,7 @@ export function errorMessage(error: unknown) {
   return trNow("Не вдалося виконати дію. Спробуйте ще раз.");
 }
 
-export async function request<T>(
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const baseUrl = import.meta.env?.VITE_API_URL || "/api";
   const headers = new Headers({ Accept: "application/json" });
   const authenticated = options.auth !== false;
@@ -111,49 +101,31 @@ export async function request<T>(
 
   let response: Response;
   try {
-    response = await fetch(
-      baseUrl.replace(/\/$/, "") + "/" + path.replace(/^\//, ""),
-      {
-        method: options.method || "GET",
-        headers,
-        body,
-        signal: AbortSignal.any([
-          AbortSignal.timeout(options.timeoutMs || 15000),
-          ...(options.signal ? [options.signal] : []),
-        ]),
-      },
-    );
+    response = await fetch(baseUrl.replace(/\/$/, "") + "/" + path.replace(/^\//, ""), {
+      method: options.method || "GET",
+      headers,
+      body,
+      signal: AbortSignal.any([AbortSignal.timeout(options.timeoutMs || 15000), ...(options.signal ? [options.signal] : [])]),
+    });
   } catch (error) {
     if (options.signal?.aborted) throw error;
-    throw new ApiError(
-      0,
-      trNow(
-        "Сервер недоступний або не відповідає. Перевірте з’єднання та спробуйте ще раз.",
-      ),
-    );
+    throw new ApiError(0, trNow("Сервер недоступний або не відповідає. Перевірте з’єднання та спробуйте ще раз."));
   }
 
-  if (response.ok && options.responseType === "blob")
-    return (await response.blob()) as T;
+  if (response.ok && options.responseType === "blob") return (await response.blob()) as T;
   const text = await response.text();
   let data: unknown;
   try {
     data = text ? JSON.parse(text) : undefined;
   } catch {
-    throw new ApiError(
-      response.ok ? 502 : response.status,
-      trNow("Сервер повернув некоректну відповідь. Спробуйте пізніше."),
-    );
+    throw new ApiError(response.ok ? 502 : response.status, trNow("Сервер повернув некоректну відповідь. Спробуйте пізніше."));
   }
 
   if (!response.ok) {
     let message = trNow("Не вдалося виконати запит. Спробуйте пізніше.");
-    if (response.status === 400)
-      message = trNow("Перевірте введені дані та спробуйте ще раз.");
-    if (response.status === 401)
-      message = trNow("Потрібно увійти до облікового запису.");
-    if (response.status === 403)
-      message = trNow("У вас немає доступу до цієї дії.");
+    if (response.status === 400) message = trNow("Перевірте введені дані та спробуйте ще раз.");
+    if (response.status === 401) message = trNow("Потрібно увійти до облікового запису.");
+    if (response.status === 403) message = trNow("У вас немає доступу до цієї дії.");
     if (
       data &&
       typeof data === "object" &&
@@ -163,11 +135,7 @@ export async function request<T>(
     ) {
       message = trNow(data.message);
     }
-    if (
-      authenticated &&
-      (response.status === 401 ||
-        (response.status === 403 && message.includes("заблоковано")))
-    ) {
+    if (authenticated && (response.status === 401 || (response.status === 403 && message.includes("заблоковано")))) {
       window.dispatchEvent(new Event(sessionEndedEvent));
     }
     throw new ApiError(response.status, message);
@@ -207,11 +175,7 @@ export async function downloadApiFile(path: string, fileName: string) {
 // Підписка на потік подій сервера (SSE) з токеном у заголовку.
 // EventSource заголовків не вміє, тому читаємо потік через fetch.
 // Після обриву з'єднання пробує знову за 3 с, доки signal не скасовано.
-export async function subscribe(
-  path: string,
-  onEvent: (type: string, data: string) => void,
-  signal: AbortSignal,
-) {
+export async function subscribe(path: string, onEvent: (type: string, data: string) => void, signal: AbortSignal) {
   while (!signal.aborted) {
     try {
       const token = getToken();
@@ -222,11 +186,8 @@ export async function subscribe(
         },
         signal,
       });
-      if (!response.ok || !response.body)
-        throw new Error(String(response.status));
-      const reader = response.body
-        .pipeThrough(new TextDecoderStream())
-        .getReader();
+      if (!response.ok || !response.body) throw new Error(String(response.status));
+      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
       let buffer = "";
       for (;;) {
         const { value, done } = await reader.read();
@@ -239,8 +200,7 @@ export async function subscribe(
           const data: string[] = [];
           for (const line of raw.split("\n")) {
             if (line.startsWith("event:")) type = line.slice(6).trim();
-            else if (line.startsWith("data:"))
-              data.push(line.slice(5).trimStart());
+            else if (line.startsWith("data:")) data.push(line.slice(5).trimStart());
           }
           onEvent(type, data.join("\n"));
         }

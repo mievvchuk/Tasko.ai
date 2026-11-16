@@ -16,18 +16,12 @@ export function FilesPage() {
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
   const project = useApi<Project>(`/projects/${id}`, { live: true });
-  const files = useApi<FileAttachment[]>(
-    project.data ? `/projects/${id}/files?page=${page}&limit=20` : null,
-    { live: true },
-  );
+  const files = useApi<FileAttachment[]>(project.data ? `/projects/${id}/files?page=${page}&limit=20` : null, {
+    live: true,
+  });
   const [removeError, setRemoveError] = useState("");
   async function remove(file: FileAttachment) {
-    if (
-      !window.confirm(
-        tr("Видалити файл {0}? Його не можна буде відновити.", file.fileName),
-      )
-    )
-      return;
+    if (!window.confirm(tr("Видалити файл {0}? Його не можна буде відновити.", file.fileName))) return;
     setRemoveError("");
     try {
       await request(`/files/${file.id}`, { method: "DELETE" });
@@ -36,14 +30,7 @@ export function FilesPage() {
       setRemoveError(errorMessage(error));
     }
   }
-  if (!project.data)
-    return (
-      <ResourceState
-        loading={project.loading}
-        error={project.error}
-        onRetry={project.refresh}
-      />
-    );
+  if (!project.data) return <ResourceState loading={project.loading} error={project.error} onRetry={project.refresh} />;
   const closed = ["COMPLETED", "CANCELLED"].includes(project.data.status);
   return (
     <>
@@ -64,11 +51,7 @@ export function FilesPage() {
             }}
           />
         )}
-        {closed && (
-          <p className="form-note">
-            {tr("Проєкт закрито. Файли доступні для завантаження.")}
-          </p>
-        )}
+        {closed && <p className="form-note">{tr("Проєкт закрито. Файли доступні для завантаження.")}</p>}
         <div className="panel-heading">
           <h2>{tr("Прикріплені файли")}</h2>
           <button className="button secondary" onClick={files.refresh}>
@@ -77,11 +60,7 @@ export function FilesPage() {
             {tr("Оновити")}
           </button>
         </div>
-        <ResourceState
-          loading={files.loading}
-          error={files.error}
-          onRetry={files.refresh}
-        />
+        <ResourceState loading={files.loading} error={files.error} onRetry={files.refresh} />
         {removeError && (
           <p className="notice error" role="alert">
             {removeError}
@@ -89,38 +68,23 @@ export function FilesPage() {
         )}
         {files.data && (
           <>
-            {!files.data.length && (
-              <p className="empty-state">
-                {tr("На цій сторінці файлів немає.")}
-              </p>
-            )}
+            {!files.data.length && <p className="empty-state">{tr("На цій сторінці файлів немає.")}</p>}
             <ul className="file-list">
               {files.data.map((file) => (
                 <li key={file.id}>
                   {/* Видалити можна лише власний файл, що ще не став частиною здачі */}
                   <FileDownload
                     file={file}
-                    onRemove={
-                      !closed &&
-                      file.uploadedBy === user?.id &&
-                      !file.submissionId
-                        ? () => void remove(file)
-                        : undefined
-                    }
+                    onRemove={!closed && file.uploadedBy === user?.id && !file.submissionId ? () => void remove(file) : undefined}
                   />
                   <p className="file-note">
                     {formatDate(file.uploadedAt || null, true)}
-                    {file.submissionId &&
-                      tr(" · Прикріплено до результату роботи")}
+                    {file.submissionId && tr(" · Прикріплено до результату роботи")}
                   </p>
                 </li>
               ))}
             </ul>
-            <Pagination
-              page={page}
-              count={files.data.length}
-              onChange={(value) => setParams({ page: String(value) })}
-            />
+            <Pagination page={page} count={files.data.length} onChange={(value) => setParams({ page: String(value) })} />
           </>
         )}
       </section>

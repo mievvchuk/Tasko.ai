@@ -1,9 +1,6 @@
 import { ConflictException } from '@nestjs/common';
 import { checkMilestoneTransition } from '../../../src/projects/milestones.service.js';
-import {
-  milestoneStatusFor,
-  projectIsDone,
-} from '../../../src/projects/milestone-progress.js';
+import { milestoneStatusFor, projectIsDone } from '../../../src/projects/milestone-progress.js';
 
 describe('checkMilestoneTransition', () => {
   it('lets the client accept a milestone whose tasks are done', () => {
@@ -16,9 +13,7 @@ describe('checkMilestoneTransition', () => {
       ['PLANNED', 'COMPLETED'],
       ['REVIEW', 'IN_PROGRESS'],
     ])
-      expect(() => checkMilestoneTransition(from, to)).toThrow(
-        ConflictException,
-      );
+      expect(() => checkMilestoneTransition(from, to)).toThrow(ConflictException);
   });
 });
 
@@ -26,18 +21,12 @@ describe('milestoneStatusFor', () => {
   it('derives the milestone status from its tasks', () => {
     expect(milestoneStatusFor('PLANNED', [])).toBe('PLANNED');
     expect(milestoneStatusFor('PLANNED', ['TODO', 'TODO'])).toBe('PLANNED');
-    expect(milestoneStatusFor('PLANNED', ['TODO', 'IN_PROGRESS'])).toBe(
-      'IN_PROGRESS',
-    );
+    expect(milestoneStatusFor('PLANNED', ['TODO', 'IN_PROGRESS'])).toBe('IN_PROGRESS');
     // Усі завдання прийнято — етап завершено (і вважається оплаченим)
-    expect(milestoneStatusFor('IN_PROGRESS', ['DONE', 'DONE'])).toBe(
-      'COMPLETED',
-    );
+    expect(milestoneStatusFor('IN_PROGRESS', ['DONE', 'DONE'])).toBe('COMPLETED');
   });
   it('returns a milestone under review to work when a task reopens', () => {
-    expect(milestoneStatusFor('REVIEW', ['DONE', 'REVIEW'])).toBe(
-      'IN_PROGRESS',
-    );
+    expect(milestoneStatusFor('REVIEW', ['DONE', 'REVIEW'])).toBe('IN_PROGRESS');
   });
   it('never changes an accepted milestone', () => {
     expect(milestoneStatusFor('COMPLETED', ['TODO'])).toBe('COMPLETED');

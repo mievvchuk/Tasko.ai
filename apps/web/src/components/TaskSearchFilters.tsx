@@ -41,9 +41,7 @@ export function TaskSearchFilters({
           id="task-overdue-filter"
           type="checkbox"
           checked={overdue}
-          onChange={(event) =>
-            onChange("overdue", event.target.checked ? "true" : "")
-          }
+          onChange={(event) => onChange("overdue", event.target.checked ? "true" : "")}
         />
 
         {tr("Лише прострочені")}

@@ -50,14 +50,7 @@ const pages: Record<Role, (ids: Record<string, string>) => string[]> = {
     "/help",
     `/clients/${ids.client}`,
   ],
-  admin: () => [
-    "/admin",
-    "/admin/users",
-    "/admin/moderation",
-    "/admin/projects",
-    "/admin/complaints",
-    "/admin/ai",
-  ],
+  admin: () => ["/admin", "/admin/users", "/admin/moderation", "/admin/projects", "/admin/complaints", "/admin/ai"],
 };
 
 for (const role of Object.keys(pages) as Role[]) {

@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { hashPassword } from '../../../src/auth/password.js';
 import type { PrismaService } from '../../../src/prisma/prisma.service.js';
 import type { ProjectsService } from '../../../src/projects/projects.service.js';
@@ -83,10 +79,7 @@ describe('AdminService reports', () => {
     },
   };
   const prisma = { client: { orm: { public: db } } };
-  const service = new AdminService(
-    prisma as unknown as PrismaService,
-    {} as ProjectsService,
-  );
+  const service = new AdminService(prisma as unknown as PrismaService, {} as ProjectsService);
 
   it('builds system totals and protects them from non-admins', async () => {
     const report = await service.report(admin);
@@ -116,9 +109,7 @@ describe('AdminService reports', () => {
       averageHours: { complaintResolution: 4, firstApplication: 2, hire: 6 },
     });
     expect(report.week.days).toHaveLength(7);
-    await expect(
-      service.report({ ...admin, role: 'CLIENT' }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.report({ ...admin, role: 'CLIENT' })).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it.each([
@@ -141,11 +132,7 @@ describe('AdminService reports', () => {
     const User = {
       where: vi.fn((filter: { id?: string; email?: string }) => ({
         first: vi.fn(async () =>
-          Object.values(people).find(
-            (person) =>
-              (filter.id && person.id === filter.id) ||
-              (filter.email && person.email === filter.email),
-          ),
+          Object.values(people).find((person) => (filter.id && person.id === filter.id) || (filter.email && person.email === filter.email)),
         ),
       })),
       create: vi.fn(async (row: Record<string, unknown>) => {
@@ -181,9 +168,7 @@ describe('AdminService reports', () => {
 
     it('never lets the panel change another admin, or yourself', async () => {
       for (const id of ['other-admin', 'admin-id'])
-        await expect(
-          service.update(admin, id, { status: 'BLOCKED' }),
-        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(service.update(admin, id, { status: 'BLOCKED' })).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('creates a separate admin only after the creator password matches', async () => {
@@ -193,12 +178,8 @@ describe('AdminService reports', () => {
         password: 'New-admin-123',
         currentPassword: 'wrong-pass-1',
       };
-      await expect(service.createAdmin(admin, data)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-      await expect(
-        service.createAdmin({ ...admin, role: 'CLIENT' }, data),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.createAdmin(admin, data)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.createAdmin({ ...admin, role: 'CLIENT' }, data)).rejects.toBeInstanceOf(ForbiddenException);
       await expect(
         service.createAdmin(admin, {
           ...data,
@@ -220,14 +201,11 @@ describe('AdminService reports', () => {
   describe('deleting users', () => {
     // Таблиці в пам'яті: where() фільтрує за рівністю полів
     let tables: Record<string, Record<string, unknown>[]>;
-    const matches = (
-      row: Record<string, unknown>,
-      filter: Record<string, unknown>,
-    ) => Object.entries(filter).every(([key, value]) => row[key] === value);
+    const matches = (row: Record<string, unknown>, filter: Record<string, unknown>) =>
+      Object.entries(filter).every(([key, value]) => row[key] === value);
     const table = (name: string) => ({
       where: (filter: Record<string, unknown>) => {
-        const rows = () =>
-          (tables[name] ??= []).filter((row) => matches(row, filter));
+        const rows = () => (tables[name] ??= []).filter((row) => matches(row, filter));
         return {
           first: async () => rows()[0] ?? null,
           all: async () => rows(),
@@ -238,10 +216,8 @@ describe('AdminService reports', () => {
             const gone = rows();
             tables[name] = tables[name].filter((row) => !gone.includes(row));
           },
-          update: async (data: Record<string, unknown>) =>
-            Object.assign(rows()[0], data),
-          updateAll: async (data: Record<string, unknown>) =>
-            rows().forEach((row) => Object.assign(row, data)),
+          update: async (data: Record<string, unknown>) => Object.assign(rows()[0], data),
+          updateAll: async (data: Record<string, unknown>) => rows().forEach((row) => Object.assign(row, data)),
         };
       },
     });
@@ -277,8 +253,7 @@ describe('AdminService reports', () => {
       {
         client: {
           orm,
-          transaction: (run: (t: { orm: typeof orm }) => unknown) =>
-            run({ orm }),
+          transaction: (run: (t: { orm: typeof orm }) => unknown) => run({ orm }),
         },
       } as unknown as PrismaService,
       {} as ProjectsService,
@@ -310,9 +285,7 @@ describe('AdminService reports', () => {
           { id: 't-own', projectId: 'own', assigneeId: 'busy' },
           { id: 't-foreign', projectId: 'foreign', assigneeId: 'busy' },
         ],
-        WorkSubmission: [
-          { id: 's1', taskId: 't-foreign', submittedBy: 'busy' },
-        ],
+        WorkSubmission: [{ id: 's1', taskId: 't-foreign', submittedBy: 'busy' }],
         Message: [
           { projectId: 'foreign', senderId: 'busy' },
           { projectId: 'foreign', senderId: 'someone' },
@@ -328,11 +301,7 @@ describe('AdminService reports', () => {
           { id: 'app-own', projectId: 'own', freelancerId: 'someone' },
           { id: 'app-other', projectId: 'foreign', freelancerId: 'someone' },
         ],
-        ApplicationMessage: [
-          { applicationId: 'app-busy' },
-          { applicationId: 'app-own' },
-          { applicationId: 'app-other' },
-        ],
+        ApplicationMessage: [{ applicationId: 'app-busy' }, { applicationId: 'app-own' }, { applicationId: 'app-other' }],
         PortfolioItem: [{ id: 'p1', userId: 'busy' }],
         AuthSession: [{ userId: 'busy' }, { userId: 'fresh' }],
         FileAttachment: [
@@ -343,11 +312,7 @@ describe('AdminService reports', () => {
             storagePath: 'f1.pdf',
           },
         ],
-        StoredFile: [
-          { id: 'f1.pdf' },
-          { id: 'avatars/a.png' },
-          { id: 'someone-else.pdf' },
-        ],
+        StoredFile: [{ id: 'f1.pdf' }, { id: 'avatars/a.png' }, { id: 'someone-else.pdf' }],
       };
     });
 
@@ -365,14 +330,10 @@ describe('AdminService reports', () => {
       });
       expect(tables.User.find((u) => u.id === 'busy')).toBeUndefined();
       expect(tables.Project.map((p) => p.id)).toEqual(['foreign']);
-      expect(tables.Task).toEqual([
-        { id: 't-foreign', projectId: 'foreign', assigneeId: null },
-      ]);
+      expect(tables.Task).toEqual([{ id: 't-foreign', projectId: 'foreign', assigneeId: null }]);
       expect(tables.ProjectMember).toHaveLength(0);
       expect(tables.WorkSubmission).toHaveLength(0);
-      expect(tables.Message).toEqual([
-        { projectId: 'foreign', senderId: 'someone' },
-      ]);
+      expect(tables.Message).toEqual([{ projectId: 'foreign', senderId: 'someone' }]);
       expect(tables.ProjectApplication.map((a) => a.id)).toEqual(['app-other']);
       // Переписка щодо видалених заявок зникає, чужа — лишається
       expect(tables.ApplicationMessage).toEqual([{ applicationId: 'app-other' }]);
@@ -383,25 +344,15 @@ describe('AdminService reports', () => {
     });
 
     it('never deletes admins, yourself, or for non-admins', async () => {
-      await expect(service.remove(admin, 'other-admin')).rejects.toBeInstanceOf(
-        ForbiddenException,
-      );
-      await expect(service.remove(admin, 'admin-id')).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-      await expect(
-        service.remove({ ...admin, role: 'CLIENT' }, 'fresh'),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.remove(admin, 'other-admin')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.remove(admin, 'admin-id')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.remove({ ...admin, role: 'CLIENT' }, 'fresh')).rejects.toBeInstanceOf(ForbiddenException);
       expect(tables.User).toHaveLength(3);
     });
   });
 
   it('lists the last months oldest first, across a year boundary', () => {
-    expect(lastMonths(3, new Date('2026-01-20T00:00:00Z'))).toEqual([
-      '2025-11',
-      '2025-12',
-      '2026-01',
-    ]);
+    expect(lastMonths(3, new Date('2026-01-20T00:00:00Z'))).toEqual(['2025-11', '2025-12', '2026-01']);
   });
 });
 
@@ -434,16 +385,8 @@ describe('AdminService project moderation', () => {
   it('approves a project into the marketplace and notifies the client', async () => {
     const { service, update, projects } = setup('MODERATION');
     await service.moderate(admin, 'p1', { decision: 'APPROVE' });
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'PLANNING' }),
-    );
-    expect(projects.notify).toHaveBeenCalledWith(
-      'client-id',
-      'admin-id',
-      'PROJECT_APPROVED',
-      expect.any(String),
-      'p1',
-    );
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'PLANNING' }));
+    expect(projects.notify).toHaveBeenCalledWith('client-id', 'admin-id', 'PROJECT_APPROVED', expect.any(String), 'p1');
   });
 
   it('rejects with a reason kept in the project history', async () => {
@@ -452,22 +395,13 @@ describe('AdminService project moderation', () => {
       decision: 'REJECT',
       reason: 'Опишіть обсяг робіт',
     });
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'REJECTED' }),
-    );
-    expect(projects.logActivity).toHaveBeenCalledWith(
-      'admin-id',
-      'p1',
-      'PROJECT_REJECTED',
-      'Опишіть обсяг робіт',
-    );
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'REJECTED' }));
+    expect(projects.logActivity).toHaveBeenCalledWith('admin-id', 'p1', 'PROJECT_REJECTED', 'Опишіть обсяг робіт');
   });
 
   it('refuses projects outside the queue and non-admins', async () => {
     const { service, update } = setup('PLANNING');
-    await expect(
-      service.moderate(admin, 'p1', { decision: 'APPROVE' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.moderate(admin, 'p1', { decision: 'APPROVE' })).rejects.toBeInstanceOf(ConflictException);
     await expect(
       service.moderate({ ...admin, role: 'CLIENT' }, 'p1', {
         decision: 'APPROVE',
@@ -504,17 +438,12 @@ describe('AdminService blocking', () => {
   );
 
   it('needs a reason to block, keeps it trimmed and clears it on unblock', async () => {
-    await expect(
-      service.update(admin, 'f1', { status: 'BLOCKED', blockReason: '  ' }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.update(admin, 'f1', { status: 'BLOCKED', blockReason: '  ' })).rejects.toBeInstanceOf(BadRequestException);
     await service.update(admin, 'f1', {
       status: 'BLOCKED',
       blockReason: '  Спам у заявках ',
     });
     await service.update(admin, 'f1', { status: 'ACTIVE' });
-    expect(updates.map((row) => row.blockReason)).toEqual([
-      'Спам у заявках',
-      null,
-    ]);
+    expect(updates.map((row) => row.blockReason)).toEqual(['Спам у заявках', null]);
   });
 });

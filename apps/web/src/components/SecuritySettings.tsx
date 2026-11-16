@@ -19,24 +19,16 @@ export function SecuritySettings({ user }: { user: User }) {
   const [confirmation, setConfirmation] = useState("");
   // Помилка поточного пароля від сервера показується під цим полем
   const [currentError, setCurrentError] = useState("");
-  const sameAsCurrent =
-    user.hasPassword !== false &&
-    newPassword.length > 0 &&
-    newPassword === currentPassword;
+  const sameAsCurrent = user.hasPassword !== false && newPassword.length > 0 && newPassword === currentPassword;
   const mismatch = confirmation.length > 0 && confirmation !== newPassword;
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(
-    user.twoFactorEnabled,
-  );
-  const [setup, setSetup] = useState<{ secret: string; qrCode: string } | null>(
-    null,
-  );
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(user.twoFactorEnabled);
+  const [setup, setSetup] = useState<{ secret: string; qrCode: string } | null>(null);
   const [code, setCode] = useState("");
   const [disablePassword, setDisablePassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   // Повідомлення показуємо в тій секції, де сталася дія, а не над усією карткою
-  const [noticeSection, setNoticeSection] =
-    useState<SecuritySection>("password");
+  const [noticeSection, setNoticeSection] = useState<SecuritySection>("password");
   const [submitting, setSubmitting] = useState(false);
   // Акаунт із Google без пароля: пароль можна встановити, поточного не питаємо
   const [hasPassword, setHasPassword] = useState(user.hasPassword !== false);
@@ -72,10 +64,7 @@ export function SecuritySettings({ user }: { user: User }) {
 
   async function beginTwoFactor() {
     await run("twoFactor", async () => {
-      const response = await request<{ secret: string; qrCode: string }>(
-        "/auth/2fa/setup",
-        { method: "POST" },
-      );
+      const response = await request<{ secret: string; qrCode: string }>("/auth/2fa/setup", { method: "POST" });
       setSetup(response);
     });
   }
@@ -141,25 +130,17 @@ export function SecuritySettings({ user }: { user: User }) {
   return (
     <>
       {/* Одна картка «Безпека» з трьома секціями, розділеними лініями (макет Figma) */}
-      <section
-        className="account-panel security-card"
-        aria-labelledby="security-title"
-      >
+      <section className="account-panel security-card" aria-labelledby="security-title">
         <h2 id="security-title">{tr("Безпека")}</h2>
         <div className="security-section">
           <h3>{hasPassword ? tr("Зміна пароля") : tr("Пароль")}</h3>
           <p className="form-note">
             {hasPassword
               ? tr("Після зміни інші активні сеанси завершаться.")
-              : tr(
-                  "Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.",
-                )}
+              : tr("Ви входите через Google. Встановіть пароль, щоб входити ще й поштою.")}
           </p>
           {notice("password")}
-          <form
-            onSubmit={changePassword}
-            className="security-form password-form"
-          >
+          <form onSubmit={changePassword} className="security-form password-form">
             {hasPassword && (
               <PasswordInput
                 id="current-password"
@@ -181,11 +162,7 @@ export function SecuritySettings({ user }: { user: User }) {
               onChange={setNewPassword}
               autoComplete="new-password"
               placeholder={tr("Придумайте новий пароль")}
-              error={
-                sameAsCurrent
-                  ? tr("Новий пароль має відрізнятися від поточного.")
-                  : ""
-              }
+              error={sameAsCurrent ? tr("Новий пароль має відрізнятися від поточного.") : ""}
             >
               <PasswordStrength password={newPassword} />
             </PasswordInput>
@@ -197,10 +174,7 @@ export function SecuritySettings({ user }: { user: User }) {
               autoComplete="new-password"
               error={mismatch ? tr("Нові паролі не збігаються.") : ""}
             />
-            <button
-              className="button primary"
-              disabled={submitting || sameAsCurrent || mismatch}
-            >
+            <button className="button primary" disabled={submitting || sameAsCurrent || mismatch}>
               {hasPassword ? tr("Змінити пароль") : tr("Встановити пароль")}
             </button>
           </form>
@@ -211,19 +185,12 @@ export function SecuritySettings({ user }: { user: User }) {
             <div>
               <h3>{tr("Двофакторний вхід")}</h3>
               <p className="form-note">
-                {tr("Статус:")}{" "}
-                <strong>
-                  {twoFactorEnabled ? tr("Увімкнено") : tr("Вимкнено")}
-                </strong>{" "}
+                {tr("Статус:")} <strong>{twoFactorEnabled ? tr("Увімкнено") : tr("Вимкнено")}</strong>{" "}
                 {tr("· код із Google Authenticator або іншого TOTP-застосунку")}
               </p>
             </div>
             {!twoFactorEnabled && !setup && (
-              <button
-                className="button secondary"
-                onClick={beginTwoFactor}
-                disabled={submitting}
-              >
+              <button className="button secondary" onClick={beginTwoFactor} disabled={submitting}>
                 {tr("Увімкнути 2FA")}
               </button>
             )}
@@ -236,9 +203,7 @@ export function SecuritySettings({ user }: { user: User }) {
                 <p>{tr("Відскануйте QR-код або введіть секрет вручну:")}</p>
                 <code>{setup.secret}</code>
                 <div className="field compact-field">
-                  <label htmlFor="enable-2fa-code">
-                    {tr("Код із застосунку")}
-                  </label>
+                  <label htmlFor="enable-2fa-code">{tr("Код із застосунку")}</label>
                   <input
                     id="enable-2fa-code"
                     inputMode="numeric"
@@ -248,9 +213,7 @@ export function SecuritySettings({ user }: { user: User }) {
                     minLength={6}
                     maxLength={6}
                     value={code}
-                    onChange={(event) =>
-                      setCode(event.target.value.replace(/\D/g, ""))
-                    }
+                    onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
                   />
                 </div>
                 <div className="form-actions">
@@ -274,10 +237,7 @@ export function SecuritySettings({ user }: { user: User }) {
             </form>
           )}
           {twoFactorEnabled && (
-            <form
-              onSubmit={disableTwoFactor}
-              className="security-form narrow-form"
-            >
+            <form onSubmit={disableTwoFactor} className="security-form narrow-form">
               {hasPassword && (
                 <PasswordInput
                   id="disable-2fa-password"
@@ -288,9 +248,7 @@ export function SecuritySettings({ user }: { user: User }) {
                 />
               )}
               <div className="field">
-                <label htmlFor="disable-2fa-code">
-                  {tr("Код із застосунку")}
-                </label>
+                <label htmlFor="disable-2fa-code">{tr("Код із застосунку")}</label>
                 <input
                   id="disable-2fa-code"
                   inputMode="numeric"
@@ -300,9 +258,7 @@ export function SecuritySettings({ user }: { user: User }) {
                   minLength={6}
                   maxLength={6}
                   value={code}
-                  onChange={(event) =>
-                    setCode(event.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
                 />
               </div>
               <button className="button secondary" disabled={submitting}>
@@ -314,15 +270,9 @@ export function SecuritySettings({ user }: { user: User }) {
 
         <div className="security-section">
           <h3>{tr("Активні сеанси")}</h3>
-          <p className="form-note">
-            {tr("Пристрої, на яких зараз виконано вхід.")}
-          </p>
+          <p className="form-note">{tr("Пристрої, на яких зараз виконано вхід.")}</p>
           {notice("sessions")}
-          <ResourceState
-            loading={sessions.loading}
-            error={sessions.error}
-            onRetry={sessions.refresh}
-          />
+          <ResourceState loading={sessions.loading} error={sessions.error} onRetry={sessions.refresh} />
           {sessions.data && (
             <ul className="session-list">
               {sessions.data.map((session) => (
@@ -331,25 +281,14 @@ export function SecuritySettings({ user }: { user: User }) {
                     <i className="bi bi-laptop"></i>
                   </span>
                   <div>
-                    <strong>
-                      {session.current
-                        ? tr("Поточний сеанс")
-                        : tr("Інший пристрій")}
-                    </strong>
-                    <span title={session.userAgent ?? undefined}>
-                      {describeDevice(session.userAgent)}
-                    </span>
+                    <strong>{session.current ? tr("Поточний сеанс") : tr("Інший пристрій")}</strong>
+                    <span title={session.userAgent ?? undefined}>{describeDevice(session.userAgent)}</span>
                     <small>
-                      {describeAddress(session.ipAddress)} ·{" "}
-                      {formatDate(session.createdAt, true)}
+                      {describeAddress(session.ipAddress)} · {formatDate(session.createdAt, true)}
                     </small>
                   </div>
                   {!session.current && (
-                    <button
-                      className="button secondary danger-outline"
-                      onClick={() => revokeSession(session.id)}
-                      disabled={submitting}
-                    >
+                    <button className="button secondary danger-outline" onClick={() => revokeSession(session.id)} disabled={submitting}>
                       {tr("Завершити")}
                     </button>
                   )}

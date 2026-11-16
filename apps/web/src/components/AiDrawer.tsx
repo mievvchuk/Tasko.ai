@@ -14,9 +14,7 @@ export function AiDrawer() {
   const [started, setStarted] = useState(false);
   const { pathname } = useLocation();
   const { exchanges, busy, clear } = useAiChat();
-  const status = useApi<{ configured: boolean }>(
-    started ? "/agent/status" : null,
-  );
+  const status = useApi<{ configured: boolean }>(started ? "/agent/status" : null);
   // Якщо відкрито сторінку проєкту чи завдання — підказуємо агенту, про що мова
   const projectMatch = useMatch("/projects/:id/*");
   const taskMatch = useMatch("/tasks/:id/*");
@@ -58,11 +56,7 @@ export function AiDrawer() {
       {open && (
         <>
           {/* Підкладка: на телефоні затемнює сторінку, клік закриває панель */}
-          <div
-            className="ai-drawer-backdrop"
-            aria-hidden="true"
-            onClick={() => setOpen(false)}
-          />
+          <div className="ai-drawer-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
           <aside
             id="ai-drawer"
             className="ai-drawer"
@@ -78,11 +72,7 @@ export function AiDrawer() {
               </span>
               <div>
                 <strong>{tr(aiName)}</strong>
-                <small>
-                  {context
-                    ? tr("Бачить поточну сторінку")
-                    : tr("Питання про Tasko.ai")}
-                </small>
+                <small>{context ? tr("Бачить поточну сторінку") : tr("Питання про Tasko.ai")}</small>
               </div>
               {exchanges.length > 0 && (
                 <button
@@ -105,19 +95,12 @@ export function AiDrawer() {
               >
                 <i className="bi bi-arrows-angle-expand" aria-hidden="true"></i>
               </Link>
-              <button
-                type="button"
-                className="ai-drawer-action"
-                aria-label={tr("Закрити панель помічниці")}
-                onClick={() => setOpen(false)}
-              >
+              <button type="button" className="ai-drawer-action" aria-label={tr("Закрити панель помічниці")} onClick={() => setOpen(false)}>
                 <i className="bi bi-x-lg" aria-hidden="true"></i>
               </button>
             </header>
             <div className="ai-drawer-body">
-              {status.loading && (
-                <p role="status">{tr("Підключаємося до агента…")}</p>
-              )}
+              {status.loading && <p role="status">{tr("Підключаємося до агента…")}</p>}
               {status.error && (
                 <p className="notice error" role="alert">
                   {status.error}
@@ -125,18 +108,10 @@ export function AiDrawer() {
               )}
               {status.data && !status.data.configured && (
                 <p className="notice error" role="alert">
-                  {tr(
-                    "AI-провайдер ще не підключений. Зверніться до адміністратора.",
-                  )}
+                  {tr("AI-провайдер ще не підключений. Зверніться до адміністратора.")}
                 </p>
               )}
-              {status.data && (
-                <AiConversation
-                  variant="panel"
-                  context={context}
-                  configured={status.data.configured}
-                />
-              )}
+              {status.data && <AiConversation variant="panel" context={context} configured={status.data.configured} />}
             </div>
           </aside>
         </>

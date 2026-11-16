@@ -30,10 +30,7 @@ function matches(search: string, ...values: (string | null | undefined)[]) {
 export function AdminProjectsPage() {
   const { tr } = useLanguage();
   const { params, page, search, set, reset } = useListParams();
-  const status = allowedOrEmpty(
-    params.get("status"),
-    Object.keys(projectStatusNames),
-  );
+  const status = allowedOrEmpty(params.get("status"), Object.keys(projectStatusNames));
   // all=true: в адмін-панелі — усі проєкти платформи (у робочому просторі адмін бачить лише свої)
   const query = new URLSearchParams({
     page: String(page),
@@ -42,10 +39,7 @@ export function AdminProjectsPage() {
   });
   if (status) query.set("status", status);
   const projects = useApi<Project[]>(`/projects?${query}`, { live: true });
-  const rows =
-    projects.data?.filter(
-      (row) => !search || matches(search, row.title, row.description),
-    ) ?? [];
+  const rows = projects.data?.filter((row) => !search || matches(search, row.title, row.description)) ?? [];
 
   const columns: Column<Project>[] = [
     {
@@ -63,12 +57,7 @@ export function AdminProjectsPage() {
       key: "status",
       label: tr("Статус"),
       sort: (row) => row.status,
-      render: (row) => (
-        <StatusPill
-          status={row.status}
-          label={tr(projectStatusNames[row.status])}
-        />
-      ),
+      render: (row) => <StatusPill status={row.status} label={tr(projectStatusNames[row.status])} />,
     },
     {
       key: "progress",
@@ -76,11 +65,7 @@ export function AdminProjectsPage() {
       sort: (row) => row.progress,
       render: (row) => (
         <span className="admin-progress">
-          <ProgressRing
-            value={row.completedTasks}
-            max={row.totalTasks}
-            label={tr("Прогрес")}
-          />
+          <ProgressRing value={row.completedTasks} max={row.totalTasks} label={tr("Прогрес")} />
           <small>
             {row.completedTasks} {tr("з")} {row.totalTasks}
           </small>
@@ -97,11 +82,7 @@ export function AdminProjectsPage() {
       key: "actions",
       label: tr("Дії"),
       render: (row) => (
-        <Link
-          className="button secondary"
-          to={`/projects/${row.id}`}
-          aria-label={tr("Відкрити {0}", row.title)}
-        >
+        <Link className="button secondary" to={`/projects/${row.id}`} aria-label={tr("Відкрити {0}", row.title)}>
           <i className="bi bi-eye" aria-hidden="true"></i>
           {tr("Відкрити")}
         </Link>
@@ -125,11 +106,7 @@ export function AdminProjectsPage() {
           onSearch={(value) => set("search", value)}
           onReset={reset}
         >
-          <FilterSelect
-            label={tr("Статус")}
-            value={status}
-            onChange={(value) => set("status", value)}
-          >
+          <FilterSelect label={tr("Статус")} value={status} onChange={(value) => set("status", value)}>
             <option value="">{tr("Усі статуси")}</option>
             {Object.entries(projectStatusNames).map(([value, label]) => (
               <option key={value} value={value}>
@@ -138,24 +115,11 @@ export function AdminProjectsPage() {
             ))}
           </FilterSelect>
         </ListToolbar>
-        <ResourceState
-          loading={projects.loading}
-          error={projects.error}
-          onRetry={projects.refresh}
-        />
+        <ResourceState loading={projects.loading} error={projects.error} onRetry={projects.refresh} />
         {projects.data && (
           <>
-            <DataTable
-              caption={tr("Проєкти")}
-              columns={columns}
-              rows={rows}
-              empty={tr("Проєктів не знайдено.")}
-            />
-            <Pagination
-              page={page}
-              count={projects.data.length}
-              onChange={(value) => set("page", String(value))}
-            />
+            <DataTable caption={tr("Проєкти")} columns={columns} rows={rows} empty={tr("Проєктів не знайдено.")} />
+            <Pagination page={page} count={projects.data.length} onChange={(value) => set("page", String(value))} />
           </>
         )}
       </section>
@@ -166,29 +130,14 @@ export function AdminProjectsPage() {
 export function AdminComplaintsPage() {
   const { tr } = useLanguage();
   const { params, page, search, set, reset } = useListParams();
-  const status = allowedOrEmpty(
-    params.get("status"),
-    Object.keys(complaintStatusNames),
-  );
+  const status = allowedOrEmpty(params.get("status"), Object.keys(complaintStatusNames));
   const [open, setOpen] = useState<ComplaintWithDetails | null>(null);
   const query = new URLSearchParams({ page: String(page), limit: "20" });
   if (status) query.set("status", status);
-  const complaints = useApi<ComplaintWithDetails[]>(
-    `/admin/complaints?${query}`,
-    { live: true },
-  );
+  const complaints = useApi<ComplaintWithDetails[]>(`/admin/complaints?${query}`, { live: true });
   const rows =
-    complaints.data?.filter(
-      (row) =>
-        !search ||
-        matches(
-          search,
-          row.reason,
-          row.description,
-          row.reporter?.name,
-          complaintTarget(row),
-        ),
-    ) ?? [];
+    complaints.data?.filter((row) => !search || matches(search, row.reason, row.description, row.reporter?.name, complaintTarget(row))) ??
+    [];
 
   const columns: Column<ComplaintWithDetails>[] = [
     {
@@ -206,21 +155,13 @@ export function AdminComplaintsPage() {
       key: "people",
       label: tr("Автор → ціль"),
       sort: (row) => row.reporter?.name ?? "",
-      render: (row) =>
-        `${row.reporter?.name || tr("не вказано")} → ${
-          complaintTarget(row) || tr("не вказано")
-        }`,
+      render: (row) => `${row.reporter?.name || tr("не вказано")} → ${complaintTarget(row) || tr("не вказано")}`,
     },
     {
       key: "status",
       label: tr("Статус"),
       sort: (row) => row.status,
-      render: (row) => (
-        <StatusPill
-          status={row.status}
-          label={tr(complaintStatusNames[row.status])}
-        />
-      ),
+      render: (row) => <StatusPill status={row.status} label={tr(complaintStatusNames[row.status])} />,
     },
     {
       key: "createdAt",
@@ -233,9 +174,7 @@ export function AdminComplaintsPage() {
       label: tr("Дії"),
       render: (row) => (
         <button
-          className={
-            row.status === "OPEN" ? "button primary" : "button secondary"
-          }
+          className={row.status === "OPEN" ? "button primary" : "button secondary"}
           aria-label={tr("Розглянути {0}", row.reason)}
           onClick={() => setOpen(row)}
         >
@@ -250,11 +189,7 @@ export function AdminComplaintsPage() {
       <div className="admin-page-heading">
         <div>
           <h1>{tr("Модерація скарг")}</h1>
-          <p>
-            {tr(
-              "Підтверджуйте скаргу з санкцією за правилами платформи або відхиляйте без доказів.",
-            )}
-          </p>
+          <p>{tr("Підтверджуйте скаргу з санкцією за правилами платформи або відхиляйте без доказів.")}</p>
         </div>
       </div>
       <section className="data-panel admin-panel">
@@ -265,11 +200,7 @@ export function AdminComplaintsPage() {
           onSearch={(value) => set("search", value)}
           onReset={reset}
         >
-          <FilterSelect
-            label={tr("Статус")}
-            value={status}
-            onChange={(value) => set("status", value)}
-          >
+          <FilterSelect label={tr("Статус")} value={status} onChange={(value) => set("status", value)}>
             <option value="">{tr("Усі статуси")}</option>
             {Object.entries(complaintStatusNames).map(([value, label]) => (
               <option key={value} value={value}>
@@ -278,34 +209,15 @@ export function AdminComplaintsPage() {
             ))}
           </FilterSelect>
         </ListToolbar>
-        <ResourceState
-          loading={complaints.loading}
-          error={complaints.error}
-          onRetry={complaints.refresh}
-        />
+        <ResourceState loading={complaints.loading} error={complaints.error} onRetry={complaints.refresh} />
         {complaints.data && (
           <>
-            <DataTable
-              caption={tr("Скарги")}
-              columns={columns}
-              rows={rows}
-              empty={tr("Скарг не знайдено.")}
-            />
-            <Pagination
-              page={page}
-              count={complaints.data.length}
-              onChange={(value) => set("page", String(value))}
-            />
+            <DataTable caption={tr("Скарги")} columns={columns} rows={rows} empty={tr("Скарг не знайдено.")} />
+            <Pagination page={page} count={complaints.data.length} onChange={(value) => set("page", String(value))} />
           </>
         )}
       </section>
-      {open && (
-        <ComplaintDialog
-          complaint={open}
-          onDecided={complaints.refresh}
-          onClose={() => setOpen(null)}
-        />
-      )}
+      {open && <ComplaintDialog complaint={open} onDecided={complaints.refresh} onClose={() => setOpen(null)} />}
     </>
   );
 }

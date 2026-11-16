@@ -10,14 +10,10 @@ describe('health', () => {
   });
   it('returns 503 without exposing database errors', async () => {
     const prisma = {
-      checkConnection: vi
-        .fn()
-        .mockRejectedValue(new Error('private connection details')),
+      checkConnection: vi.fn().mockRejectedValue(new Error('private connection details')),
     };
     const controller = new HealthController(prisma as unknown as PrismaService);
-    await expect(controller.check()).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
+    await expect(controller.check()).rejects.toBeInstanceOf(ServiceUnavailableException);
     await expect(controller.check()).rejects.toMatchObject({
       message: 'База даних недоступна або міграції не застосовано.',
     });

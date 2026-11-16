@@ -40,10 +40,7 @@ interface ClientProfile {
 export function ClientProfilePage() {
   const { tr } = useLanguage();
   const { id } = useParams();
-  const { data, error, loading, refresh } = useApi<ClientProfile>(
-    id ? `/clients/${id}/profile` : null,
-    { live: true },
-  );
+  const { data, error, loading, refresh } = useApi<ClientProfile>(id ? `/clients/${id}/profile` : null, { live: true });
   return (
     <>
       <button className="link-button breadcrumb" onClick={() => history.back()}>
@@ -63,16 +60,12 @@ export function ClientProfilePage() {
                 </span>
                 {data.averageRating !== null && (
                   <span>
-                    <b className="stars">
-                      {ratingStars(Math.round(data.averageRating))}
-                    </b>{" "}
-                    {data.averageRating} ·{" "}
+                    <b className="stars">{ratingStars(Math.round(data.averageRating))}</b> {data.averageRating} ·{" "}
                     {tr("{0} відгуків", data.reviewCount)}
                   </span>
                 )}
                 <span>
-                  <i className="bi bi-calendar3" aria-hidden="true"></i>{" "}
-                  {tr("На платформі з {0}", formatDate(data.createdAt))}
+                  <i className="bi bi-calendar3" aria-hidden="true"></i> {tr("На платформі з {0}", formatDate(data.createdAt))}
                 </span>
               </p>
             </div>
@@ -128,14 +121,8 @@ export function ClientProfilePage() {
                       <strong>{project.title}</strong>
                     </Link>
                     <small>
-                      {project.budgetMax
-                        ? tr(
-                            "{0}–{1} грн",
-                            project.budgetMin ?? 0,
-                            project.budgetMax,
-                          )
-                        : tr("Бюджет не вказано")}{" "}
-                      · {formatDate(project.deadline)}
+                      {project.budgetMax ? tr("{0}–{1} грн", project.budgetMin ?? 0, project.budgetMax) : tr("Бюджет не вказано")} ·{" "}
+                      {formatDate(project.deadline)}
                     </small>
                   </li>
                 ))}
@@ -163,9 +150,7 @@ export function ClientProfilePage() {
                     rating={review.rating}
                     comment={review.comment}
                     emptyComment={tr("Фрілансер не додав коментар.")}
-                    projectTitle={
-                      review.project.title || tr("Завершений проєкт")
-                    }
+                    projectTitle={review.project.title || tr("Завершений проєкт")}
                     createdAt={review.createdAt}
                   />
                 ))}
@@ -173,11 +158,7 @@ export function ClientProfilePage() {
             ) : (
               <div className="empty-state">
                 <h3>{tr("Відгуків ще немає")}</h3>
-                <p>
-                  {tr(
-                    "Фрілансери оцінюють клієнта після завершення спільного проєкту.",
-                  )}
-                </p>
+                <p>{tr("Фрілансери оцінюють клієнта після завершення спільного проєкту.")}</p>
               </div>
             )}
           </section>

@@ -33,11 +33,7 @@ export function AdminModerationPage() {
       <div className="admin-page-heading">
         <div>
           <h1>{tr("Модерація проєктів")}</h1>
-          <p>
-            {tr(
-              "Нові проєкти потрапляють на біржу лише після схвалення адміністратором.",
-            )}
-          </p>
+          <p>{tr("Нові проєкти потрапляють на біржу лише після схвалення адміністратором.")}</p>
         </div>
         <button className="button secondary" onClick={queue.refresh}>
           <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
@@ -49,11 +45,7 @@ export function AdminModerationPage() {
           {notice}
         </p>
       )}
-      <ResourceState
-        loading={queue.loading}
-        error={queue.error}
-        onRetry={queue.refresh}
-      />
+      <ResourceState loading={queue.loading} error={queue.error} onRetry={queue.refresh} />
       {queue.data && !queue.data.length && (
         <section className="empty-state data-panel">
           <h3>{tr("Черга модерації порожня")}</h3>
@@ -76,13 +68,7 @@ export function AdminModerationPage() {
   );
 }
 
-function ModerationCard({
-  project,
-  onDecided,
-}: {
-  project: ModerationProject;
-  onDecided: (message: string) => void;
-}) {
+function ModerationCard({ project, onDecided }: { project: ModerationProject; onDecided: (message: string) => void }) {
   const { tr } = useLanguage();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
@@ -95,19 +81,13 @@ function ModerationCard({
     try {
       await request(`/admin/moderation/projects/${project.id}`, {
         method: "POST",
-        body:
-          decision === "APPROVE"
-            ? { decision }
-            : { decision, reason: reason.trim() },
+        body: decision === "APPROVE" ? { decision } : { decision, reason: reason.trim() },
       });
       window.dispatchEvent(new Event(moderationChangedEvent));
       onDecided(
         decision === "APPROVE"
           ? tr("Проєкт «{0}» схвалено й опубліковано на біржі.", project.title)
-          : tr(
-              "Проєкт «{0}» відхилено. Клієнт отримав причину.",
-              project.title,
-            ),
+          : tr("Проєкт «{0}» відхилено. Клієнт отримав причину.", project.title),
       );
     } catch (e) {
       setError(errorMessage(e));
@@ -123,11 +103,7 @@ function ModerationCard({
   const budget =
     project.budgetMin == null && project.budgetMax == null
       ? tr("Бюджет не вказано")
-      : tr(
-          "{0}–{1} грн",
-          project.budgetMin ?? 0,
-          project.budgetMax ?? tr("необмежено"),
-        );
+      : tr("{0}–{1} грн", project.budgetMin ?? 0, project.budgetMax ?? tr("необмежено"));
 
   return (
     <article className="application-card moderation-card">
@@ -140,11 +116,7 @@ function ModerationCard({
       </div>
       {project.client && (
         <p className="admin-user-cell">
-          <UserAvatar
-            name={project.client.name}
-            avatarUrl={project.client.avatarUrl}
-            size="small"
-          />
+          <UserAvatar name={project.client.name} avatarUrl={project.client.avatarUrl} size="small" />
           <span>
             <strong>{project.client.name}</strong>
             <small>{project.client.email}</small>
@@ -180,12 +152,7 @@ function ModerationCard({
         </p>
       )}
       {project.previousRejection && (
-        <p className="notice">
-          {tr(
-            "Повторна подача. Минулого разу відхилено: {0}",
-            project.previousRejection,
-          )}
-        </p>
+        <p className="notice">{tr("Повторна подача. Минулого разу відхилено: {0}", project.previousRejection)}</p>
       )}
       {error && (
         <p className="notice error" role="alert">
@@ -194,9 +161,7 @@ function ModerationCard({
       )}
       {rejecting ? (
         <form className="moderation-reject" onSubmit={submitReject}>
-          <label htmlFor={`reject-${project.id}`}>
-            {tr("Причина відхилення (її побачить клієнт)")}
-          </label>
+          <label htmlFor={`reject-${project.id}`}>{tr("Причина відхилення (її побачить клієнт)")}</label>
           {/* Типові причини одним кліком; текст можна доповнити */}
           <div className="reject-presets">
             {rejectPresets.map((preset) => (
@@ -204,13 +169,7 @@ function ModerationCard({
                 type="button"
                 key={preset}
                 className="chip-button"
-                onClick={() =>
-                  setReason((current) =>
-                    current.trim()
-                      ? `${current.trim()} ${tr(preset)}`
-                      : tr(preset),
-                  )
-                }
+                onClick={() => setReason((current) => (current.trim() ? `${current.trim()} ${tr(preset)}` : tr(preset)))}
               >
                 {tr(preset)}
               </button>
@@ -246,19 +205,11 @@ function ModerationCard({
         </form>
       ) : (
         <div className="page-actions">
-          <button
-            className="button primary"
-            disabled={busy}
-            onClick={() => void decide("APPROVE")}
-          >
+          <button className="button primary" disabled={busy} onClick={() => void decide("APPROVE")}>
             <i className="bi bi-check-lg" aria-hidden="true"></i>
             {tr("Схвалити й опублікувати")}
           </button>
-          <button
-            className="button secondary"
-            disabled={busy}
-            onClick={() => setRejecting(true)}
-          >
+          <button className="button secondary" disabled={busy} onClick={() => setRejecting(true)}>
             <i className="bi bi-x-lg" aria-hidden="true"></i>
             {tr("Відхилити")}
           </button>

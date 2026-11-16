@@ -12,9 +12,7 @@ export function AiAssistantPage() {
   const projectId = params.get("project");
   // ?analyze=1 ставить вкладка «Аналіз AI» проєкту: інструменти MCP запускаються лише тепер, коли її відкрили
   const analyze = params.get("analyze") === "1";
-  const status = useApi<{ configured: boolean; toolsReadOnly: boolean }>(
-    "/agent/status",
-  );
+  const status = useApi<{ configured: boolean; toolsReadOnly: boolean }>("/agent/status");
   const { exchanges, busy, clear, send } = useAiChat();
   const analysisStarted = useRef(false);
   const configured = Boolean(status.data?.configured);
@@ -24,9 +22,7 @@ export function AiAssistantPage() {
     // Прибираємо прапорець, щоб оновлення сторінки чи «Назад» не запускали аналіз удруге
     setParams({ project: projectId }, { replace: true });
     void send(
-      tr(
-        "Проаналізуй стан цього проєкту: прогрес, ризики й дедлайни, завантаження команди. Дай короткі рекомендації.",
-      ),
+      tr("Проаналізуй стан цього проєкту: прогрес, ризики й дедлайни, завантаження команди. Дай короткі рекомендації."),
       tr("Проєкт з ID {0}.", projectId),
     );
   }, [analyze, projectId, configured, send, setParams, tr]);
@@ -40,30 +36,17 @@ export function AiAssistantPage() {
       <div className="page-heading heading-with-action">
         <div>
           <h1>{tr(aiName)}</h1>
-          <p>
-            {tr(
-              "AI-помічниця Tasko.ai: дедлайни, завдання, етапи, заявки й завантаження команди.",
-            )}
-          </p>
+          <p>{tr("AI-помічниця Tasko.ai: дедлайни, завдання, етапи, заявки й завантаження команди.")}</p>
         </div>
         {exchanges.length > 0 && (
-          <button
-            type="button"
-            className="button secondary"
-            disabled={busy}
-            onClick={clear}
-          >
+          <button type="button" className="button secondary" disabled={busy} onClick={clear}>
             <i className="bi bi-trash3" aria-hidden="true"></i>
 
             {tr("Нова розмова")}
           </button>
         )}
       </div>
-      <ResourceState
-        loading={status.loading}
-        error={status.error}
-        onRetry={status.refresh}
-      />
+      <ResourceState loading={status.loading} error={status.error} onRetry={status.refresh} />
       {status.data && (
         <section className="data-panel padded ai-panel">
           <div className="ai-intro">
@@ -75,9 +58,7 @@ export function AiAssistantPage() {
                 {tr("Привіт! Я")} {tr(aiName)}.
               </strong>
               <p>
-                {tr(
-                  "Бачу лише дані, доступні вам, і пам'ятаю цю розмову. Вона ж відкривається кнопкою «",
-                )}
+                {tr("Бачу лише дані, доступні вам, і пам'ятаю цю розмову. Вона ж відкривається кнопкою «")}
                 {tr(aiName)}
                 {tr("» на будь-якій сторінці.")}
               </p>
@@ -85,15 +66,13 @@ export function AiAssistantPage() {
           </div>
           {projectId && (
             <p>
-              <Link to={`/projects/${projectId}`}>{tr("Вибраний проєкт")}</Link>{" "}
-              · <Link to="/ai">{tr("Запитати про всі доступні проєкти")}</Link>
+              <Link to={`/projects/${projectId}`}>{tr("Вибраний проєкт")}</Link> ·{" "}
+              <Link to="/ai">{tr("Запитати про всі доступні проєкти")}</Link>
             </p>
           )}
           {!status.data.configured && (
             <p className="notice error" role="alert">
-              {tr(
-                "AI-провайдер ще не підключений. Зверніться до адміністратора.",
-              )}
+              {tr("AI-провайдер ще не підключений. Зверніться до адміністратора.")}
             </p>
           )}
           <AiConversation

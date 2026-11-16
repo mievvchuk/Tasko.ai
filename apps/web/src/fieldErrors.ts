@@ -7,14 +7,7 @@ type Field = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 export function fieldMessage(
   validity: Pick<
     ValidityState,
-    | "valueMissing"
-    | "tooShort"
-    | "tooLong"
-    | "rangeOverflow"
-    | "rangeUnderflow"
-    | "typeMismatch"
-    | "badInput"
-    | "stepMismatch"
+    "valueMissing" | "tooShort" | "tooLong" | "rangeOverflow" | "rangeUnderflow" | "typeMismatch" | "badInput" | "stepMismatch"
   >,
   field: {
     type: string;
@@ -28,37 +21,24 @@ export function fieldMessage(
   language: "uk" | "en",
 ) {
   const uk = language === "uk";
-  if (validity.valueMissing)
-    return uk ? "Заповніть це поле." : "Please fill in this field.";
+  if (validity.valueMissing) return uk ? "Заповніть це поле." : "Please fill in this field.";
   if (validity.tooShort)
     return uk
       ? `Щонайменше ${field.minLength} символів (зараз ${field.valueLength}).`
       : `At least ${field.minLength} characters (now ${field.valueLength}).`;
-  if (validity.tooLong)
-    return uk
-      ? `Не більше ${field.maxLength} символів.`
-      : `At most ${field.maxLength} characters.`;
-  if (validity.rangeOverflow)
-    return uk ? `Не більше ${field.max}.` : `At most ${field.max}.`;
-  if (validity.rangeUnderflow)
-    return uk ? `Не менше ${field.min}.` : `At least ${field.min}.`;
+  if (validity.tooLong) return uk ? `Не більше ${field.maxLength} символів.` : `At most ${field.maxLength} characters.`;
+  if (validity.rangeOverflow) return uk ? `Не більше ${field.max}.` : `At most ${field.max}.`;
+  if (validity.rangeUnderflow) return uk ? `Не менше ${field.min}.` : `At least ${field.min}.`;
   if (validity.typeMismatch && field.type === "email")
-    return uk
-      ? "Введіть правильну адресу пошти, напр. name@example.com."
-      : "Enter a valid email, e.g. name@example.com.";
+    return uk ? "Введіть правильну адресу пошти, напр. name@example.com." : "Enter a valid email, e.g. name@example.com.";
   if (validity.typeMismatch && field.type === "url")
-    return uk
-      ? "Введіть посилання, що починається з https://."
-      : "Enter a link starting with https://.";
-  if (validity.badInput || validity.stepMismatch)
-    return uk ? "Введіть ціле число." : "Enter a whole number.";
+    return uk ? "Введіть посилання, що починається з https://." : "Enter a link starting with https://.";
+  if (validity.badInput || validity.stepMismatch) return uk ? "Введіть ціле число." : "Enter a whole number.";
   return field.fallback;
 }
 
 const isField = (target: EventTarget | null): target is Field =>
-  target instanceof HTMLInputElement ||
-  target instanceof HTMLTextAreaElement ||
-  target instanceof HTMLSelectElement;
+  target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
 
 // Підпис ставимо після поля; у поля пароля — після обгортки з кнопкою «око»
 function anchor(field: Field) {

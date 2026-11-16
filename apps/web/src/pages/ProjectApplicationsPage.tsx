@@ -15,10 +15,9 @@ export function ProjectApplicationsPage() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const page = parsePage(params.get("page"));
-  const { data, error, loading, refresh } = useApi<ProjectApplication[]>(
-    id ? `/projects/${id}/applications?page=${page}&limit=10` : null,
-    { live: true },
-  );
+  const { data, error, loading, refresh } = useApi<ProjectApplication[]>(id ? `/projects/${id}/applications?page=${page}&limit=10` : null, {
+    live: true,
+  });
   const project = useApi<Project>(id ? `/projects/${id}` : null, {
     live: true,
   });
@@ -28,9 +27,7 @@ export function ProjectApplicationsPage() {
   const [closing, setClosing] = useState(false);
   const status = project.data?.status;
   // Як isHiring в API: до першого найму або поки клієнт не закрив набір
-  const hiring =
-    status === "PLANNING" ||
-    (status === "ACTIVE" && Boolean(project.data?.hiringOpen));
+  const hiring = status === "PLANNING" || (status === "ACTIVE" && Boolean(project.data?.hiringOpen));
   const [ranking, setRanking] = useState(false);
 
   async function rank() {
@@ -57,11 +54,7 @@ export function ProjectApplicationsPage() {
       await request(`/applications/${applicationId}/${action}`, {
         method: "POST",
       });
-      setNotice(
-        action === "accept"
-          ? tr("Фрілансера прийнято до команди.")
-          : tr("Заявку відхилено."),
-      );
+      setNotice(action === "accept" ? tr("Фрілансера прийнято до команди.") : tr("Заявку відхилено."));
       refresh();
       project.refresh();
     } catch (error) {
@@ -94,22 +87,14 @@ export function ProjectApplicationsPage() {
       </Link>
       <div className="page-heading">
         <h1>{tr("Заявки фрілансерів")}</h1>
-        <p>
-          {tr(
-            "Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.",
-          )}
-        </p>
+        <p>{tr("Порівняйте пропозиції, досвід, рейтинг і середній строк виконання.")}</p>
       </div>
       {project.data && (
         <p className="notice" role="status">
           {status === "PLANNING"
-            ? tr(
-                "Можна прийняти кількох фрілансерів — кожен стане учасником команди.",
-              )
+            ? tr("Можна прийняти кількох фрілансерів — кожен стане учасником команди.")
             : hiring
-              ? tr(
-                  "Набір у команду відкрито: проєкт видно на біржі, нові заявки надходять.",
-                )
+              ? tr("Набір у команду відкрито: проєкт видно на біржі, нові заявки надходять.")
               : tr("Набір у команду закрито.")}
         </p>
       )}
@@ -120,20 +105,12 @@ export function ProjectApplicationsPage() {
       )}
       <div className="application-tools">
         {status === "ACTIVE" && hiring && (
-          <button
-            className="button secondary"
-            disabled={closing}
-            onClick={() => void closeHiring()}
-          >
+          <button className="button secondary" disabled={closing} onClick={() => void closeHiring()}>
             <i className="bi bi-door-closed" aria-hidden="true"></i>
             {closing ? tr("Закриваємо…") : tr("Закрити набір")}
           </button>
         )}
-        <button
-          className="button secondary"
-          disabled={ranking || !data?.length}
-          onClick={() => void rank()}
-        >
+        <button className="button secondary" disabled={ranking || !data?.length} onClick={() => void rank()}>
           <i className="bi bi-stars" aria-hidden="true"></i>
           {ranking ? tr("AI аналізує…") : tr("Порівняти заявки через AI")}
         </button>
@@ -148,31 +125,16 @@ export function ProjectApplicationsPage() {
               <article className="application-card" key={application.id}>
                 <div className="application-person">
                   {/* Аватар та ім'я ведуть на профіль фрілансера */}
-                  <Link
-                    className="application-avatar"
-                    to={`/freelancers/${application.freelancerId}`}
-                    tabIndex={-1}
-                    aria-hidden="true"
-                  >
-                    <UserAvatar
-                      name={application.freelancer.name}
-                      avatarUrl={application.freelancer.avatarUrl}
-                    />
+                  <Link className="application-avatar" to={`/freelancers/${application.freelancerId}`} tabIndex={-1} aria-hidden="true">
+                    <UserAvatar name={application.freelancer.name} avatarUrl={application.freelancer.avatarUrl} />
                   </Link>
                   <div>
                     <h2>
-                      <Link
-                        className="application-name"
-                        to={`/freelancers/${application.freelancerId}`}
-                      >
+                      <Link className="application-name" to={`/freelancers/${application.freelancerId}`}>
                         {application.freelancer.name}
                       </Link>
                     </h2>
-                    <span
-                      className={`project-status status-${application.status}`}
-                    >
-                      {tr(applicationStatusNames[application.status])}
-                    </span>
+                    <span className={`project-status status-${application.status}`}>{tr(applicationStatusNames[application.status])}</span>
                   </div>
                   <span className="application-links">
                     {/* Після найму розмова продовжується в чаті проєкту, а не заявки */}
@@ -206,8 +168,7 @@ export function ProjectApplicationsPage() {
                   <div>
                     <dt>{tr("Запропонований бюджет")}</dt>
                     <dd>
-                      {application.proposedBudget.toLocaleString(uiLocale())}{" "}
-                      {tr("грн")}
+                      {application.proposedBudget.toLocaleString(uiLocale())} {tr("грн")}
                     </dd>
                   </div>
                   <div>
@@ -218,11 +179,7 @@ export function ProjectApplicationsPage() {
                   </div>
                   <div>
                     <dt>{tr("Рейтинг")}</dt>
-                    <dd>
-                      {application.freelancer.averageRating
-                        ? `${application.freelancer.averageRating} / 5`
-                        : tr("Ще немає")}
-                    </dd>
+                    <dd>{application.freelancer.averageRating ? `${application.freelancer.averageRating} / 5` : tr("Ще немає")}</dd>
                   </div>
                   <div>
                     <dt>{tr("Завершено проєктів")}</dt>
@@ -232,10 +189,7 @@ export function ProjectApplicationsPage() {
                     <dt>{tr("Середній строк")}</dt>
                     <dd>
                       {application.freelancer.averageCompletionDays
-                        ? tr(
-                            "{0} днів",
-                            application.freelancer.averageCompletionDays,
-                          )
+                        ? tr("{0} днів", application.freelancer.averageCompletionDays)
                         : tr("Ще немає даних")}
                     </dd>
                   </div>
@@ -252,9 +206,7 @@ export function ProjectApplicationsPage() {
                       onClick={() => void decide(application.id, "accept")}
                     >
                       <i className="bi bi-person-check" aria-hidden="true"></i>
-                      {acceptingId === application.id
-                        ? tr("Зберігаємо…")
-                        : tr("Прийняти в команду")}
+                      {acceptingId === application.id ? tr("Зберігаємо…") : tr("Прийняти в команду")}
                     </button>
                     <button
                       className="button secondary"
@@ -271,11 +223,7 @@ export function ProjectApplicationsPage() {
           {!data?.length && (
             <div className="empty-state data-panel">
               <h3>{tr("Заявок ще немає")}</h3>
-              <p>
-                {tr(
-                  "Фрілансери побачать проєкт на біржі та зможуть відгукнутися.",
-                )}
-              </p>
+              <p>{tr("Фрілансери побачать проєкт на біржі та зможуть відгукнутися.")}</p>
             </div>
           )}
         </section>
@@ -285,9 +233,7 @@ export function ProjectApplicationsPage() {
           page={page}
           count={data?.length || 0}
           size={10}
-          onChange={(value) =>
-            setParams(value === 1 ? {} : { page: String(value) })
-          }
+          onChange={(value) => setParams(value === 1 ? {} : { page: String(value) })}
         />
       )}
     </>

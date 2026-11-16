@@ -10,20 +10,9 @@ export interface KpiItem {
   hint: string;
 }
 
-export function KpiGrid({
-  items,
-  label,
-  compact = false,
-}: {
-  items: KpiItem[];
-  label?: string;
-  compact?: boolean;
-}) {
+export function KpiGrid({ items, label, compact = false }: { items: KpiItem[]; label?: string; compact?: boolean }) {
   return (
-    <section
-      className={compact ? "kpi-grid compact" : "kpi-grid"}
-      aria-label={label}
-    >
+    <section className={compact ? "kpi-grid compact" : "kpi-grid"} aria-label={label}>
       {items.map((item) => (
         <article className="kpi-tile" key={item.label}>
           <span className={`kpi-icon tone-soft-${item.tone}`} aria-hidden="true">
@@ -50,11 +39,7 @@ export function InfoTip({ text }: { text: string }) {
 }
 
 // Рядок середніх значень (наприклад, середній час розгляду)
-export function AverageRow({
-  items,
-}: {
-  items: { label: string; value: string; hint: string }[];
-}) {
+export function AverageRow({ items }: { items: { label: string; value: string; hint: string }[] }) {
   return (
     <section className="average-row">
       {items.map((item) => (
@@ -86,107 +71,75 @@ export function LineChart({
   const max = Math.max(1, ...series.flatMap((row) => row.values));
   // Ціла верхня межа, що ділиться на 4 рівні сітки
   const top = Math.ceil(max / 4) * 4;
-  const x = (index: number) =>
-    pad.left +
-    (labels.length > 1
-      ? (index / (labels.length - 1)) * (width - pad.left - pad.right)
-      : 0);
-  const y = (value: number) =>
-    pad.top + (1 - value / top) * (height - pad.top - pad.bottom);
+  const x = (index: number) => pad.left + (labels.length > 1 ? (index / (labels.length - 1)) * (width - pad.left - pad.right) : 0);
+  const y = (value: number) => pad.top + (1 - value / top) * (height - pad.top - pad.bottom);
   const ticks = [0, 1, 2, 3, 4].map((step) => (top / 4) * step);
   // Точка під курсором або фокусом: ряд і день
   const [active, setActive] = useState<{ row: number; index: number } | null>(null);
   const description = labels
-    .map(
-      (label, index) =>
-        `${label}: ${series
-          .map((row) => `${row.name.toLowerCase()} ${row.values[index]}`)
-          .join(", ")}`,
-    )
+    .map((label, index) => `${label}: ${series.map((row) => `${row.name.toLowerCase()} ${row.values[index]}`).join(", ")}`)
     .join("; ");
   return (
     <figure className="chart-card line-chart">
       <figcaption>{title}</figcaption>
       <div className="line-plot">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label={`${title}. ${description}`}
-      >
-        {ticks.map((tick) => (
-          <g key={tick} className="line-grid">
-            <line
-              x1={pad.left}
-              x2={width - pad.right}
-              y1={y(tick)}
-              y2={y(tick)}
-            />
-            <text x={pad.left - 8} y={y(tick) + 4} textAnchor="end">
-              {tick}
-            </text>
-          </g>
-        ))}
-        {labels.map((label, index) => (
-          <text
-            key={label}
-            className="line-axis"
-            x={x(index)}
-            y={height - 8}
-            textAnchor="middle"
-          >
-            {label}
-          </text>
-        ))}
-        {series.map((row, rowIndex) => (
-          <g key={row.name} className={`line-series stroke-${row.tone}`}>
-            <polyline
-              points={row.values
-                .map((value, index) => `${x(index)},${y(value)}`)
-                .join(" ")}
-            />
-            {row.values.map((value, index) => {
-              const on = active?.row === rowIndex && active.index === index;
-              return (
-                <g
-                  key={index}
-                  className={on ? "line-point active" : "line-point"}
-                  tabIndex={0}
-                  aria-label={`${labels[index]}, ${row.name}: ${value}`}
-                  onMouseEnter={() => setActive({ row: rowIndex, index })}
-                  onMouseLeave={() => setActive(null)}
-                  onFocus={() => setActive({ row: rowIndex, index })}
-                  onBlur={() => setActive(null)}
-                >
-                  {/* Невидиме більше коло — щоб у точку легко влучити курсором */}
-                  <circle className="line-hit" cx={x(index)} cy={y(value)} r={12} />
-                  <circle cx={x(index)} cy={y(value)} r={on ? 5.5 : 3.5} />
-                </g>
-              );
-            })}
-          </g>
-        ))}
-      </svg>
-      {active && (
-        <div
-          className="line-tooltip"
-          role="status"
-          style={{
-            left: `${(x(active.index) / width) * 100}%`,
-            top: `${(y(series[active.row].values[active.index]) / height) * 100}%`,
-          }}
-        >
-          <strong>{labels[active.index]}</strong>
-          {series.map((row, rowIndex) => (
-            <span
-              key={row.name}
-              className={rowIndex === active.row ? "current" : undefined}
-            >
-              <i className={`legend-dot tone-${row.tone}`} aria-hidden="true" />
-              {row.name}: <b>{row.values[active.index]}</b>
-            </span>
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${title}. ${description}`}>
+          {ticks.map((tick) => (
+            <g key={tick} className="line-grid">
+              <line x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} />
+              <text x={pad.left - 8} y={y(tick) + 4} textAnchor="end">
+                {tick}
+              </text>
+            </g>
           ))}
-        </div>
-      )}
+          {labels.map((label, index) => (
+            <text key={label} className="line-axis" x={x(index)} y={height - 8} textAnchor="middle">
+              {label}
+            </text>
+          ))}
+          {series.map((row, rowIndex) => (
+            <g key={row.name} className={`line-series stroke-${row.tone}`}>
+              <polyline points={row.values.map((value, index) => `${x(index)},${y(value)}`).join(" ")} />
+              {row.values.map((value, index) => {
+                const on = active?.row === rowIndex && active.index === index;
+                return (
+                  <g
+                    key={index}
+                    className={on ? "line-point active" : "line-point"}
+                    tabIndex={0}
+                    aria-label={`${labels[index]}, ${row.name}: ${value}`}
+                    onMouseEnter={() => setActive({ row: rowIndex, index })}
+                    onMouseLeave={() => setActive(null)}
+                    onFocus={() => setActive({ row: rowIndex, index })}
+                    onBlur={() => setActive(null)}
+                  >
+                    {/* Невидиме більше коло — щоб у точку легко влучити курсором */}
+                    <circle className="line-hit" cx={x(index)} cy={y(value)} r={12} />
+                    <circle cx={x(index)} cy={y(value)} r={on ? 5.5 : 3.5} />
+                  </g>
+                );
+              })}
+            </g>
+          ))}
+        </svg>
+        {active && (
+          <div
+            className="line-tooltip"
+            role="status"
+            style={{
+              left: `${(x(active.index) / width) * 100}%`,
+              top: `${(y(series[active.row].values[active.index]) / height) * 100}%`,
+            }}
+          >
+            <strong>{labels[active.index]}</strong>
+            {series.map((row, rowIndex) => (
+              <span key={row.name} className={rowIndex === active.row ? "current" : undefined}>
+                <i className={`legend-dot tone-${row.tone}`} aria-hidden="true" />
+                {row.name}: <b>{row.values[active.index]}</b>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       <div className="chart-legend">
         {series.map((row) => (
@@ -213,8 +166,7 @@ export function BreakdownTable({
   totalLabel: string;
 }) {
   const total = rows.reduce((sum, row) => sum + row.value, 0);
-  const share = (value: number) =>
-    total ? `${Math.round((value / total) * 100)}%` : "0%";
+  const share = (value: number) => (total ? `${Math.round((value / total) * 100)}%` : "0%");
   return (
     <figure className="chart-card breakdown-table">
       <figcaption>{title}</figcaption>

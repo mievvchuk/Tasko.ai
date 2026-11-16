@@ -2,23 +2,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { UserAvatar } from "../components/UserAvatar";
 import type { FormEvent, KeyboardEvent } from "react";
 import { Link, useSearchParams } from "react-router";
-import {
-  request,
-  errorMessage,
-  subscribe,
-  notificationsChangedEvent,
-} from "../api";
+import { request, errorMessage, subscribe, notificationsChangedEvent } from "../api";
 import { useAuth } from "../auth";
 import { useApi } from "../useApi";
 import { formatDate } from "../format";
 import { ResourceState } from "../components/ResourceState";
 import { applicationStatusNames, projectStatusNames } from "../types";
-import type {
-  ApplicationChat,
-  Project,
-  ProjectMember,
-  ProjectMessage,
-} from "../types";
+import type { ApplicationChat, Project, ProjectMember, ProjectMessage } from "../types";
 
 import { useLanguage } from "../i18n";
 export function MessagesPage() {
@@ -28,14 +18,10 @@ export function MessagesPage() {
   const projectId = params.get("project") || "";
   const applicationId = projectId ? "" : params.get("application") || "";
   const project = useApi<Project>(projectId ? `/projects/${projectId}` : null);
-  const application = useApi<ApplicationChat>(
-    applicationId ? `/applications/${applicationId}/chat` : null,
-  );
+  const application = useApi<ApplicationChat>(applicationId ? `/applications/${applicationId}/chat` : null);
   // Лише проєкти, де користувач — замовник або учасник (навіть для адміністратора)
   const mine = useApi<Project[]>("/projects?mine=true&limit=50");
-  const chats = useApi<ApplicationChat[]>(
-    user?.role === "ADMIN" ? null : "/applications/conversations",
-  );
+  const chats = useApi<ApplicationChat[]>(user?.role === "ADMIN" ? null : "/applications/conversations");
   const current = project.data ? project : application;
   // Скільки непрочитаних у кожній розмові — щоб одразу знайти, де нові листи
   const unread = useApi<{
@@ -47,11 +33,7 @@ export function MessagesPage() {
   // Подію для лічильника в меню шлемо, лише коли щось справді прочитали — інакше вийшло б коло.
   useEffect(() => {
     if (user?.role === "ADMIN") return;
-    const chat = projectId
-      ? { projectId }
-      : applicationId
-        ? { applicationId }
-        : null;
+    const chat = projectId ? { projectId } : applicationId ? { applicationId } : null;
     const read = () => {
       if (!chat) return refreshUnread();
       void request<{ updated: number }>("/notifications/read-messages", {
@@ -60,8 +42,7 @@ export function MessagesPage() {
       })
         .then((result) => {
           refreshUnread();
-          if (result?.updated)
-            window.dispatchEvent(new Event(notificationsChangedEvent));
+          if (result?.updated) window.dispatchEvent(new Event(notificationsChangedEvent));
         })
         .catch(() => {});
     };
@@ -72,119 +53,68 @@ export function MessagesPage() {
   const unreadProject = (id: string) => unread.data?.projects[id] ?? 0;
   const unreadApplication = (id: string) => unread.data?.applications[id] ?? 0;
   // Розмови з новими листами — нагорі списку
-  const byUnread = <T,>(
-    list: T[] | null | undefined,
-    count: (item: T) => number,
-  ) =>
-    [...(list ?? [])].sort(
-      (a, b) => Number(count(b) > 0) - Number(count(a) > 0),
-    );
+  const byUnread = <T,>(list: T[] | null | undefined, count: (item: T) => number) =>
+    [...(list ?? [])].sort((a, b) => Number(count(b) > 0) - Number(count(a) > 0));
   return (
     <>
       <div className="page-heading">
         <h1>{tr("Повідомлення")}</h1>
-        <p>
-          {tr(
-            "Обговорення проєктів доступні лише учасникам, а переписка щодо заявки — клієнту й автору заявки.",
-          )}
-        </p>
+        <p>{tr("Обговорення проєктів доступні лише учасникам, а переписка щодо заявки — клієнту й автору заявки.")}</p>
       </div>
       {/* На телефоні видно або список розмов, або відкритий чат — не обидва одразу */}
-      <div
-        className={
-          projectId || applicationId ? "messenger chat-open" : "messenger"
-        }
-      >
+      <div className={projectId || applicationId ? "messenger chat-open" : "messenger"}>
         <nav className="data-panel messenger-list" aria-label={tr("Розмови")}>
           <h2>{tr("Мої проєкти")}</h2>
-          <ResourceState
-            loading={mine.loading}
-            error={mine.error}
-            onRetry={mine.refresh}
-          />
-          {mine.data && !mine.data.length && (
-            <p className="form-note">
-              {tr("Ви ще не берете участі в жодному проєкті.")}
-            </p>
-          )}
+          <ResourceState loading={mine.loading} error={mine.error} onRetry={mine.refresh} />
+          {mine.data && !mine.data.length && <p className="form-note">{tr("Ви ще не берете участі в жодному проєкті.")}</p>}
           <ul>
-            {byUnread(mine.data, (item) => unreadProject(item.id)).map(
-              (item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    aria-current={item.id === projectId ? "true" : undefined}
-                    className={
-                      unreadProject(item.id) ? "has-unread" : undefined
-                    }
-                    onClick={() => setParams({ project: item.id })}
-                  >
-                    <strong>{item.title}</strong>
-                    <small>{tr(projectStatusNames[item.status])}</small>
-                    {unreadProject(item.id) > 0 && (
-                      <span
-                        className="badge-count"
-                        aria-label={tr(
-                          "Нових повідомлень: {0}",
-                          unreadProject(item.id),
-                        )}
-                      >
-                        {unreadProject(item.id)}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ),
-            )}
+            {byUnread(mine.data, (item) => unreadProject(item.id)).map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  aria-current={item.id === projectId ? "true" : undefined}
+                  className={unreadProject(item.id) ? "has-unread" : undefined}
+                  onClick={() => setParams({ project: item.id })}
+                >
+                  <strong>{item.title}</strong>
+                  <small>{tr(projectStatusNames[item.status])}</small>
+                  {unreadProject(item.id) > 0 && (
+                    <span className="badge-count" aria-label={tr("Нових повідомлень: {0}", unreadProject(item.id))}>
+                      {unreadProject(item.id)}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
           </ul>
           {!!chats.data?.length && (
             <>
               <h2>{tr("Заявки")}</h2>
               <ul>
-                {byUnread(chats.data, (item) => unreadApplication(item.id)).map(
-                  (item) => (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        aria-current={
-                          item.id === applicationId ? "true" : undefined
-                        }
-                        className={
-                          unreadApplication(item.id) ? "has-unread" : undefined
-                        }
-                        onClick={() => setParams({ application: item.id })}
-                      >
-                        {unreadApplication(item.id) > 0 && (
-                          <span
-                            className="badge-count"
-                            aria-label={tr(
-                              "Нових повідомлень: {0}",
-                              unreadApplication(item.id),
-                            )}
-                          >
-                            {unreadApplication(item.id)}
-                          </span>
-                        )}
-                        <strong>
-                          {user?.id === item.clientId
-                            ? item.freelancerName
-                            : item.clientName}
-                        </strong>
-                        <small>{item.projectTitle}</small>
-                      </button>
-                    </li>
-                  ),
-                )}
+                {byUnread(chats.data, (item) => unreadApplication(item.id)).map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      aria-current={item.id === applicationId ? "true" : undefined}
+                      className={unreadApplication(item.id) ? "has-unread" : undefined}
+                      onClick={() => setParams({ application: item.id })}
+                    >
+                      {unreadApplication(item.id) > 0 && (
+                        <span className="badge-count" aria-label={tr("Нових повідомлень: {0}", unreadApplication(item.id))}>
+                          {unreadApplication(item.id)}
+                        </span>
+                      )}
+                      <strong>{user?.id === item.clientId ? item.freelancerName : item.clientName}</strong>
+                      <small>{item.projectTitle}</small>
+                    </button>
+                  </li>
+                ))}
               </ul>
             </>
           )}
         </nav>
         <div className="messenger-chat">
-          <button
-            type="button"
-            className="link-button messenger-back"
-            onClick={() => setParams({})}
-          >
+          <button type="button" className="link-button messenger-back" onClick={() => setParams({})}>
             <i className="bi bi-arrow-left" aria-hidden="true"></i>
             {tr("Усі розмови")}
           </button>
@@ -194,21 +124,9 @@ export function MessagesPage() {
               <h3>{tr("Оберіть розмову зліва")}</h3>
             </div>
           )}
-          <ResourceState
-            loading={current.loading}
-            error={current.error}
-            onRetry={current.refresh}
-          />
-          {project.data && (
-            <ProjectMessages key={projectId} project={project.data} />
-          )}
-          {application.data && (
-            <ApplicationMessages
-              key={applicationId}
-              chat={application.data}
-              onFirstMessage={chats.refresh}
-            />
-          )}
+          <ResourceState loading={current.loading} error={current.error} onRetry={current.refresh} />
+          {project.data && <ProjectMessages key={projectId} project={project.data} />}
+          {application.data && <ApplicationMessages key={applicationId} chat={application.data} onFirstMessage={chats.refresh} />}
         </div>
       </div>
     </>
@@ -224,31 +142,18 @@ function ProjectMessages({ project }: { project: Project }) {
       path={`/projects/${project.id}`}
       title={project.title}
       link={{ to: `/projects/${project.id}`, label: tr("До проєкту") }}
-      readOnly={
-        ["COMPLETED", "CANCELLED"].includes(project.status)
-          ? tr("Проєкт закрито. Обговорення доступне для читання.")
-          : ""
-      }
+      readOnly={["COMPLETED", "CANCELLED"].includes(project.status) ? tr("Проєкт закрито. Обговорення доступне для читання.") : ""}
       extra={members}
       senderName={(id) => {
         if (id === user?.id) return user.name + tr(" (ви)");
         if (id === project.clientId) return tr("Клієнт проєкту");
-        return (
-          members.data?.find((member) => member.userId === id)?.user?.name ||
-          tr("Користувач ") + id.slice(0, 8)
-        );
+        return members.data?.find((member) => member.userId === id)?.user?.name || tr("Користувач ") + id.slice(0, 8);
       }}
     />
   );
 }
 
-function ApplicationMessages({
-  chat,
-  onFirstMessage,
-}: {
-  chat: ApplicationChat;
-  onFirstMessage: () => void;
-}) {
+function ApplicationMessages({ chat, onFirstMessage }: { chat: ApplicationChat; onFirstMessage: () => void }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
   const isClient = user?.id === chat.clientId;
@@ -261,11 +166,7 @@ function ApplicationMessages({
   return (
     <Chat
       path={`/applications/${chat.id}`}
-      title={tr(
-        "Заявка на «{0}» · {1}",
-        chat.projectTitle,
-        tr(applicationStatusNames[chat.status]),
-      )}
+      title={tr("Заявка на «{0}» · {1}", chat.projectTitle, tr(applicationStatusNames[chat.status]))}
       link={
         chat.status === "ACCEPTED"
           ? {
@@ -284,8 +185,7 @@ function ApplicationMessages({
       senderName={(id) =>
         id === user?.id
           ? (user?.name ?? "") + tr(" (ви)")
-          : (id === chat.clientId ? chat.clientName : chat.freelancerName) ||
-            tr("Користувач ") + id.slice(0, 8)
+          : (id === chat.clientId ? chat.clientName : chat.freelancerName) || tr("Користувач ") + id.slice(0, 8)
       }
     />
   );
@@ -314,9 +214,7 @@ function Chat({
 }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
-  const latest = useApi<ProjectMessage[]>(
-    `${path}/messages?page=1&limit=${pageSize}`,
-  );
+  const latest = useApi<ProjectMessage[]>(`${path}/messages?page=1&limit=${pageSize}`);
   // Раніші сторінки, які вже догрузили прокруткою вгору
   const [older, setOlder] = useState<ProjectMessage[]>([]);
   const [olderPage, setOlderPage] = useState(1);
@@ -363,10 +261,7 @@ function Chat({
           };
           setTypers((list) => ({ ...list, [userId]: name }));
           window.clearTimeout(typerTimers.current[userId]);
-          typerTimers.current[userId] = window.setTimeout(
-            () => stopTyping(userId),
-            5000,
-          );
+          typerTimers.current[userId] = window.setTimeout(() => stopTyping(userId), 5000);
           return;
         }
         if (type === "deleted") {
@@ -390,13 +285,8 @@ function Chat({
   }, [path]);
   // Сторінки рахуються від найновішого, тож нові повідомлення зсувають їх і дають дублікати — відсіюємо за id
   const seen = new Set<string>();
-  const shown = [
-    ...[...older].reverse(),
-    ...[...(latest.data ?? [])].reverse(),
-    ...live,
-  ].filter(
-    (message) =>
-      !removed.has(message.id) && !seen.has(message.id) && seen.add(message.id),
+  const shown = [...[...older].reverse(), ...[...(latest.data ?? [])].reverse(), ...live].filter(
+    (message) => !removed.has(message.id) && !seen.has(message.id) && seen.add(message.id),
   );
   const newestId = shown.at(-1)?.id;
   useLayoutEffect(() => {
@@ -420,12 +310,8 @@ function Chat({
     setLoadingOlder(true);
     setOlderError("");
     try {
-      const page = await request<ProjectMessage[]>(
-        `${path}/messages?page=${olderPage + 1}&limit=${pageSize}`,
-      );
-      keepScroll.current = listRef.current
-        ? listRef.current.scrollHeight - listRef.current.scrollTop
-        : null;
+      const page = await request<ProjectMessage[]>(`${path}/messages?page=${olderPage + 1}&limit=${pageSize}`);
+      keepScroll.current = listRef.current ? listRef.current.scrollHeight - listRef.current.scrollTop : null;
       setOlder((list) => [...list, ...page]);
       setOlderPage((value) => value + 1);
       setHasMore(page.length === pageSize);
@@ -436,10 +322,7 @@ function Chat({
     }
   }
   async function remove(message: ProjectMessage) {
-    if (
-      !window.confirm(tr("Видалити це повідомлення? Його не побачить ніхто."))
-    )
-      return;
+    if (!window.confirm(tr("Видалити це повідомлення? Його не побачить ніхто."))) return;
     setError("");
     try {
       await request(`${path}/messages/${message.id}`, { method: "DELETE" });
@@ -450,9 +333,7 @@ function Chat({
   }
   // Ім'я від сервера; для старих записів — підказка зі сторінки
   const author = (message: ProjectMessage) =>
-    message.senderId === user?.id
-      ? tr("Ви")
-      : message.senderName || senderName(message.senderId);
+    message.senderId === user?.id ? tr("Ви") : message.senderName || senderName(message.senderId);
   function refresh() {
     setOlder([]);
     setOlderPage(1);
@@ -541,48 +422,27 @@ function Chat({
               ) : olderError ? (
                 <>
                   {olderError}{" "}
-                  <button
-                    type="button"
-                    className="text-button"
-                    onClick={() => void loadOlder()}
-                  >
+                  <button type="button" className="text-button" onClick={() => void loadOlder()}>
                     {tr("Спробувати ще раз")}
                   </button>
                 </>
               ) : (
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => void loadOlder()}
-                >
+                <button type="button" className="text-button" onClick={() => void loadOlder()}>
                   {tr("Показати раніші повідомлення")}
                 </button>
               )}
             </p>
           )}
-          {!shown.length && !sending && (
-            <p className="form-note">{tr("Повідомлень ще немає.")}</p>
-          )}
+          {!shown.length && !sending && <p className="form-note">{tr("Повідомлень ще немає.")}</p>}
           {shown.map((message) => {
             const own = message.senderId === user?.id;
             return (
-              <article
-                className={own ? "message own" : "message"}
-                key={message.id}
-              >
-                {!own && (
-                  <UserAvatar
-                    name={author(message)}
-                    avatarUrl={message.senderAvatarUrl}
-                    size="small"
-                  />
-                )}
+              <article className={own ? "message own" : "message"} key={message.id}>
+                {!own && <UserAvatar name={author(message)} avatarUrl={message.senderAvatarUrl} size="small" />}
                 <div className="message-bubble">
                   <div className="record-heading">
                     <strong>{author(message)}</strong>
-                    <time dateTime={message.createdAt}>
-                      {formatDate(message.createdAt, true)}
-                    </time>
+                    <time dateTime={message.createdAt}>{formatDate(message.createdAt, true)}</time>
                   </div>
                   <p className="preserve-lines">{message.content}</p>
                 </div>
@@ -621,10 +481,7 @@ function Chat({
               <i></i>
               <i></i>
             </span>
-            {tr(
-              typerNames.length > 1 ? "{0} пишуть…" : "{0} пише…",
-              typerNames.join(", "),
-            )}
+            {tr(typerNames.length > 1 ? "{0} пишуть…" : "{0} пише…", typerNames.join(", "))}
           </>
         )}
       </p>
@@ -654,9 +511,7 @@ function Chat({
                 onKeyDown={handleKey}
               />
               <div className="ai-composer-bar">
-                <span className="ai-hint">
-                  {tr("Enter — надіслати, Shift+Enter — новий рядок")}
-                </span>
+                <span className="ai-hint">{tr("Enter — надіслати, Shift+Enter — новий рядок")}</span>
                 <button
                   className="ai-send"
                   disabled={Boolean(sending) || !content.trim()}

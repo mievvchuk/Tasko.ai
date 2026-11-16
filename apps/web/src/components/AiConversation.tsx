@@ -1,11 +1,4 @@
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, KeyboardEvent } from "react";
 import { errorMessage, request } from "../api";
 import { useAuth } from "../auth";
@@ -57,10 +50,7 @@ function Thinking() {
   const { tr } = useLanguage();
   const [step, setStep] = useState(0);
   useEffect(() => {
-    const timer = setInterval(
-      () => setStep((current) => (current + 1) % thinkingSteps.length),
-      2200,
-    );
+    const timer = setInterval(() => setStep((current) => (current + 1) % thinkingSteps.length), 2200);
     return () => clearInterval(timer);
   }, []);
   // Скрінрідер чує один статус, а не кожну зміну фрази
@@ -86,13 +76,7 @@ function Thinking() {
   );
 }
 
-function UserBubble({
-  question,
-  files,
-}: {
-  question: string;
-  files?: string[];
-}) {
+function UserBubble({ question, files }: { question: string; files?: string[] }) {
   const { tr } = useLanguage();
   return (
     <div className="ai-bubble user">
@@ -141,11 +125,7 @@ function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
           <dt>{tr("Бюджет")}</dt>
           <dd>
             {draft.budgetMin !== undefined || draft.budgetMax !== undefined
-              ? tr(
-                  "{0}–{1} грн",
-                  draft.budgetMin ?? 0,
-                  draft.budgetMax ?? "необмежено",
-                )
+              ? tr("{0}–{1} грн", draft.budgetMin ?? 0, draft.budgetMax ?? "необмежено")
               : tr("Не вказано")}
           </dd>
         </div>
@@ -155,12 +135,7 @@ function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
         </div>
       </dl>
       <div className="ai-draft-actions">
-        <button
-          type="button"
-          className="button primary"
-          disabled={busy}
-          onClick={() => void create()}
-        >
+        <button type="button" className="button primary" disabled={busy} onClick={() => void create()}>
           {busy ? tr("Створюємо…") : tr("Створити проєкт")}
         </button>
         {/* Форма створення відкривається вже заповненою: можна підправити
@@ -180,15 +155,7 @@ function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
 }
 
 // Розмова з AI-агентом: на сторінці /ai (variant="page") і в бічній панелі (variant="panel")
-export function AiConversation({
-  variant,
-  context,
-  configured,
-}: {
-  variant: "page" | "panel";
-  context?: string;
-  configured: boolean;
-}) {
+export function AiConversation({ variant, context, configured }: { variant: "page" | "panel"; context?: string; configured: boolean }) {
   const { tr } = useLanguage();
   const { user } = useAuth();
   const { exchanges, pending, busy, error, send, cancel } = useAiChat();
@@ -214,9 +181,7 @@ export function AiConversation({
   const inputId = `ai-message-${variant}`;
   const locked = busy || reading || !configured;
   const unasked = user
-    ? suggestions[user.role]
-        .map((text) => tr(text))
-        .filter((text) => !exchanges.some((item) => item.question === text))
+    ? suggestions[user.role].map((text) => tr(text)).filter((text) => !exchanges.some((item) => item.question === text))
     : [];
 
   async function ask(question: string) {
@@ -292,10 +257,7 @@ export function AiConversation({
           </div>
         )}
         {exchanges.map((item, index) => (
-          <article
-            key={index}
-            className={item.offTopic ? "ai-exchange off-topic" : "ai-exchange"}
-          >
+          <article key={index} className={item.offTopic ? "ai-exchange off-topic" : "ai-exchange"}>
             <UserBubble question={item.question} files={item.files} />
             <div className="ai-reply">
               <span className="ai-avatar" aria-hidden="true">
@@ -303,20 +265,14 @@ export function AiConversation({
               </span>
               <div className="ai-bubble bot">
                 <h2 className="ai-reply-name">{tr(aiName)}</h2>
-                <Suspense
-                  fallback={<p role="status">{tr("Форматуємо відповідь…")}</p>}
-                >
+                <Suspense fallback={<p role="status">{tr("Форматуємо відповідь…")}</p>}>
                   <MarkdownAnswer>{item.answer}</MarkdownAnswer>
                 </Suspense>
-                {item.projectDraft && (
-                  <ProjectDraftCard draft={item.projectDraft} />
-                )}
+                {item.projectDraft && <ProjectDraftCard draft={item.projectDraft} />}
                 {item.toolsUsed.length > 0 && (
                   <p className="ai-sources">
                     <i className="bi bi-database" aria-hidden="true"></i>
-                    {[...new Set(item.toolsUsed)]
-                      .map((name) => tr(aiToolNames[name] || "Дані проєкту"))
-                      .join(", ")}
+                    {[...new Set(item.toolsUsed)].map((name) => tr(aiToolNames[name] || "Дані проєкту")).join(", ")}
                   </p>
                 )}
               </div>
@@ -332,25 +288,14 @@ export function AiConversation({
       </div>
       {/* Підказки лишаються й після першого запитання (без уже заданих), щоб було видно, що ще вміє Ада */}
       {!busy && user && configured && unasked.length > 0 && (
-        <div
-          className={
-            exchanges.length ? "ai-suggestions compact" : "ai-suggestions"
-          }
-          role="group"
-          aria-label={tr("Спробуйте запитати")}
-        >
+        <div className={exchanges.length ? "ai-suggestions compact" : "ai-suggestions"} role="group" aria-label={tr("Спробуйте запитати")}>
           {!exchanges.length && (
             <p className="form-note" aria-hidden="true">
               {tr("Спробуйте запитати")}
             </p>
           )}
           {unasked.map((text) => (
-            <button
-              key={text}
-              type="button"
-              className="ai-chip"
-              onClick={() => void ask(text)}
-            >
+            <button key={text} type="button" className="ai-chip" onClick={() => void ask(text)}>
               <span>{text}</span>
               <i className="bi bi-arrow-up-right" aria-hidden="true"></i>
             </button>
@@ -372,9 +317,7 @@ export function AiConversation({
                   type="button"
                   aria-label={tr("Прибрати файл {0}", file.name)}
                   disabled={busy}
-                  onClick={() =>
-                    setFiles((current) => current.filter((_, i) => i !== index))
-                  }
+                  onClick={() => setFiles((current) => current.filter((_, i) => i !== index))}
                 >
                   <i className="bi bi-x" aria-hidden="true"></i>
                 </button>
@@ -401,24 +344,14 @@ export function AiConversation({
               className="ai-icon-button"
               disabled={locked || files.length >= maxFiles}
               aria-label={tr("Прикріпити файл")}
-              title={tr(
-                "Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3",
-              )}
+              title={tr("Прикріпити файл: TXT, PDF або DOCX, до 5 МБ, не більше 3")}
               onClick={() => fileInput.current?.click()}
             >
               <i className="bi bi-paperclip" aria-hidden="true"></i>
             </button>
-            <span className="ai-hint">
-              {tr("Enter — надіслати, Shift+Enter — новий рядок")}
-            </span>
+            <span className="ai-hint">{tr("Enter — надіслати, Shift+Enter — новий рядок")}</span>
             {busy ? (
-              <button
-                type="button"
-                className="ai-send"
-                aria-label={tr("Скасувати запит")}
-                title={tr("Скасувати запит")}
-                onClick={cancel}
-              >
+              <button type="button" className="ai-send" aria-label={tr("Скасувати запит")} title={tr("Скасувати запит")} onClick={cancel}>
                 <i className="bi bi-stop-fill" aria-hidden="true"></i>
               </button>
             ) : (

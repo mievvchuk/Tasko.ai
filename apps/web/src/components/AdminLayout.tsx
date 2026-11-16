@@ -28,15 +28,10 @@ export function AdminLayout() {
   const { t, tr, language } = useLanguage();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const counts = useNotificationCounts(
-    user?.role === "ADMIN" ? user.id : undefined,
-  );
+  const counts = useNotificationCounts(user?.role === "ADMIN" ? user.id : undefined);
   const unread = counts.unreadCount - counts.unreadMessages;
   const close = () => setMenuOpen(false);
-  const queue = useApi<unknown[]>(
-    user?.role === "ADMIN" ? "/admin/moderation/projects" : null,
-    { live: true },
-  );
+  const queue = useApi<unknown[]>(user?.role === "ADMIN" ? "/admin/moderation/projects" : null, { live: true });
   const { refresh } = queue;
   useEffect(() => {
     window.addEventListener(moderationChangedEvent, refresh);
@@ -91,17 +86,12 @@ export function AdminLayout() {
               to={to}
               end={to === "/admin"}
               onClick={close}
-              className={({ isActive }) =>
-                isActive || sectionPages[to]?.test(pathname) ? "active" : ""
-              }
+              className={({ isActive }) => (isActive || sectionPages[to]?.test(pathname) ? "active" : "")}
             >
               <i className={`bi ${icon}`} aria-hidden="true"></i>
               {label}
               {to === "/admin/moderation" && waiting.current > 0 && (
-                <span
-                  className="badge-count"
-                  aria-label={tr("Чекають на модерацію: {0}", waiting.current)}
-                >
+                <span className="badge-count" aria-label={tr("Чекають на модерацію: {0}", waiting.current)}>
                   {waiting.current}
                 </span>
               )}
@@ -117,20 +107,13 @@ export function AdminLayout() {
             <i className="bi bi-person" aria-hidden="true"></i>
             {t("profile")}
           </NavLink>
-          <a
-            href={docsUrl(language)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={close}
-          >
+          <a href={docsUrl(language)} target="_blank" rel="noopener noreferrer" onClick={close}>
             <i className="bi bi-question-circle" aria-hidden="true"></i>
             {tr("Довідка")}
           </a>
         </nav>
       </aside>
-      {menuOpen && (
-        <div className="admin-backdrop" aria-hidden="true" onClick={close} />
-      )}
+      {menuOpen && <div className="admin-backdrop" aria-hidden="true" onClick={close} />}
       <div className="admin-main">
         <header className="admin-header">
           <button

@@ -34,34 +34,17 @@ export function RoleSwitch() {
 
   return (
     <div className="role-switch">
-      <div
-        className="segmented"
-        role="group"
-        aria-label={tr("Що ви плануєте робити?")}
-        aria-busy={saving}
-      >
-        <button
-          type="button"
-          aria-pressed={role === "CLIENT"}
-          disabled={saving}
-          onClick={() => void choose("CLIENT")}
-        >
+      <div className="segmented" role="group" aria-label={tr("Що ви плануєте робити?")} aria-busy={saving}>
+        <button type="button" aria-pressed={role === "CLIENT"} disabled={saving} onClick={() => void choose("CLIENT")}>
           <i className="bi bi-briefcase" aria-hidden="true"></i>
           {tr("Шукаю виконавця")}
         </button>
-        <button
-          type="button"
-          aria-pressed={role === "FREELANCER"}
-          disabled={saving}
-          onClick={() => void choose("FREELANCER")}
-        >
+        <button type="button" aria-pressed={role === "FREELANCER"} disabled={saving} onClick={() => void choose("FREELANCER")}>
           <i className="bi bi-laptop" aria-hidden="true"></i>
           {tr("Шукаю замовлення")}
         </button>
       </div>
-      <p className="field-hint">
-        {tr("Роль можна змінити в профілі, поки у вас немає проєктів і заявок.")}
-      </p>
+      <p className="field-hint">{tr("Роль можна змінити в профілі, поки у вас немає проєктів і заявок.")}</p>
       {error && (
         <div className="notice error" role="alert">
           {error}
