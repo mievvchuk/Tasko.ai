@@ -212,17 +212,19 @@ describe('AI through MCP', () => {
       budgetMin: 5000,
       budgetMax: 8000,
       deadline: new Date(Date.now() + 86400000 * 30).toISOString(),
+      categoryName: 'Веброзробка',
     };
     vi.stubGlobal(
       'fetch',
       vi
         .fn()
         .mockResolvedValueOnce(topicResponse(true))
-        .mockResolvedValueOnce(toolCall(draft))
+        .mockResolvedValueOnce(toolCall({ ...draft, skillNames: ['React', 'react', 'Figma'] }))
         .mockResolvedValueOnce(planResponse('Перевірте чернетку.')),
     );
     const agent = new AgentService(config, mcp, projects as unknown as ProjectsService);
-    expect((await agent.chat(user, 'Створи проєкт')).projectDraft).toEqual(draft);
+    // Навички зведено до малих літер без повторів, як їх зберігає система
+    expect((await agent.chat(user, 'Створи проєкт')).projectDraft).toEqual({ ...draft, skillNames: ['react', 'figma'] });
 
     // Бюджет «до» менший за «від» — інструмент повертає помилку, чернетки немає
     vi.stubGlobal(

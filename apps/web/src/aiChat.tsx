@@ -24,6 +24,9 @@ export interface AiProjectDraft {
   budgetMin?: number;
   budgetMax?: number;
   deadline?: string;
+  // Назви категорії й навичок: сервер візьме наявні або створить нові
+  categoryName?: string;
+  skillNames?: string[];
 }
 
 // Текст прикріпленого файлу, який повернув сервер (/agent/attachments)

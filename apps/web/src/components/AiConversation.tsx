@@ -133,6 +133,14 @@ function ProjectDraftCard({ draft }: { draft: AiProjectDraft }) {
           <dt>{tr("Дедлайн")}</dt>
           <dd>{formatDate(draft.deadline ?? null)}</dd>
         </div>
+        <div>
+          <dt>{tr("Категорія")}</dt>
+          <dd>{draft.categoryName || tr("Не вказано")}</dd>
+        </div>
+        <div>
+          <dt>{tr("Навички")}</dt>
+          <dd>{draft.skillNames?.length ? draft.skillNames.join(", ") : tr("Не вказано")}</dd>
+        </div>
       </dl>
       <div className="ai-draft-actions">
         <button type="button" className="button primary" disabled={busy} onClick={() => void create()}>
